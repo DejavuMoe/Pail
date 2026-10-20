@@ -18,11 +18,9 @@ window.PAIL_I18N = {
     themeLight: 'Light',
     themeDark: 'Dark',
     menu: 'Menu',
-
-    heroEyebrow: 'Pail 0.1.0 · first release',
     heroTitle1: 'Every bucket.',
     heroTitle2: 'One Pail.',
-    heroSub: 'A desktop manager for Amazon S3, MinIO, Cloudflare R2 and any service that speaks the S3 API. Free and open source, for Windows, Linux and macOS.',
+    heroSub: 'A desktop manager for Amazon S3, MinIO, Cloudflare R2 and any service that speaks the S3 API. Free and open source, for Windows, Linux and macOS.',
     heroDownloadFor: 'Download for {os}',
     heroDownload: 'Download',
     heroGithub: 'View on GitHub',
@@ -33,8 +31,6 @@ window.PAIL_I18N = {
 
     providersLabel: 'Connects to',
     providersAny: 'any S3-compatible endpoint',
-
-    featuresKicker: 'Features',
     featuresTitle: 'Everything a bucket needs, in one window.',
     fTransfersTitle: 'Transfers that check their work',
     fTransfersBody: 'Separate upload and download queues with progress, speed, cancel and retry. Multipart uploads, checksums and conflict policies; a download lands on disk only after it is verified.',
@@ -97,14 +93,10 @@ window.PAIL_I18N = {
     miniCompression: 'Compression',
     miniStorageClass: 'Storage class',
     miniEncryption: 'Encryption',
-
-    cliKicker: 'Command line',
     cliTitle: 'The same accounts, in your terminal.',
     cliBody: 'pail shares accounts and saved sync jobs with the desktop app. It prints JSON on request, returns stable exit codes and never prints credentials.',
     cliDocs: 'Command line reference',
     cliExamples: 'Examples',
-
-    privacyKicker: 'Privacy and safety',
     privacyLine1: 'No telemetry.',
     privacyLine2: 'No update check.',
     privacyLine3: 'No secrets in config files.',
@@ -123,8 +115,6 @@ window.PAIL_I18N = {
     dlgConfirm: 'Type the bucket name to confirm',
     dlgCancel: 'Cancel',
     dlgDelete: 'Delete bucket',
-
-    downloadKicker: 'Download',
     downloadTitle: 'Get Pail',
     yourSystem: 'Your system',
     osWindowsReq: 'pail-desktop and pail in a .zip',
@@ -185,11 +175,9 @@ window.PAIL_I18N = {
     themeLight: '浅色',
     themeDark: '深色',
     menu: '菜单',
-
-    heroEyebrow: 'Pail 0.1.0 · 首个版本',
     heroTitle1: '一只 Pail，',
     heroTitle2: '装下所有存储桶。',
-    heroSub: '面向 Amazon S3、MinIO、Cloudflare R2 以及一切兼容 S3 API 服务的桌面管理器。免费开源，支持 Windows、Linux 与 macOS。',
+    heroSub: '面向 Amazon S3、MinIO、Cloudflare R2 以及一切兼容 S3 API 服务的桌面管理器。免费开源，支持 Windows、Linux 与 macOS。',
     heroDownloadFor: '下载 {os} 版',
     heroDownload: '下载',
     heroGithub: '在 GitHub 查看',
@@ -200,8 +188,6 @@ window.PAIL_I18N = {
 
     providersLabel: '可连接',
     providersAny: '任意 S3 兼容端点',
-
-    featuresKicker: '功能',
     featuresTitle: '存储桶要做的事，一个窗口办完。',
     fTransfersTitle: '会核对结果的传输',
     fTransfersBody: '上传与下载分队列执行，显示进度与速度，可取消、可重试。支持分段上传、校验和与冲突策略；下载核验通过后才写入磁盘。',
@@ -264,14 +250,10 @@ window.PAIL_I18N = {
     miniCompression: '压缩',
     miniStorageClass: '存储类别',
     miniEncryption: '加密',
-
-    cliKicker: '命令行',
     cliTitle: '同样的账户，搬进终端。',
     cliBody: 'pail 与桌面应用共用账户和已保存的同步任务。可按需输出 JSON，退出码稳定，从不打印凭据。',
     cliDocs: '命令行参考',
     cliExamples: '示例',
-
-    privacyKicker: '隐私与安全',
     privacyLine1: '没有遥测。',
     privacyLine2: '不检查更新。',
     privacyLine3: '配置文件里没有密钥。',
@@ -290,8 +272,6 @@ window.PAIL_I18N = {
     dlgConfirm: '输入存储桶名称以确认',
     dlgCancel: '取消',
     dlgDelete: '删除存储桶',
-
-    downloadKicker: '下载',
     downloadTitle: '下载 Pail',
     yourSystem: '当前系统',
     osWindowsReq: '.zip 内含 pail-desktop 与 pail',

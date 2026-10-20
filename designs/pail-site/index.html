@@ -21,7 +21,7 @@
   </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Geist+Mono:wght@400;500&family=Instrument+Sans:wght@400..600&family=Instrument+Serif:ital@0;1&display=swap">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400..700&family=Geist+Mono:wght@400;500&family=Instrument+Sans:wght@400..600&display=swap">
   <link rel="stylesheet" href="styles.css">
 </head>
 <body>
@@ -100,17 +100,11 @@
   <main id="main">
     <section class="hero" id="top" data-screen-label="Hero">
       <canvas class="hero-keys" aria-hidden="true"></canvas>
-      <div class="hero-strata" aria-hidden="true"><span></span><span></span><span></span></div>
       <div class="wrap hero-grid">
         <div class="hero-copy">
-          <a class="eyebrow" href="#download">
-            <span class="eyebrow-dot"></span>
-            <span data-i18n="heroEyebrow">Pail 0.1.0 · first release</span>
-            <svg class="i"><use href="#i-arrow-right"></use></svg>
-          </a>
           <h1 class="hero-title">
             <span class="hero-line" data-i18n="heroTitle1">Every bucket.</span>
-            <span class="hero-line hero-line-accent" data-i18n="heroTitle2">One Pail.</span>
+            <span class="hero-line" data-i18n="heroTitle2">One Pail.</span>
           </h1>
           <p class="hero-sub" data-i18n="heroSub">A desktop manager for Amazon S3, MinIO, Cloudflare R2 and any service that speaks the S3 API. Free and open source, for Windows, Linux and macOS.</p>
           <div class="hero-cta">
@@ -124,6 +118,7 @@
             </a>
           </div>
           <ul class="hero-meta">
+            <li><a href="https://github.com/DejavuMoe/Pail/blob/main/CHANGELOG.md">v0.1.0</a></li>
             <li data-i18n="metaLicense">MIT license</li>
             <li data-i18n="metaArch">amd64 and arm64</li>
             <li data-i18n="metaTelemetry">No telemetry</li>
@@ -155,7 +150,6 @@
     <section class="section features" id="features" aria-labelledby="features-title" data-screen-label="Features">
       <div class="wrap">
         <header class="section-head reveal">
-          <p class="section-kicker" data-i18n="featuresKicker">Features</p>
           <h2 class="section-title" id="features-title" data-i18n="featuresTitle">Everything a bucket needs, in one window.</h2>
         </header>
 
@@ -317,7 +311,6 @@
     <section class="section cli" id="cli" aria-labelledby="cli-title" data-screen-label="Command line">
       <div class="wrap cli-grid">
         <header class="section-head reveal">
-          <p class="section-kicker" data-i18n="cliKicker">Command line</p>
           <h2 class="section-title" id="cli-title" data-i18n="cliTitle">The same accounts, in your terminal.</h2>
           <p class="section-lede" data-i18n="cliBody">pail shares accounts and saved sync jobs with the desktop app. It prints JSON on request, returns stable exit codes and never prints credentials.</p>
           <ul class="cli-cmds">
@@ -327,7 +320,6 @@
         </header>
         <div class="terminal reveal" data-demo="terminal">
           <div class="term-bar">
-            <span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span>
             <div class="term-tabs" role="tablist" data-i18n-aria-label="cliExamples" aria-label="Examples">
               <button type="button" role="tab" aria-selected="true" data-term="ls">ls</button>
               <button type="button" role="tab" aria-selected="false" data-term="sync">sync</button>
@@ -343,7 +335,6 @@
     <section class="section privacy" id="privacy" aria-labelledby="privacy-title" data-screen-label="Privacy">
       <div class="wrap">
         <header class="section-head reveal">
-          <p class="section-kicker" data-i18n="privacyKicker">Privacy and safety</p>
           <h2 class="privacy-title" id="privacy-title">
             <span data-i18n="privacyLine1">No telemetry.</span>
             <span data-i18n="privacyLine2">No update check.</span>
@@ -394,7 +385,6 @@
     <section class="section download" id="download" aria-labelledby="download-title" data-screen-label="Download">
       <div class="wrap">
         <header class="section-head section-head-center reveal">
-          <p class="section-kicker" data-i18n="downloadKicker">Download</p>
           <h2 class="section-title" id="download-title"><span data-i18n="downloadTitle">Get Pail</span> <span class="version">0.1.0</span></h2>
         </header>
         <div class="os-grid">
@@ -468,7 +458,6 @@
       <p>© 2026 Dejavu Moe</p>
       <p data-i18n="trademark">Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endorsed by or sponsored by AWS.</p>
     </div>
-    <div class="footer-mark" aria-hidden="true">Pail</div>
   </footer>
 
   <div class="palette" data-palette hidden>

@@ -8,7 +8,7 @@
       "dom-zh.json",
       "dom-enPalette.json"
     ],
-    "capturedAt": "2026-10-20T01:42:18Z",
+    "capturedAt": "2026-10-20T02:54:44Z",
     "surfaces": [
       "landing-page: en light + tweaks panel open",
       "landing-page: zh light + command palette open",
@@ -1047,7 +1047,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > p.hero-sub"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > p.hero-sub"
       ],
       "visibility": [
         "visible"
@@ -1056,40 +1056,12 @@
         "dom-en.json",
         "dom-enPalette.json"
       ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
-      "evidence": {
-        "source": "README.md",
-        "reference": "intro paragraph (line 5)"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
-    },
-    {
-      "id": "content-beb36a7ab80e5312",
-      "text": "Accent line",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(3) > span"
-      ],
-      "visibility": [
-        "hidden",
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
+      "purpose": "domain-value",
+      "origin": "production-domain",
       "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "prototype-only review control from tweaks.js; never shipped"
+      "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
     },
     {
       "id": "content-7e1b0d5641f2640c",
@@ -1365,7 +1337,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(2)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
       ],
       "visibility": [
         "visible"
@@ -1391,7 +1363,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(2)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
       ],
       "visibility": [
         "visible"
@@ -1628,32 +1600,6 @@
       "evidence": null,
       "flags": [],
       "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
-    },
-    {
-      "id": "content-ff7772053abf7d81",
-      "text": "both",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "html.js"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
       "id": "content-282f9f14387740a2",
@@ -2323,7 +2269,7 @@
         "data-*"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-lede:nth-of-type(2)"
+        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-lede"
       ],
       "visibility": [
         "visible"
@@ -2376,32 +2322,6 @@
       ],
       "locations": [
         "section#cli > div.wrap.cli-grid > div.terminal.reveal > div.term-bar > div.term-tabs"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
-    },
-    {
-      "id": "content-c80b5a62e47d77e1",
-      "text": "cliKicker",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-kicker:nth-of-type(1)"
       ],
       "visibility": [
         "visible"
@@ -2637,8 +2557,7 @@
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > nav.footer-col:nth-of-type(1) > a:nth-of-type(2)",
         "html.js > body > header.site-header > div.wrap.header-inner > nav.nav > a:nth-of-type(2)",
         "li#pi-1 > span",
-        "section#cli",
-        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-kicker:nth-of-type(1)"
+        "section#cli"
       ],
       "visibility": [
         "visible"
@@ -3598,8 +3517,7 @@
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > nav.footer-col:nth-of-type(1) > a:nth-of-type(3)",
         "html.js > body > header.site-header > div.wrap.header-inner > nav.nav > a:nth-of-type(4)",
         "li#pi-3 > span",
-        "section#download",
-        "section#download > div.wrap > header.section-head.section-head-center > p.section-kicker"
+        "section#download"
       ],
       "visibility": [
         "visible"
@@ -3609,7 +3527,7 @@
         "dom-enPalette.json",
         "dom-zh.json"
       ],
-      "purpose": "navigation",
+      "purpose": "user-action",
       "origin": "agent-generated-task-copy",
       "decision": "allow",
       "evidence": null,
@@ -3626,7 +3544,7 @@
       ],
       "locations": [
         "li#pi-5 > span",
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-primary:nth-of-type(1) > span"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-primary:nth-of-type(1) > span"
       ],
       "visibility": [
         "visible"
@@ -3641,32 +3559,6 @@
       "evidence": null,
       "flags": [],
       "notes": null
-    },
-    {
-      "id": "content-040c87c8dcbccaac",
-      "text": "downloadKicker",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "section#download > div.wrap > header.section-head.section-head-center > p.section-kicker"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
       "id": "content-38e519572fa19bb5",
@@ -3852,7 +3744,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(1)"
       ],
       "visibility": [
         "visible"
@@ -3959,8 +3851,7 @@
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > nav.footer-col:nth-of-type(1) > a:nth-of-type(1)",
         "html.js > body > header.site-header > div.wrap.header-inner > nav.nav > a:nth-of-type(1)",
         "li#pi-0 > span",
-        "section#features",
-        "section#features > div.wrap > header.section-head.reveal > p.section-kicker"
+        "section#features"
       ],
       "visibility": [
         "visible"
@@ -3978,32 +3869,6 @@
         "dom-metadata"
       ],
       "notes": null
-    },
-    {
-      "id": "content-5f2d4f90df38046c",
-      "text": "featuresKicker",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "section#features > div.wrap > header.section-head.reveal > p.section-kicker"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
       "id": "content-68b1a23de18d4149",
@@ -4676,31 +4541,6 @@
       "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
-      "id": "content-55d4d205d5561e0b",
-      "text": "Headline face",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(3) > div.tw-seg > button:nth-of-type(2)"
-      ],
-      "visibility": [
-        "hidden",
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "user-action",
-      "origin": "agent-generated-task-copy",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": "prototype-only review control from tweaks.js; never shipped"
-    },
-    {
       "id": "content-72a9345fb29494a4",
       "text": "Hero",
       "channels": [
@@ -4777,39 +4617,13 @@
       "notes": "prototype-only review control from tweaks.js; never shipped"
     },
     {
-      "id": "content-a03e3e21532817bf",
-      "text": "heroEyebrow",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > a.eyebrow > span:nth-of-type(2)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
-    },
-    {
       "id": "content-8bddc5f0d27ab067",
       "text": "heroGithub",
       "channels": [
         "data-*"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-secondary:nth-of-type(2) > span"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-secondary:nth-of-type(2) > span"
       ],
       "visibility": [
         "visible"
@@ -4835,7 +4649,7 @@
         "data-*"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > p.hero-sub"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > p.hero-sub"
       ],
       "visibility": [
         "visible"
@@ -4861,7 +4675,7 @@
         "data-*"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(1)"
       ],
       "visibility": [
         "visible"
@@ -4887,7 +4701,7 @@
         "data-*"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line.hero-line-accent:nth-of-type(2)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -5114,12 +4928,32 @@
         "text"
       ],
       "locations": [
-        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(2) > div.tw-seg > button:nth-of-type(3)",
         "section#features > div.wrap > div.bento > article.tile.tile-rules:nth-of-type(7) > div.mini.mini-rules:nth-of-type(2) > dl.mr-grid > dt:nth-of-type(2)"
       ],
       "visibility": [
-        "accessibility-hidden",
-        "hidden",
+        "accessibility-hidden"
+      ],
+      "captures": [
+        "dom-en.json",
+        "dom-enPalette.json"
+      ],
+      "purpose": "domain-field",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": null,
+      "flags": [],
+      "notes": "mirrors desktop app labels in a static demo fragment"
+    },
+    {
+      "id": "content-48a53f0774c8ceff",
+      "text": "keys",
+      "channels": [
+        "data-*"
+      ],
+      "locations": [
+        "html.js"
+      ],
+      "visibility": [
         "visible"
       ],
       "captures": [
@@ -5127,12 +4961,14 @@
         "dom-enPalette.json",
         "dom-zh.json"
       ],
-      "purpose": "user-action",
-      "origin": "agent-generated-task-copy",
+      "purpose": "machine-identifier",
+      "origin": "framework-runtime",
       "decision": "allow",
       "evidence": null,
-      "flags": [],
-      "notes": "prototype-only review control from tweaks.js; never shipped"
+      "flags": [
+        "dom-metadata"
+      ],
+      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
       "id": "content-5cf7d7ec1cb5c221",
@@ -5747,7 +5583,7 @@
         "data-*"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(2)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
       ],
       "visibility": [
         "visible"
@@ -5773,7 +5609,7 @@
         "data-*"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -5799,7 +5635,7 @@
         "data-*"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(4)"
       ],
       "visibility": [
         "visible"
@@ -6213,7 +6049,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -6240,7 +6076,7 @@
       ],
       "locations": [
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > nav.footer-col:nth-of-type(3) > a:nth-of-type(2)",
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -6603,7 +6439,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(4)"
       ],
       "visibility": [
         "visible"
@@ -6725,6 +6561,31 @@
       "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
     },
     {
+      "id": "content-467306ccd522b341",
+      "text": "Object keys",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(2) > div.tw-seg > button:nth-of-type(1)"
+      ],
+      "visibility": [
+        "hidden",
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json",
+        "dom-enPalette.json",
+        "dom-zh.json"
+      ],
+      "purpose": "user-action",
+      "origin": "agent-generated-task-copy",
+      "decision": "allow",
+      "evidence": null,
+      "flags": [],
+      "notes": "prototype-only review control from tweaks.js; never shipped"
+    },
+    {
       "id": "content-146542b6c0dc5979",
       "text": "Object lock",
       "channels": [
@@ -6806,7 +6667,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line.hero-line-accent:nth-of-type(2)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -7103,12 +6964,10 @@
         "text"
       ],
       "locations": [
-        "html.js > body > footer.site-footer > div.footer-mark:nth-of-type(3)",
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > div.footer-brand > a.brand > span",
         "html.js > body > header.site-header > div.wrap.header-inner > a.brand > span"
       ],
       "visibility": [
-        "accessibility-hidden",
         "visible"
       ],
       "captures": [
@@ -7122,57 +6981,6 @@
       "evidence": null,
       "flags": [],
       "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
-    },
-    {
-      "id": "content-46f8718d5904eb25",
-      "text": "Pail 0.1.0 · first release",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > a.eyebrow > span:nth-of-type(2)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
-      "evidence": {
-        "source": "CHANGELOG.md",
-        "reference": "'First release of Pail'; version 0.1.0 is a fixture until the release tag exists"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
-    },
-    {
-      "id": "content-e27faa3ce574ae08",
-      "text": "Pail 0.1.0 · 首个版本",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > a.eyebrow > span:nth-of-type(2)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
-      "evidence": {
-        "source": "CHANGELOG.md",
-        "reference": "'First release of Pail'; version 0.1.0 is a fixture until the release tag exists"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
     },
     {
       "id": "content-19f9ac056213e81f",
@@ -7257,8 +7065,8 @@
         "alt"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-dark:nth-of-type(2)",
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-light:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-dark:nth-of-type(2)",
+        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-light:nth-of-type(1)"
       ],
       "visibility": [
         "hidden",
@@ -7285,7 +7093,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-lede:nth-of-type(2)"
+        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-lede"
       ],
       "visibility": [
         "visible"
@@ -7362,7 +7170,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-lede:nth-of-type(2)"
+        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-lede"
       ],
       "visibility": [
         "visible"
@@ -7387,8 +7195,8 @@
         "alt"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-dark:nth-of-type(2)",
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-light:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-dark:nth-of-type(2)",
+        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-light:nth-of-type(1)"
       ],
       "visibility": [
         "hidden",
@@ -7889,7 +7697,7 @@
         "text"
       ],
       "locations": [
-        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(2) > div.tw-seg > button:nth-of-type(4)"
+        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(2) > div.tw-seg > button:nth-of-type(2)"
       ],
       "visibility": [
         "hidden",
@@ -8315,55 +8123,6 @@
         "dom-metadata"
       ],
       "notes": null
-    },
-    {
-      "id": "content-4a24547040f8ec31",
-      "text": "Privacy and safety",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#privacy > div.wrap > header.section-head.reveal > p.section-kicker"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json"
-      ],
-      "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": null
-    },
-    {
-      "id": "content-ae02ab57f10bf313",
-      "text": "privacyKicker",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "section#privacy > div.wrap > header.section-head.reveal > p.section-kicker"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
       "id": "content-9e2af3ce2b47d66c",
@@ -9101,57 +8860,6 @@
       "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
     },
     {
-      "id": "content-c7fe11828ea99264",
-      "text": "serif",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "html.js"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
-    },
-    {
-      "id": "content-01d3f9364c6cba2e",
-      "text": "Serif italic",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(3) > div.tw-seg > button:nth-of-type(1)"
-      ],
-      "visibility": [
-        "hidden",
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "user-action",
-      "origin": "agent-generated-task-copy",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": "prototype-only review control from tweaks.js; never shipped"
-    },
-    {
       "id": "content-93d4b5a048711c40",
       "text": "Server access logging",
       "channels": [
@@ -9208,8 +8916,8 @@
         "data-*"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-dark:nth-of-type(2)",
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-light:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-dark:nth-of-type(2)",
+        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-light:nth-of-type(1)"
       ],
       "visibility": [
         "hidden",
@@ -9496,56 +9204,6 @@
       "evidence": null,
       "flags": [],
       "notes": "mirrors desktop app labels in a static demo fragment"
-    },
-    {
-      "id": "content-86851bedc0499f0e",
-      "text": "Strata",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(2) > div.tw-seg > button:nth-of-type(2)"
-      ],
-      "visibility": [
-        "hidden",
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "user-action",
-      "origin": "agent-generated-task-copy",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": "prototype-only review control from tweaks.js; never shipped"
-    },
-    {
-      "id": "content-4675796844752ff7",
-      "text": "Strata + keys",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "html.js > body > div.tw-panel:nth-of-type(2) > div.tw-row:nth-of-type(2) > div.tw-seg > button:nth-of-type(1)"
-      ],
-      "visibility": [
-        "hidden",
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "user-action",
-      "origin": "agent-generated-task-copy",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": "prototype-only review control from tweaks.js; never shipped"
     },
     {
       "id": "content-5f434646ab9efeaf",
@@ -10550,6 +10208,30 @@
       "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
     },
     {
+      "id": "content-8c807b66253a6143",
+      "text": "v0.1.0",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(1) > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json",
+        "dom-enPalette.json",
+        "dom-zh.json"
+      ],
+      "purpose": "domain-value",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": null,
+      "flags": [],
+      "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
+    },
+    {
       "id": "content-c294151ecde2192f",
       "text": "vault status",
       "channels": [
@@ -10711,7 +10393,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-secondary:nth-of-type(2) > span"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-secondary:nth-of-type(2) > span"
       ],
       "visibility": [
         "visible"
@@ -11059,7 +10741,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(1)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(1)"
       ],
       "visibility": [
         "visible"
@@ -11211,8 +10893,7 @@
       "locations": [
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > nav.footer-col:nth-of-type(1) > a:nth-of-type(3)",
         "html.js > body > header.site-header > div.wrap.header-inner > nav.nav > a:nth-of-type(4)",
-        "li#pi-3 > span",
-        "section#download > div.wrap > header.section-head.section-head-center > p.section-kicker"
+        "li#pi-3 > span"
       ],
       "visibility": [
         "visible"
@@ -11220,7 +10901,7 @@
       "captures": [
         "dom-zh.json"
       ],
-      "purpose": "navigation",
+      "purpose": "user-action",
       "origin": "agent-generated-task-copy",
       "decision": "allow",
       "evidence": null,
@@ -11285,7 +10966,7 @@
       ],
       "locations": [
         "li#pi-5 > span",
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-primary:nth-of-type(1) > span"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-primary:nth-of-type(1) > span"
       ],
       "visibility": [
         "visible"
@@ -11921,8 +11602,7 @@
       "locations": [
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > nav.footer-col:nth-of-type(1) > a:nth-of-type(1)",
         "html.js > body > header.site-header > div.wrap.header-inner > nav.nav > a:nth-of-type(1)",
-        "li#pi-0 > span",
-        "section#features > div.wrap > header.section-head.reveal > p.section-kicker"
+        "li#pi-0 > span"
       ],
       "visibility": [
         "visible"
@@ -12142,8 +11822,7 @@
       "locations": [
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > nav.footer-col:nth-of-type(1) > a:nth-of-type(2)",
         "html.js > body > header.site-header > div.wrap.header-inner > nav.nav > a:nth-of-type(2)",
-        "li#pi-1 > span",
-        "section#cli > div.wrap.cli-grid > header.section-head.reveal > p.section-kicker:nth-of-type(1)"
+        "li#pi-1 > span"
       ],
       "visibility": [
         "visible"
@@ -12231,7 +11910,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-secondary:nth-of-type(2) > span"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > div.hero-cta > a.btn.btn-secondary:nth-of-type(2) > span"
       ],
       "visibility": [
         "visible"
@@ -12959,7 +12638,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(4)"
       ],
       "visibility": [
         "visible"
@@ -13519,7 +13198,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line.hero-line-accent:nth-of-type(2)"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > h1.hero-title > span.hero-line:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -13935,28 +13614,6 @@
       "notes": null
     },
     {
-      "id": "content-58e6ce61a628a1b2",
-      "text": "隐私与安全",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#privacy > div.wrap > header.section-head.reveal > p.section-kicker"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": null
-    },
-    {
       "id": "content-d98a1fa1eaef1299",
       "text": "静态网站托管",
       "channels": [
@@ -13988,7 +13645,7 @@
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid:nth-of-type(2) > div.hero-copy:nth-of-type(1) > p.hero-sub"
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > p.hero-sub"
       ],
       "visibility": [
         "visible"
@@ -13996,15 +13653,12 @@
       "captures": [
         "dom-zh.json"
       ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
-      "evidence": {
-        "source": "README.md",
-        "reference": "intro paragraph (line 5)"
-      },
+      "purpose": "domain-value",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": null,
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
     },
     {
       "id": "content-79f326be4409d51f",

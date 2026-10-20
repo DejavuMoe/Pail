@@ -127,8 +127,8 @@
     var rect = win.getBoundingClientRect();
     var vh = window.innerHeight;
     var p = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.95)));
-    win.style.setProperty('--tilt', ((1 - p) * 24).toFixed(2) + 'deg');
-    win.style.setProperty('--scale', (0.9 + 0.1 * p).toFixed(4));
+    win.style.setProperty('--tilt', ((1 - p) * 14).toFixed(2) + 'deg');
+    win.style.setProperty('--scale', (0.95 + 0.05 * p).toFixed(4));
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
@@ -155,14 +155,6 @@
   $$('.reveal').forEach(function (el, i) {
     el.style.transitionDelay = (i % 3) * 70 + 'ms';
     revealObserver.observe(el);
-  });
-
-  $$('.tile').forEach(function (tile) {
-    tile.addEventListener('pointermove', function (e) {
-      var r = tile.getBoundingClientRect();
-      tile.style.setProperty('--mx', (e.clientX - r.left) + 'px');
-      tile.style.setProperty('--my', (e.clientY - r.top) + 'px');
-    });
   });
 
   /* ---------- Demo loops (run only while visible) ---------- */
