@@ -261,7 +261,7 @@ pail ls s3://my-bucket/photos/ -r</code></pre>
 <ul>
 <li>不能即时重命名目标；S3 路径不做通配符展开；<code>versions</code> 只列一层文件夹；<code>rm --versions</code> 只接受单个键。</li>
 <li>复制和移动只能在同一个账户内进行。</li>
-<li>验证：这些命令由针对 <code>internal/s3test</code> 的进程内测试覆盖（协议层）。其下的应用层也针对 MinIO 和自建 VersityGW 测试过（见 <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/status.md">status.md</a>）；命令行前端本身尚未对真实服务端运行过。</li>
+<li>验证：这些命令由针对 <code>internal/s3test</code> 的进程内测试覆盖（协议层）。其下的应用层也针对 MinIO 和自建 VersityGW 测试过（见 <a href="https://github.com/DejavuMoe/Pail/blob/master/docs/status.md">status.md</a>）；命令行前端本身尚未对真实服务端运行过。</li>
 </ul>
         </div>
       </div>
