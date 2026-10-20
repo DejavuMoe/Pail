@@ -6,13 +6,15 @@
     "sources": [
       "dom-en.json",
       "dom-zh.json",
-      "dom-enPalette.json"
+      "dom-enPalette.json",
+      "dom-prod404.json"
     ],
     "capturedAt": "2026-10-20T03:54:16Z",
     "surfaces": [
       "landing-page: en light + tweaks panel open",
       "landing-page: zh light + command palette open",
-      "landing-page: en light + command palette open"
+      "landing-page: en light + command palette open",
+      "not-found page (production build, /404.html)"
     ],
     "limitations": [
       "Animated demo fragments were captured at their initial frame; intermediate typed strings and cycling states are generated from the same listed strings.",
@@ -13703,6 +13705,203 @@
       },
       "flags": [],
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+    },
+    {
+      "id": "content-ed26c823ff603b30",
+      "text": "Go to the Pail home page",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "html > body > main.not-found > div.wrap.not-found-inner > section:nth-of-type(1) > a.btn.btn-primary"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-prod404.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
+      "evidence": {
+        "source": "site/templates/404.html.tmpl",
+        "reference": "not-found page, approved by the user on 2026-10-20"
+      },
+      "flags": [],
+      "notes": "production-only page added after prototype approval; copy approved by the user on 2026-10-20"
+    },
+    {
+      "id": "content-a469ab4ca4e55bf5",
+      "text": "Page not found",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "html > body > main.not-found > div.wrap.not-found-inner > section:nth-of-type(1) > h1.section-title"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-prod404.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
+      "evidence": {
+        "source": "site/templates/404.html.tmpl",
+        "reference": "not-found page, approved by the user on 2026-10-20"
+      },
+      "flags": [],
+      "notes": "production-only page added after prototype approval; copy approved by the user on 2026-10-20"
+    },
+    {
+      "id": "content-554fa510714b1a5d",
+      "text": "Page not found · Pail",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "html > head > title"
+      ],
+      "visibility": [
+        "hidden"
+      ],
+      "captures": [
+        "dom-prod404.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
+      "evidence": {
+        "source": "site/templates/404.html.tmpl",
+        "reference": "not-found page, approved by the user on 2026-10-20"
+      },
+      "flags": [],
+      "notes": "production-only page added after prototype approval; copy approved by the user on 2026-10-20"
+    },
+    {
+      "id": "content-c30d8b6528b48839",
+      "text": "pail.download 上没有这个地址。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "html > body > main.not-found > div.wrap.not-found-inner > section:nth-of-type(2) > p.section-lede"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-prod404.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
+      "evidence": {
+        "source": "site/templates/404.html.tmpl",
+        "reference": "not-found page, approved by the user on 2026-10-20"
+      },
+      "flags": [],
+      "notes": "production-only page added after prototype approval; copy approved by the user on 2026-10-20"
+    },
+    {
+      "id": "content-bbc5e661e106c6dc",
+      "text": "system",
+      "channels": [
+        "data-*"
+      ],
+      "locations": [
+        "html"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-prod404.json"
+      ],
+      "purpose": "machine-identifier",
+      "origin": "production-behavior",
+      "decision": "allow",
+      "evidence": null,
+      "flags": [],
+      "notes": "theme preference attribute value on the 404 page root element; not visible"
+    },
+    {
+      "id": "content-bff2d726e6c3bdbc",
+      "text": "This address does not exist on pail.download.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "html > body > main.not-found > div.wrap.not-found-inner > section:nth-of-type(1) > p.section-lede"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-prod404.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
+      "evidence": {
+        "source": "site/templates/404.html.tmpl",
+        "reference": "not-found page, approved by the user on 2026-10-20"
+      },
+      "flags": [],
+      "notes": "production-only page added after prototype approval; copy approved by the user on 2026-10-20"
+    },
+    {
+      "id": "content-6353d22cc45f1d22",
+      "text": "前往 Pail 首页",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "html > body > main.not-found > div.wrap.not-found-inner > section:nth-of-type(2) > a.btn.btn-secondary"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-prod404.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
+      "evidence": {
+        "source": "site/templates/404.html.tmpl",
+        "reference": "not-found page, approved by the user on 2026-10-20"
+      },
+      "flags": [],
+      "notes": "production-only page added after prototype approval; copy approved by the user on 2026-10-20"
+    },
+    {
+      "id": "content-ff77f2fdf4ce9a6e",
+      "text": "找不到页面",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "html > body > main.not-found > div.wrap.not-found-inner > section:nth-of-type(2) > h2.section-title"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-prod404.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
+      "evidence": {
+        "source": "site/templates/404.html.tmpl",
+        "reference": "not-found page, approved by the user on 2026-10-20"
+      },
+      "flags": [],
+      "notes": "production-only page added after prototype approval; copy approved by the user on 2026-10-20"
     }
   ]
 }
