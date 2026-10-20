@@ -13700,7 +13700,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "docs/images/main-light.png",
+        "source": "docs/images/main-light.webp",
         "reference": "describes the screenshot content"
       },
       "flags": [],
@@ -17683,7 +17683,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "docs/images/main-light.png",
+        "source": "docs/images/main-light.webp",
         "reference": "describes the screenshot content"
       },
       "flags": [],
