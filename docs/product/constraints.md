@@ -47,8 +47,8 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 
 ## Visual and interaction constraints
 
-- Typography: display Bricolage Grotesque, accent Instrument Serif italic (Latin only), body Instrument Sans, mono Geist Mono (all SIL OFL); CJK uses system fonts.
-- Forbidden: stock photography, hand-drawn SVG illustration, emoji, gradient-heavy backgrounds.
+- Typography: display Bricolage Grotesque, body Instrument Sans, mono Geist Mono only for code, keys and CLI output (all SIL OFL); CJK uses system fonts. No serif or italic display accents.
+- Forbidden: stock photography, hand-drawn SVG illustration, emoji, gradient or blurred-blob backgrounds, grain overlays, glows, cursor spotlights, announcement pills, uppercase eyebrow labels above headings, oversized decorative wordmarks, faux window controls.
 - Accessibility: text contrast 4.5:1 (3:1 for display sizes), visible focus rings, skip link, labelled controls, `lang` on the document.
 - Motion: one load sequence, scroll-linked hero tilt, demos only while visible, all disabled under reduced motion.
 
