@@ -441,7 +441,7 @@ func (a *app) askRemoveCfg(sec bsSection, s *cfgState) {
 // ghostDanger is a ghost button whose label is Danger-colored.
 func ghostDanger(c *ui.Context, label, tip string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c.Key("gd:"+label)).Label(label).Tooltip(tip).Radius(6).Height(28).Padding(0, 8).Center().Disabled(disabled)
+	b := ui.ButtonBase(c.Key("gd:"+label)).Label(label).Tooltip(tip).Radius(6).Height(28).Padding(0, 8).Center().Disabled(disabled).Transition(hoverFade())
 	switch {
 	case disabled:
 		b.Opacity(0.4)
@@ -457,8 +457,7 @@ func (a *app) bucketSettingsDialog(c *ui.Context) {
 	bs := &a.mg.bs
 	k := tk(c)
 	_, winH := c.Size()
-	ui.DialogBase(c, &bs.open, func(backdrop, panel ui.Element) {
-		backdrop.Background(k.Scrim)
+	modalLayer(c, "bucket-settings", &bs.open, k.Scrim, func(backdrop, panel ui.Element) {
 		// The same card as every dialog (dialogFrame); only the height is fixed,
 		// since the nav and the pane share it and scroll inside it.
 		dialogFrame(c, panel, 760, winH)
@@ -491,7 +490,7 @@ func (a *app) settingsNav(c *ui.Context) {
 		ui.Column(c).Padding(8, scrollGutter, 8, 8).Gap(2).Children(func() {
 			for i, sec := range bsSections {
 				on := i == bs.section
-				row := ui.ButtonBase(c.Key("sec:"+sec.label())).Label(sec.label()).Height(28).Padding(0, 8).Radius(6).AlignItems(ui.Center).Justify(ui.Start)
+				row := ui.ButtonBase(c.Key("sec:"+sec.label())).Label(sec.label()).Height(28).Padding(0, 8).Radius(6).AlignItems(ui.Center).Justify(ui.Start).Transition(hoverFade())
 				switch {
 				case on:
 					row.Background(k.ActiveFill)
@@ -502,7 +501,7 @@ func (a *app) settingsNav(c *ui.Context) {
 					w := 400
 					if on {
 						w = 600
-						selectionBar(c, 6)
+						selectionBar(c, 6, "bucket-settings-nav")
 					}
 					ui.Text(c, sec.label()).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine()
 				})

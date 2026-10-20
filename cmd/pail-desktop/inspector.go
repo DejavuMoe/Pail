@@ -28,7 +28,7 @@ func (a *app) inspectorTabBar(c *ui.Context) {
 	tabs := ui.TabsBase(c, &a.inspTab, len(inspectorTabs))
 	tabs.List.Height(40).Gap(4).Padding(0, 12).AlignItems(ui.Center).Children(func() {
 		for i, t := range inspectorTabs {
-			tab := tabs.Tab(i).Size(28, 28).Radius(6).Label(t.label()).Tooltip(t.label()).Center()
+			tab := tabs.Tab(i).Size(28, 28).Radius(6).Label(t.label()).Tooltip(t.label()).Center().Transition(hoverFade())
 			on := i == a.inspTab
 			if !on && tab.Hovered() {
 				tab.Background(k.SurfaceHover)
@@ -40,7 +40,7 @@ func (a *app) inspectorTabBar(c *ui.Context) {
 				}
 				ui.Icon(c, icons.Get(t.icon)).FontSize(14).TextColor(col)
 				if on {
-					tabIndicator(c)
+					tabIndicator(c, "inspector-tabs")
 				}
 			})
 		}
@@ -50,7 +50,17 @@ func (a *app) inspectorTabBar(c *ui.Context) {
 // inspector is the right-hand detail panel.
 func (a *app) inspector(c *ui.Context) {
 	k := tk(c)
-	ui.Column(c).Fill().MinWidth(0).MinHeight(0).Background(k.Background).BorderWidth(0, 0, 0, 1).BorderColor(k.Border).Children(func() {
+	root := ui.Column(c).Fill().MinWidth(0).MinHeight(0).Background(k.Background).BorderWidth(0, 0, 0, 1).BorderColor(k.Border)
+	// The panel itself does not slide or grow (its width is the Split's, which
+	// the user drags); only its content fades in as the user opens it. Shown
+	// again because the window grew wide enough, it is there at once.
+	if a.inspFade || mounted(root) {
+		fadeIn(c, root)
+	}
+	if mounted(root) {
+		a.inspFade = false
+	}
+	root.Children(func() {
 		a.inspectorTabBar(c)
 		hairline(c)
 		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {

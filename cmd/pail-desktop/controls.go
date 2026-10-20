@@ -1,8 +1,6 @@
 package main
 
 import (
-	"time"
-
 	"github.com/egoist/mygo/ui"
 )
 
@@ -24,8 +22,14 @@ func switchControl(c *ui.Context, on *bool, label string) ui.Element {
 	if *on {
 		target = 1
 	}
-	pos := sw.Animate("knob", target, 140*time.Millisecond)
-	sw.Background(k.ControlOff.Mix(k.Accent, pos))
+	// The knob moves on the slide spring (it may overshoot a hair); the track
+	// changes colour by a fade of its own, which stays under reduced motion.
+	pos := sw.AnimateTo("knob", target, slideSpring)
+	track := k.ControlOff
+	if *on {
+		track = k.Accent
+	}
+	sw.Background(sw.AnimateColor("track", track, fadeAnim))
 	if sw.Hovered() {
 		sw.Border(1, k.BorderStrong.Alpha(0.5))
 	}
@@ -36,8 +40,11 @@ func switchControl(c *ui.Context, on *bool, label string) ui.Element {
 		p.Shadow(knob, d/2, 0, 1, 3, 0, k.KnobShadow)
 		p.Fill(knob, k.Knob, d/2)
 	})
+	// Read before drawing: a frame that only paints (a pose moving, motion.go)
+	// draws again without building, when an Element handle no longer holds.
+	focused := sw.FocusVisible()
 	sw.DrawOver(func(p *ui.Painter, r ui.Rect) {
-		if sw.FocusVisible() {
+		if focused {
 			p.FocusRing(r, [4]float32{switchH / 2, switchH / 2, switchH / 2, switchH / 2})
 		}
 	})
@@ -51,7 +58,7 @@ func checkboxControl(c *ui.Context, checked *bool, label string) ui.Element {
 	row := ui.CheckboxBase(c, checked).Label(label).Gap(8).AlignItems(ui.Center).FocusRing(false)
 	on := *checked
 	row.Children(func() {
-		box := ui.Box(c).Size(checkSize, checkSize).Radius(4).Shrink(0)
+		box := ui.Box(c).Size(checkSize, checkSize).Radius(4).Shrink(0).Transition(hoverFade())
 		if on {
 			box.Background(k.Accent).Border(1.5, k.Accent)
 		} else {
@@ -60,13 +67,14 @@ func checkboxControl(c *ui.Context, checked *bool, label string) ui.Element {
 				box.Border(1.5, k.TextMuted)
 			}
 		}
+		ring := row.FocusVisible()
 		box.DrawOver(func(p *ui.Painter, r ui.Rect) {
 			if on {
 				var path ui.Path
 				path.MoveTo(r.X+r.W*0.24, r.Y+r.H*0.52).LineTo(r.X+r.W*0.43, r.Y+r.H*0.71).LineTo(r.X+r.W*0.77, r.Y+r.H*0.31)
 				p.StrokePath(&path, 1.75, k.AccentText)
 			}
-			if row.FocusVisible() {
+			if ring {
 				p.FocusRing(r, [4]float32{4, 4, 4, 4})
 			}
 		})
@@ -77,9 +85,15 @@ func checkboxControl(c *ui.Context, checked *bool, label string) ui.Element {
 
 // selectionBar is the 2px Accent bar on the left edge of a selected row, the
 // second cue next to the fill. inset keeps it clear of the row's top and
-// bottom. The row must be a positioned element (any button or row is).
-func selectionBar(c *ui.Context, inset float32) ui.Element {
-	return ui.Box(c).Absolute().Left(1).Top(inset).Bottom(inset).Width(2).Radius(1).Background(tk(c).Accent)
+// bottom. The row must be a positioned element (any button or row is). The
+// rows of a list that share a group (not "") slide the bar from the row that
+// lost it to the one that has it; "" leaves it where it appears.
+func selectionBar(c *ui.Context, inset float32, group string) ui.Element {
+	bar := ui.Box(c).Absolute().Left(1).Top(inset).Bottom(inset).Width(2).Radius(1).Background(tk(c).Accent)
+	if group != "" {
+		bar.Transition(slideTransition(group))
+	}
+	return bar
 }
 
 // markSelected paints the same bar over a selected row from outside, for rows

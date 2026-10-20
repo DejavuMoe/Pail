@@ -45,7 +45,7 @@ func (a *app) accountButton(c *ui.Context) {
 	if ac.ID == "" {
 		name, sub = locales.SidebarNoAccount(), locales.SidebarAddOneToStart()
 	}
-	btn := ui.ButtonBase(c.Key("account")).Label(locales.CommonAccount()).Tooltip(locales.SidebarSwitchAccount()).Height(topBarH).Grow(1).MinWidth(0).Padding(0, 12).Gap(8).AlignItems(ui.Center)
+	btn := ui.ButtonBase(c.Key("account")).Label(locales.CommonAccount()).Tooltip(locales.SidebarSwitchAccount()).Height(topBarH).Grow(1).MinWidth(0).Padding(0, 12).Gap(8).AlignItems(ui.Center).Transition(hoverFade())
 	if btn.Hovered() {
 		btn.Background(k.SurfaceHover)
 	}
@@ -119,7 +119,7 @@ func sidebarLabel(c *ui.Context, title string, count int, trailing func()) {
 func (a *app) sidebarItem(c *ui.Context, id string, icon *ui.SVG, name, region string, disabled bool) ui.Element {
 	k := tk(c)
 	on := a.navSel == id
-	row := ui.ButtonBase(c.Key(id)).Label(name).Height(28).Margin(0, 8).Padding(0, 8).Gap(8).Radius(6).AlignItems(ui.Center).Disabled(disabled)
+	row := ui.ButtonBase(c.Key(id)).Label(name).Height(28).Margin(0, 8).Padding(0, 8).Gap(8).Radius(6).AlignItems(ui.Center).Disabled(disabled).Transition(hoverFade())
 	switch {
 	case disabled:
 		row.Opacity(0.4)
@@ -133,7 +133,7 @@ func (a *app) sidebarItem(c *ui.Context, id string, icon *ui.SVG, name, region s
 		w := 400
 		if on && !disabled {
 			ic, w = k.Accent, 600
-			selectionBar(c, 6)
+			selectionBar(c, 6, "sidebar")
 		}
 		ui.Icon(c, icon).FontSize(14).TextColor(ic)
 		ui.Text(c, name).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)

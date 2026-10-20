@@ -259,6 +259,7 @@ func TestSelectPopupUsesOverlayRows(t *testing.T) {
 			tt.ClickAt(100, 54) // the trigger
 			tt.Frame()
 			tt.Frame()
+			tt.Advance(time.Second) // the popup has come in
 			a, okA := tt.Find("Alpha")
 			g, okG := tt.Find("Gamma")
 			if !okA || !okG {
@@ -285,6 +286,7 @@ func TestSelectPopupUsesOverlayRows(t *testing.T) {
 			// The arrows move the highlight; the check stays on the value.
 			tt.Key(0, ui.KeyDown)
 			tt.Frame()
+			tt.Advance(time.Second) // the highlight's fade
 			img = tt.Image()
 			if got := px(img, x, yg); !near(got, k.SurfaceHover, 2) {
 				t.Errorf("after Down the Gamma row is %v, want SurfaceHover", got)

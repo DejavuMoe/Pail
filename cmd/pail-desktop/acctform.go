@@ -399,7 +399,7 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 		})
 	}
 	// Advanced disclosure.
-	toggle := ui.ButtonBase(c.Key("advanced")).Label(locales.AcctAdvanced()).Height(24).Gap(4).AlignItems(ui.Center).AlignSelf(ui.Start).Radius(6).Padding(0, 6, 0, 2)
+	toggle := ui.ButtonBase(c.Key("advanced")).Label(locales.AcctAdvanced()).Height(24).Gap(4).AlignItems(ui.Center).AlignSelf(ui.Start).Radius(6).Padding(0, 6, 0, 2).Transition(hoverFade())
 	if toggle.Hovered() {
 		toggle.Background(k.SurfaceHover)
 	}

@@ -38,7 +38,14 @@ func newRawHarness(t *testing.T, theme string, seed bool) *harness {
 
 func attach(t *testing.T, env *demoEnv, theme string) *harness {
 	t.Helper()
-	a := newApp(env.Svc, options{theme: theme, width: testW, height: testH, demo: true})
+	return attachMotion(t, env, theme, true)
+}
+
+// attachMotion is attach with the animations still (true: the behaviour tests)
+// or playing (false: motion_test.go, which moves the tester's clock itself).
+func attachMotion(t *testing.T, env *demoEnv, theme string, still bool) *harness {
+	t.Helper()
+	a := newApp(env.Svc, options{theme: theme, width: testW, height: testH, demo: true, still: still})
 	t.Cleanup(a.close)
 	t.Cleanup(func() { testLocale.Store("en") })
 	a.localeSet = func(tag string) {
@@ -67,12 +74,47 @@ func (h *harness) settle() {
 	for i := 0; i < 8000; i++ { // a refused connection is retried for a few seconds
 		h.tt.Frame()
 		if h.a.idle() && len(h.a.pending) == 0 {
+			h.playOut()
 			h.tt.Frame()
 			return
 		}
 		time.Sleep(2 * time.Millisecond)
 	}
 	h.t.Fatalf("UI never settled; loading=%v bucketsLoad=%v head=%d prev=%d busyOps=%d", h.a.loading, h.a.bucketsLoad, h.a.headState, h.a.prev.state, h.a.busyOps.Load())
+}
+
+// playOut lets the animations in flight come to rest: the tester's clock stands
+// still unless it is moved, so a dialog that just opened would stay at the first
+// frame of its entrance (transparent, scaled) for as long as the test looks at
+// it. It moves the clock a frame at a time until the picture has held still for
+// a few frames and nothing asks for another (a pose that only repaints asks
+// for none, hence the picture). Tests that are about the motion itself
+// (motion_test.go) move the clock by hand instead.
+func (h *harness) playOut() {
+	h.t.Helper()
+	if h.a.opts.still {
+		return // nothing moves: the frame the test has is the resting one
+	}
+	prev, still := h.sig(), 0
+	for i := 0; i < 90 && (still < 3 || h.tt.FramePending()); i++ {
+		h.tt.Advance(16 * time.Millisecond)
+		if s := h.sig(); s != prev {
+			prev, still = s, 0
+		} else {
+			still++
+		}
+	}
+	h.tt.Frame() // build once more, so that what the app measured is the resting layout
+}
+
+// sig is a cheap signature of the last frame: every 61st byte of its pixels.
+func (h *harness) sig() uint64 {
+	pix := h.tt.Image().Pix
+	sum := uint64(14695981039346656037)
+	for i := 0; i < len(pix); i += 61 {
+		sum = (sum ^ uint64(pix[i])) * 1099511628211
+	}
+	return sum
 }
 
 // waitFor draws frames until cond holds.
@@ -90,7 +132,8 @@ func (h *harness) waitFor(what string, cond func() bool) {
 
 func (h *harness) mustClick(text string) {
 	h.t.Helper()
-	h.tt.Frame() // the click lands where the latest state laid the element out
+	h.tt.Frame()
+	h.playOut() // the click lands where the latest state laid the element out, once it has settled there
 	if err := h.tt.Click(text); err != nil {
 		h.t.Fatalf("click %q: %v", text, err)
 	}

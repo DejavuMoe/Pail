@@ -241,8 +241,8 @@ func (a *app) paletteDialog(c *ui.Context) {
 	}
 	p.cur = max(0, min(p.cur, len(entries)-1))
 
-	ui.DialogBase(c, &p.open, func(backdrop, panel ui.Element) {
-		backdrop.Background(k.ScrimSoft).Justify(ui.Start).Padding(max(24, min(96, (winH-paletteMaxH)/4)), 16, 16, 16)
+	modalLayer(c, "palette", &p.open, k.ScrimSoft, func(backdrop, panel ui.Element) {
+		backdrop.Justify(ui.Start).Padding(max(24, min(96, (winH-paletteMaxH)/4)), 16, 16, 16)
 		dialogFrame(c, panel, min(paletteW, winW-32), winH)
 		panel.MaxHeight(min(paletteMaxH, max(240, winH-96)))
 
