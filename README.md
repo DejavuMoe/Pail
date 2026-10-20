@@ -57,15 +57,17 @@ Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endors
 
 ## Install
 
-Release archives are built by `scripts/release.ps1` into `build/release/<version>/` together with a `SHA256SUMS` file. Each holds the `pail-desktop` and `pail` executables, `LICENSE` and the README.
+Download [Pail v0.1.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.1.0) and verify the archive against its `SHA256SUMS`. Archives are built by `scripts/release.ps1` into `build/release/<version>/`. Each contains the desktop and CLI executables, `LICENSE` and both READMEs.
 
 | OS | Archive |
 | --- | --- |
-| Windows | `Pail-<version>-windows-amd64.zip`, `Pail-<version>-windows-arm64.zip` |
-| Linux | `Pail-<version>-linux-amd64.tar.gz`, `Pail-<version>-linux-arm64.tar.gz` (with `pail.desktop` and `pail.png`) |
-| macOS | `Pail-<version>-darwin-amd64.zip`, `Pail-<version>-darwin-arm64.zip` (contains `Pail.app`) |
+| Windows | `Pail-v<version>-windows-amd64.zip`, `Pail-v<version>-windows-arm64.zip` |
+| Linux | `Pail-v<version>-linux-amd64.tar.gz`, `Pail-v<version>-linux-arm64.tar.gz` (with `pail.desktop` and `pail.png`) |
+| macOS | `Pail-v<version>-darwin-amd64.zip`, `Pail-v<version>-darwin-arm64.zip` (contains `Pail.app`) |
 
-Binaries are not code-signed. The macOS app is also not notarized, so Gatekeeper blocks it until you override it manually. **Pail has never been run on real macOS hardware**; the macOS archives are cross-compiled only.
+Executable filenames include the version and target, for example `pail-desktop-v0.1.0-windows-amd64.exe` and `pail-v0.1.0-windows-amd64.exe`. macOS keeps `Pail.app`, with a versioned executable inside. The examples below use the short installed names `pail-desktop` and `pail`: rename the binaries or create aliases when installing. The Linux `.desktop` entry expects the versioned desktop executable on `PATH`. No 32-bit desktop package is provided.
+
+Binaries have no developer code signature; the macOS app is not notarized and may be blocked by Gatekeeper. Native automated tests and version smoke checks are required by CI; they do not replace manual GUI acceptance on macOS or ARM64.
 
 ## Quick start
 
@@ -96,7 +98,7 @@ Commands: `accounts`, `buckets`, `ls`, `cp`, `mv`, `rm`, `mb`, `rb`, `presign`, 
 
 ## Build from source
 
-Requires Go 1.27.1 (see `go.mod`). No cgo is needed.
+Tool versions are pinned in `mise.toml`: Go 1.27.2, Node.js 24.19.0 (CI scripts only) and PowerShell 7.6.7. Run `mise trust` and `mise install go node powershell`, then use `mise exec -- <command>` if shell activation is unavailable. Go dependencies remain pinned by `go.mod` and `go.sum`. No cgo is needed except for race tests.
 
 ```powershell
 go build ./cmd/pail-desktop ./cmd/pail
@@ -104,7 +106,7 @@ go build ./cmd/pail-desktop ./cmd/pail
 go run ./tools/genicons                # regenerate icons from assets/brand/pail-icon.svg
 ```
 
-`scripts/release.ps1` expects the generated icons in `assets/brand/generated`. A target that fails to build is skipped and listed in `NOT-BUILT.txt`.
+`scripts/release.ps1` expects the generated icons in `assets/brand/generated`. Any failed target fails the build. Before publishing, `go run ./tools/verify-release -dir build/release/0.1.0 -version 0.1.0` checks all six archives, checksums, binary targets and executable permissions.
 
 ## Testing
 
@@ -139,7 +141,7 @@ The suite writes only below a unique `pail-e2e/<run>/` prefix, removes it afterw
 
 ## Platform status
 
-Tested on Windows and on Linux under WSLg. macOS builds are cross-compiled only and have never run on real hardware. Real-server tests so far: MinIO (two releases) and a self-hosted VersityGW behind Cloudflare. AWS itself, including STS and CloudFront, has not been tested. Per-feature results are in [docs/status.md](docs/status.md); the comparison with CS Browser Pro is in [docs/feature-matrix.md](docs/feature-matrix.md).
+Manual desktop checks cover Windows and Linux under WSLg. The [CI workflow](https://github.com/DejavuMoe/Pail/actions/workflows/ci.yml) requires native tests and executable version smoke checks on Windows, Linux and macOS, each on amd64 and arm64; consult the run for the release commit for results. Interactive GUI acceptance on macOS and ARM64 remains outstanding. Real-server tests so far: MinIO (two releases) and a self-hosted VersityGW behind Cloudflare. AWS itself, including STS and CloudFront, has not been tested. Per-feature results are in [docs/status.md](docs/status.md); the comparison with CS Browser Pro is in [docs/feature-matrix.md](docs/feature-matrix.md).
 
 ## Documentation
 

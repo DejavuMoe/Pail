@@ -4,7 +4,7 @@
 
 本项目所有值得注意的变更都记录在此文件中。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
-## [未发布]
+## [0.1.0] - 2026-10-20
 
 Pail 的首个版本。各功能的验证情况记录在 [docs/status.md](docs/status.md)。
 
@@ -25,6 +25,8 @@ Pail 的首个版本。各功能的验证情况记录在 [docs/status.md](docs/s
 - **与 openS3 的兼容**：已有的 `openS3` 配置文件夹和钥匙串条目会自动迁移；仍可读取旧版保险库和 `opens3-*` 对象元数据。
 - **工具链**：`internal/s3test` 内存 S3 服务；MinIO 集成测试套件（`scripts/test-integration.ps1`）；限定前缀的外部端点测试套件（`scripts/test-external.ps1`，`PAIL_EXT_*`）；发布脚本，生成 Windows、Linux 和 macOS（amd64、arm64）压缩包及 `SHA256SUMS`；图标生成器（`go run ./tools/genicons`）。
 
+- **CI 与发布**：Forgejo 优先的 `master` 与 tag 镜像；六个原生测试目标、race、隔离 MinIO、漏洞检查与 CodeQL；精确提交发布门禁；压缩包和程序使用带版本的名称；mise 锁定工具版本。Woodpecker 网站部署指定 `netcup-vps500`，原子切换并保留两版；线上部署验收单独进行。
+
 ### 安全
 
 - 机密绝不写入配置文件；它们保存在系统钥匙串或加密保险库中。
@@ -34,7 +36,7 @@ Pail 的首个版本。各功能的验证情况记录在 [docs/status.md](docs/s
 ### 已知限制
 
 - 未在真实 AWS 上测试（STS AssumeRole 和 CloudFront 只在 `httptest` 上测试）。已测试的真实服务端：MinIO（两个版本）和 Cloudflare 后面的自建 VersityGW。
-- macOS 和 arm64 构建只做了交叉编译，从未在真实硬件上运行过；macOS 应用未签名、未公证。
+- macOS 与 ARM64 的人工 GUI 验收仍待完成。CI 要求六个目标的原生测试和版本检查通过，这与人工桌面验证分开记录。macOS 应用没有开发者签名，也没有公证。
 - 在 Cloudflare 后面，gzip 编码的对象会被代理解压，因此它们的下载会被拒绝（大小不一致）；不会写入任何错误内容。
 - 未验证：VersityGW 上的版本控制（该服务上已禁用）；SSE-S3、SSE-KMS 和 SSE-C 的成功路径；通过就地重写处理大于 5 GiB 的对象；本地镜像删除进入真实的系统回收站。
 - `size_time` 同步可能漏掉大小相同的修改；对没有 `pail-sha256` 元数据的对象，校验和同步会重复传输。

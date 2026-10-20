@@ -1,0 +1,165 @@
+#!/bin/sh
+
+set -eu
+
+source_dir="${1:-}"
+release_id="${2:-}"
+deploy_root="${SITE_DEPLOY_ROOT:-/deploy}"
+
+if [ -z "$source_dir" ] || [ -z "$release_id" ]; then
+  echo "usage: $0 SITE_DIR RELEASE_ID" >&2
+  exit 64
+fi
+source_dir="$(readlink -f "$source_dir")"
+cd -- "$(dirname -- "$0")/.."
+if ! printf '%s' "$release_id" | grep -Eq '^[0-9a-f]{40}-[0-9]+-[0-9]+$'; then
+  echo "invalid release id: $release_id" >&2
+  exit 64
+fi
+case "$deploy_root" in
+  /*) ;;
+  *) echo "SITE_DEPLOY_ROOT must be absolute: $deploy_root" >&2; exit 64 ;;
+esac
+if [ "$deploy_root" = "/" ]; then
+  echo "refusing to use the filesystem root as SITE_DEPLOY_ROOT" >&2
+  exit 64
+fi
+if [ ! -d "$deploy_root" ] || [ -L "$deploy_root" ]; then
+  echo "deployment root is not a directory: $deploy_root" >&2
+  exit 66
+fi
+
+release_root="$deploy_root/releases"
+live_path="$deploy_root/html"
+build_dir="$release_root/.build-$release_id"
+candidate_dir="$release_root/$release_id"
+next_link="$deploy_root/.next-$release_id"
+rollback_link="$deploy_root/.rollback-$release_id"
+lock_file="$deploy_root/.deploy.lock"
+
+owns_paths=false
+cleanup_temporary_paths() {
+  [ "$owns_paths" = true ] || return 0
+  [ ! -L "$next_link" ] || rm -f -- "$next_link"
+  [ ! -L "$rollback_link" ] || rm -f -- "$rollback_link"
+  [ ! -d "$build_dir" ] || rm -rf -- "$build_dir"
+}
+trap cleanup_temporary_paths EXIT HUP INT TERM
+
+sh scripts/verify-site.sh "$source_dir"
+
+mkdir -p "$release_root"
+if [ ! -d "$release_root" ] || [ -L "$release_root" ]; then
+  echo "site release root is not a directory: $release_root" >&2
+  exit 66
+fi
+exec 9>"$lock_file"
+if ! flock -x -w 900 9; then
+  echo "timed out waiting for the deployment lock: $lock_file" >&2
+  exit 75
+fi
+
+release_root_real="$(readlink -f "$release_root")"
+for reserved_path in "$build_dir" "$candidate_dir" "$next_link" "$rollback_link"; do
+  if [ -e "$reserved_path" ] || [ -L "$reserved_path" ]; then
+    echo "release path already exists: $reserved_path" >&2
+    exit 73
+  fi
+done
+
+owns_paths=true
+mkdir "$build_dir"
+cp -a "$source_dir"/. "$build_dir"/
+find "$build_dir" -type d -exec chmod 0755 {} +
+find "$build_dir" -type f -exec chmod 0644 {} +
+sh scripts/verify-site.sh "$build_dir"
+mv -T -- "$build_dir" "$candidate_dir"
+
+incoming_pipeline="$(printf '%s' "$release_id" | sed -E 's/^[0-9a-f]{40}-([0-9]+)-[0-9]+$/\1/')"
+incoming_rerun="$(printf '%s' "$release_id" | sed -E 's/^[0-9a-f]{40}-[0-9]+-([0-9]+)$/\1/')"
+old_link_value=""
+old_link_target=""
+
+if [ -L "$live_path" ]; then
+  if [ ! -d "$live_path" ] || [ ! -s "$live_path/index.html" ]; then
+    echo "current site symlink is not a readable site: $live_path" >&2
+    exit 67
+  fi
+  old_link_value="$(readlink "$live_path")"
+  old_link_target="$(readlink -f "$live_path")"
+  case "$old_link_target" in
+    "$release_root_real"/*) ;;
+    *) echo "current site target is outside the release root: $old_link_target" >&2; exit 67 ;;
+  esac
+
+  current_name="$(basename "$old_link_target")"
+  current_id="$current_name"
+  if ! printf '%s' "$current_id" | grep -Eq '^[0-9a-f]{40}-[0-9]+-[0-9]+$'; then
+    echo "current site target has an invalid release id: $current_name" >&2
+    exit 67
+  fi
+  current_pipeline="$(printf '%s' "$current_id" | sed -E 's/^[0-9a-f]{40}-([0-9]+)-[0-9]+$/\1/')"
+  current_rerun="$(printf '%s' "$current_id" | sed -E 's/^[0-9a-f]{40}-[0-9]+-([0-9]+)$/\1/')"
+  if [ "$incoming_pipeline" -lt "$current_pipeline" ] || {
+    [ "$incoming_pipeline" -eq "$current_pipeline" ] && [ "$incoming_rerun" -le "$current_rerun" ];
+  }; then
+    rm -rf -- "$candidate_dir"
+    echo "stale site release skipped: $release_id is not newer than $current_id"
+    trap - EXIT HUP INT TERM
+    cleanup_temporary_paths
+    exit 0
+  fi
+elif [ -e "$live_path" ]; then
+  echo "refusing to replace a non-symlink site root: $live_path" >&2
+  exit 67
+fi
+
+if [ ! -d "$candidate_dir" ] || [ -L "$candidate_dir" ] || [ ! -s "$candidate_dir/index.html" ]; then
+  echo "site candidate is missing or invalid: $candidate_dir" >&2
+  exit 66
+fi
+
+candidate_name="$(basename "$candidate_dir")"
+candidate_link_value="releases/$candidate_name"
+ln -s "$candidate_link_value" "$next_link"
+if [ ! -s "$next_link/index.html" ]; then
+  echo "new site symlink does not resolve to the candidate" >&2
+  exit 74
+fi
+
+if [ -L "$live_path" ]; then
+  mv -T -f -- "$next_link" "$live_path"
+else
+  mv -T -- "$next_link" "$live_path"
+fi
+
+candidate_real="$(readlink -f "$candidate_dir")"
+live_real="$(readlink -f "$live_path")"
+if [ ! -L "$live_path" ] || [ "$live_real" != "$candidate_real" ] || [ ! -s "$live_path/index.html" ]; then
+  echo "site activation verification failed" >&2
+  if [ -n "$old_link_value" ]; then
+    ln -s "$old_link_value" "$rollback_link"
+    if ! mv -T -f -- "$rollback_link" "$live_path"; then
+      echo "critical: failed to restore the prior site symlink" >&2
+      exit 76
+    fi
+  else
+    rm -f -- "$live_path"
+  fi
+  exit 74
+fi
+
+# After successful activation, keep the current and immediately previous release.
+for obsolete in "$release_root"/*; do
+  [ -d "$obsolete" ] && [ ! -L "$obsolete" ] || continue
+  printf '%s\n' "$(basename "$obsolete")" | grep -Eq '^[0-9a-f]{40}-[0-9]+-[0-9]+$' || continue
+  obsolete_real="$(readlink -f "$obsolete")"
+  [ "$obsolete_real" != "$candidate_real" ] && [ "$obsolete_real" != "$old_link_target" ] || continue
+  if ! rm -r -- "$obsolete"; then
+    echo "warning: release is active, but could not remove old release: $obsolete" >&2
+  fi
+done
+
+trap - EXIT HUP INT TERM
+cleanup_temporary_paths
+echo "site activated atomically: html -> $candidate_link_value"

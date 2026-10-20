@@ -7,7 +7,7 @@ The public website lives in this repository next to the application. It is a sta
 | `designs/pail-site/` | Reviewable prototype (landing page `index.html`, `styles.css`, `i18n.js`, `app.js`; docs pages `docs*.html`, `changelog*.html`, `license*.html` with `docs.css`, `docs.js`; `tweaks.js` is a review-only control panel) plus the prototype-first-ui records (`_d_meta.json`, `ui-contract.json`, `content-inventory.json`, `design-sources.json`) | approved 2026-10-20 |
 | `site/` | Production templates, locale files and static assets | implemented |
 | `tools/site/` | Go generator: `go run ./tools/site -out <dir> -version <x.y.z>` | implemented, tested |
-| `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | written; not yet run (needs the repository secrets and a published release) |
+| `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | configured for netcup-vps500; live deployment acceptance is separate |
 | `docs/product/constraints.md` | Content and UX rules for the site | current |
 
 Only the site uses the `prototype-first-ui` and `baoyu-design` skills (see `AGENTS.md`). A visible change starts in `designs/pail-site/`, is approved, and is then implemented in `site/` in a separate commit.
@@ -42,7 +42,7 @@ The generator (`tools/site/main.go`):
 - fingerprints every file under `/assets/` (`styles.<hash>.css`) so it can be cached forever while HTML is revalidated;
 - writes `404.html`, `robots.txt` and `sitemap.xml`;
 - takes the footer year from `LICENSE`, so the same commit and version always produce the same files;
-- fails when a locale misses a key, when the two locales' key sets differ, when a string is empty, or when `-version` does not match `^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$`;
+- fails when a locale misses a key, when the two locales' key sets differ, when a string is empty, or when `-version` is not a semantic version without the `v` prefix;
 - replaces an existing `-out` directory only when it holds nothing but a previous build.
 
 Flags: `-out`, `-version` (required); `-root` (default: found by walking up to this module's `go.mod`); `-base-url` (default `https://pail.download`, used for canonical links and the sitemap).
@@ -69,49 +69,46 @@ Rules of the generator (`tools/site/docs.go`, `markdown.go`):
 - Markdown is converted with `github.com/yuin/goldmark` (pinned in `go.mod`) with the GFM table extension only. Raw HTML and images in a source fail the build; they are never passed through or dropped silently.
 - The README sections are chosen by position and must carry the expected titles; a renamed or reordered README section fails the build. The `# ` title and the README language-switcher line are removed; the page has its own title and language control.
 - Heading ids are ASCII slugs of the English headings (`[Unreleased]` loses its brackets); the Get started ids are fixed. Chinese pages reuse the English ids by position, and the build fails when the heading count or levels differ from the English source. Only `##` and `###` headings are allowed.
-- Link rewriting: a link to a file that is a docs source (`README*.md`, `docs/cli*.md`, `CHANGELOG*.md`, `LICENSE`) opens the page in the current language (fragment kept), and link text that is that path becomes the page title; any other repository path opens `https://github.com/DejavuMoe/Pail/blob/main/<path>`; absolute `http(s)`/`mailto` links are kept; a path that leaves the repository fails the build.
+- Link rewriting: a link to a file that is a docs source (`README*.md`, `docs/cli*.md`, `CHANGELOG*.md`, `LICENSE`) opens the page in the current language (fragment kept), and link text that is that path becomes the page title; any other repository path opens `https://github.com/DejavuMoe/Pail/blob/master/<path>`; absolute `http(s)`/`mailto` links are kept; a path that leaves the repository fails the build.
 - Tables are wrapped in a labelled, focusable `table-wrap`; code blocks are focusable; a contents list ("On this page") appears with three or more `##` sections.
-- Each page has a canonical URL and `hreflang` alternates (`en`, `zh-Hans`, `x-default`). Adding, renaming or moving a source file means changing `docPages` in `tools/site/docs.go` and the push path filter in `.woodpecker/site.yml`.
+- Each page has a canonical URL and `hreflang` alternates (`en`, `zh-Hans`, `x-default`). Adding, renaming or moving a source file means changing `docPages` in `tools/site/docs.go`; the workflow builds on every `master` push.
 
 ## Version and download links
 
 Download buttons point to GitHub Releases:
 
 ```text
-https://github.com/DejavuMoe/Pail/releases/download/v<version>/Pail-<version>-<os>-<arch>.<zip|tar.gz>
+https://github.com/DejavuMoe/Pail/releases/download/v<version>/Pail-v<version>-<os>-<arch>.<zip|tar.gz>
 https://github.com/DejavuMoe/Pail/releases/download/v<version>/SHA256SUMS
 ```
 
 The archive names are the ones `scripts/release.ps1` produces; if the script's naming changes, the generator must change with it. The tag format `v<version>` is an assumption the release CI must keep (see `docs/ci.md`).
 
-The pipeline takes the version from the newest `v*` tag and refuses to deploy until that release's `SHA256SUMS` is downloadable, so the site never links to archives that are not published yet. After a release workflow finishes, run the site pipeline manually (or push to `site/`) to pick the new version up.
+The pipeline reads the latest published stable GitHub Release, verifies that all six versioned archive assets and `SHA256SUMS` are present and uploaded, and checks that the checksum file is publicly downloadable. It never selects an unpublished Git tag. Before the first public release it fails without changing the deployed site. After publishing a new release, manually run the website workflow from `master` to update the download version.
 
 ## Pipeline (`.woodpecker/site.yml`)
 
-| Trigger | When |
-| --- | --- |
-| push to `main` | only when `site/`, `tools/site/`, `docs/images/`, the brand icon, a docs source (`README*.md`, `docs/cli*.md`, `CHANGELOG*.md`, `LICENSE`), `go.mod`, `go.sum` or the pipeline file changed |
-| tag `v*` | rebuilds with the new version (fails until the release assets exist; rerun manually) |
-| manual | any time, from `main` |
+Both `master` push and manual events build and deploy the site. Tag events do not: release asset creation is asynchronous. There is no GitHub website deployment job or GitHub-to-Woodpecker callback token.
 
-Steps:
+The required agent labels are `platform=linux/amd64`, `backend=docker`, `role=netcup-vps500`, `server=netcup-vps500`. The repository must be trusted for host volumes. The Go builder and Alpine publisher are pinned to image digests; Go module/build caches live under `/var/cache/woodpecker/pail/` on that agent.
 
-1. **build** (`golang:1.27`): `go test ./tools/site/...`, check that the release's `SHA256SUMS` exists, then `go run ./tools/site -out public -version <tag without v>`.
-2. **deploy** (`alpine`): `rsync --delete --delay-updates` of `public/` to the web server over SSH.
+1. `scripts/build-site.sh` resolves the published version, checks release assets, runs generator tests and builds `public/`.
+2. `scripts/verify-site.sh` checks both languages, all page entry points and static assets, rejecting symlinks and other special files.
+3. `scripts/publish-site.sh public <commit>-<pipeline>-<rerun>` copies into a new release directory, validates it, atomically replaces `html`, verifies activation and retains only the current and immediately previous release. It takes a filesystem lock, refuses out-of-root/linked deployment paths and skips older pipelines. Workflow concurrency is also limited to one.
 
-Woodpecker secrets for the deploy step (repository secrets, available to the `push`, `tag` and `manual` events only):
+The publish step mounts `/var/www/pail.download:/deploy`; no SSH deployment secrets are needed. Expected layout:
 
-| Secret | Value |
-| --- | --- |
-| `site_deploy_host` | SSH host of the web server |
-| `site_deploy_user` | SSH user that owns the web root |
-| `site_deploy_path` | absolute web root, for example `/srv/pail.download` |
-| `site_deploy_key` | private key (ed25519) authorised for that user only |
-| `site_deploy_known_hosts` | the server's `known_hosts` line(s); host keys are never accepted blindly |
+```text
+/var/www/pail.download/
+  html -> releases/<commit>-<pipeline>-<rerun>
+  releases/
+    <current>/
+    <previous>/
+```
 
-Web server expectations: serve `/zh/` from `zh/index.html`, return `404.html` with status 404, send `Cache-Control: public, max-age=31536000, immutable` for fingerprinted files and `no-cache` for HTML, and serve over HTTPS with HSTS. DNS and TLS for pail.download are configured outside this repository.
+Configure the web server's root as `/var/www/pail.download/html`. Serve `/zh/` from `zh/index.html`, return `404.html` with status 404, send `Cache-Control: public, max-age=31536000, immutable` for fingerprinted assets and `no-cache` for HTML. DNS, TLS, HSTS and server configuration are managed separately; a successful local deployment fixture is not evidence that production is live.
 
-Deploy target: a static site directory on a designated server, written by rsync over SSH. The pipeline only replaces the contents of `site_deploy_path`; the web server's own configuration is managed on that server.
+Run `sh scripts/test-publish-site.sh` on Linux to check atomic activation, two-release retention, stale-run rejection and preservation of the previous site when validation fails. `SITE_DEPLOY_ROOT` overrides `/deploy` for isolated fixtures. The scripts resolve repository paths from their own location.
 
 ## Preview
 

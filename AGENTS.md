@@ -21,7 +21,7 @@
 
 ## 脚本与 CI
 - 脚本不得绑定本机路径：仓库根目录从脚本自身位置解析，输出目录可用参数改写；本机专用工具（如 `linux-task.ps1`）只能是可选分支，Linux 上要能直接运行。
-- 测试与发布 CI 将放在 GitHub Actions（尚未编写），Woodpecker 只部署网站。命令、输入输出和哪些任务不能无人值守运行，见 `docs/ci.md`；改脚本时同步更新它。
+- 测试、CodeQL 与发布在 GitHub Actions，工具版本由 `mise.toml` 锁定，Woodpecker 只部署网站。命令、输入输出和哪些任务不能无人值守运行，见 `docs/ci.md`；改脚本时同步更新它。
 
 ## Landing Page 与 prototype-first-ui
 - 项目级技能 `prototype-first-ui`（及其依赖 `baoyu-design`）只用于 Landing Page：`designs/pail-site/`、`site/`、`tools/site/`。桌面应用和命令行的界面改动不使用这两个技能，按 `docs/design.md` 直接实现。

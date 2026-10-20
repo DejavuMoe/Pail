@@ -4,6 +4,8 @@ English | [简体中文](cli.zh-CN.md)
 
 `pail` is a thin front end over `internal/app`. It shares the configuration directory and the secret store (OS keyring or the encrypted vault) with the desktop app, so accounts and saved sync jobs created there are available here. Accounts cannot be added or changed from the CLI, and no command ever prints credentials.
 
+Release archives use versioned filenames, for example `pail-v0.1.0-windows-amd64.exe`. The examples below assume you installed it as `pail` (or `pail.exe` on Windows); you can also invoke the full filename directly.
+
 ```powershell
 go build -o bin/pail.exe ./cmd/pail
 pail accounts

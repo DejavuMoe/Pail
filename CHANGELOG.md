@@ -4,7 +4,7 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.1.0] - 2026-10-20
 
 First release of Pail. Verification per feature is recorded in [docs/status.md](docs/status.md).
 
@@ -25,6 +25,8 @@ First release of Pail. Verification per feature is recorded in [docs/status.md](
 - **Compatibility with openS3**: an existing `openS3` configuration folder and keychain entries are migrated automatically; older vaults and `opens3-*` object metadata are still read.
 - **Tooling**: `internal/s3test` in-memory S3 server; MinIO integration suite (`scripts/test-integration.ps1`); prefix-scoped external-endpoint suite (`scripts/test-external.ps1`, `PAIL_EXT_*`); release script with archives for Windows, Linux and macOS (amd64, arm64) and `SHA256SUMS`; icon generator (`go run ./tools/genicons`).
 
+- **CI and releases**: Forgejo-first `master` and tag mirroring; six native test targets, race, isolated MinIO, vulnerability checks and CodeQL; exact-commit release gates; versioned archive and executable names; tool versions pinned by mise. Woodpecker website deployment targets `netcup-vps500` with atomic activation and two retained releases; live deployment acceptance is separate.
+
 ### Security
 
 - Secrets are never written to configuration files; they live in the OS keychain or the encrypted vault.
@@ -34,7 +36,7 @@ First release of Pail. Verification per feature is recorded in [docs/status.md](
 ### Known limitations
 
 - Not tested against real AWS (STS AssumeRole and CloudFront only on `httptest`). Real servers tested: MinIO (two releases) and a self-hosted VersityGW behind Cloudflare.
-- macOS and arm64 builds are cross-compiled only and have never run on real hardware; the macOS app is unsigned and not notarized.
+- Interactive GUI acceptance on macOS and ARM64 is outstanding. CI requires native tests and executable version checks for all six targets; this is separate from manual desktop validation. The macOS app has no developer signature and is not notarized.
 - Behind Cloudflare, gzip-encoded objects are decompressed by the proxy, so their downloads are refused (sizes do not match); nothing wrong is written.
 - Not verified: versioning on VersityGW (disabled there); SSE-S3, SSE-KMS and SSE-C success paths; objects larger than 5 GiB through in-place rewrites; local mirror deletion into the real OS trash.
 - `size_time` sync can miss same-size edits; checksum sync repeats transfers for objects without `pail-sha256` metadata.
