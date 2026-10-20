@@ -14,7 +14,7 @@ Only the site uses the `prototype-first-ui` and `baoyu-design` skills (see `AGEN
 
 ## Why one repository and a Go generator
 
-- The site's facts (version, archive names, screenshots, icon, colors) come from this repository: `scripts/release.ps1`, `docs/images/`, `assets/brand/`, `cmd/pail-desktop/theme.go`. Keeping the site here lets one commit change both.
+- The site's facts (version, archive names, screenshots, icon, colors) come from this repository: `tools/release`, `docs/images/`, `assets/brand/`, `cmd/pail-desktop/theme.go`. Keeping the site here lets one commit change both.
 - A Go generator needs nothing beyond the toolchain the project already pins in `go.mod` (plus the Markdown library `github.com/yuin/goldmark`, pinned in `go.mod`), so the same `golang` image builds the app and the site, and `go test ./...` covers the generator. There is no `package.json`, no lockfile and no `node_modules` for Go's `./...` patterns to trip over.
 - The output is plain HTML, CSS and a small script; it can be served by any static host.
 
@@ -48,7 +48,7 @@ The generator (`tools/site/main.go`):
 
 Flags: `-out`, `-version` (required); `-root` (default: found by walking up to this module's `go.mod`); `-base-url` (default `https://pail.download`, used for canonical links and the sitemap).
 
-The tests (`go test ./tools/site/...`) build the real site and check both languages and every page, the stable heading ids, that the Chinese docs reuse the English ids in order, that the six download links match the targets in `scripts/release.ps1`, that every internal link and fragment resolves to a built file and id and that external links stay on the allowed hosts, that `app.js` only asks for embedded strings, fingerprinting, deterministic output, that a translation with different headings or a link that leaves the repository fails the build, and input validation.
+The tests (`go test ./tools/site/...`) build the real site and check both languages and every page, the stable heading ids, that the Chinese docs reuse the English ids in order, that the six download links match the targets in `tools/release`, that every internal link and fragment resolves to a built file and id and that external links stay on the allowed hosts, that `app.js` only asks for embedded strings, fingerprinting, deterministic output, that a translation with different headings or a link that leaves the repository fails the build, and input validation.
 
 Behaviour carried over from the prototype: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, a disclosure menu for narrow screens, and reduced-motion support. There is no site search or command palette. Without JavaScript every section, link and download still works; the theme control, menu button and object-key backdrop are hidden, the mobile navigation is shown as a plain list on narrow screens, and the terminal shows its first example.
 
@@ -87,7 +87,7 @@ https://github.com/DejavuMoe/Pail/releases/download/v<version>/Pail-v<version>-<
 https://github.com/DejavuMoe/Pail/releases/download/v<version>/SHA256SUMS
 ```
 
-The archive names are the ones `scripts/release.ps1` produces; if the script's naming changes, the generator must change with it. The tag format `v<version>` is an assumption the release CI must keep (see `docs/ci.md`).
+The archive names are the ones `tools/release` produces; if the tool's naming changes, the generator must change with it. The tag format `v<version>` is an assumption the release CI must keep (see `docs/ci.md`).
 
 The pipeline reads the latest published stable GitHub Release, verifies that all six versioned archive assets and `SHA256SUMS` are present and uploaded, and checks that the checksum file is publicly downloadable. It never selects an unpublished Git tag. Before the first public release it fails without changing the deployed site. After publishing a new release, manually run the website workflow from `master` to update the download version.
 

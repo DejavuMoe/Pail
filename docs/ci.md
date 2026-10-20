@@ -12,9 +12,26 @@ Woodpecker deploys only the static website. Its live acceptance is separate from
 
 `mise.toml` pins Go 1.27.2 and Node.js 24.19.0. Run `mise trust` and `mise install go node`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
 
-Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node install it with the pinned mise action. Packaging uses PowerShell preinstalled in the Ubuntu runner image; `release.ps1` enforces PowerShell 7.3+. Local packaging requires a separate PowerShell installation on any supported host; ordinary Go builds do not. Third-party actions are pinned to full commit SHAs, and website containers to image digests. Changing the Go pin also requires updating the website builder image.
+Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node install it with the pinned mise action. Application builds, tests and release packaging use Go directly on every host; no CI job installs or invokes PowerShell. `scripts/release.ps1` is an optional compatibility wrapper that forwards old parameters to the Go release tool. Third-party actions are pinned to full commit SHAs, and website containers to image digests. Changing the Go pin also requires updating the website builder image.
 
 Windows owns all source edits and Git writes. For Linux validation use `linux-task.ps1 -Mode build -Project <repo> -Command '...'`; build mirrors are disposable and contain no `.git`. Linux CI runs the same commands directly. Pass workflow paths explicitly to actionlint, which otherwise relies on Git discovery.
+
+## Shared local and CI commands
+
+Run these from the repository root in PowerShell, Bash or another shell; the commands themselves do not depend on the shell.
+
+| Purpose | Command | Runtime requirements |
+| --- | --- | --- |
+| Static checks | `go vet ./...` | Go on the current host |
+| Native tests | `go test ./...` | Go on the current host; protocol fixtures are in-process |
+| Native build | `go build -o build/ ./cmd/pail ./cmd/pail-desktop` | Go; application builds do not require cgo |
+| All release archives | `go run ./tools/release -version 0.2.0` | Go; includes archive verification |
+| One target | `go run ./tools/release -version 0.2.0 -targets linux/amd64` | Same tool and rules as a full release |
+| Downloaded archive verification | `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0` | Go |
+| Race detection | `go test -race ./...` | Go, cgo and a C compiler; Linux in CI |
+| MinIO integration | `bash scripts/integration-minio.sh` | Linux, Bash, Docker, curl and Go; Windows uses the optional WSL wrapper |
+
+CI keeps six native OS/architecture test jobs because cross-compiling a binary does not test platform-specific runtime behavior. Packaging uses three Linux jobs, one per target OS with both architectures, sharing the same Go tool. This avoids six separate packaging implementations and repeated native runner setup. Node is used for CI/release metadata checks, not application builds. Website deployment remains a Linux shell operation. Real external endpoints and native GUI interaction remain manual-only checks.
 
 ## Workflows
 
@@ -67,13 +84,15 @@ The release workflow needs `actions: read` for preflight and `contents: write` o
 
 ## Building and checking release archives
 
-```powershell
-pwsh ./scripts/release.ps1 -Version 0.2.0
-# Optional: -Targets linux/amd64,linux/arm64 -OutDir <directory> -CliOnly
+```sh
+go run ./tools/release -version 0.2.0
+# Optional: -targets linux/amd64,linux/arm64 -out-dir <directory> -cli-only
 go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0
 ```
 
-`-Version` accepts SemVer without the `v` prefix. `-Targets` accepts only the six supported targets; a comma-separated string works with `pwsh -File`. The default output is `<repo>/build/release/<version>/`; an explicit relative `-OutDir` resolves from the caller's directory. The per-version output and staging folders are replaced, with resolved-path and symlink checks. Run only one packaging script at a time in a checkout. A failed target fails the script; partial output is never publishable.
+`-version` is required and accepts SemVer without the `v` prefix. `-targets` accepts a nonempty comma-separated subset of the six supported targets without duplicates. The repository root is discovered from the current directory or its parents, without Git metadata. The default output is `<repo>/build/release/<version>/`; an explicit relative `-out-dir` resolves from the caller's directory. Temporary staging is created under the output parent and removed on completion or ordinary errors. Existing release output is replaced only after all selected targets build and pass verification; linked outputs and unrelated files are refused. Run only one release build for a given output/version at a time. Interruption or filesystem failure during final replacement can require a rerun; atomic replacement is not claimed.
+
+The optional `scripts/release.ps1` wrapper retains `-Version`, `-Targets`, `-OutDir` and `-CliOnly` for existing callers, and requires PowerShell 7.3+. It has no build, platform or archive logic of its own and is not used by CI.
 
 | File | Contents |
 | --- | --- |
@@ -82,9 +101,9 @@ go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0
 | `Pail-v<V>-darwin-<arch>.zip` | `Pail.app/Contents/MacOS/pail-desktop-v<V>-darwin-<arch>`, matching `CFBundleExecutable`, versioned CLI, license |
 | `SHA256SUMS` | Exactly one SHA256 for every archive |
 
-Each archive has a top-level directory matching its filename without the extension. `tools/pack` preserves executable mode 0755 even when packaging on Windows. `tools/verify-release` rejects missing/unexpected files, incorrect checksums, unsafe archive entries, wrong executable permissions, wrong GOOS/GOARCH, cgo-enabled binaries, incorrect executable packages and broken platform launch entries. For a subset build, pass the same `-targets` list to the verifier. `-CliOnly` is a local convenience and is not accepted as a complete release by the verifier.
+Each archive has a top-level directory matching its filename without the extension. `tools/release` invokes the existing `tools/pack` command, which preserves executable mode 0755 even when packaging on Windows. `tools/verify-release` rejects missing/unexpected files, incorrect checksums, unsafe archive entries, wrong executable permissions, wrong GOOS/GOARCH, cgo-enabled binaries, incorrect executable packages and broken platform launch entries. The release tool invokes it automatically with the selected targets; when independently verifying a subset, pass the same `-targets` list. `-cli-only` produces local CLI-only archives without desktop launch assets, explicitly skips complete-release verification, and must not be published as a full release.
 
-The scripts restore process environment and working directory. Generated icons and Windows resources are committed; regenerate them with `go run ./tools/genicons`. Archives are cross-compiled with `CGO_ENABLED=0`, `-trimpath`, `-s -w` and `-X main.version=<version>`. Windows GUI adds `-H windowsgui`. Binaries have no developer signature; macOS is not notarized. Byte-for-byte reproducible builds are not claimed.
+The Go tool supplies target environment variables only to child processes; it never changes the caller's environment or working directory. The PowerShell wrapper restores its working directory. Generated icons and Windows resources are committed; regenerate them with `go run ./tools/genicons`. Archives are cross-compiled with `CGO_ENABLED=0`, `-trimpath`, `-s -w` and `-X main.version=<version>`. Windows GUI adds `-H windowsgui`. Binaries have no developer signature; macOS is not notarized. Byte-for-byte reproducible builds are not claimed.
 
 ## Integration and manual-only checks
 

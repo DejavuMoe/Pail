@@ -2120,7 +2120,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "scripts/release.ps1",
+        "source": "tools/release/main.go",
         "reference": "linux archive contents (pail.desktop, pail.png)"
       },
       "flags": [],
@@ -2145,7 +2145,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "scripts/release.ps1",
+        "source": "tools/release/main.go",
         "reference": "windows archive contents"
       },
       "flags": [],
@@ -2170,7 +2170,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "scripts/release.ps1",
+        "source": "tools/release/main.go",
         "reference": "Pail.app, LSMinimumSystemVersion 11.0"
       },
       "flags": [],
@@ -3604,7 +3604,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "scripts/release.ps1",
+        "source": "tools/release/main.go",
         "reference": "linux archive contents (pail.desktop, pail.png)"
       },
       "flags": [],
@@ -3629,7 +3629,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "scripts/release.ps1",
+        "source": "tools/release/main.go",
         "reference": "windows archive contents"
       },
       "flags": [],
@@ -3654,7 +3654,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "scripts/release.ps1",
+        "source": "tools/release/main.go",
         "reference": "Pail.app, LSMinimumSystemVersion 11.0"
       },
       "flags": [],
@@ -19386,7 +19386,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "scripts/release.ps1",
+        "source": "tools/release/main.go",
         "reference": "default -Targets amd64 and arm64 for every OS"
       },
       "flags": [],
@@ -19411,7 +19411,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "scripts/release.ps1",
+        "source": "tools/release/main.go",
         "reference": "default -Targets amd64 and arm64 for every OS"
       },
       "flags": [],

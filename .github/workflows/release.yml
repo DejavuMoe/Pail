@@ -72,8 +72,7 @@ jobs:
           VERSION: ${{ needs.preflight.outputs.version }}
           TARGET_OS: ${{ matrix.os }}
         run: |
-          pwsh -NoProfile -File scripts/release.ps1 -Version "$VERSION" -Targets "$TARGET_OS/amd64,$TARGET_OS/arm64"
-          go run ./tools/verify-release -dir "build/release/$VERSION" -version "$VERSION" -targets "$TARGET_OS/amd64,$TARGET_OS/arm64"
+          go run ./tools/release -version "$VERSION" -targets "$TARGET_OS/amd64,$TARGET_OS/arm64"
           mv "build/release/$VERSION/SHA256SUMS" "build/release/$VERSION/SHA256SUMS-$TARGET_OS"
       - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
         with:

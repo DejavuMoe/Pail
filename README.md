@@ -58,7 +58,7 @@ Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endors
 
 ## Install
 
-Download [Pail v0.2.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.2.0) and verify the archive against its `SHA256SUMS`. Archives are built by `scripts/release.ps1` into `build/release/<version>/`. Each contains the desktop and CLI executables, `LICENSE`; documentation is available on [pail.download](https://pail.download/docs/).
+Download [Pail v0.2.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.2.0) and verify the archive against its `SHA256SUMS`. Archives are built by `tools/release` into `build/release/<version>/`. Each contains the desktop and CLI executables, `LICENSE`; documentation is available on [pail.download](https://pail.download/docs/).
 
 | OS | Archive |
 | --- | --- |
@@ -99,15 +99,15 @@ Commands: `accounts`, `buckets`, `ls`, `cp`, `mv`, `rm`, `mb`, `rb`, `presign`, 
 
 ## Build from source
 
-Tool versions are pinned in `mise.toml`: Go 1.27.2 and Node.js 24.19.0 (CI scripts only). Run `mise trust` and `mise install go node`, then use `mise exec -- <command>` if shell activation is unavailable. Go dependencies remain pinned by `go.mod` and `go.sum`. Building the application requires Go; the optional release and integration PowerShell wrappers require a separately installed PowerShell 7.3+ on Windows, Linux or macOS. No cgo is needed except for race tests.
+Tool versions are pinned in `mise.toml`: Go 1.27.2 and Node.js 24.19.0 (CI scripts only). Run `mise trust` and `mise install go node`, then use `mise exec -- <command>` if shell activation is unavailable. Go dependencies remain pinned by `go.mod` and `go.sum`. Native builds, tests and cross-platform release packaging require only Go. PowerShell 7.3+ is needed only if you choose the optional compatibility wrappers; CI does not use them. No cgo is needed except for race tests.
 
 ```powershell
-go build ./cmd/pail-desktop ./cmd/pail
-./scripts/release.ps1 -Version 0.2.0   # PowerShell 7.3+, cross-compiles every target
+go build -o build/ ./cmd/pail-desktop ./cmd/pail
+go run ./tools/release -version 0.2.0  # build and verify all six targets
 go run ./tools/genicons                # regenerate icons from assets/brand/pail-icon.svg
 ```
 
-`scripts/release.ps1` expects the generated icons in `assets/brand/generated`. Any failed target fails the build. Before publishing, `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0` checks all six archives, checksums, binary targets and executable permissions.
+`tools/release` expects the generated icons in `assets/brand/generated`. Any failed target or archive verification fails the build. The tool verifies archives automatically; to recheck downloaded artifacts, `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0` checks all six archives, checksums, binary targets and executable permissions.
 
 ## Testing
 
@@ -118,7 +118,13 @@ go test ./...
 
 These use an in-memory S3 server (`internal/s3test`) and `httptest`, so they exercise the protocol but not a real provider.
 
-Against a real MinIO in Docker (through WSL):
+Against a real MinIO in Docker on Linux:
+
+```sh
+bash scripts/integration-minio.sh
+```
+
+On Windows with the optional `linux-task.ps1` WSL build runner installed, the PowerShell wrapper runs the same suite:
 
 ```powershell
 ./scripts/test-integration.ps1                      # pinned MinIO build
