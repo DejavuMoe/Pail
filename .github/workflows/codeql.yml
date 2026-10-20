@@ -4,13 +4,15 @@ on:
   push:
     branches: [master]
   workflow_dispatch:
+  schedule:
+    - cron: '23 3 * * 3'
 
 permissions:
   contents: read
   security-events: write
 
 concurrency:
-  group: codeql-${{ github.ref }}
+  group: codeql-${{ github.event_name }}-${{ github.ref }}
   cancel-in-progress: true
 
 jobs:

@@ -19,10 +19,12 @@ Windows owns all source edits and Git writes. For Linux validation use `linux-ta
 | Workflow | Trigger | Required jobs |
 | --- | --- | --- |
 | `CI` | `master` push or manual | Six native test jobs; Quality; Race; MinIO |
-| `CodeQL` | `master` push or manual | Go on Linux, Windows and macOS; site JavaScript; Actions |
+| `CodeQL` | `master` push, manual, or Wednesday 03:23 UTC | Go on Linux, Windows and macOS; site JavaScript; Actions |
 | `Release` | `v*` tag push | Exact-commit preflight; three parallel packaging jobs; verified publication |
 
 Tests and CodeQL run in parallel. A later branch push cancels obsolete validation; release runs are not cancelled. Go analysis uses native OS builds to include OS-specific source. JavaScript analysis excludes `.agents/` and `designs/`, which are authoring tools/prototypes rather than the shipped site.
+
+The weekly CodeQL scan picks up new analysis rules without a source push. Scheduled runs have a separate concurrency group and do not replace the push/manual runs required for release. GitHub may delay scheduled runs and disables schedules in public repositories after 60 days without repository activity; check Actions when resuming an inactive project.
 
 | Target | Native test runner | Release archive |
 | --- | --- | --- |
@@ -40,6 +42,14 @@ Quality checks formatting, workflow syntax, release-gate tests, deployment fixtu
 Security triage for v0.1.0: Goldmark was upgraded to v1.7.17 for [GO-2026-5320](https://pkg.go.dev/vuln/GO-2026-5320). Govulncheck also reports [GO-2026-5932](https://pkg.go.dev/vuln/GO-2026-5932) at module level: it concerns `golang.org/x/crypto/openpgp`, which Pail does not import. A passing scan means no vulnerable imported packages or reachable symbols were found, not that every package in every required module is vulnerability-free.
 
 CodeQL alerts `go/weak-sensitive-data-hashing` in `internal/app/upload_rules.go` and `internal/app/rewrite.go` were reviewed as protocol-related false positives. Both compute the SSE-C `SSECustomerKeyMD5` header specified by the [S3 API](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html#API_PutObject_RequestSyntax); both paths require HTTPS before reading or sending the 32-byte customer key. The MD5 is a transfer checksum, not password storage, key derivation or the encryption algorithm (AES256). Replacing it with SHA-256 would break the protocol. Keep the CodeQL rule enabled; review each new occurrence separately. This source review does not claim real AWS SSE-C acceptance.
+
+## Security alerts and reporting
+
+The GitHub repository has dependency graph, Dependabot vulnerability and malware alerts, private vulnerability reporting, secret scanning and push protection enabled. Report suspected vulnerabilities using [SECURITY.md](../SECURITY.md). These repository settings live on GitHub, outside Git; check them again if the repository is recreated.
+
+Maintainers should subscribe to **Watch > Custom > Security alerts** and enable GitHub/email delivery in their personal notification settings. Dependabot's new-vulnerability notifications and digest have separate account preferences. Enabling a repository feature alone does not prove email delivery; GitHub's immediate Dependabot notifications focus on new high/critical advisories, so also review the alerts dashboard and digest.
+
+Dependabot security/version update PRs and agentic autofix remain disabled: fixes must originate in Forgejo, pass CI and CodeQL, and mirror back to GitHub. The existing low-impact development-dependency triage preset remains enabled; include dismissed alerts when reviewing coverage. Review applicability before dismissing an alert and record the reason. GitHub push protection guards the mirror's incoming pushes, not the initial Forgejo push; a blocked mirror requires addressing the leaked credential and synchronization failure at the source.
 
 ## Release sequence
 
