@@ -1,0 +1,14 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 256 256" width="256" height="256">
+  <title>Pail</title>
+  <!-- Graphite tile; three storage strata tapering into a bucket silhouette.
+       Colors follow the "Graphite & Paper" tokens (docs/design.md).
+       The faint inner stroke keeps the tile edge visible on dark docks. -->
+  <rect width="256" height="256" rx="56" fill="#1D1C1A"/>
+  <rect x="1.5" y="1.5" width="253" height="253" rx="54.5" fill="none" stroke="#FFFFFF" stroke-opacity="0.09" stroke-width="3"/>
+  <rect x="44" y="61" width="168" height="40" rx="20" fill="#86A8D8"/>
+  <rect x="58" y="108" width="140" height="40" rx="20" fill="#5C82BA"/>
+  <rect x="72" y="155" width="112" height="40" rx="20" fill="#34598F"/>
+  <circle cx="190" cy="81" r="6" fill="#F3F1EC"/>
+  <circle cx="176" cy="128" r="6" fill="#F3F1EC" fill-opacity="0.85"/>
+  <circle cx="162" cy="175" r="6" fill="#F3F1EC" fill-opacity="0.7"/>
+</svg>
