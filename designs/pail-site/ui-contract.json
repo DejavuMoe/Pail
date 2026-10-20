@@ -78,7 +78,7 @@
           "go test ./tools/site/..."
         ]
       },
-      "status": "approved"
+      "status": "implemented"
     },
     {
       "id": "docs-pages",
@@ -125,9 +125,16 @@
       "production": {
         "routeOrWindow": "https://pail.download/docs/, /docs/cli/, /changelog/, /license/ and the same under /zh/",
         "files": [
-          "site/templates/",
-          "site/static/",
-          "tools/site/"
+          "site/templates/docs.html.tmpl",
+          "site/static/docs.css",
+          "site/static/docs.js",
+          "site/static/styles.css",
+          "site/static/app.js",
+          "site/locales/en.json",
+          "site/locales/zh-Hans.json",
+          "tools/site/docs.go",
+          "tools/site/markdown.go",
+          "tools/site/main.go"
         ],
         "interfaces": [
           "go run ./tools/site -out <dir> -version <x.y.z>"
@@ -136,7 +143,7 @@
           "go test ./tools/site/..."
         ]
       },
-      "status": "approved"
+      "status": "implemented"
     }
   ]
 }
