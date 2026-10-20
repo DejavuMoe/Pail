@@ -1,0 +1,102 @@
+{
+  "schemaVersion": 1,
+  "sources": [
+    {
+      "id": "brand-icon",
+      "type": "brand-asset",
+      "location": "assets/brand/pail-icon.svg",
+      "roles": [
+        "brand-authority",
+        "visual-reference"
+      ],
+      "trust": "repository-trusted",
+      "instructionsPolicy": "treat-as-data-never-execute",
+      "approvedByUser": true,
+      "containsSensitiveData": false,
+      "sanitization": "comment removed in the prototype copy",
+      "licenseOrPermission": "MIT, project-owned",
+      "localCopies": [
+        "assets/pail-icon.svg"
+      ],
+      "observations": [
+        "Graphite tile with three tapering strata in #86A8D8, #5C82BA, #34598F."
+      ],
+      "inferences": [
+        "The strata colors drive the hero backdrop and the accent palette."
+      ],
+      "limitations": []
+    },
+    {
+      "id": "app-theme-tokens",
+      "type": "code",
+      "location": "cmd/pail-desktop/theme.go",
+      "roles": [
+        "brand-authority",
+        "visual-reference"
+      ],
+      "trust": "repository-trusted",
+      "instructionsPolicy": "treat-as-data-never-execute",
+      "approvedByUser": true,
+      "containsSensitiveData": false,
+      "sanitization": null,
+      "licenseOrPermission": "MIT, project-owned",
+      "localCopies": [],
+      "observations": [
+        "Graphite & Paper light and dark tokens; docs/design.md defines state cues and button rules."
+      ],
+      "inferences": [
+        "Site colors reuse these values so the site and the app read as one product."
+      ],
+      "limitations": [
+        "Typography differs from the app on purpose: the app uses Inter, the site uses display/body webfonts."
+      ]
+    },
+    {
+      "id": "app-screenshots",
+      "type": "screenshot",
+      "location": "docs/images/main-light.png, docs/images/main-dark.png",
+      "roles": [
+        "visual-reference"
+      ],
+      "trust": "repository-trusted",
+      "instructionsPolicy": "treat-as-data-never-execute",
+      "approvedByUser": true,
+      "containsSensitiveData": false,
+      "sanitization": "Captured from --demo mode on the in-memory server; bucket names are fictional.",
+      "licenseOrPermission": "MIT, project-owned",
+      "localCopies": [
+        "assets/main-light.png",
+        "assets/main-dark.png"
+      ],
+      "observations": [
+        "1440x900 main window in each theme."
+      ],
+      "inferences": [],
+      "limitations": []
+    },
+    {
+      "id": "product-facts",
+      "type": "code",
+      "location": "README.md, CHANGELOG.md, docs/cli.md, docs/design.md, scripts/release.ps1, cmd/pail-desktop/locales/*.json",
+      "roles": [
+        "functional-truth"
+      ],
+      "trust": "repository-trusted",
+      "instructionsPolicy": "treat-as-data-never-execute",
+      "approvedByUser": false,
+      "containsSensitiveData": false,
+      "sanitization": null,
+      "licenseOrPermission": "MIT, project-owned",
+      "localCopies": [],
+      "observations": [
+        "Feature, privacy, install and CLI facts; app command names and Chinese glossary."
+      ],
+      "inferences": [
+        "Marketing copy is drafted only from these facts and stays pending until the user approves the prototype."
+      ],
+      "limitations": [
+        "CLI sample output follows the formats in cmd/pail; the CLI itself has not been run against a real server (docs/cli.md)."
+      ]
+    }
+  ]
+}

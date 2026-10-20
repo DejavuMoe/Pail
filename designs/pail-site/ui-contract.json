@@ -1,0 +1,42 @@
+{
+  "schemaVersion": 2,
+  "project": {
+    "name": "Pail landing page",
+    "slug": "pail-site",
+    "surfaceType": "marketing"
+  },
+  "content": {
+    "defaultProfile": "marketing-approved",
+    "inventory": "content-inventory.json",
+    "approvedCopySources": []
+  },
+  "designSources": "design-sources.json",
+  "surfaces": [
+    {
+      "id": "landing-page",
+      "contentProfile": "marketing-approved",
+      "prototype": {
+        "entry": "index.html",
+        "assetPath": "index.html",
+        "files": ["index.html", "styles.css", "i18n.js", "app.js", "tweaks.js", "assets/pail-icon.svg", "assets/main-light.png", "assets/main-dark.png"],
+        "states": [
+          "theme-system", "theme-light", "theme-dark",
+          "lang-en", "lang-zh",
+          "os-windows", "os-macos", "os-linux", "os-unknown",
+          "palette-open", "palette-filtered", "palette-empty",
+          "terminal-ls", "terminal-sync", "terminal-presign", "terminal-json",
+          "reduced-motion",
+          "width-390", "width-760", "width-1080", "width-1440"
+        ],
+        "stableIds": ["top", "features", "cli", "privacy", "download", "palette-list"]
+      },
+      "production": {
+        "routeOrWindow": "https://pail.download/ (en) and https://pail.download/zh/ (zh-Hans)",
+        "files": ["site/", "tools/site/"],
+        "interfaces": ["go run ./tools/site -out <dir> -version <x.y.z>", ".woodpecker/site.yml"],
+        "tests": ["go test ./tools/site/..."]
+      },
+      "status": "prototype"
+    }
+  ]
+}
