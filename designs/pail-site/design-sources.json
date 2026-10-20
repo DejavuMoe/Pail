@@ -42,7 +42,7 @@
       "licenseOrPermission": "MIT, project-owned",
       "localCopies": [],
       "observations": [
-        "Graphite & Paper light and dark tokens; docs/design.md defines state cues and button rules."
+        "Graphite & Paper light and dark tokens; docs/dev/design.md defines state cues and button rules."
       ],
       "inferences": [
         "Site colors reuse these values so the site and the app read as one product."
@@ -81,7 +81,7 @@
     {
       "id": "product-facts",
       "type": "code",
-      "location": "README.md, CHANGELOG.md, docs/cli.md, docs/design.md, tools/release/main.go, cmd/pail-desktop/locales/*.json",
+      "location": "README.md, CHANGELOG.md, docs/cli.md, docs/dev/design.md, tools/release/main.go, cmd/pail-desktop/locales/*.json",
       "roles": [
         "functional-truth"
       ],
