@@ -8,7 +8,7 @@
       "dom-zh.json",
       "dom-enPalette.json"
     ],
-    "capturedAt": "2026-10-20T02:54:44Z",
+    "capturedAt": "2026-10-20T03:54:16Z",
     "surfaces": [
       "landing-page: en light + tweaks panel open",
       "landing-page: zh light + command palette open",
@@ -30,8 +30,8 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-prompt:nth-of-type(1)",
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-prompt:nth-of-type(10)"
+        "pre#term-panel > code > span.t-prompt:nth-of-type(1)",
+        "pre#term-panel > code > span.t-prompt:nth-of-type(10)"
       ],
       "visibility": [
         "visible"
@@ -79,7 +79,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > div.term-bar > div.term-tabs > button:nth-of-type(4)"
+        "button#term-tab-json"
       ],
       "visibility": [
         "visible"
@@ -628,7 +628,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-out:nth-of-type(8)"
+        "pre#term-panel > code > span.t-out:nth-of-type(8)"
       ],
       "visibility": [
         "visible"
@@ -652,7 +652,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-out:nth-of-type(9)"
+        "pre#term-panel > code > span.t-out:nth-of-type(9)"
       ],
       "visibility": [
         "visible"
@@ -1139,10 +1139,12 @@
       "id": "content-ff8059dc6752afdd",
       "text": "Actions",
       "channels": [
+        "aria-labelledby",
         "text"
       ],
       "locations": [
-        "ul#palette-list > li.palette-group:nth-of-type(7)"
+        "div#pg-pgActions",
+        "ul#palette-list > li:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -2120,7 +2122,7 @@
         "text"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions > span.dbtn.dbtn-secondary:nth-of-type(1)"
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions:nth-of-type(2) > span.dbtn.dbtn-secondary:nth-of-type(1)"
       ],
       "visibility": [
         "accessibility-hidden"
@@ -2979,11 +2981,12 @@
       "id": "content-60acc53f13a5d1bf",
       "text": "Dark",
       "channels": [
-        "aria-label",
+        "text",
         "title"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(3)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(3)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(3) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -2998,32 +3001,6 @@
       "evidence": null,
       "flags": [],
       "notes": null
-    },
-    {
-      "id": "content-e6bb5689beec52c4",
-      "text": "dark",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(3)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
       "id": "content-2be48e15dc8d043b",
@@ -3080,7 +3057,7 @@
         "text"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions > span.dbtn.dbtn-danger:nth-of-type(2)",
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions:nth-of-type(2) > span.dbtn.dbtn-danger:nth-of-type(2)",
         "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > p.dlg-title > span"
       ],
       "visibility": [
@@ -3281,7 +3258,7 @@
         "data-*"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions > span.dbtn.dbtn-secondary:nth-of-type(1)"
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions:nth-of-type(2) > span.dbtn.dbtn-secondary:nth-of-type(1)"
       ],
       "visibility": [
         "accessibility-hidden"
@@ -3307,7 +3284,7 @@
         "data-*"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > label.dlg-field > span:nth-of-type(1)"
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-field:nth-of-type(1) > span:nth-of-type(1)"
       ],
       "visibility": [
         "accessibility-hidden"
@@ -3333,7 +3310,7 @@
         "data-*"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions > span.dbtn.dbtn-danger:nth-of-type(2)"
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions:nth-of-type(2) > span.dbtn.dbtn-danger:nth-of-type(2)"
       ],
       "visibility": [
         "accessibility-hidden"
@@ -4472,10 +4449,12 @@
       "id": "content-a8aa078b7ea67c00",
       "text": "Go to",
       "channels": [
+        "aria-labelledby",
         "text"
       ],
       "locations": [
-        "ul#palette-list > li.palette-group:nth-of-type(1)"
+        "div#pg-pgGo",
+        "ul#palette-list > li:nth-of-type(1)"
       ],
       "visibility": [
         "visible"
@@ -4825,7 +4804,7 @@
         "data-*"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > div.term-bar > div.term-tabs > button:nth-of-type(4)"
+        "button#term-tab-json"
       ],
       "visibility": [
         "visible"
@@ -5127,11 +5106,12 @@
       "id": "content-dbcd5e7bb7a0f538",
       "text": "Light",
       "channels": [
-        "aria-label",
+        "text",
         "title"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(2)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(2)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(2) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -5154,8 +5134,7 @@
         "data-*"
       ],
       "locations": [
-        "html.js",
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(2)"
+        "html.js"
       ],
       "visibility": [
         "visible"
@@ -5178,10 +5157,12 @@
       "id": "content-9024c197d84940e4",
       "text": "Links",
       "channels": [
+        "aria-labelledby",
         "text"
       ],
       "locations": [
-        "ul#palette-list > li.palette-group:nth-of-type(13)"
+        "div#pg-pgLinks",
+        "ul#palette-list > li:nth-of-type(3)"
       ],
       "visibility": [
         "visible"
@@ -5302,11 +5283,13 @@
       "id": "content-c7b68ac37f364473",
       "text": "ls",
       "channels": [
+        "aria-labelledby",
         "data-*",
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > div.term-bar > div.term-tabs > button:nth-of-type(1)",
+        "button#term-tab-ls",
+        "pre#term-panel",
         "section#cli > div.wrap.cli-grid > header.section-head.reveal > ul.cli-cmds > li:nth-of-type(3)"
       ],
       "visibility": [
@@ -7041,7 +7024,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-cmd:nth-of-type(2)"
+        "pre#term-panel > code > span.t-cmd:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -7876,7 +7859,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-out:nth-of-type(3)"
+        "pre#term-panel > code > span.t-out:nth-of-type(3)"
       ],
       "visibility": [
         "visible"
@@ -7900,7 +7883,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-out:nth-of-type(4)"
+        "pre#term-panel > code > span.t-out:nth-of-type(4)"
       ],
       "visibility": [
         "visible"
@@ -7924,7 +7907,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-out:nth-of-type(5)"
+        "pre#term-panel > code > span.t-out:nth-of-type(5)"
       ],
       "visibility": [
         "visible"
@@ -7948,7 +7931,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-out:nth-of-type(6)"
+        "pre#term-panel > code > span.t-out:nth-of-type(6)"
       ],
       "visibility": [
         "visible"
@@ -7972,7 +7955,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > pre.term-body > code > span.t-out:nth-of-type(7)"
+        "pre#term-panel > code > span.t-out:nth-of-type(7)"
       ],
       "visibility": [
         "visible"
@@ -7997,7 +7980,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > div.term-bar > div.term-tabs > button:nth-of-type(3)",
+        "button#term-tab-presign",
         "section#cli > div.wrap.cli-grid > header.section-head.reveal > ul.cli-cmds > li:nth-of-type(9)"
       ],
       "visibility": [
@@ -9237,7 +9220,7 @@
         "text"
       ],
       "locations": [
-        "section#cli > div.wrap.cli-grid > div.terminal.reveal > div.term-bar > div.term-tabs > button:nth-of-type(2)",
+        "button#term-tab-sync",
         "section#cli > div.wrap.cli-grid > header.section-head.reveal > ul.cli-cmds > li:nth-of-type(13)"
       ],
       "visibility": [
@@ -9287,11 +9270,12 @@
       "id": "content-6725e7bbcd28f3a8",
       "text": "System",
       "channels": [
-        "aria-label",
+        "text",
         "title"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(1)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(1)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(1) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -9306,32 +9290,6 @@
       "evidence": null,
       "flags": [],
       "notes": null
-    },
-    {
-      "id": "content-bbc5e661e106c6dc",
-      "text": "system",
-      "channels": [
-        "data-*"
-      ],
-      "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(1)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json",
-        "dom-enPalette.json",
-        "dom-zh.json"
-      ],
-      "purpose": "machine-identifier",
-      "origin": "framework-runtime",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [
-        "dom-metadata"
-      ],
-      "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
       "id": "content-1331275bc537b4c2",
@@ -9417,10 +9375,10 @@
       "id": "content-efb52e7172b77731",
       "text": "Theme",
       "channels": [
-        "aria-label"
+        "text"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > legend.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -9509,7 +9467,8 @@
         "data-*"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(3)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(3)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(3) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -9535,7 +9494,7 @@
         "data-*"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > legend.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -9561,7 +9520,8 @@
         "data-*"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(2)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(2)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(2) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -9587,7 +9547,8 @@
         "data-*"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(1)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(1)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(1) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -9960,7 +9921,7 @@
         "text"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > label.dlg-field > span:nth-of-type(1)"
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-field:nth-of-type(1) > span:nth-of-type(1)"
       ],
       "visibility": [
         "accessibility-hidden"
@@ -11105,10 +11066,10 @@
       "id": "content-788db1cfec2a3db5",
       "text": "主题",
       "channels": [
-        "aria-label"
+        "text"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > legend.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -11508,7 +11469,7 @@
         "text"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions > span.dbtn.dbtn-danger:nth-of-type(2)",
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions:nth-of-type(2) > span.dbtn.dbtn-danger:nth-of-type(2)",
         "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > p.dlg-title > span"
       ],
       "visibility": [
@@ -11575,10 +11536,12 @@
       "id": "content-fa96079c3b2f7341",
       "text": "前往",
       "channels": [
+        "aria-labelledby",
         "text"
       ],
       "locations": [
-        "ul#palette-list > li.palette-group:nth-of-type(1)"
+        "div#pg-pgGo",
+        "ul#palette-list > li:nth-of-type(1)"
       ],
       "visibility": [
         "visible"
@@ -11719,7 +11682,7 @@
         "text"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions > span.dbtn.dbtn-secondary:nth-of-type(1)"
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-actions:nth-of-type(2) > span.dbtn.dbtn-secondary:nth-of-type(1)"
       ],
       "visibility": [
         "accessibility-hidden"
@@ -12543,10 +12506,12 @@
       "id": "content-ed31fbb483ee1b0a",
       "text": "操作",
       "channels": [
+        "aria-labelledby",
         "text"
       ],
       "locations": [
-        "ul#palette-list > li.palette-group:nth-of-type(7)"
+        "div#pg-pgActions",
+        "ul#palette-list > li:nth-of-type(2)"
       ],
       "visibility": [
         "visible"
@@ -12905,11 +12870,12 @@
       "id": "content-aa0819dfc4d8d782",
       "text": "浅色",
       "channels": [
-        "aria-label",
+        "text",
         "title"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(2)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(2)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(2) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -12928,11 +12894,12 @@
       "id": "content-a6b75d0680322a61",
       "text": "深色",
       "channels": [
-        "aria-label",
+        "text",
         "title"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(3)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(3)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(3) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -13316,11 +13283,12 @@
       "id": "content-217cfe7db1e3d10a",
       "text": "跟随系统",
       "channels": [
-        "aria-label",
+        "text",
         "title"
       ],
       "locations": [
-        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > div.theme-seg > button:nth-of-type(1)"
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(1)",
+        "html.js > body > header.site-header > div.wrap.header-inner > div.header-actions > fieldset.theme-seg > label:nth-of-type(1) > span.visually-hidden"
       ],
       "visibility": [
         "visible"
@@ -13437,7 +13405,7 @@
         "text"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > label.dlg-field > span:nth-of-type(1)"
+        "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > div.dlg-field:nth-of-type(1) > span:nth-of-type(1)"
       ],
       "visibility": [
         "accessibility-hidden"
@@ -13550,10 +13518,12 @@
       "id": "content-305378ddd2b86b60",
       "text": "链接",
       "channels": [
+        "aria-labelledby",
         "text"
       ],
       "locations": [
-        "ul#palette-list > li.palette-group:nth-of-type(13)"
+        "div#pg-pgLinks",
+        "ul#palette-list > li:nth-of-type(3)"
       ],
       "visibility": [
         "visible"

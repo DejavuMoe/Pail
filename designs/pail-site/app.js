@@ -71,15 +71,16 @@
   }
 
   /* ---------- Theme ---------- */
-  var themeButtons = $$('[data-theme-set]');
+  var themeRadios = $$('.theme-seg input[name="theme"]');
   function resolve(pref) { return pref === 'dark' || (pref === 'system' && darkMQ.matches) ? 'dark' : 'light'; }
   function applyTheme(pref) {
     root.setAttribute('data-theme-pref', pref);
     root.setAttribute('data-theme', resolve(pref));
-    themeButtons.forEach(function (b) {
-      var on = b.getAttribute('data-theme-set') === pref;
-      b.setAttribute('aria-checked', String(on));
-      b.tabIndex = on ? 0 : -1;
+    themeRadios.forEach(function (r) { r.checked = r.value === pref; });
+    var bg = getComputedStyle(root).getPropertyValue('--bg').trim();
+    $$('meta[name="theme-color"]').forEach(function (m) {
+      if (pref === 'system') m.setAttribute('content', /dark/.test(m.getAttribute('media')) ? '#151513' : '#FBFAF8');
+      else m.setAttribute('content', bg);
     });
     keys.recolor();
   }
@@ -100,18 +101,12 @@
     });
     tr.finished.then(function () { root.classList.remove('vt-theme'); });
   }
-  themeButtons.forEach(function (b, i) {
-    b.addEventListener('click', function () {
-      var rect = b.getBoundingClientRect();
-      setTheme(b.getAttribute('data-theme-set'), { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
-    });
-    b.addEventListener('keydown', function (e) {
-      var d = e.key === 'ArrowRight' || e.key === 'ArrowDown' ? 1 : e.key === 'ArrowLeft' || e.key === 'ArrowUp' ? -1 : 0;
-      if (!d) return;
-      e.preventDefault();
-      var next = themeButtons[(i + d + themeButtons.length) % themeButtons.length];
-      next.focus();
-      next.click();
+  // Native radios: arrow keys and labels work without extra handlers.
+  themeRadios.forEach(function (r) {
+    r.addEventListener('change', function () {
+      if (!r.checked) return;
+      var rect = r.parentElement.getBoundingClientRect();
+      setTheme(r.value, { x: rect.left + rect.width / 2, y: rect.top + rect.height / 2 });
     });
   });
   darkMQ.addEventListener('change', function () {
@@ -119,16 +114,30 @@
   });
 
   /* ---------- Header, nav, reveal, tilt ---------- */
+  // The hero window eases toward a scroll-derived target, so the tilt follows
+  // the page with a little inertia instead of snapping per scroll event.
   var header = $('.site-header');
   var win = $('[data-tilt]');
-  function onScroll() {
-    header.classList.toggle('is-scrolled', window.scrollY > 8);
-    if (!win || reduced.matches) return;
+  var tilt = { cur: null, target: 0, raf: 0 };
+  function tiltTarget() {
     var rect = win.getBoundingClientRect();
     var vh = window.innerHeight;
     var p = Math.min(1, Math.max(0, (vh - rect.top) / (vh * 0.95)));
-    win.style.setProperty('--tilt', ((1 - p) * 14).toFixed(2) + 'deg');
-    win.style.setProperty('--scale', (0.95 + 0.05 * p).toFixed(4));
+    return 1 - p;
+  }
+  function tiltFrame() {
+    tilt.cur += (tilt.target - tilt.cur) * 0.14;
+    if (Math.abs(tilt.target - tilt.cur) < 0.001) tilt.cur = tilt.target;
+    win.style.setProperty('--tilt', (tilt.cur * 14).toFixed(2) + 'deg');
+    win.style.setProperty('--scale', (1 - tilt.cur * 0.05).toFixed(4));
+    tilt.raf = tilt.cur === tilt.target ? 0 : requestAnimationFrame(tiltFrame);
+  }
+  function onScroll() {
+    header.classList.toggle('is-scrolled', window.scrollY > 8);
+    if (!win || reduced.matches) return;
+    tilt.target = tiltTarget();
+    if (tilt.cur === null) tilt.cur = tilt.target;
+    if (!tilt.raf) tilt.raf = requestAnimationFrame(tiltFrame);
   }
   window.addEventListener('scroll', onScroll, { passive: true });
   window.addEventListener('resize', onScroll);
@@ -152,8 +161,9 @@
       if (en.isIntersecting) { en.target.classList.add('is-in'); revealObserver.unobserve(en.target); }
     });
   }, { threshold: 0.12 });
-  $$('.reveal').forEach(function (el, i) {
-    el.style.transitionDelay = (i % 3) * 70 + 'ms';
+  $$('.reveal').forEach(function (el) {
+    var siblings = el.parentElement ? $$(':scope > .reveal', el.parentElement) : [el];
+    el.style.setProperty('--i', String(Math.max(0, siblings.indexOf(el)) % 4));
     revealObserver.observe(el);
   });
 
@@ -347,6 +357,7 @@
   termTabs.forEach(function (tab, i) {
     tab.addEventListener('click', function () {
       termTabs.forEach(function (x) { x.setAttribute('aria-selected', String(x === tab)); x.tabIndex = x === tab ? 0 : -1; });
+      $('#term-panel').setAttribute('aria-labelledby', tab.id);
       renderTerminal(tab.getAttribute('data-term'), true);
     });
     tab.addEventListener('keydown', function (e) {
@@ -378,73 +389,93 @@
       'data/events/2026/10/19/part-0001.parquet', 'site/assets/hero.webp', 'website/robots.txt', 'models/v3/weights.bin',
       'exports/users.csv.gz', 'releases/0.1.0/SHA256SUMS', 'fonts/inter.woff2', 'db/dump-2026-10-18.sql.zst'
     ];
-    var dpr = 1, W = 0, H = 0, drops = [], raf = 0, visible = true, colors = {}, avoid = null;
+    // Object keys drift down and are drawn into the window, where they fade as
+    // they land. Motion is time-based so speed does not depend on refresh rate.
+    var FONT = '500 11px ui-monospace, "SF Mono", SFMono-Regular, "Cascadia Mono", Menlo, Consolas, monospace';
+    var dpr = 1, W = 0, H = 0, drops = [], raf = 0, last = 0, visible = true, colors = {}, avoid = null, land = null;
     function readColors() {
       var cs = getComputedStyle(root);
       colors.base = cs.getPropertyValue('--keys-color').trim().split(/\s+/).join(',');
       colors.accent = cs.getPropertyValue('--accent').trim();
     }
     function make(col, cols, initial, lane) {
-      var span = H * 0.8;
+      var top = land ? land.t : H * 0.8;
+      var key = KEYS[(Math.random() * KEYS.length) | 0];
       return {
-        x: (col + 0.1 + Math.random() * 0.6) * (W / cols),
-        y: initial ? (lane * span / 2 + Math.random() * span / 3) : -30 - Math.random() * 120,
+        x0: (col + 0.1 + Math.random() * 0.6) * (W / cols),
+        y: initial ? (lane * top / 2 + Math.random() * top / 3) : -20 - Math.random() * 160,
         lane: lane,
-        v: 0.22 + Math.random() * 0.38,
-        key: KEYS[(Math.random() * KEYS.length) | 0],
+        v: 16 + Math.random() * 18,
+        key: key,
+        w: ctx.measureText(key).width,
         col: col,
-        hi: Math.random() < 0.14
+        hi: Math.random() < 0.12
       };
     }
-    function measureAvoid() {
-      var copy = $('.hero-copy'), cr = canvas.getBoundingClientRect();
-      if (!copy) return;
-      var r = copy.getBoundingClientRect();
-      avoid = { l: r.left - cr.left - 32, r: r.right - cr.left + 32, t: r.top - cr.top - 24, b: r.bottom - cr.top + 24 };
+    function measure() {
+      var cr = canvas.getBoundingClientRect();
+      var copy = $('.hero-copy'), shot = $('.window');
+      if (copy) {
+        var r = copy.getBoundingClientRect();
+        avoid = { l: r.left - cr.left - 32, r: r.right - cr.left + 32, t: r.top - cr.top - 24, b: r.bottom - cr.top + 24 };
+      }
+      if (shot) {
+        var s = shot.getBoundingClientRect();
+        land = { l: s.left - cr.left + 24, r: s.right - cr.left - 24, t: s.top - cr.top + 8 };
+      }
     }
     function resize() {
       dpr = Math.min(2, window.devicePixelRatio || 1);
       W = canvas.clientWidth; H = canvas.clientHeight;
       canvas.width = W * dpr; canvas.height = H * dpr;
       ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
-      var cols = Math.max(3, Math.floor(W / 170));
+      ctx.font = FONT;
+      measure();
+      var cols = Math.max(3, Math.floor(W / 180));
       drops = [];
       for (var c = 0; c < cols; c++) { drops.push(make(c, cols, true, 0)); drops.push(make(c, cols, true, 1)); }
       drops.cols = cols;
-      measureAvoid();
       readColors();
       if (reduced.matches) draw();
     }
     function draw() {
       ctx.clearRect(0, 0, W, H);
-      ctx.font = '500 11px "Geist Mono", ui-monospace, monospace';
+      ctx.font = FONT;
       ctx.textBaseline = 'middle';
+      var floor = land ? land.t : H * 0.8;
       for (var i = 0; i < drops.length; i++) {
         var d = drops[i];
-        var fadeIn = Math.min(1, (d.y + 30) / 120);
-        var fadeOut = Math.max(0, 1 - d.y / (H * 0.78));
-        var a = Math.max(0, Math.min(fadeIn, fadeOut));
-        var w = ctx.measureText(d.key).width;
-        var x = Math.min(d.x, W - w - 8);
-        if (avoid && x + w > avoid.l && x < avoid.r && d.y > avoid.t && d.y < avoid.b) a *= 0.12;
-        if (a <= 0.01) continue;
-        ctx.fillStyle = d.hi ? colors.accent : 'rgba(' + colors.base + ',' + (a * 0.55).toFixed(3) + ')';
-        if (d.hi) ctx.globalAlpha = a * 0.85;
-        ctx.fillText(d.key, x, d.y);
-        ctx.globalAlpha = 1;
-      }
-    }
-    function step() {
-      for (var i = 0; i < drops.length; i++) {
-        var d = drops[i];
-        d.y += d.v;
-        if (d.y > H * 0.8) {
-          var sibling = drops[i % 2 ? i - 1 : i + 1];
-          if (!sibling || sibling.y > H * 0.3) drops[i] = make(d.col, drops.cols, false, d.lane);
+        var p = Math.max(0, Math.min(1, d.y / floor));
+        // Ease the last third of the fall toward the window's horizontal span.
+        var pull = Math.max(0, (p - 0.66) / 0.34);
+        pull = pull * pull * (3 - 2 * pull);
+        var x = d.x0;
+        if (land) {
+          var tx = Math.min(Math.max(d.x0, land.l), Math.max(land.l, land.r - d.w));
+          x = d.x0 + (tx - d.x0) * pull;
         }
+        x = Math.min(x, W - d.w - 8);
+        var a = Math.min(1, (d.y + 20) / 110) * (1 - pull * pull);
+        if (avoid && x + d.w > avoid.l && x < avoid.r && d.y > avoid.t && d.y < avoid.b) a *= 0.1;
+        if (a <= 0.01) continue;
+        if (d.hi) { ctx.globalAlpha = a * 0.8; ctx.fillStyle = colors.accent; }
+        else { ctx.globalAlpha = 1; ctx.fillStyle = 'rgba(' + colors.base + ',' + (a * 0.5).toFixed(3) + ')'; }
+        ctx.fillText(d.key, x, d.y);
+      }
+      ctx.globalAlpha = 1;
+    }
+    function step(now) {
+      var dt = last ? Math.min(0.05, (now - last) / 1000) : 0;
+      last = now;
+      var floor = land ? land.t : H * 0.8;
+      for (var i = 0; i < drops.length; i++) {
+        var d = drops[i];
+        d.y += d.v * dt;
+        if (d.y >= floor) drops[i] = make(d.col, drops.cols, false, d.lane);
       }
       draw();
-      raf = visible ? requestAnimationFrame(step) : 0;
+      raf = visible && !document.hidden ? requestAnimationFrame(step) : 0;
+      if (!raf) last = 0;
     }
     function start() { if (!raf && visible && !reduced.matches && !document.hidden) raf = requestAnimationFrame(step); }
     new IntersectionObserver(function (entries) {
@@ -452,12 +483,12 @@
       if (visible) start();
     }).observe(canvas);
     document.addEventListener('visibilitychange', start);
-    window.addEventListener('resize', resize);
-    if (document.fonts && document.fonts.ready) document.fonts.ready.then(function () { measureAvoid(); if (reduced.matches) draw(); });
+    var resizeTimer = 0;
+    window.addEventListener('resize', function () { clearTimeout(resizeTimer); resizeTimer = setTimeout(resize, 150); });
     resize();
     start();
     api.recolor = function () { readColors(); if (reduced.matches) draw(); };
-    api.relayout = function () { measureAvoid(); };
+    api.relayout = function () { measure(); };
     return api;
   })();
 
@@ -493,13 +524,19 @@
       var q = input.value.trim().toLowerCase();
       state.items = catalog().filter(function (it) { return !q || (it.label + ' ' + it.k).toLowerCase().indexOf(q) !== -1; });
       if (state.active >= state.items.length) state.active = 0;
+      // listbox > group (labelled) > option, per the WAI-ARIA listbox pattern.
       var html = '', lastGroup = null;
       state.items.forEach(function (it, i) {
-        if (it.g !== lastGroup) { html += '<li class="palette-group" role="presentation">' + t(it.g) + '</li>'; lastGroup = it.g; }
+        if (it.g !== lastGroup) {
+          if (lastGroup) html += '</ul></li>';
+          html += '<li role="group" aria-labelledby="pg-' + it.g + '"><div class="palette-group" id="pg-' + it.g + '">' + t(it.g) + '</div><ul role="presentation">';
+          lastGroup = it.g;
+        }
         html += '<li class="palette-item" role="option" id="pi-' + i + '" data-index="' + i + '" aria-selected="' + (i === state.active) + '">' +
-          '<svg class="i"><use href="#' + it.icon + '"></use></svg><span>' + it.label + '</span>' +
-          (it.hint ? '<svg class="i pi-hint"><use href="#i-check"></use></svg>' : '') + '</li>';
+          '<svg class="i" aria-hidden="true" focusable="false"><use href="#' + it.icon + '"></use></svg><span>' + it.label + '</span>' +
+          (it.hint ? '<svg class="i pi-hint" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>' : '') + '</li>';
       });
+      if (lastGroup) html += '</ul></li>';
       list.innerHTML = html;
       empty.hidden = state.items.length > 0;
       input.setAttribute('aria-activedescendant', state.items.length ? 'pi-' + state.active : '');
@@ -526,13 +563,18 @@
       input.value = '';
       state.active = 0;
       renderPalette();
+      setInert(true);
       input.focus();
       document.body.style.overflow = 'hidden';
+    }
+    function setInert(on) {
+      $$('body > :not([data-palette]):not(script):not(.sprite)').forEach(function (n) { n.inert = on; });
     }
     function close() {
       if (!state.open) return;
       state.open = false;
       el.hidden = true;
+      setInert(false);
       document.body.style.overflow = '';
       if (state.opener && state.opener.focus) state.opener.focus();
     }
@@ -578,5 +620,6 @@
 
   applyTheme(root.getAttribute('data-theme-pref') || 'system');
   applyLang();
-  window.addEventListener('load', function () { keys.relayout && keys.relayout(); });
+  // Re-measure the landing area once the hero entrance has settled.
+  window.addEventListener('load', function () { setTimeout(keys.relayout, reduced.matches ? 0 : 1800); });
 })();
