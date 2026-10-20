@@ -6,6 +6,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Motion: dialogs, the command palette, select popups, menus, submenus and toasts come in on a light spring from where they are anchored and leave with a short fade, without bounce. A dialog or menu that is leaving no longer takes clicks or the keyboard, and a dialog or menu that is still coming in already responds to them.
+- Buttons, sidebar items and list rows fade their hover and pressed fill instead of switching it. The underline of the inspector tabs and transfer filters, the selection bar of the sidebar and the bucket settings list, and the knob of switches slide to their new place.
+- The transfers panel eases open and closed when you toggle it (dragging its divider still follows the pointer at once), the inspector's content fades in when you open it, progress bars ease to each new value, counts in the status bar and the transfers panel roll their digits, and the "Saved" mark fades in and out.
+- With the system's "reduce motion" setting, nothing moves or scales: only colours and opacity still fade. Resizing the window and the object table's rows and scrolling are never animated.
+
 ### Changed
 
 - Overlays now share one look: dialogs, the bucket settings dialog, the command palette, select popups and toasts take their radius (6 controls, 8 popups, 10 dialogs), shadow and dark-theme outline from the design tokens instead of per-view values, and no colour is written outside `theme.go` any more.

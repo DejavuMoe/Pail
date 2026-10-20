@@ -611,7 +611,7 @@ func (a *app) lockIndicator(c *ui.Context) {
 	if unlocked {
 		icon, text, tip = "lock-open", locales.VaultUnlocked(), locales.VaultUnlockedTip()
 	}
-	b := ui.ButtonBase(c.Key("vaultlock")).Label(text).Tooltip(tip).Height(20).Padding(0, 6).Gap(5).Radius(4).AlignItems(ui.Center)
+	b := ui.ButtonBase(c.Key("vaultlock")).Label(text).Tooltip(tip).Height(20).Padding(0, 6).Gap(5).Radius(4).AlignItems(ui.Center).Transition(hoverFade())
 	if b.Hovered() {
 		b.Background(k.SurfaceHover)
 	}

@@ -60,14 +60,14 @@ func (a *app) transfersBar(c *ui.Context) {
 	k := tk(c)
 	n := countTasks(a.tasks)
 	bar := ui.Row(c).Height(collapsedBar).Padding(0, 12).Gap(8).AlignItems(ui.Center).
-		BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Background(k.Background)
+		BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Background(k.Background).Transition(hoverFade())
 	if bar.Hovered() {
 		bar.Background(k.SurfaceHover)
 	}
 	bar.Children(func() {
 		ui.Icon(c, icons.Get("chevron-up")).FontSize(14).TextColor(k.TextMuted)
 		ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeSecondary).TextColor(k.Text)
-		ui.Text(c, locales.TransfersSummary(fmt.Sprint(n[0]), fmt.Sprint(n[1]), fmt.Sprint(n[2]))).FontSize(sizeSecondary).TextColor(k.TextMuted)
+		ui.Text(c, locales.TransfersSummary(fmt.Sprint(n[0]), fmt.Sprint(n[1]), fmt.Sprint(n[2]))).FontSize(sizeSecondary).TextColor(k.TextMuted).ContentTransition(countRoll)
 	})
 	if bar.Clicked() {
 		a.transfersOpen = true
@@ -108,9 +108,9 @@ func (a *app) transfersPanel(c *ui.Context) {
 						case tab.Hovered():
 							col = k.Text
 						}
-						ui.Text(c, label).FontSize(sizeSecondary).FontWeight(w).TextColor(col).SingleLine()
+						ui.Text(c, label).FontSize(sizeSecondary).FontWeight(w).TextColor(tab.AnimateColor("ink", col, colorAnim)).SingleLine().ContentTransition(countRoll)
 						if on {
-							tabIndicator(c)
+							tabIndicator(c, "transfer-tabs")
 						}
 					})
 				}
@@ -157,6 +157,9 @@ func (a *app) transfersPanel(c *ui.Context) {
 }
 
 // progressBar is the fixed 160x4 bar; frac is 0..1, danger paints it Danger.
+// The fill's width eases to each new fraction in durStandard (a task reports
+// about ten times a second, so the target moves on before the ease ends and
+// the fill just keeps going), and a change of state fades the colour.
 func progressBar(c *ui.Context, frac float64, danger bool) {
 	k := tk(c)
 	fill := k.Accent
@@ -165,9 +168,8 @@ func progressBar(c *ui.Context, frac float64, danger bool) {
 	}
 	frac = max(0, min(1, frac))
 	ui.Box(c).Width(colProgress).Height(4).Radius(2).Background(k.Border).Shrink(0).Clip().Children(func() {
-		if frac > 0 {
-			ui.Box(c).Width(float32(frac * colProgress)).Height(4).Radius(2).Background(fill)
-		}
+		bar := ui.Box(c).Height(4).Radius(2)
+		bar.Width(bar.AnimateTo("w", float32(frac*colProgress), fadeAnim)).Background(bar.AnimateColor("fill", fill, colorAnim))
 	})
 }
 
@@ -189,7 +191,7 @@ func (a *app) taskRow(c *ui.Context, t Task) {
 	direction := map[core.Kind]string{core.KindUpload: locales.TransfersUpload(), core.KindDownload: locales.TransfersDownload(), core.KindOther: locales.TransfersTask()}[t.Kind]
 	// The right padding leaves the scroll bar its own gutter, clear of the
 	// cancel / retry buttons.
-	row := ui.Row(c).Height(32).Padding(0, scrollGutter+2, 0, 16).Gap(rowGap).AlignItems(ui.Center)
+	row := ui.Row(c).Height(32).Padding(0, scrollGutter+2, 0, 16).Gap(rowGap).AlignItems(ui.Center).Transition(hoverFade())
 	if row.Hovered() {
 		row.Background(k.SurfaceHover)
 	}

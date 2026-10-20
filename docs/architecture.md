@@ -95,6 +95,7 @@ tools/pack         发布打包，保证可执行文件权限为 0755
 | --- | --- | --- |
 | 单元与协议 | `internal/*` | 内存 S3（`internal/s3test`）经真实 SDK 驱动；`httptest` 用于 STS、CloudFront 和故障注入 |
 | 界面 headless | `cmd/pail-desktop` | 不开真实窗口：命令表、对话框可达性、对比度、本地化、键盘流程；菜单测试在所有平台上驱动窗口内菜单（`TestMain` 关闭 `nativeMenus`），macOS 原生菜单路径另有一个测试经 mygo 的模拟系统菜单验证；设置 `PAIL_UI_SNAPSHOT_DIR` 时额外写出亮暗、中英文的截图供人工审阅 |
+| 界面动效 | `cmd/pail-desktop/motion_test.go` | mygo 测试器的时钟只在测试调用 `Advance` 时前进，所以每个断言都说明自己看的是动画开始后第几毫秒：入场与退出的中间帧、静止帧（与关掉动画时的位置比较）、"减少动态效果"下直接到位、窗口缩放不触发过渡、动画中控件仍可操作、退出中的残影不拿焦点和指针、静止后不再请求帧。其余界面测试用 `options.still` 关掉动画（每帧 `c.DisableAnimations()`），看到的就是静止布局；`harness.playOut` 供需要真实动画又只关心终态的测试推进时钟。设置 `PAIL_UI_SNAPSHOT_DIR` 时 `TestMotionSnapshots` 写出各动画的中间帧 |
 | 命令行 | `cmd/pail` | 进程内运行，对 `internal/s3test` |
 | MinIO 集成 | `integration/` + `scripts/test-integration.ps1` | 隔离的 MinIO 容器，覆盖存储层与应用层 |
 | 外部端点 | `integration/ext_*_test.go` + `scripts/test-external.ps1` | 真实 S3 兼容服务；只写本次运行的唯一前缀，结束时清理 |

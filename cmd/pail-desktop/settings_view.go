@@ -277,7 +277,11 @@ func (a *app) savedMark(c *ui.Context, key string) {
 	}
 	c.After(left)
 	k := tk(c)
-	ui.Row(c.Key("saved:" + key)).Gap(4).AlignItems(ui.Center).Shrink(0).Children(func() {
+	// It fades in and out instead of popping: in over durStandard, and once it
+	// is no longer built, out over durExit (motion.go, fadeInOut).
+	mark := ui.Row(c.Key("saved:" + key)).Gap(4).AlignItems(ui.Center).Shrink(0)
+	mark.Transition(fadeInOut(mark))
+	mark.Children(func() {
 		ui.Icon(c, icons.Get("check")).FontSize(14).TextColor(k.Success)
 		ui.Text(c, locales.CommonSaved()).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine()
 	})

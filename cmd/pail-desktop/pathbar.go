@@ -25,7 +25,7 @@ func (a *app) pathBar(c *ui.Context) {
 				if i > 0 {
 					ui.Icon(c, icons.Get("chevron-right")).FontSize(12).TextColor(k.TextSubtle)
 				}
-				seg := ui.ButtonBase(c.Key(i)).Label(name).Height(24).Padding(0, 6).Radius(6).Center().Shrink(1).MinWidth(0).Tooltip(name)
+				seg := ui.ButtonBase(c.Key(i)).Label(name).Height(24).Padding(0, 6).Radius(6).Center().Shrink(1).MinWidth(0).Tooltip(name).Transition(hoverFade())
 				col, w := k.TextMuted, 400
 				// Rows dropped on a parent folder move there.
 				p := ""

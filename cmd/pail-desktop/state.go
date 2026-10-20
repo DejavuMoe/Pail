@@ -20,6 +20,11 @@ type options struct {
 	width, height int
 	tool          string
 	demo          bool
+	// still turns every animation off (c.DisableAnimations in each frame): the
+	// tests of layout and behaviour run so, since the tester's clock does not
+	// move and a frame of an entrance would be what they saw. The tests of the
+	// motion itself (motion_test.go) run with it off.
+	still bool
 }
 
 // toastReq is a toast waiting for the next frame: toasts are shown through the
@@ -67,10 +72,11 @@ type app struct {
 	localeSet func(tag string)
 	langSave  func(tag string)
 
-	popup menuState    // the in-window menu (ctxmenu.go)
-	pal   paletteState // the command palette (palette.go)
-	about aboutState   // the About dialog (about.go)
-	keys  keysState    // the keyboard shortcuts dialog (about.go)
+	popup    menuState    // the in-window menu (ctxmenu.go)
+	popGhost *menuGhost   // the menu that just closed, fading out (menumotion.go)
+	pal      paletteState // the command palette (palette.go)
+	about    aboutState   // the About dialog (about.go)
+	keys     keysState    // the keyboard shortcuts dialog (about.go)
 	// settingsMu orders the read-modify-write cycles of Settings, so two quick
 	// changes in Settings cannot overwrite each other.
 	settingsMu sync.Mutex
@@ -116,25 +122,32 @@ type app struct {
 
 	inspectorOpen bool
 	inspTab       int
-	inspW         float32
-	sidebarW      float32
-	lay           layoutMetrics // this frame's widths and breakpoint tiers
-	layMem        layoutState   // what the breakpoints remember between frames
-	fxSide        splitFx       // divider styles of the three Splits
-	fxInsp        splitFx
-	fxTrans       splitFx
-	head          core.ObjectInfo
-	headKey       string
-	headState     int // 0 none, 1 loading, 2 ready, 3 failed
-	headErr       string
-	headGen       int
-	cancelHead    context.CancelFunc
-	prev          previewState
+	// inspWanted is whether the inspector was asked for in the frame before,
+	// once a frame has been built (inspKnown). inspFade is set as the user
+	// asks for it anew and holds until it has been laid out: its content fades
+	// in then; shown because the window made room for it (a resize), it does
+	// not.
+	inspWanted, inspKnown, inspFade bool
+	inspW                           float32
+	sidebarW                        float32
+	lay                             layoutMetrics // this frame's widths and breakpoint tiers
+	layMem                          layoutState   // what the breakpoints remember between frames
+	fxSide                          splitFx       // divider styles of the three Splits
+	fxInsp                          splitFx
+	fxTrans                         splitFx
+	head                            core.ObjectInfo
+	headKey                         string
+	headState                       int // 0 none, 1 loading, 2 ready, 3 failed
+	headErr                         string
+	headGen                         int
+	cancelHead                      context.CancelFunc
+	prev                            previewState
 
 	transfersOpen bool
 	transTab      int
 	transH        float32
-	tasks         []Task // submission order; the panel shows newest first
+	transDragAt   time.Time // the last frame the transfers divider moved: it is dragged, not animated
+	tasks         []Task    // submission order; the panel shows newest first
 	taskIdx       map[string]int
 	inbox         eventInbox
 	unsub         func()

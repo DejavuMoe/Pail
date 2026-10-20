@@ -2,7 +2,6 @@ package main
 
 import (
 	"strings"
-	"time"
 	"unicode/utf8"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
@@ -97,7 +96,7 @@ type rowSpec struct {
 // the secondary text, the keycaps, the check and the submenu chevron.
 func listRow(c *ui.Context, row ui.Element, s rowSpec) ui.Element {
 	k := tk(c)
-	row.Height(listRowH).Padding(0, 8).Gap(8).Radius(RadiusControl).AlignItems(ui.Center).Shrink(0).Disabled(s.Disabled)
+	row.Height(listRowH).Padding(0, 8).Gap(8).Radius(RadiusControl).AlignItems(ui.Center).Shrink(0).Disabled(s.Disabled).Transition(hoverFade())
 	switch {
 	case s.Disabled:
 		row.Opacity(0.4)
@@ -203,8 +202,12 @@ func toastViewport(c *ui.Context) {
 			toast := ui.ToastBase(c, t)
 			toast.Root.Row().AlignItems(ui.Center).Gap(16).Padding(8, 16).MaxWidth(max(240, winW-48))
 			overlayPanel(c, toast.Root, overlayTip)
-			// The fade that mygo's own toast has: in and out over 200ms.
-			toast.Root.Transition(ui.ElementTransition{Duration: 200 * time.Millisecond, Enter: &ui.Motion{}, Exit: &ui.Motion{}})
+			// It rises a little as it fades in, on the overlay spring, and fades
+			// out in durExit. The rise is a pose, not the transition's Enter:
+			// mygo lays the overlays out again after their transitions, which
+			// would put the toast back in its place at once (motion.go).
+			enterPose(c, toast.Root, ui.Pose{Y: toastRise, Fade: 1}, overlaySpring)
+			toast.Root.Transition(overlayExit())
 			toast.Root.Children(func() {
 				if t.Description == "" {
 					ui.Text(c, t.Title).FontSize(sizeBody).TextColor(k.InverseText).Shrink(1).MinWidth(0)
@@ -217,7 +220,7 @@ func toastViewport(c *ui.Context) {
 				if t.Action == "" {
 					return
 				}
-				b := toast.ActionButton().Height(24).Padding(0, 8).Radius(RadiusControl).Center().Shrink(0).Margin(0, -8, 0, 0)
+				b := toast.ActionButton().Height(24).Padding(0, 8).Radius(RadiusControl).Center().Shrink(0).Margin(0, -8, 0, 0).Transition(hoverFade())
 				if b.Hovered() {
 					b.Background(k.InverseText.Alpha(0.14))
 				}
