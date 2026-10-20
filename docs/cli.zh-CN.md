@@ -4,6 +4,8 @@
 
 `pail` 是 `internal/app` 之上的一层轻量前端。它与桌面应用共用配置目录和机密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。
 
+发布包使用带版本的文件名，例如 `pail-v0.1.0-windows-amd64.exe`。下文假设安装后名称为 `pail`（Windows 为 `pail.exe`）；也可以直接使用完整文件名运行。
+
 ```powershell
 go build -o bin/pail.exe ./cmd/pail
 pail accounts

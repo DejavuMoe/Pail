@@ -1,0 +1,133 @@
+name: Release
+
+on:
+  push:
+    tags: ["v*"]
+
+permissions: {}
+
+concurrency:
+  group: release-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  GOTOOLCHAIN: local
+  GOFLAGS: -mod=readonly
+
+jobs:
+  preflight:
+    name: Verify release gates
+    runs-on: ubuntu-24.04
+    timeout-minutes: 10
+    permissions:
+      contents: read
+      actions: read
+    outputs:
+      version: ${{ steps.version.outputs.version }}
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          fetch-depth: 0
+          persist-credentials: false
+      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+        with:
+          version: 2026.10.12
+          install_args: node
+      - name: Require tested master commit and bilingual release notes
+        id: version
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git merge-base --is-ancestor "$GITHUB_SHA" origin/master
+          node scripts/check-release.mjs "$GITHUB_REPOSITORY" "$GITHUB_SHA"
+          node scripts/release-notes.mjs "$GITHUB_REF_NAME" > release-notes.md
+          printf 'version=%s\n' "${GITHUB_REF_NAME#v}" >> "$GITHUB_OUTPUT"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: release-notes
+          path: release-notes.md
+          if-no-files-found: error
+          retention-days: 7
+
+  archives:
+    name: Package ${{ matrix.os }}
+    needs: preflight
+    runs-on: ubuntu-24.04
+    timeout-minutes: 25
+    permissions:
+      contents: read
+    strategy:
+      fail-fast: false
+      matrix:
+        os: [windows, linux, darwin]
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+        with:
+          version: 2026.10.12
+          install_args: powershell
+      - name: Build and verify both architectures
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+          TARGET_OS: ${{ matrix.os }}
+        run: |
+          pwsh -NoProfile -File scripts/release.ps1 -Version "$VERSION" -Targets "$TARGET_OS/amd64,$TARGET_OS/arm64"
+          go run ./tools/verify-release -dir "build/release/$VERSION" -version "$VERSION" -targets "$TARGET_OS/amd64,$TARGET_OS/arm64"
+          mv "build/release/$VERSION/SHA256SUMS" "build/release/$VERSION/SHA256SUMS-$TARGET_OS"
+      - uses: actions/upload-artifact@cf430e030ddbb5b0abf93d22962f4752f3646cd9 # v7.0.2
+        with:
+          name: archives-${{ matrix.os }}
+          path: build/release/${{ needs.preflight.outputs.version }}/*
+          if-no-files-found: error
+          compression-level: 0
+          retention-days: 7
+
+  publish:
+    name: Publish complete release
+    needs: [preflight, archives]
+    runs-on: ubuntu-24.04
+    timeout-minutes: 15
+    permissions:
+      contents: write
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          persist-credentials: false
+      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        with:
+          go-version-file: go.mod
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          pattern: archives-*
+          merge-multiple: true
+          path: dist
+      - uses: actions/download-artifact@9000827ccba6bdab643e8b6fd33ac0654aef8333 # v8.0.2
+        with:
+          name: release-notes
+          path: .
+      - name: Verify complete release
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          cat dist/SHA256SUMS-* | LC_ALL=C sort > dist/SHA256SUMS
+          rm dist/SHA256SUMS-*
+          go run ./tools/verify-release -dir dist -version "$VERSION"
+      - name: Upload draft and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ needs.preflight.outputs.version }}
+        run: |
+          if gh release view "$GITHUB_REF_NAME" --json isDraft > existing-release.json 2>/dev/null; then
+            jq -e '.isDraft == true' existing-release.json
+          else
+            gh release create "$GITHUB_REF_NAME" --verify-tag --draft --title "Pail $GITHUB_REF_NAME" --notes-file release-notes.md
+          fi
+          gh release upload "$GITHUB_REF_NAME" dist/* --clobber
+          prerelease=false
+          case "${VERSION%%+*}" in *-*) prerelease=true ;; esac
+          gh release edit "$GITHUB_REF_NAME" --notes-file release-notes.md --draft=false --prerelease="$prerelease"

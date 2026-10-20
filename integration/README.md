@@ -99,3 +99,5 @@ Safety rules the suite enforces, and that the script checks afterwards:
 - Credentials are read from the environment only. After a run the script fails if the log contains the secret key or the access key (raw or URL-escaped).
 
 A passing external run establishes behaviour against that one server and CDN only. Server limits (no versioning, no lifecycle, ignored storage class or SSE, ...) are recorded in the log as capabilities, not as failures. Results are summarized in [docs/status.md](../docs/status.md).
+
+CI can pass `PAIL_IT_MINIO_IMAGE=local:pail-test-minio:ci` after loading the fixed-source Buildx image. This mode requires the image to exist locally and never pulls or rebuilds it.

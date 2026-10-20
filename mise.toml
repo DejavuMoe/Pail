@@ -1,0 +1,14 @@
+[tools]
+go = "1.27.2"
+node = "24.19.0"
+powershell = "7.6.7"
+
+[env]
+GOTOOLCHAIN = "local"
+GOFLAGS = "-mod=readonly"
+
+[tasks.test]
+run = "go test ./..."
+
+[tasks.vet]
+run = "go vet ./..."
