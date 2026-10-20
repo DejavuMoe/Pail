@@ -7,7 +7,7 @@ The public website lives in this repository next to the application. It is a sta
 | `designs/pail-site/` | Reviewable prototype (landing page `index.html`, `styles.css`, `i18n.js`, `app.js`; docs pages `docs*.html`, `changelog*.html`, `license*.html` with `docs.css`, `docs.js`; `tweaks.js` is a review-only control panel) plus the prototype-first-ui records (`_d_meta.json`, `ui-contract.json`, `content-inventory.json`, `design-sources.json`) | approved 2026-10-20 |
 | `site/` | Production templates, locale files and static assets | implemented |
 | `tools/site/` | Go generator: `go run ./tools/site -out <dir> -version <x.y.z>` | implemented, tested |
-| `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | live on netcup-vps500 since 2026-10-20 (serving v0.1.0) |
+| `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | live on netcup-vps500 since 2026-10-20 (serving v0.2.0) |
 | `docs/product/constraints.md` | Content and UX rules for the site | current |
 
 Only the site uses the `prototype-first-ui` and `baoyu-design` skills (see `AGENTS.md`). A visible change starts in `designs/pail-site/`, is approved, and is then implemented in `site/` in a separate commit.
@@ -113,7 +113,7 @@ The publish step mounts `/var/www/pail.download:/deploy`; no SSH deployment secr
 
 Configure the web server's root as `/var/www/pail.download/html`. Serve `/zh/` from `zh/index.html`, return `404.html` with status 404, send `Cache-Control: public, max-age=31536000, immutable` for fingerprinted assets and `no-cache` for HTML. DNS, TLS, HSTS and server configuration are managed separately; a successful local deployment fixture is not evidence that production is live.
 
-Live check on 2026-10-20: `https://pail.download/`, `/zh/` and `/docs/` return 200 and show v0.1.0; a missing path returns 404; HTML is sent with `Cache-Control: no-cache`, fingerprinted assets with `public, max-age=31536000, immutable`, and HSTS is `max-age=31536000; includeSubDomains; preload`. Repeat these checks after changing the server configuration.
+Live release check on 2026-10-20, after [Woodpecker #4](https://ci.via.moe/repos/10/pipeline/4): all ten English/Chinese pages return 200, with v0.2.0 download links. Canonical URLs, hreflang, Open Graph, Twitter large-image metadata, robots and sitemap pass verification. The public 1440×900 WebP social image matches the source screenshot byte for byte. All six archives and `SHA256SUMS` return HTTP 200; a missing page returns 404 with `noindex` and no social card. HTML uses `Cache-Control: no-cache`, and fingerprinted images use `immutable`. HSTS was verified separately during the initial deployment (`max-age=31536000; includeSubDomains; preload`). Repeat these checks after changing the server configuration; these checks do not prove that social platforms have refreshed their preview caches.
 
 Run `sh scripts/test-publish-site.sh` on Linux to check atomic activation, two-release retention, stale-run rejection and preservation of the previous site when validation fails. `SITE_DEPLOY_ROOT` overrides `/deploy` for isolated fixtures. The scripts resolve repository paths from their own location.
 
@@ -128,7 +128,7 @@ python -m http.server 4311 --bind 127.0.0.1 --directory designs
 Production:
 
 ```powershell
-go run ./tools/site -out build/site -version 0.1.0
+go run ./tools/site -out build/site -version 0.2.0
 python -m http.server 4312 --bind 127.0.0.1 --directory build/site
 ```
 
