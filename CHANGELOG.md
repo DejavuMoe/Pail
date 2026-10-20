@@ -4,6 +4,16 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Inspector: the standard header labels (Content-Type, Cache-Control and so on) showed only an ellipsis next to the "?" icon. The label no longer takes a zero-width flex basis; it shrinks and truncates only when the panel is really too narrow, and its tooltip shows the full name.
+- Resizing the window no longer lays the search box and the object table columns out by the previous frame's size, which made them lag one step behind the drag.
+- Toolbar labels, the compact path bar and the object table columns now switch with a 12 px hysteresis, so dragging across a width threshold no longer makes them flicker back and forth.
+- The sidebar and the inspector no longer shrink by themselves when the window gets narrower than 1100 px; they keep the width you gave them.
+- The divider between panels turns a neutral grey when hovered or dragged instead of the accent blue.
+
 ## [0.1.0] - 2026-10-20
 
 First release of Pail. Verification per feature is recorded in [docs/status.md](docs/status.md).

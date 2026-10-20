@@ -78,21 +78,21 @@ func editRow(c *ui.Context, e *inlineEdit, s editSpec) (string, bool) {
 	ui.Column(c.Key(s.key)).Gap(1).Children(func() {
 		editing := e.on(s.key)
 		ui.Row(c).Height(24).Gap(2).AlignItems(ui.Center).Children(func() {
-			grow := float32(1)
-			if s.help != "" {
-				grow = 0
-			}
-			l := ui.Text(c, s.label).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().Grow(grow).MinWidth(0)
-			if s.labelMono {
-				mono(l)
-			}
-			if s.strike {
-				l.Strikethrough()
-			}
-			if s.help != "" {
-				helpIcon(c, s.help)
-				ui.Spacer(c)
-			}
+			// The label and its "?" share one growing box. The label itself must
+			// not Grow: that also sets a 0 basis, which freezes a single-line text
+			// (whose min-content is 0) at no width, leaving only an ellipsis.
+			ui.Row(c).Gap(2).AlignItems(ui.Center).Grow(1).MinWidth(0).Children(func() {
+				l := ui.Text(c, s.label).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().Shrink(1).MinWidth(0).Tooltip(s.label)
+				if s.labelMono {
+					mono(l)
+				}
+				if s.strike {
+					l.Strikethrough()
+				}
+				if s.help != "" {
+					helpIcon(c, s.help)
+				}
+			})
 			if editing {
 				return
 			}

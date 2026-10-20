@@ -11,11 +11,6 @@ import (
 const (
 	statusBarH   = 24
 	collapsedBar = 32
-	// narrowBelow is the window width under which the side panels start
-	// narrower; compactBelow the main column width under which the toolbar and
-	// path bar drop their text labels.
-	narrowBelow  = 1100
-	compactBelow = 560
 )
 
 // view builds one frame: sidebar | main | inspector above the transfers
@@ -72,36 +67,25 @@ func (a *app) welcome(c *ui.Context) {
 	})
 }
 
-// body is sidebar | main | inspector.
+// body is sidebar | main | inspector. The widths every view lays out by are
+// worked out here, from this frame's window size (see layoutMetrics).
 func (a *app) body(c *ui.Context, winW float32) {
-	// At the minimum window (960) the default 248 + 320 side panels would leave
-	// the main column under 400px. Narrower panels are applied once when the
-	// window crosses narrowBelow; the user can still drag them.
-	switch {
-	case winW < narrowBelow && !a.narrowSet:
-		a.sidebarW, a.inspW, a.narrowSet = min(a.sidebarW, 220), min(a.inspW, 280), true
-	case winW >= narrowBelow && a.narrowSet:
-		a.narrowSet = false
-	}
-	mainW := winW - a.sidebarW
-	a.tbCompact = mainW-c.TitleBar().Right < tbLabelsNeed
-	if a.inspectorOpen && a.tool == "" {
-		mainW -= a.inspW
-	}
-	a.compact = mainW < compactBelow
-	ui.Split(c, &a.sidebarW, func() { a.sidebar(c) }, func() { a.mainColumn(c, winW) }).Grow(1).MinHeight(0)
+	a.lay = a.layMem.metrics(layoutIn{
+		winW: winW, sidebarW: a.sidebarW, inspW: a.inspW,
+		inspector: a.inspectorOpen && a.tool == "", barRight: c.TitleBar().Right,
+	})
+	a.split(c, &a.fxSide, false, &a.sidebarW, func() { a.sidebar(c) }, func() { a.mainColumn(c) })
 }
 
 // mainColumn is everything right of the sidebar: the full-width top bar, and
 // below it the center column next to the inspector.
-func (a *app) mainColumn(c *ui.Context, winW float32) {
+func (a *app) mainColumn(c *ui.Context) {
 	ui.Column(c).Fill().MinWidth(0).MinHeight(0).Children(func() {
 		a.topBar(c)
-		if a.inspectorOpen && a.tool == "" {
-			avail := winW - a.sidebarW
-			mainW := avail - a.inspW
-			if ui.Split(c, &mainW, func() { a.mainArea(c) }, func() { a.inspector(c) }).Grow(1).MinHeight(0).Changed() {
-				a.inspW = clampF(avail-mainW, 260, 520)
+		if a.lay.inspW > 0 {
+			center := a.lay.centerW
+			if a.split(c, &a.fxInsp, false, &center, func() { a.mainArea(c) }, func() { a.inspector(c) }) {
+				a.inspW = clampF(a.lay.barW-dividerW-center, 260, 520)
 			}
 			return
 		}
