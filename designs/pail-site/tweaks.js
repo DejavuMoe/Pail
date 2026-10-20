@@ -6,28 +6,24 @@
   var saved = {};
   try { saved = JSON.parse(localStorage.getItem(KEY) || '{}'); } catch (e) {}
   var state = {
-    hero: saved.hero || 'center',
-    backdrop: saved.backdrop || 'both',
-    accent: saved.accent || 'serif'
+    hero: saved.hero === 'split' ? 'split' : 'center',
+    backdrop: saved.backdrop === 'plain' ? 'plain' : 'keys'
   };
   var options = {
     hero: [['center', 'Centered'], ['split', 'Split']],
-    backdrop: [['both', 'Strata + keys'], ['strata', 'Strata'], ['keys', 'Keys'], ['plain', 'Plain']],
-    accent: [['serif', 'Serif italic'], ['same', 'Headline face']]
+    backdrop: [['keys', 'Object keys'], ['plain', 'Plain']]
   };
-  var labels = { hero: 'Hero layout', backdrop: 'Hero backdrop', accent: 'Accent line' };
+  var labels = { hero: 'Hero layout', backdrop: 'Hero backdrop' };
 
   function apply() {
     root.setAttribute('data-hero', state.hero);
     root.setAttribute('data-backdrop', state.backdrop);
-    root.setAttribute('data-accent', state.accent);
     try { localStorage.setItem(KEY, JSON.stringify(state)); } catch (e) {}
     window.dispatchEvent(new Event('resize'));
   }
 
   var css = document.createElement('style');
   css.textContent =
-    ':root[data-accent="same"] .hero-line-accent{font-family:var(--font-display);font-style:normal;font-weight:600;letter-spacing:-.045em}' +
     '.tw-toggle{position:fixed;right:16px;bottom:16px;z-index:70;height:34px;padding:0 14px;border:1px solid var(--border-strong);border-radius:999px;background:var(--surface);color:var(--text);font:500 13px var(--font-body);cursor:pointer;box-shadow:0 8px 24px -12px rgb(var(--shadow-color)/.4)}' +
     '.tw-panel{position:fixed;right:16px;bottom:60px;z-index:70;width:260px;padding:14px;border:1px solid var(--border-strong);border-radius:14px;background:var(--surface);box-shadow:0 24px 48px -24px rgb(var(--shadow-color)/.5);font:13px var(--font-body);display:grid;gap:12px}' +
     '.tw-panel[hidden]{display:none}.tw-row{display:grid;gap:6px}.tw-row>span{color:var(--muted);font-size:12px;font-weight:500}' +
