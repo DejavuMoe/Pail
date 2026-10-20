@@ -1,116 +1,79 @@
-# CI handoff
+# CI and release process
 
-Facts and constraints for whoever designs Pail's CI. This is not a finished pipeline: it lists what exists, what each command needs and produces, and what must never run unattended.
+## Repository ownership
 
-## 1. Repository topology
+Forgejo (`ssh://git@ssh.via.moe/dejavu/Pail.git`) is the primary repository. Push commits and tags there from Windows. Forgejo mirrors them to [GitHub](https://github.com/DejavuMoe/Pail), where Actions tests the code and publishes release assets. Do not commit or merge source changes on GitHub. The default branch is `master` on both hosts.
 
-| Place | Role |
-| --- | --- |
-| Forgejo `ssh://git@ssh.via.moe/dejavu/Pail.git` | Primary repository. All pushes, branches and tags originate here. |
-| GitHub `github.com/DejavuMoe/Pail` | Push mirror of Forgejo. Treat it as read-only: anything committed or merged only on GitHub is not in the primary and can be overwritten by the next mirror push. |
-| GitHub Actions | Planned home for test and release CI (not written yet; no `.github/workflows/` exists). Triggers arrive through the mirror's pushes, so check once that branch and tag pushes from the mirror start workflows as expected. |
-| Woodpecker on Forgejo (`.woodpecker/`) | Deploys only the landing site under `site/`. It does not build, test or release the application, and GitHub Actions should not deploy `site/`. |
+Woodpecker deploys only the static website. Its live acceptance is separate from the application release gates; see [site.md](site.md). GitHub Actions never deploys the website.
 
-`.gitattributes` stores text with LF and checks out `*.go`, `*.sh`, `*.ps1`, `*.md`, `*.json`, `*.yml` and similar with LF on every OS, so Windows runners get the same bytes as Linux runners. Images, fonts, `.syso` and the zip fixtures under `internal/rules/internal/zipaes/testdata/` are binary.
+## Locked tools and dependencies
 
-## 2. Prerequisites
+`mise.toml` pins Go 1.27.2, Node.js 24.19.0 and PowerShell 7.6.7. Run `mise trust` and `mise install go node powershell`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
 
-- **Go**: the version in `go.mod` (`go 1.27.1`, no `toolchain` line). `actions/setup-go` with `go-version-file: go.mod` matches it.
-- **cgo**: not needed. mygo is pure Go (purego) on Windows, Linux and macOS; release builds set `CGO_ENABLED=0`. `go test -race` is the exception: the race detector needs cgo and a C compiler.
-- **PowerShell 7.3+** (`pwsh`) for the `scripts/*.ps1` files (`#Requires -Version 7.3`). The scripts use `/`-joined paths and `$IsWindows`/`$IsLinux`, and do not depend on the working directory: each resolves the repository root from its own location.
-- **bash, Docker, curl** for the MinIO suite, on Linux only. A Linux Docker daemon is required; Windows runners only run Windows containers.
-- **Network**: module downloads; the MinIO suite also pulls `golang:1.24.2-bookworm` (`golang:1.24.8-bookworm` for `latest`) from Docker Hub and fetches MinIO source from `codeload.github.com`.
-- `.agents/`, `designs/` and `site/` are not Go code. `go ... ./...` already skips `.agents/` (leading dot), but `gofmt -l .` does not, so exclude it there.
+Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node or PowerShell install only those tools with the pinned mise action. Third-party actions are pinned to full commit SHAs, and website containers to image digests. Changing the Go pin also requires updating the website builder image.
 
-## 3. Commands
+Windows owns all source edits and Git writes. For Linux validation use `linux-task.ps1 -Mode build -Project <repo> -Command '...'`; build mirrors are disposable and contain no `.git`. Linux CI runs the same commands directly. Pass workflow paths explicitly to actionlint, which otherwise relies on Git discovery.
 
-### Checks (any OS)
+## Workflows
 
-| Command | Passes when |
-| --- | --- |
-| `gofmt -l .` (ignore lines under `.agents/`) | no output |
-| `go vet ./...` | exit 0 |
-| `go test ./...` | exit 0 |
-| `go build ./cmd/pail ./cmd/pail-desktop` with `CGO_ENABLED=0` | exit 0 |
+| Workflow | Trigger | Required jobs |
+| --- | --- | --- |
+| `CI` | `master` push or manual | Six native test jobs; Quality; Race; MinIO |
+| `CodeQL` | `master` push or manual | Go on Linux, Windows and macOS; site JavaScript; Actions |
+| `Release` | `v*` tag push | Exact-commit preflight; three parallel packaging jobs; verified publication |
 
-`go test ./...` is offline: it uses `internal/s3test` (in-memory S3) and `httptest`. The `integration` package compiles but skips every test unless `PAIL_TEST_ENDPOINT` (MinIO suite) or `PAIL_EXT_ENDPOINT` (external suite) is set. **A job that runs `go test ./...` must never see `PAIL_EXT_*`**: with them present, that plain command runs the external suite against the real endpoint.
+Tests and CodeQL run in parallel. A later branch push cancels obsolete validation; release runs are not cancelled. Go analysis uses native OS builds to include OS-specific source. JavaScript analysis excludes `.agents/` and `designs/`, which are authoring tools/prototypes rather than the shipped site.
 
-`tools/site` tests build the site (landing page and docs pages) from the repository's own files into a temporary directory; they need no network and no Node. Deploying the site stays on Woodpecker.
+| Target | Native test runner | Release archive |
+| --- | --- | --- |
+| windows/amd64 | windows-2025 | ZIP |
+| windows/arm64 | windows-11-arm | ZIP |
+| linux/amd64 | ubuntu-24.04 | tar.gz |
+| linux/arm64 | ubuntu-24.04-arm | tar.gz |
+| darwin/amd64 | macos-15-intel | ZIP with Pail.app |
+| darwin/arm64 | macos-15 | ZIP with Pail.app |
 
-`cmd/pail-desktop` tests are headless (no window). With `PAIL_UI_SNAPSHOT_DIR=<dir>` they additionally write light/dark, English/Chinese PNGs for human review; without it those tests skip. Verified so far on native Windows and on WSL Debian (with WSLg); not yet on a GitHub-hosted runner without a display server.
+Each native job checks its actual GOOS/GOARCH, runs `go vet ./...`, `go test -count=1 -timeout 10m ./...`, builds both commands without cgo and executes their version commands. UI unit tests are headless. They do not prove an interactive GUI, GPU rendering or working system keychain on a user's desktop.
 
-The native smoke flags `pail-desktop --smoke-exit 5s [--smoke-screenshot out.png]` open a real window and need a desktop session. They have only been run by hand.
+Quality checks formatting, workflow syntax, release-gate tests, deployment fixtures and known Go vulnerabilities. Race runs `go test -race -count=1 -timeout 15m ./...` with cgo and a C compiler on Linux. MinIO uses the existing isolated integration suite, loading a fixed-source image built with the GitHub Actions Buildx cache. No real endpoint credentials are supplied to CI.
 
-### Release build — `scripts/release.ps1`
+## Release sequence
+
+1. Prepare both changelogs and download documentation on `master`. Commit and push to Forgejo; verify that GitHub has the identical SHA.
+2. Wait for every required CI and CodeQL job for that SHA. Review CodeQL alerts; a successful analysis upload alone is not a claim that the code has no findings.
+3. Run `node scripts/check-release.mjs DejavuMoe/Pail <sha>`. The check rejects missing, skipped, failed, pending, wrong-commit, wrong-branch and changed-attempt results. The same check runs again inside Release.
+4. On Windows, create a signed annotated tag, for example `git tag -s v0.1.0 -m "Pail v0.1.0"`, and push only that tag to Forgejo: `git push origin v0.1.0`.
+5. Use local `gh run list --repo DejavuMoe/Pail --commit <sha>` and `gh run watch <run-id> --repo DejavuMoe/Pail --exit-status` to monitor the mirrored workflow. Release verifies that the tag is a semantic version and its commit belongs to `master`, then extracts matching English and Chinese changelog sections.
+6. Package all six targets, verify the archives, upload them to a draft Release, then publish only after every upload succeeds. A published Release is not overwritten; failed draft uploads can be rerun. Do not move an existing release tag.
+7. Download the published archives and `SHA256SUMS`, verify them again, and run native version checks where available. Trigger the `master` website workflow separately after the release is public.
+
+The release workflow needs `actions: read` for preflight and `contents: write` only for publication. No Forgejo write token or website deployment secret is stored in GitHub. Tags originate in Forgejo; GitHub's write permission is for Release metadata/assets.
+
+## Building and checking release archives
 
 ```powershell
-pwsh ./scripts/release.ps1 -Version 1.2.3 [-CliOnly] [-Targets linux/amd64,windows/arm64] [-OutDir <dir>]
+pwsh ./scripts/release.ps1 -Version 0.1.0
+# Optional: -Targets linux/amd64,linux/arm64 -OutDir <directory> -CliOnly
+go run ./tools/verify-release -dir build/release/0.1.0 -version 0.1.0
 ```
 
-| Input | Default | Notes |
-| --- | --- | --- |
-| `-Version` | `0.0.0-dev` | Must match `^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$` (no leading `v`). Injected as `-X main.version=` into `cmd/pail` and `cmd/pail-desktop`. |
-| `-Targets` | all six: `windows`, `linux`, `darwin` × `amd64`, `arm64` | `os/arch` list; a single comma-separated string also works, which is what `pwsh -File` passes from bash. Cross-compiled from any host with `CGO_ENABLED=0`, `-trimpath`, `-ldflags "-s -w"`; Windows GUI adds `-H windowsgui`. |
-| `-CliOnly` | off | Builds only `pail`; no macOS `.app`. |
-| `-OutDir` | `<repo>/build/release` | Relative paths resolve against the caller's location. `<OutDir>/<Version>/` is deleted and recreated. |
+`-Version` accepts SemVer without the `v` prefix. `-Targets` accepts only the six supported targets; a comma-separated string works with `pwsh -File`. The default output is `<repo>/build/release/<version>/`; an explicit relative `-OutDir` resolves from the caller's directory. The per-version output and staging folders are replaced, with resolved-path and symlink checks. Run only one packaging script at a time in a checkout. A failed target fails the script; partial output is never publishable.
 
-It requires the committed generated icons (`assets/brand/generated/pail.icns`, `pail-256.png`) and the committed Windows resources `cmd/pail-desktop/rsrc_windows_*.syso`; regenerate them with `go run ./tools/genicons` from the repository root (the tool writes paths relative to the working directory). Byte-for-byte reproducibility of the generator and of the release archives has not been checked.
-
-The script stages in `<repo>/build/stage/<Version>/` (removed on success), restores `GOOS`, `GOARCH` and `CGO_ENABLED` and the working directory on exit, and ends by printing `output directory: <path>`.
-
-**A target that fails to build does not fail the script.** It prints a warning, skips the target and lists it in `NOT-BUILT.txt`. CI must treat the presence of `NOT-BUILT.txt` (or a missing expected archive) as a failure.
-
-Output layout in `<OutDir>/<Version>/`:
-
-| File | Contents (all under a top-level `Pail-<Version>-<os>-<arch>/` directory) |
+| File | Contents |
 | --- | --- |
-| `Pail-<V>-windows-<arch>.zip` | `pail-desktop.exe`, `pail.exe`, `LICENSE`, `README.md`, `README.zh-CN.md` |
-| `Pail-<V>-linux-<arch>.tar.gz` | `pail-desktop`, `pail`, `pail.desktop`, `pail.png`, `LICENSE`, READMEs |
-| `Pail-<V>-darwin-<arch>.zip` | `Pail.app/Contents/{MacOS/pail-desktop, Resources/pail.icns, Info.plist}`, `pail`, `LICENSE`, READMEs |
-| `SHA256SUMS` | One line per archive, `<lowercase sha256>  <file name>`; checks with `sha256sum -c SHA256SUMS` |
-| `NOT-BUILT.txt` | Only when a target failed |
+| `Pail-v<V>-windows-<arch>.zip` | `pail-desktop-v<V>-windows-<arch>.exe`, `pail-v<V>-windows-<arch>.exe`, license and READMEs |
+| `Pail-v<V>-linux-<arch>.tar.gz` | Versioned desktop/CLI binaries, `pail.desktop`, `pail.png`, license and READMEs |
+| `Pail-v<V>-darwin-<arch>.zip` | `Pail.app/Contents/MacOS/pail-desktop-v<V>-darwin-<arch>`, matching `CFBundleExecutable`, versioned CLI, license and READMEs |
+| `SHA256SUMS` | Exactly one SHA256 for every archive |
 
-Archives are written by `tools/pack`, which sets Unix modes explicitly (directories and executables 0755, other files 0644), so archives built on Windows still carry executable bits. Nothing is code-signed. macOS archives are cross-compiled only: not signed, not notarized, never run on real hardware. Windows binaries are unsigned too.
+Each archive has a top-level directory matching its filename without the extension. `tools/pack` preserves executable mode 0755 even when packaging on Windows. `tools/verify-release` rejects missing/unexpected files, incorrect checksums, unsafe archive entries, wrong executable permissions, wrong GOOS/GOARCH, cgo-enabled binaries, incorrect executable packages and broken platform launch entries. For a subset build, pass the same `-targets` list to the verifier. `-CliOnly` is a local convenience and is not accepted as a complete release by the verifier.
 
-### MinIO integration — `scripts/integration-minio.sh` / `scripts/test-integration.ps1`
+The scripts restore process environment and working directory. Generated icons and Windows resources are committed; regenerate them with `go run ./tools/genicons`. Archives are cross-compiled with `CGO_ENABLED=0`, `-trimpath`, `-s -w` and `-X main.version=<version>`. Windows GUI adds `-H windowsgui`. Binaries have no developer signature; macOS is not notarized. Byte-for-byte reproducible builds are not claimed.
 
-Safe for unattended CI on a Linux runner with Docker. Details in [integration/README.md](../integration/README.md).
+## Integration and manual-only checks
 
-```bash
-bash scripts/integration-minio.sh
-# or
-pwsh ./scripts/test-integration.ps1 [-Port 19000] [-MinioImage pinned|latest|<ref>] [-MinioLatestTag RELEASE.…Z] [-GoTestArgs '-run TestApp'] [-LogPath <file>]
-```
+`bash scripts/integration-minio.sh` builds the pinned MinIO fixture, binds it only to localhost, uses generated credentials and tmpfs data, and removes only its owned container. `PAIL_IT_MINIO_IMAGE=local:<image>` uses a previously loaded local image and fails if missing; the CI Buildx step uses this to avoid rebuilding or pulling the fixture twice. `-MinioImage latest` in the PowerShell wrapper remains an explicit compatibility check, not a moving CI dependency. See [integration/README.md](../integration/README.md) for all inputs.
 
-| Variable (sh) | Parameter (ps1) | Default |
-| --- | --- | --- |
-| `PAIL_IT_PORT` | `-Port` | `19000` (bound on `127.0.0.1`) |
-| `PAIL_IT_MINIO_IMAGE` | `-MinioImage` | `pinned` |
-| `PAIL_IT_MINIO_TAG` | `-MinioLatestTag` | `RELEASE.2025-10-15T17-29-55Z` |
-| `PAIL_IT_GOTEST_ARGS` | `-GoTestArgs` | empty; whitelist `[A-Za-z0-9_ .\|^$()=/-]` (no `?`, `*`, quotes) |
+Plain `go test ./...` skips integration tests unless their endpoint variables are present. Never provide `PAIL_EXT_*` to ordinary CI: doing so enables the real external suite. `scripts/test-external.ps1` is manual only, scoped to the authorized endpoint and a unique `pail-e2e/` prefix. It must never run with fork credentials or automatically after a push.
 
-- The script builds the MinIO image from source (several minutes on a cold Docker cache; GitHub-hosted runners start cold unless a cache is configured), starts one container with a random per-run secret, tmpfs data and an ownership label, waits up to 60 s for readiness, prints the server version, runs `go test ./integration -count=1 -v -timeout 20m`, and removes the container on exit only if the label matches.
-- Exit code is `go test`'s; 2 means an input was rejected. `-LogPath` tees the output and appends an exit-code line. The `TestExt*` tests show as SKIP in this run; that is expected.
-- One run per host at a time, or give each a different port. No secrets are needed or used.
-- On Windows, the ps1 needs the maintainer's local WSL wrapper `linux-task.ps1`; it stops with an error elsewhere. In CI, use a Linux runner.
-
-### External endpoint — `scripts/test-external.ps1`
-
-**Never unattended.** It reads and writes a real, user-owned S3-compatible server.
-
-- Inputs: `PAIL_EXT_ENDPOINT` (https only), `PAIL_EXT_ACCESS_KEY`, `PAIL_EXT_SECRET_KEY` (required); `PAIL_EXT_BUCKET` (default `test`), `PAIL_EXT_REGION` (default `us-east-1`), `PAIL_EXT_PATH_STYLE` (default `true`), `PAIL_EXT_CDN` (optional). Parameters `-LogPath` (default `build/ext-e2e.log`, relative paths resolve against the repository root), `-Run` (default `^TestExt`), `-CleanupOnly -Prefix pail-e2e/<run>/`.
-- Writes only below a unique `pail-e2e/<UTC>-<random>/` prefix and cleans it up; never touches bucket-level configuration. After the run it fails if the log contains the access key or the secret key.
-- If it is automated at all: manual trigger only (`workflow_dispatch`) in a protected environment with required reviewers, one run at a time, from branches of the primary repository. Never on `pull_request` from forks and never via `pull_request_target`. Keep `PAIL_EXT_*` scoped to that one job. Review the log before publishing it as an artifact.
-- A failed cleanup is repaired with `-CleanupOnly -Prefix <the prefix named in the log>`.
-
-## 4. Summary: what may run where
-
-| Task | Unattended CI | Runner |
-| --- | --- | --- |
-| gofmt check, `go vet ./...`, `go test ./...` | yes | Linux, Windows (macOS untested) |
-| `CGO_ENABLED=0 go build` of both commands | yes | any |
-| `scripts/release.ps1` | yes (check `NOT-BUILT.txt`) | any with pwsh 7.3+; one host cross-compiles all targets |
-| MinIO integration | yes | Linux with Docker |
-| `go test -race ./...` | yes | needs cgo and a C compiler |
-| Native smoke (`--smoke-*`) | no, by hand | desktop session |
-| `scripts/test-external.ps1` | **no**: manual, protected, secrets only for that job | any with pwsh |
+`pail-desktop --demo --smoke-exit 5s --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).

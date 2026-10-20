@@ -6,6 +6,7 @@
 #   PAIL_IT_PORT          host port bound on 127.0.0.1 (1024-65535, default 19000)
 #   PAIL_IT_MINIO_IMAGE   'pinned' (default) = build integration/Dockerfile.minio;
 #                         'latest' = build PAIL_IT_MINIO_TAG from integration/Dockerfile.minio-latest;
+#                         'local:<image>' = use an already loaded image without pulling;
 #                         anything else = full image reference, pulled by Docker
 #   PAIL_IT_MINIO_TAG     upstream release tag for 'latest' (default RELEASE.2025-10-15T17-29-55Z)
 #   PAIL_IT_GOTEST_ARGS   extra go test arguments split on whitespace, e.g. '-run TestApp'
@@ -58,6 +59,11 @@ command -v go >/dev/null
 docker info >/dev/null
 
 case "$minio_choice" in
+    local:*)
+        # CI loads its cached Buildx result; never pull or silently rebuild it.
+        image="${minio_choice#local:}"
+        docker image inspect "$image" >/dev/null
+        ;;
     pinned)
         image='pail-test-minio:0d7408fc9969-go1.24.2'
         docker build --file integration/Dockerfile.minio --tag "$image" integration

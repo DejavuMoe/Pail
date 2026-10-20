@@ -306,7 +306,7 @@ func (c *mdContext) mapHref(href string) (string, *docPage, error) {
 	if p, ok := sitePageForSource(resolved); ok {
 		return docURL(p, languageByCode(c.pageLang)) + frag, &p, nil
 	}
-	return githubURL + "/blob/main/" + resolved + frag, nil, nil
+	return githubURL + "/blob/master/" + resolved + frag, nil, nil
 }
 
 func (r *siteRenderer) renderLink(w util.BufWriter, src []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {

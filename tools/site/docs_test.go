@@ -94,7 +94,7 @@ func TestDocsPagesHaveStableIDs(t *testing.T) {
 	if n := len(headingRE.FindAllString(mainOf(read(t, filepath.Join(out, "changelog", "index.html"))), -1)); n != 4 {
 		t.Errorf("changelog has %d headings, want 4", n)
 	}
-	for _, id := range []string{`id="unreleased"`, `id="added"`, `id="known-limitations"`} {
+	for _, id := range []string{`id="s-0-1-0-2026-10-20"`, `id="added"`, `id="known-limitations"`} {
 		if !strings.Contains(read(t, filepath.Join(out, "zh", "changelog", "index.html")), id) {
 			t.Errorf("zh changelog lacks %s", id)
 		}
@@ -330,8 +330,8 @@ func TestMapHref(t *testing.T) {
 		{"docs", "en", "../README.md#install", "/docs/#install", "start", false},
 		{"", "en", "CHANGELOG.zh-CN.md", "/changelog/", "changelog", false},
 		{"", "en", "LICENSE", "/license/", "license", false},
-		{"", "en", "docs/status.md", githubURL + "/blob/main/docs/status.md", "", false},
-		{"docs", "zh", "images/x.txt#a", githubURL + "/blob/main/docs/images/x.txt#a", "", false},
+		{"", "en", "docs/status.md", githubURL + "/blob/master/docs/status.md", "", false},
+		{"docs", "zh", "images/x.txt#a", githubURL + "/blob/master/docs/images/x.txt#a", "", false},
 		{"", "en", "https://example.com/a?b=c", "https://example.com/a?b=c", "", false},
 		{"", "en", "mailto:a@example.com", "mailto:a@example.com", "", false},
 		{"", "en", "#install", "#install", "", false},
@@ -398,7 +398,7 @@ func TestMarkdownRendering(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	for _, want := range []string{`<a href="/docs/cli/#flags">Command line reference</a>`, `<a href="` + githubURL + `/blob/main/docs/status.md">docs/status.md</a>`, `<a href="/docs/cli/">the CLI</a>`} {
+	for _, want := range []string{`<a href="/docs/cli/#flags">Command line reference</a>`, `<a href="` + githubURL + `/blob/master/docs/status.md">docs/status.md</a>`, `<a href="/docs/cli/">the CLI</a>`} {
 		if !strings.Contains(out, want) {
 			t.Errorf("output lacks %s\n%s", want, out)
 		}

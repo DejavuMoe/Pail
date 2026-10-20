@@ -57,15 +57,17 @@ Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有任何隶属、认
 
 ## 安装
 
-发布包由 `scripts/release.ps1` 生成在 `build/release/<version>/` 中，并附带 `SHA256SUMS` 文件。每个包内含 `pail-desktop` 和 `pail` 两个可执行文件、`LICENSE` 以及 README。
+发布包由 `scripts/release.ps1` 生成在 `build/release/<version>/` 中，并附带 `SHA256SUMS` 文件。每个包内含桌面和 CLI 两个可执行文件、`LICENSE` 以及中英文 README。
 
 | 系统 | 压缩包 |
 | --- | --- |
-| Windows | `Pail-<version>-windows-amd64.zip`、`Pail-<version>-windows-arm64.zip` |
-| Linux | `Pail-<version>-linux-amd64.tar.gz`、`Pail-<version>-linux-arm64.tar.gz`（含 `pail.desktop` 和 `pail.png`） |
-| macOS | `Pail-<version>-darwin-amd64.zip`、`Pail-<version>-darwin-arm64.zip`（内含 `Pail.app`） |
+| Windows | `Pail-v<version>-windows-amd64.zip`、`Pail-v<version>-windows-arm64.zip` |
+| Linux | `Pail-v<version>-linux-amd64.tar.gz`、`Pail-v<version>-linux-arm64.tar.gz`（含 `pail.desktop` 和 `pail.png`） |
+| macOS | `Pail-v<version>-darwin-amd64.zip`、`Pail-v<version>-darwin-arm64.zip`（内含 `Pail.app`） |
 
-可执行文件没有代码签名。macOS 应用也没有公证，需要手动放行后才能通过 Gatekeeper。**Pail 从未在真实的 macOS 设备上运行过**，macOS 压缩包只做了交叉编译。
+从 [Pail v0.1.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.1.0) 下载，并用同一 Release 的 `SHA256SUMS` 校验压缩包。可执行文件名包含版本与目标平台，例如 `pail-desktop-v0.1.0-windows-amd64.exe` 和 `pail-v0.1.0-windows-amd64.exe`。macOS 保留 `Pail.app`，内部程序名同样包含版本。下文使用安装后的短名称 `pail-desktop` 和 `pail`；安装时可重命名或创建别名。Linux 的 `.desktop` 文件要求带版本的桌面程序位于 `PATH` 中。不提供 32 位桌面包。
+
+可执行文件没有开发者代码签名，macOS 应用也没有公证，可能被 Gatekeeper 阻止。CI 要求原生自动化测试和版本冒烟通过，但这不等于 macOS 或 ARM64 的人工 GUI 验收。
 
 ## 快速开始
 
@@ -96,7 +98,7 @@ pail presign s3://my-bucket/report.pdf --expires 1h
 
 ## 从源码构建
 
-需要 Go 1.27.1（见 `go.mod`），不需要 cgo。
+`mise.toml` 锁定 Go 1.27.2、Node.js 24.19.0（仅 CI 脚本使用）与 PowerShell 7.6.7。先运行 `mise trust` 和 `mise install go node powershell`；未启用 shell 集成时，使用 `mise exec -- <命令>`。Go 依赖仍由 `go.mod` 和 `go.sum` 锁定。除 race 测试外不需要 cgo。
 
 ```powershell
 go build ./cmd/pail-desktop ./cmd/pail
@@ -104,7 +106,7 @@ go build ./cmd/pail-desktop ./cmd/pail
 go run ./tools/genicons                # 由 assets/brand/pail-icon.svg 重新生成图标
 ```
 
-`scripts/release.ps1` 需要 `assets/brand/generated` 中已生成的图标。某个目标构建失败时会被跳过，并列在 `NOT-BUILT.txt` 中。
+`scripts/release.ps1` 需要 `assets/brand/generated` 中已生成的图标。任何目标构建失败都会让脚本失败。发布前运行 `go run ./tools/verify-release -dir build/release/0.1.0 -version 0.1.0`，检查六个压缩包、校验和、二进制目标平台与执行权限。
 
 ## 测试
 
@@ -139,7 +141,7 @@ go test ./...
 
 ## 平台状态
 
-已在 Windows 和 Linux（WSLg）上测试。macOS 版本只做了交叉编译，从未在真实设备上运行。目前用过的真实服务端：MinIO（两个版本）和 Cloudflare 后面的自建 VersityGW。AWS 本身，包括 STS 和 CloudFront，尚未测试。各功能的验证结果见 [docs/status.md](docs/status.md)，与 CS Browser Pro 的对照见 [docs/feature-matrix.md](docs/feature-matrix.md)。
+人工桌面检查覆盖 Windows 和 Linux（WSLg）。[CI 工作流](https://github.com/DejavuMoe/Pail/actions/workflows/ci.yml) 要求 Windows、Linux、macOS 的 amd64 和 arm64 原生测试及程序版本冒烟通过；结果以发布提交对应的运行记录为准。macOS 与 ARM64 的人工 GUI 验收仍待完成。目前用过的真实服务端：MinIO（两个版本）和 Cloudflare 后面的自建 VersityGW。AWS 本身，包括 STS 和 CloudFront，尚未测试。各功能的验证结果见 [docs/status.md](docs/status.md)，与 CS Browser Pro 的对照见 [docs/feature-matrix.md](docs/feature-matrix.md)。
 
 ## 文档
 

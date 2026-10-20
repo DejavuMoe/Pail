@@ -27,7 +27,7 @@ import (
 
 const githubURL = "https://github.com/DejavuMoe/Pail"
 
-var versionRE = regexp.MustCompile(`^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$`)
+var versionRE = regexp.MustCompile(`^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`)
 
 type language struct {
 	Code     string // data-lang value and the stored choice in localStorage
@@ -157,7 +157,7 @@ func build(c config) error {
 			return p, nil
 		},
 		"download": func(target string) string {
-			return release + "/Pail-" + c.version + "-" + target
+			return release + "/Pail-v" + c.version + "-" + target
 		},
 		"tl": func(lang, key string) (string, error) { return lookup(locales, lang, key) },
 		// t is bound to the page's language before each render.

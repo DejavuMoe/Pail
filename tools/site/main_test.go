@@ -85,7 +85,7 @@ func TestDownloadsMatchReleaseScript(t *testing.T) {
 		if target[1] == "linux" {
 			ext = ".tar.gz"
 		}
-		want = append(want, "Pail-1.2.3-"+target[1]+"-"+target[2]+ext)
+		want = append(want, "Pail-v1.2.3-"+target[1]+"-"+target[2]+ext)
 	}
 	var got []string
 	for _, l := range regexp.MustCompile(`releases/download/v1\.2\.3/(Pail-[^"]+)"`).FindAllStringSubmatch(page, -1) {
