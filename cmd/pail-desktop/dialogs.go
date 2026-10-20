@@ -62,8 +62,7 @@ func dialogW(c *ui.Context, open *bool, title string, width float32, body, foote
 		st = &ui.ScrollState{}
 		dialogScrolls[title] = st
 	}
-	ui.DialogBase(c, open, func(backdrop, panel ui.Element) {
-		backdrop.Background(k.Scrim)
+	modalLayer(c, title, open, k.Scrim, func(backdrop, panel ui.Element) {
 		dialogFrame(c, panel, width, winH)
 		dialogHeader(c, title, nil)
 		overflow := st.MaxY > 0

@@ -223,7 +223,7 @@ func valueButton(c *ui.Context, key, text string, subtle, monospace, editable bo
 	if !editable {
 		label = text
 	}
-	b := ui.ButtonBase(c.Key(key)).Label(label).Height(24).Padding(0, 6).Margin(0, 0, 0, -6).Radius(6).AlignItems(ui.Center).Justify(ui.Start).MinWidth(0).Disabled(!editable)
+	b := ui.ButtonBase(c.Key(key)).Label(label).Height(24).Padding(0, 6).Margin(0, 0, 0, -6).Radius(6).AlignItems(ui.Center).Justify(ui.Start).MinWidth(0).Disabled(!editable).Transition(hoverFade())
 	if tip != "" && editable {
 		b.Tooltip(tip)
 	}

@@ -118,7 +118,7 @@ func labelWidth(s string) float32 {
 // segmentFace styles one segment: see segmentedOff for the look.
 func segmentFace(c *ui.Context, s ui.Element, label string, on, disabled bool) {
 	k := tk(c)
-	s.Grow(1).Shrink(0).Height(24).Padding(0, 14).Radius(5).Center().Label(label).Disabled(disabled).
+	s.Grow(1).Shrink(0).Height(24).Padding(0, 14).Radius(5).Center().Label(label).Disabled(disabled).Transition(hoverFade()).
 		MinWidth(labelWidth(label) + 34) // never ellipsize a short label (600 weight is wider)
 	w, col := 500, k.TextMuted
 	switch {
@@ -175,7 +175,7 @@ func selectBox(c *ui.Context, label string, value *string, opts []choice, width 
 			shown = o.Label
 		}
 	}
-	sel.Trigger.Height(28).Padding(0, 8).Gap(6).Radius(6).AlignItems(ui.Center).Background(k.Surface).Label(label)
+	sel.Trigger.Height(28).Padding(0, 8).Gap(6).Radius(6).AlignItems(ui.Center).Background(k.Surface).Label(label).Transition(hoverFade())
 	if width > 0 {
 		sel.Trigger.Width(width).Shrink(0)
 	}
@@ -194,6 +194,17 @@ func selectBox(c *ui.Context, label string, value *string, opts []choice, width 
 	sel.Popup(func(panel ui.Element) {
 		panel.Margin(4, 0, 0, 0).Padding(4)
 		overlayPanel(c, panel, overlayPopover)
+		// It grows out of the trigger's edge on the overlay spring and fades out
+		// as it goes; below the trigger unless the window has no room.
+		_, winH := c.Size()
+		b, h := sel.Trigger.Bounds(), float32(len(opts))*listRowH+8
+		above := flips(b.Y+b.H+4, b.Y-h-4, h, winH)
+		dy := float32(-popRise)
+		if above {
+			dy = popRise
+		}
+		overlayEnter(c, panel, 0, dy, 0, b2f(above))
+		panel.Transition(overlayExit())
 		for _, o := range opts {
 			// The row under the pointer or the arrows is highlighted (SurfaceHover);
 			// the current option is a different cue: an Accent check and weight 600.

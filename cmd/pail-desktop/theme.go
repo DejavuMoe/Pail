@@ -169,7 +169,7 @@ func mono(e ui.Element) ui.Element { return e.Font("monospace") }
 // states, for places outside a ui.Toolbar (rows, headers).
 func iconButton(c *ui.Context, icon *ui.SVG, label string) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(6).Center()
+	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(6).Center().Transition(hoverFade())
 	switch {
 	case b.Pressed():
 		b.Background(k.SurfacePressed)
@@ -194,7 +194,7 @@ func vline(c *ui.Context, h float32) ui.Element {
 // less button is square. Hover and pressed use the neutral surfaces.
 func ghostButton(c *ui.Context, icon *ui.SVG, label, tip string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Radius(6).Height(28).Gap(6).Center().Disabled(disabled)
+	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Radius(6).Height(28).Gap(6).Center().Disabled(disabled).Transition(hoverFade())
 	if label == "" {
 		b.Width(28)
 	} else {
@@ -222,7 +222,7 @@ func ghostButton(c *ui.Context, icon *ui.SVG, label, tip string, disabled bool) 
 // while on, a muted icon otherwise.
 func toggleIconButton(c *ui.Context, icon *ui.SVG, label, tip string, on bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Size(28, 28).Radius(6).Center()
+	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Size(28, 28).Radius(6).Center().Transition(hoverFade())
 	switch {
 	case b.Pressed():
 		b.Background(k.SurfacePressed)
@@ -246,7 +246,7 @@ func toggleIconButton(c *ui.Context, icon *ui.SVG, label, tip string, on bool) u
 // buttonShell is the shared 28px, radius 6 frame of the outlined and solid
 // buttons.
 func buttonShell(c *ui.Context, label string, disabled bool) ui.Element {
-	b := ui.ButtonBase(c).Label(label).Height(28).Padding(0, 12).Radius(6).Center().Disabled(disabled)
+	b := ui.ButtonBase(c).Label(label).Height(28).Padding(0, 12).Radius(6).Center().Disabled(disabled).Transition(hoverFade())
 	if disabled {
 		b.Opacity(0.4)
 	}
@@ -320,9 +320,11 @@ func dangerOutlineButton(c *ui.Context, label string, disabled bool) ui.Element 
 }
 
 // tabIndicator is the 2px Accent underline pinned to the bottom of its
-// parent, which must be a positioned element (a tab or a tab strip item).
-func tabIndicator(c *ui.Context) ui.Element {
-	return ui.Box(c).Absolute().Left(0).Right(0).Bottom(0).Height(2).Radius(1).Background(tk(c).Accent)
+// parent, which must be a positioned element (a tab or a tab strip item). The
+// tabs of one strip share a group: the underline slides from the previous
+// tab to the current one (motion.go).
+func tabIndicator(c *ui.Context, group string) ui.Element {
+	return ui.Box(c).Absolute().Left(0).Right(0).Bottom(0).Height(2).Radius(1).Background(tk(c).Accent).Transition(slideTransition(group))
 }
 
 // searchBox is a 28px text field: Surface fill, BorderStrong outline (Focus

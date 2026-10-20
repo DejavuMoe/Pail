@@ -24,6 +24,7 @@ func (h *harness) menu() []string {
 		return h.tt.Menu()
 	}
 	h.tt.Frame()
+	h.playOut()
 	if !h.a.popup.open {
 		return nil
 	}
@@ -50,6 +51,7 @@ func (h *harness) chooseMenu(path ...string) error {
 	}
 	for depth, label := range path {
 		h.tt.Frame()
+		h.playOut() // the panel has come in: its rows are where they will stay
 		m := &h.a.popup
 		if !m.open || depth >= len(m.levels) {
 			return fmt.Errorf("no menu open at %q", strings.Join(path[:depth+1], " > "))
@@ -105,6 +107,7 @@ func (h *harness) openTestMenu(x, y float32, items func(m *menuBuilder)) {
 	h.a.popup.point, h.a.popup.x, h.a.popup.y = true, x, y
 	h.tt.Frame()
 	h.tt.Frame()
+	h.playOut()
 }
 
 // menuRect is the box of the open menu's panel at level li, as last laid out.
@@ -491,6 +494,7 @@ func TestMenusStayInsideTheSmallestWindow(t *testing.T) {
 			h.tt.Key(0, ui.KeyRight)
 			h.tt.Frame()
 			h.tt.Frame()
+			h.playOut() // the submenu has slid out
 			if len(h.a.popup.levels) != 2 {
 				t.Fatal("the Theme submenu did not open")
 			}

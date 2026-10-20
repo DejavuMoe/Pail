@@ -15,6 +15,12 @@ func (a *app) statusBar(c *ui.Context) {
 	ui.Row(c).Height(statusBarH).Padding(0, 12).Gap(6).AlignItems(ui.Center).
 		Background(k.Sidebar).BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Children(func() {
 		part := func(s string) { ui.Text(c, s).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine() }
+		// What counts (items, selected, running transfers) rolls its digits as
+		// it changes; the keys keep each one's identity as the parts around it
+		// come and go.
+		count := func(key, s string) {
+			ui.Text(c.Key(key), s).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().ContentTransition(countRoll)
+		}
 		dot := func() { ui.Text(c, "·").FontSize(sizeSecondary).TextColor(k.TextSubtle) }
 		if ac := a.account(); ac.ID != "" {
 			part(ac.Name)
@@ -22,7 +28,7 @@ func (a *app) statusBar(c *ui.Context) {
 			part(locales.StatusbarNoAccount())
 		}
 		if a.tool == "" {
-			a.statusBrowse(part, dot)
+			a.statusBrowse(part, count, dot)
 		}
 		ui.Spacer(c)
 		a.lockIndicator(c)
@@ -53,7 +59,7 @@ func (a *app) statusBar(c *ui.Context) {
 	})
 }
 
-func (a *app) statusBrowse(part func(string), dot func()) {
+func (a *app) statusBrowse(part func(string), count func(key, s string), dot func()) {
 	b, ok := a.bucket()
 	if !ok {
 		return
@@ -63,17 +69,17 @@ func (a *app) statusBrowse(part func(string), dot func()) {
 		part(b.Region)
 	}
 	dot()
-	count := locales.CommonItems(len(a.rows))
+	items := locales.CommonItems(len(a.rows))
 	if a.search != "" {
-		count = locales.StatusbarItemsOf(len(a.rows), groupInt(len(a.raw)))
+		items = locales.StatusbarItemsOf(len(a.rows), groupInt(len(a.raw)))
 	}
 	if a.loading {
-		count = locales.StatusbarLoading(count)
+		items = locales.StatusbarLoading(items)
 	}
-	part(count)
+	count("items", items)
 	if n := a.sel.Len(); n > 0 {
 		_, _, bytes := a.selectedInfo()
 		dot()
-		part(locales.StatusbarSelected(fmt.Sprint(n), humanBytes(bytes)))
+		count("selected", locales.StatusbarSelected(fmt.Sprint(n), humanBytes(bytes)))
 	}
 }
