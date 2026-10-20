@@ -79,6 +79,8 @@
   | Path-style | 路径样式 |
   | Access key | 访问密钥 |
   | Secret key | 私有密钥 |
+  | Secret (stored credential: secret key, session token, password) | 机密 |
+  | Secret reference | 机密引用 |
   | Vault | 加密保险库 |
   | Master password | 主密码 |
   | Transfers | 传输 |

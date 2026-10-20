@@ -132,9 +132,9 @@ go test ./...
 
 ## 数据与隐私
 
-- **配置**：系统用户配置目录下的 `Pail` 文件夹（Windows 为 `%AppData%\Pail`，Linux 为 `~/.config/Pail`，macOS 为 `~/Library/Application Support/Pail`），或 `--config-dir` 指定的路径。里面有设置、账户文件、同步作业、上传规则和秘密引用的名称。如果存在旧名称留下的 `openS3` 文件夹，会在首次启动时自动迁移一次。
-- **秘密**：私有访问密钥、会话令牌和被引用的密码保存在系统钥匙串（Windows 凭据管理器、macOS 钥匙串、Linux 的 Secret Service），服务名为 `Pail`；也可以选择加密保险库 `vault.json`（设置 > 安全，适合没有钥匙串的环境）。访问密钥 ID 不是秘密，保存在账户文件中。
-- **日志**：默认关闭。开启后，脱敏后的日志写入配置目录下的 `logs/pail.log`。URL 查询串、Authorization 头、签名和已知的秘密值都会被移除；手动输入的密码只能按标签识别，分享日志前请先检查。
+- **配置**：系统用户配置目录下的 `Pail` 文件夹（Windows 为 `%AppData%\Pail`，Linux 为 `~/.config/Pail`，macOS 为 `~/Library/Application Support/Pail`），或 `--config-dir` 指定的路径。里面有设置、账户文件、同步作业、上传规则和机密引用的名称。如果存在旧名称留下的 `openS3` 文件夹，会在首次启动时自动迁移一次。
+- **机密**：私有访问密钥、会话令牌和被引用的密码保存在系统钥匙串（Windows 凭据管理器、macOS 钥匙串、Linux 的 Secret Service），服务名为 `Pail`；也可以选择加密保险库 `vault.json`（设置 > 安全，适合没有钥匙串的环境）。访问密钥 ID 不是机密，保存在账户文件中。
+- **日志**：默认关闭。开启后，脱敏后的日志写入配置目录下的 `logs/pail.log`。URL 查询串、Authorization 头、签名和已知的机密值都会被移除；手动输入的密码只能按标签识别，分享日志前请先检查。
 - **网络**：Pail 只访问你配置的账户所对应的端点，没有遥测，也不检查更新。
 
 ## 平台状态
