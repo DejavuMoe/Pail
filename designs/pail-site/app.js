@@ -7,7 +7,6 @@
   var dict = window.PAIL_I18N;
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   var darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
-  var GH = 'https://github.com/DejavuMoe/Pail';
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
@@ -28,7 +27,6 @@
   /* ---------- Platform ---------- */
   var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
   var ua = navigator.userAgent || '';
-  var isMac = /Mac|iPhone|iPad/i.test(platform);
   var OS = (function () {
     if (/Android|iPhone|iPad|iPod/i.test(ua)) return null;
     if (/Win/i.test(platform)) return 'windows';
@@ -46,16 +44,14 @@
   /* ---------- i18n ---------- */
   function applyLang() {
     $$('[data-i18n]').forEach(function (el) { el.textContent = t(el.getAttribute('data-i18n')); });
-    $$('[data-i18n-aria-label], [data-i18n-title], [data-i18n-alt], [data-i18n-placeholder], [data-i18n-content]').forEach(function (el) {
-      ['aria-label', 'title', 'alt', 'placeholder', 'content'].forEach(function (attr) {
+    $$('[data-i18n-aria-label], [data-i18n-title], [data-i18n-alt], [data-i18n-placeholder], [data-i18n-content], [data-i18n-href]').forEach(function (el) {
+      ['aria-label', 'title', 'alt', 'placeholder', 'content', 'href'].forEach(function (attr) {
         var key = el.getAttribute('data-i18n-' + attr);
         if (key) el.setAttribute(attr, t(key));
       });
     });
-    $$('[data-mod]').forEach(function (k) { k.textContent = isMac ? '⌘' : 'Ctrl'; });
     var cta = $('[data-os-cta-label]');
     if (cta) cta.textContent = OS ? t('heroDownloadFor', { os: OS_NAMES[OS] }) : t('heroDownload');
-    if (palette.open) palette.render();
     paletteDemo.restart();
   }
 
@@ -133,7 +129,7 @@
     tilt.raf = tilt.cur === tilt.target ? 0 : requestAnimationFrame(tiltFrame);
   }
   function onScroll() {
-    header.classList.toggle('is-scrolled', window.scrollY > 8);
+    if (header) header.classList.toggle('is-scrolled', window.scrollY > 8);
     if (!win || reduced.matches) return;
     tilt.target = tiltTarget();
     if (tilt.cur === null) tilt.cur = tilt.target;
@@ -143,7 +139,7 @@
   window.addEventListener('resize', onScroll);
   onScroll();
 
-  var navLinks = $$('.nav a[href^="#"]');
+  var navLinks = $$('.nav a[href^="#"], .mobile-nav a[href^="#"]');
   var sectionObserver = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
       if (!en.isIntersecting) return;
@@ -154,7 +150,7 @@
       });
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
-  $$('main section[id]').forEach(function (s) { sectionObserver.observe(s); });
+  if (navLinks.length) $$('main section[id]').forEach(function (s) { sectionObserver.observe(s); });
 
   var revealObserver = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
@@ -199,6 +195,7 @@
       });
     }, 120);
     var chips = $$('[data-cycle] .chip', tile), k = 0;
+    if (!chips.length) return;
     loop(tile, function () {
       chips[k].classList.remove('is-on');
       k = (k + 1) % chips.length;
@@ -251,6 +248,7 @@
   (function () {
     var chips = $$('.setting-chips li:not(.is-unsupported)');
     var k = 0;
+    if (!chips.length) return;
     loop($('.mini-settings'), function () {
       chips.forEach(function (c) { c.classList.remove('is-lit'); });
       chips[k % chips.length].classList.add('is-lit');
@@ -261,6 +259,7 @@
   // Versions
   (function () {
     var box = $('.mini-versions');
+    if (!box) return;
     loop(box, function () { box.classList.toggle('is-restored'); }, 2600);
   })();
 
@@ -380,7 +379,7 @@
   /* ---------- Falling keys ---------- */
   var keys = (function () {
     var canvas = $('.hero-keys');
-    var api = { recolor: function () {} };
+    var api = { recolor: function () {}, relayout: function () {} };
     if (!canvas) return api;
     var ctx = canvas.getContext('2d');
     var KEYS = [
@@ -492,130 +491,39 @@
     return api;
   })();
 
-  /* ---------- Command palette ---------- */
-  var palette = (function () {
-    var el = $('[data-palette]');
-    var input = $('input', el), list = $('.palette-list', el), empty = $('.palette-empty', el);
-    var state = { open: false, items: [], active: 0, opener: null };
-    function go(id) { return function () { var target = document.getElementById(id); if (target) target.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth' }); }; }
-    function link(url) { return function () { window.open(url, '_blank', 'noopener'); }; }
-    function catalog() {
-      var pref = root.getAttribute('data-theme-pref');
-      var items = [
-        { g: 'pgGo', icon: 'i-arrow-right', label: t('navFeatures'), k: 'features 功能', run: go('features') },
-        { g: 'pgGo', icon: 'i-terminal', label: t('navCli'), k: 'command line cli terminal 命令行 终端', run: go('cli') },
-        { g: 'pgGo', icon: 'i-lock', label: t('navPrivacy'), k: 'privacy safety security 隐私 安全', run: go('privacy') },
-        { g: 'pgGo', icon: 'i-download', label: t('navDownload'), k: 'download install 下载 安装', run: go('download') },
-        { g: 'pgGo', icon: 'i-arrow-up', label: t('pcTop'), k: 'top home 顶部 首页', run: go('top') }
-      ];
-      if (OS) items.push({ g: 'pgActions', icon: 'i-download', label: t('pcDownload', { os: OS_NAMES[OS] }), k: 'download 下载 ' + OS, run: go('download') });
-      items.push(
-        { g: 'pgActions', icon: 'i-monitor', label: t('pcThemeSystem'), k: 'theme system auto 主题 系统 自动', hint: pref === 'system', run: function () { setTheme('system'); } },
-        { g: 'pgActions', icon: 'i-sun', label: t('pcThemeLight'), k: 'theme light 主题 浅色 亮色', hint: pref === 'light', run: function () { setTheme('light'); } },
-        { g: 'pgActions', icon: 'i-moon', label: t('pcThemeDark'), k: 'theme dark 主题 深色 暗色', hint: pref === 'dark', run: function () { setTheme('dark'); } },
-        { g: 'pgActions', icon: 'i-globe', label: t('pcLang'), k: 'language english chinese 语言 中文 英文', run: function () { setLang(lang() === 'zh' ? 'en' : 'zh'); } },
-        { g: 'pgLinks', icon: 'i-github', label: t('pcGithub'), k: 'github source repository 源码 仓库', run: link(GH) },
-        { g: 'pgLinks', icon: 'i-package', label: t('pcReleases'), k: 'releases versions 版本 发布', run: link(GH + '/releases') },
-        { g: 'pgLinks', icon: 'i-scroll', label: t('pcDocs'), k: 'docs documentation readme 文档', run: link(GH + '#readme') }
-      );
-      return items;
-    }
-    function renderPalette() {
-      var q = input.value.trim().toLowerCase();
-      state.items = catalog().filter(function (it) { return !q || (it.label + ' ' + it.k).toLowerCase().indexOf(q) !== -1; });
-      if (state.active >= state.items.length) state.active = 0;
-      // listbox > group (labelled) > option, per the WAI-ARIA listbox pattern.
-      var html = '', lastGroup = null;
-      state.items.forEach(function (it, i) {
-        if (it.g !== lastGroup) {
-          if (lastGroup) html += '</ul></li>';
-          html += '<li role="group" aria-labelledby="pg-' + it.g + '"><div class="palette-group" id="pg-' + it.g + '">' + t(it.g) + '</div><ul role="presentation">';
-          lastGroup = it.g;
-        }
-        html += '<li class="palette-item" role="option" id="pi-' + i + '" data-index="' + i + '" aria-selected="' + (i === state.active) + '">' +
-          '<svg class="i" aria-hidden="true" focusable="false"><use href="#' + it.icon + '"></use></svg><span>' + it.label + '</span>' +
-          (it.hint ? '<svg class="i pi-hint" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>' : '') + '</li>';
-      });
-      if (lastGroup) html += '</ul></li>';
-      list.innerHTML = html;
-      empty.hidden = state.items.length > 0;
-      input.setAttribute('aria-activedescendant', state.items.length ? 'pi-' + state.active : '');
-    }
-    function move(d) {
-      if (!state.items.length) return;
-      state.active = (state.active + d + state.items.length) % state.items.length;
-      $$('.palette-item', list).forEach(function (li) { li.setAttribute('aria-selected', String(+li.getAttribute('data-index') === state.active)); });
-      input.setAttribute('aria-activedescendant', 'pi-' + state.active);
-      var cur = $('#pi-' + state.active, list);
-      if (cur) cur.scrollIntoView({ block: 'nearest' });
-    }
-    function runActive() {
-      var it = state.items[state.active];
-      if (!it) return;
-      close();
-      it.run();
-    }
-    function open() {
-      if (state.open) return;
-      state.opener = document.activeElement;
-      state.open = true;
-      el.hidden = false;
-      input.value = '';
-      state.active = 0;
-      renderPalette();
-      setInert(true);
-      input.focus();
-      document.body.style.overflow = 'hidden';
-    }
-    function setInert(on) {
-      $$('body > :not([data-palette]):not(script):not(.sprite)').forEach(function (n) { n.inert = on; });
-    }
-    function close() {
-      if (!state.open) return;
-      state.open = false;
-      el.hidden = true;
-      setInert(false);
-      document.body.style.overflow = '';
-      if (state.opener && state.opener.focus) state.opener.focus();
-    }
-    input.addEventListener('input', function () { state.active = 0; renderPalette(); });
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
-      else if (e.key === 'Enter') { e.preventDefault(); runActive(); }
-      else if (e.key === 'Escape') { e.preventDefault(); close(); }
-      else if (e.key === 'Tab') { e.preventDefault(); }
-    });
-    list.addEventListener('mousemove', function (e) {
-      var li = e.target.closest('.palette-item');
-      if (li && +li.getAttribute('data-index') !== state.active) move(+li.getAttribute('data-index') - state.active);
-    });
-    list.addEventListener('click', function (e) {
-      var li = e.target.closest('.palette-item');
-      if (!li) return;
-      state.active = +li.getAttribute('data-index');
-      runActive();
-    });
+  /* ---------- Mobile navigation ---------- */
+  var menuBtn = $('.menu-btn');
+  var mobileNav = $('#mobile-nav');
+  function setMenu(open, restoreFocus) {
+    if (!menuBtn || !mobileNav) return;
+    mobileNav.hidden = !open;
+    menuBtn.setAttribute('aria-expanded', String(open));
+    if (!open && restoreFocus) menuBtn.focus();
+  }
+  if (menuBtn && mobileNav) {
+    menuBtn.addEventListener('click', function () { setMenu(mobileNav.hidden, false); });
+    mobileNav.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false, false); });
     document.addEventListener('keydown', function (e) {
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        if (state.open) close(); else open();
-      }
+      if (e.key === 'Escape' && !mobileNav.hidden) { e.preventDefault(); setMenu(false, true); }
     });
-    state.show = open;
-    state.hide = close;
-    state.render = renderPalette;
-    return state;
-  })();
+    var wideMQ = window.matchMedia('(min-width: 961px)');
+    var onWide = function () { if (wideMQ.matches) setMenu(false, false); };
+    if (wideMQ.addEventListener) wideMQ.addEventListener('change', onWide); else wideMQ.addListener(onWide);
+  }
 
   /* ---------- Actions ---------- */
   document.addEventListener('click', function (e) {
     var trigger = e.target.closest('[data-action]');
     if (!trigger) return;
-    var action = trigger.getAttribute('data-action');
-    if (action === 'palette') palette.show();
-    else if (action === 'palette-close') palette.hide();
-    else if (action === 'lang') setLang(lang() === 'zh' ? 'en' : 'zh');
+    if (trigger.getAttribute('data-action') !== 'lang') return;
+    if (trigger.tagName === 'A') {
+      // Docs pages: the control links to the same page in the other language.
+      // Remember the choice for the landing page, keep the section hash, and let the link navigate.
+      store('pail-lang', trigger.getAttribute('data-lang-target') === 'zh' ? 'zh' : 'en');
+      if (location.hash) trigger.setAttribute('href', trigger.getAttribute('href').split('#')[0] + location.hash);
+      return;
+    }
+    setLang(lang() === 'zh' ? 'en' : 'zh');
   });
 
   applyTheme(root.getAttribute('data-theme-pref') || 'system');

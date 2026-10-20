@@ -23,13 +23,13 @@
           "theme-system", "theme-light", "theme-dark",
           "lang-en", "lang-zh",
           "os-windows", "os-macos", "os-linux", "os-unknown",
-          "palette-open", "palette-filtered", "palette-empty",
+          "mobile-nav-open",
           "terminal-ls", "terminal-sync", "terminal-presign", "terminal-json",
           "reduced-motion",
           "width-390", "width-760", "width-1080", "width-1440",
           "not-found"
         ],
-        "stableIds": ["top", "features", "cli", "privacy", "download", "palette-list"]
+        "stableIds": ["top", "features", "cli", "privacy", "download", "mobile-nav"]
       },
       "production": {
         "routeOrWindow": "https://pail.download/ (en) and https://pail.download/zh/ (zh-Hans)",
@@ -37,7 +37,30 @@
         "interfaces": ["go run ./tools/site -out <dir> -version <x.y.z>", ".woodpecker/site.yml"],
         "tests": ["go test ./tools/site/..."]
       },
-      "status": "implemented"
+      "status": "needs-review"
+    },
+    {
+      "id": "docs-pages",
+      "contentProfile": "marketing-approved",
+      "prototype": {
+        "entry": "docs.html",
+        "assetPath": "docs.html",
+        "files": ["docs.html", "docs.zh.html", "docs-cli.html", "docs-cli.zh.html", "changelog.html", "changelog.zh.html", "license.html", "license.zh.html", "docs.css", "docs.js", "styles.css", "app.js", "i18n.js"],
+        "states": [
+          "theme-light", "theme-dark",
+          "lang-en", "lang-zh", "english-only-note",
+          "toc-current-section",
+          "width-390", "width-760", "width-1080", "width-1440"
+        ],
+        "stableIds": ["install", "quick-start", "command-line", "build-from-source", "data-and-privacy", "platform-status"]
+      },
+      "production": {
+        "routeOrWindow": "https://pail.download/docs/, /docs/cli/, /changelog/, /license/ and the same under /zh/",
+        "files": ["site/templates/", "site/static/", "tools/site/"],
+        "interfaces": ["go run ./tools/site -out <dir> -version <x.y.z>"],
+        "tests": ["go test ./tools/site/..."]
+      },
+      "status": "needs-review"
     }
   ]
 }
