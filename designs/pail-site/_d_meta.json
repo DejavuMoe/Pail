@@ -29,8 +29,22 @@
           }
         }
       ]
+    },
+    "Pail social preview": {
+      "versions": [
+        {
+          "path": "social-preview.html",
+          "createdAt": "2026-10-20T13:20:07.969Z",
+          "status": "approved",
+          "subtitle": "Approved 2026-10-20: actual light screenshot; bilingual Open Graph and Twitter metadata; no new page design",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        }
+      ]
     }
   },
   "createdAt": "2026-10-20T01:42:31.338Z",
-  "updatedAt": "2026-10-20T06:36:44.032Z"
+  "updatedAt": "2026-10-20T13:20:07.972Z"
 }
