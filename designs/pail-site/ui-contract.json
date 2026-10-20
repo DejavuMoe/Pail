@@ -36,7 +36,7 @@
         "interfaces": ["go run ./tools/site -out <dir> -version <x.y.z>", ".woodpecker/site.yml"],
         "tests": ["go test ./tools/site/..."]
       },
-      "status": "prototype"
+      "status": "approved"
     }
   ]
 }

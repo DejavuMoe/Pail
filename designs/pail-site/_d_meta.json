@@ -8,7 +8,7 @@
         {
           "path": "index.html",
           "createdAt": "2026-10-20T01:42:31.335Z",
-          "status": "needs-review",
+          "status": "approved",
           "subtitle": "Bilingual landing page for pail.download, light/dark",
           "viewport": {
             "width": 1440,
@@ -19,5 +19,5 @@
     }
   },
   "createdAt": "2026-10-20T01:42:31.338Z",
-  "updatedAt": "2026-10-20T03:54:52.554Z"
+  "updatedAt": "2026-10-20T04:22:29.307Z"
 }
