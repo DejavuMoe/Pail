@@ -34,7 +34,7 @@ func TestShortcutKeysSplitsOneCapPerKey(t *testing.T) {
 	}
 }
 
-// The colour discipline of docs/design.md: no view names a colour. Everything
+// The colour discipline of docs/dev/design.md: no view names a colour. Everything
 // comes from theme.go through tk.
 func TestNoColourLiteralsOutsideTheme(t *testing.T) {
 	lit := regexp.MustCompile(`\bui\.(RGB|RGBA|Hex|Oklch)\(|ui\.Color\{`)

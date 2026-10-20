@@ -1,161 +1,136 @@
-# Pail
+<p align="center">
+  <img src="assets/brand/pail-icon.svg" width="80" height="80" alt="">
+</p>
 
-English | [简体中文](README.zh-CN.md)
+<h1 align="center">Pail</h1>
 
-Pail is a cross-platform desktop manager for S3-compatible object storage: Amazon S3, MinIO, Cloudflare R2, VersityGW, Wasabi and other services that speak the S3 API. It is written in Go with the [mygo](https://github.com/egoist/mygo) UI toolkit, runs on Windows, Linux and macOS, and comes with a command-line companion, `pail`.
+<p align="center">
+  A desktop client for Amazon S3, Cloudflare R2, MinIO and other S3-compatible storage.<br>
+  Windows, macOS and Linux. Free and open source.
+</p>
 
-Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endorsed by or sponsored by AWS.
+<p align="center">
+  <a href="https://pail.download">Website</a> ·
+  <a href="https://github.com/DejavuMoe/Pail/releases/latest">Download</a> ·
+  <a href="https://pail.download/docs/">Documentation</a> ·
+  <a href="README.zh-CN.md">简体中文</a>
+</p>
 
-![Pail, light theme](docs/images/main-light.webp)
-![Pail, dark theme](docs/images/main-dark.webp)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-dark.webp">
+  <img src="docs/images/main-light.webp" alt="The Pail main window: bucket list, object table and inspector">
+</picture>
 
 ## Features
 
-**Browsing**
-- Unlimited accounts for AWS and S3-compatible providers (custom endpoint, region, path-style, access keys, AWS profile, default credential chain, anonymous, AssumeRole); connection test.
-- Bucket list, breadcrumbs, sortable multi-select object table with automatic paging, search, flat (prefix-less) view, inspector panel.
-- Preview of JSON, CSV, XML and other text, images and hex, limited to a safe size.
-- Copy key, URI, URL and presigned URL.
-
-**Transfers**
-- Upload and download files, folders, versions and whole buckets; drag and drop.
-- Separate upload, download and other queues with configurable concurrency, progress, speed, cancel and retry.
-- Conflict policies: skip, overwrite, rename, newer, different size.
-- Multipart transfers, per-account checksum modes (auto, when required, when supported), and create-only writes so a concurrent writer is never overwritten.
-- Downloads go to a temporary file and are published only after verification.
-
-**Object properties**
-- Edit headers, metadata, tags, ACL, storage class and server-side encryption (SSE-S3, SSE-KMS, SSE-C); MIME type table.
-- Edits keep every property you did not change, and the result is verified afterwards. Multi-selection asks for confirmation of the scope.
-
-**Versions**
-- List versions and delete markers, download several at once, restore an old version or a deleted key, permanently delete chosen versions.
-
-**Buckets**
-- Create (region, object lock), delete, empty, copy or move the contents of a whole bucket, apply a storage class or encryption to a whole bucket.
-- 14 bucket settings (versioning, encryption, policy, CORS, lifecycle, logging, tagging, website, public access block, ownership, object lock, requester pays, transfer acceleration, replication) as forms or JSON. A provider that lacks one is reported as unsupported, not as "not configured".
-- Incomplete multipart uploads: list and abort.
-
-**Sync jobs**
-- Saved jobs: upload, download or mirror; compare by size and time, size, or checksum; exclude globs; preview first. Execution performs only previewed actions and re-checks each precondition. Local deletions go to the OS trash.
-
-**Upload rules and compression**
-- Rules by bucket and key pattern set headers, storage class, encryption and compression: GZIP, ZIP or AES-256 ZIP, with a compression level. Compressed downloads can be decoded on the way down.
-
-**CDN, presigned URLs, CloudFront**
-- Optional CDN domain per account (base URL or `{bucket}`/`{key}` template): copy or open an object's CDN link, offered right after an upload.
-- Presigned URLs for GET or PUT, with expiry, a chosen version and several objects at once.
-- CloudFront (AWS accounts only): list distributions, invalidate paths, a whole bucket's distributions, view invalidations.
-
-**Security**
-- Secret keys and passwords live in the OS keychain, or in an optional encrypted vault (Argon2id key derivation, XChaCha20-Poly1305), never in config files.
-- Destructive actions show their scope first; deleting a bucket requires typing its name. Optional diagnostic log with secrets redacted.
-
-**Interface**
-- Command palette (`Ctrl+K`, `⌘K` on macOS), keyboard shortcuts, and in-window menus on Windows/Linux; macOS uses system menus.
-- Consistent dialogs and popups, animated indicators and panel transitions, with the system reduce-motion preference respected.
-- English and 简体中文, light and dark themes, following the system by default.
+- **Accounts.** Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. For services other than AWS, set the endpoint, region and path-style addressing, and test the connection before saving.
+- **Browsing.** A sortable, multi-select object table that pages automatically, with breadcrumbs, a filter, a flat view and an inspector. Preview text files (JSON, CSV, XML and others), images and hex. Copy keys, URIs, URLs and presigned URLs.
+- **Transfers.** Upload and download files, folders, versions and whole buckets, or drag files into the window. Uploads and downloads have their own queues with adjustable concurrency, progress, speed, cancel and retry. When a file already exists: skip, overwrite, keep both, overwrite if newer, or overwrite if the size differs. Large files are uploaded in parts with checksums; downloads are written to a temporary file and moved into place after they are verified.
+- **Object properties.** Headers, metadata, tags, ACL, storage class and server-side encryption (SSE-S3, SSE-KMS, SSE-C) for one object or a selection. Properties you do not change are kept.
+- **Versions.** List versions and delete markers, download several versions at once, restore an older version or a deleted key, and permanently delete the versions you select.
+- **Buckets.** Create buckets (with region and object lock), empty and delete them, and copy or move a bucket's contents. Edit 14 bucket settings as a form or as JSON: versioning, encryption, policy, CORS, lifecycle, logging, tags, static website, public access block, ownership, object lock, requester pays, transfer acceleration and replication. List and abort incomplete multipart uploads.
+- **Sync jobs.** Save jobs that upload, download or mirror a folder. Compare by size and time, size or checksum, exclude files by pattern, and review the plan before it runs.
+- **Upload rules.** Match by bucket and key pattern to set headers, storage class and encryption, or to compress with GZIP, ZIP or AES-256 ZIP. Compressed objects can be decoded on download.
+- **Links.** Presigned GET and PUT URLs with an expiry, for a chosen version or for many objects at once. An optional CDN domain per account, with the CDN link offered after each upload. CloudFront invalidations for AWS accounts.
+- **Interface.** Command palette (`Ctrl+K`, or `⌘K` on macOS) and keyboard shortcuts. English and Simplified Chinese, light and dark themes.
 
 ## Install
 
-Download [Pail v0.2.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.2.0) and verify the archive against its `SHA256SUMS`. Archives are built by `tools/release` into `build/release/<version>/`. Each contains the desktop and CLI executables, `LICENSE`; documentation is available on [pail.download](https://pail.download/docs/).
+Download the archive for your system from the [latest release](https://github.com/DejavuMoe/Pail/releases/latest). The same files are mirrored at [pan.zsh.moe/Pail](https://pan.zsh.moe/Pail/).
 
-| OS | Archive |
-| --- | --- |
-| Windows | `Pail-v<version>-windows-amd64.zip`, `Pail-v<version>-windows-arm64.zip` |
-| Linux | `Pail-v<version>-linux-amd64.tar.gz`, `Pail-v<version>-linux-arm64.tar.gz` (with `pail.desktop` and `pail.png`) |
-| macOS | `Pail-v<version>-darwin-amd64.zip`, `Pail-v<version>-darwin-arm64.zip` (contains `Pail.app`) |
+- **Windows:** `Pail-v<version>-windows-amd64.zip` (x64) or `Pail-v<version>-windows-arm64.zip` (Arm)
+- **macOS 11 or later:** `Pail-v<version>-darwin-arm64.zip` (Apple silicon) or `Pail-v<version>-darwin-amd64.zip` (Intel)
+- **Linux:** `Pail-v<version>-linux-amd64.tar.gz` (x64) or `Pail-v<version>-linux-arm64.tar.gz` (Arm)
 
-Executable filenames include the version and target, for example `pail-desktop-v0.2.0-windows-amd64.exe` and `pail-v0.2.0-windows-amd64.exe`. macOS keeps `Pail.app`, with a versioned executable inside. The examples below use the short installed names `pail-desktop` and `pail`: rename the binaries or create aliases when installing. The Linux `.desktop` entry expects the versioned desktop executable on `PATH`. No 32-bit desktop package is provided.
+Each archive holds the desktop app and the `pail` command-line tool. The macOS archive holds `Pail.app`; the Linux archive also has a `.desktop` entry and an icon. There are no 32-bit builds.
 
-Binaries have no developer code signature; the macOS app is not notarized and may be blocked by Gatekeeper. Native automated tests and version smoke checks are required by CI; they do not replace manual GUI acceptance on macOS or ARM64.
+Executable names include the version and platform, for example `pail-v0.2.0-windows-amd64.exe`. The examples in this document use the short names `pail-desktop` and `pail`: rename the files or create aliases when you install them. The Linux `.desktop` entry starts the versioned desktop executable from your `PATH`.
+
+### Check the download
+
+Compare the archive's SHA-256 hash with its line in `SHA256SUMS` from the same release:
+
+```sh
+sha256sum Pail-v0.2.0-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.2.0-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.2.0-windows-amd64.zip         # Windows PowerShell
+```
+
+### First launch on macOS
+
+The app is not signed or notarized, so macOS refuses to open a downloaded copy. Unzip the archive, move `Pail.app` to Applications, and clear the quarantine flag once:
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Pail.app
+```
+
+### First launch on Windows
+
+The executables are not signed. If SmartScreen says "Windows protected your PC", choose **More info**, then **Run anyway**.
 
 ## Quick start
 
-1. Start `pail-desktop`, open the account switcher in the sidebar and add an account. For a self-hosted or third-party service, for example:
-   - Endpoint `https://s3.example.com`, region `us-east-1`, access key ID and secret key;
-   - turn on **Path-style addressing** (MinIO and most self-hosted gateways need it; keep it off for AWS);
-   - optionally set a **CDN URL** such as `https://cdn.example.com`.
+1. Start `pail-desktop`. Open the account menu at the top of the sidebar and add an account. For a self-hosted or third-party service, enter:
+   - the endpoint, such as `https://s3.example.com`, and the region, such as `us-east-1`;
+   - the access key ID and secret access key;
+   - **Path-style addressing**: on for MinIO and most self-hosted gateways, off for AWS;
+   - optionally a **CDN URL**, such as `https://cdn.example.com`.
 
-   Press "Test connection", then save. The secret key goes to the OS keychain.
-2. Pick a bucket in the sidebar and browse. Drag files in to upload; select objects and press Download.
-3. To try it without credentials, run `pail-desktop --demo`: it talks to an in-memory S3 server inside the process, nothing leaves your machine and nothing is saved.
+   Choose **Test connection**, then save. The secret key is stored in the system keychain.
+2. Pick a bucket in the sidebar. Drag files into the window to upload them; select objects and choose **Download** to save them.
+3. To try Pail without an account, run `pail-desktop --demo`. It starts an in-memory S3 server inside the app; nothing is sent anywhere and nothing is saved.
 
-Other flags: `--config-dir DIR`, `--theme system|light|dark`, `--size WxH`, `--tool sync|cloudfront|rules|mime|multipart|settings`, `--version`.
+`pail-desktop` also accepts these flags:
+
+| Flag | Effect |
+| --- | --- |
+| `--config-dir` | Use another configuration directory. |
+| `--theme` | `system`, `light` or `dark`. |
+| `--size` | Initial window size, such as `1280x800`. |
+| `--tool` | Open a tool at start: `sync`, `cloudfront`, `rules`, `mime`, `multipart` or `settings`. |
+| `--version` | Print the version and exit. |
 
 ## Command line
 
-`pail` shares accounts and sync jobs with the desktop app:
+`pail` uses the accounts and saved sync jobs of the desktop app. Add accounts in the desktop app first.
 
-```powershell
+```sh
 pail accounts
 pail ls s3://my-bucket/photos/ -r
 pail cp ./dist s3://my-bucket/site/ -r --conflict newer
-pail sync ./photos s3://my-bucket/photos/ --mode new_changed --dry-run
+pail sync ./photos s3://my-bucket/photos/ --dry-run
 pail presign s3://my-bucket/report.pdf --expires 1h
 ```
 
-Commands: `accounts`, `buckets`, `ls`, `cp`, `mv`, `rm`, `mb`, `rb`, `presign`, `url`, `versions`, `restore`, `sync`, `vault status`. JSON output, exit codes and the encrypted vault are described in [docs/cli.md](docs/cli.md).
-
-## Build from source
-
-Tool versions are pinned in `mise.toml`: Go 1.27.2 and Node.js 24.19.0 (CI scripts only). Run `mise trust` and `mise install go node`, then use `mise exec -- <command>` if shell activation is unavailable. Go dependencies remain pinned by `go.mod` and `go.sum`. Native builds, tests and cross-platform release packaging require only Go. PowerShell 7.3+ is needed only if you choose the optional compatibility wrappers; CI does not use them. No cgo is needed except for race tests.
-
-```powershell
-go build -o build/ ./cmd/pail-desktop ./cmd/pail
-go run ./tools/release -version 0.2.0  # build and verify all six targets
-go run ./tools/genicons                # regenerate icons from assets/brand/pail-icon.svg
-```
-
-`tools/release` expects the generated icons in `assets/brand/generated`. Any failed target or archive verification fails the build. The tool verifies archives automatically; to recheck downloaded artifacts, `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0` checks all six archives, checksums, binary targets and executable permissions.
-
-## Testing
-
-```powershell
-go vet ./...
-go test ./...
-```
-
-These use an in-memory S3 server (`internal/s3test`) and `httptest`, so they exercise the protocol but not a real provider.
-
-Against a real MinIO in Docker on Linux:
-
-```sh
-bash scripts/integration-minio.sh
-```
-
-On Windows with the optional `linux-task.ps1` WSL build runner installed, the PowerShell wrapper runs the same suite:
-
-```powershell
-./scripts/test-integration.ps1                      # pinned MinIO build
-./scripts/test-integration.ps1 -MinioImage latest   # newest upstream release, built from source
-```
-
-Against any real S3-compatible endpoint you own, with credentials passed only through `PAIL_EXT_*` environment variables (`PAIL_EXT_ENDPOINT`, `PAIL_EXT_ACCESS_KEY`, `PAIL_EXT_SECRET_KEY`, optionally `PAIL_EXT_BUCKET`, `PAIL_EXT_REGION`, `PAIL_EXT_PATH_STYLE`, `PAIL_EXT_CDN`):
-
-```powershell
-./scripts/test-external.ps1
-```
-
-The suite writes only below a unique `pail-e2e/<run>/` prefix, removes it afterwards, creates and deletes no buckets and changes no bucket settings. Details are in [integration/README.md](integration/README.md).
+Every command, its flags, JSON output and exit codes are in the [command-line reference](docs/cli.md).
 
 ## Data and privacy
 
-- **Configuration**: the `Pail` folder in the OS user config directory (Windows `%AppData%\Pail`, Linux `~/.config/Pail`, macOS `~/Library/Application Support/Pail`), or the path given with `--config-dir`. It holds the settings, the accounts file, sync jobs, upload rules and the names of secret references. An existing `openS3` folder from an earlier name is migrated automatically once.
-- **Secrets**: secret access keys, session tokens and referenced passwords go to the OS keychain (Windows Credential Manager, macOS Keychain, Secret Service on Linux) under the service name `Pail`, or into the encrypted vault `vault.json` if you choose one (Settings > Security; useful where no keychain exists). The access key ID is not secret and is stored in the accounts file.
-- **Logs**: off by default. When enabled, a redacted log is written to `logs/pail.log` in the configuration directory. URL query strings, Authorization headers, signatures and known secret values are removed; hand-typed passwords can be recognised only by label, so review a log before sharing it.
-- **Network**: Pail talks only to the endpoints of the accounts you configure. There is no telemetry and no update check.
+- **Configuration** lives in the `Pail` folder of your user configuration directory: `%AppData%\Pail` on Windows, `~/Library/Application Support/Pail` on macOS, `~/.config/Pail` on Linux, or the directory given with `--config-dir`. It holds settings, accounts, sync jobs, upload rules and the names of stored secrets. A folder from Pail's earlier name, `openS3`, is migrated once on first start.
+- **Secrets** (secret access keys, session tokens and saved passwords) go to the system keychain under the service name `Pail`: Windows Credential Manager, macOS Keychain or the Secret Service on Linux. Where there is no keychain, choose the encrypted vault `vault.json` in **Settings › Security**. Access key IDs are not secret and are stored with the accounts.
+- **Logs** are off by default. When you turn them on, Pail writes `logs/pail.log` in the configuration directory with URL query strings, Authorization headers, signatures and known secret values removed. Passwords you type by hand are recognised only by their label, so read a log before you share it.
+- **Network:** Pail connects only to the endpoints of the accounts you add. It has no telemetry and does not check for updates.
 
-## Platform status
+## Tested platforms and services
 
-Manual desktop checks cover Windows and Linux under WSLg. The [CI workflow](https://github.com/DejavuMoe/Pail/actions/workflows/ci.yml) requires native tests and executable version smoke checks on Windows, Linux and macOS, each on amd64 and arm64; consult the run for the release commit for results. Interactive GUI acceptance on macOS and ARM64 remains outstanding. Real-server tests so far: MinIO (two releases) and a self-hosted VersityGW behind Cloudflare. AWS itself, including STS and CloudFront, has not been tested. Per-feature results are in [docs/status.md](docs/status.md); the comparison with CS Browser Pro is in [docs/feature-matrix.md](docs/feature-matrix.md).
+- The desktop app has been run by hand on Windows (x64), Linux (x64) and macOS (Apple silicon and Intel). The Arm builds for Windows and Linux have not been tried by hand yet.
+- Tested services: Amazon S3, Cloudflare R2, Wasabi, MinIO and VersityGW.
+- Not yet tested on a real AWS account: AssumeRole credentials and CloudFront.
 
-## Documentation
+Known limitations are listed in the [changelog](CHANGELOG.md).
 
-[docs/cli.md](docs/cli.md) · [docs/architecture.md](docs/architecture.md) · [docs/app-api.md](docs/app-api.md) · [docs/design.md](docs/design.md) · [docs/status.md](docs/status.md) · [docs/ci.md](docs/ci.md) · [docs/site.md](docs/site.md) · [CHANGELOG.md](CHANGELOG.md)
+## Build from source
+
+You need Go 1.27.2. No C compiler is required.
+
+```sh
+go build -o build/ ./cmd/pail-desktop ./cmd/pail
+```
+
+Tests, release packaging and the project layout are described in [CONTRIBUTING.md](CONTRIBUTING.md).
 
 ## License
 
-Pail is released under the [MIT License](LICENSE), © 2026 Dejavu Moe. Bundled third-party assets: [Lucide](https://lucide.dev) icons (ISC) and the Inter font (SIL Open Font License 1.1, `cmd/pail-desktop/fonts/OFL.txt`).
+Pail is released under the [MIT License](LICENSE). It bundles [Lucide](https://lucide.dev) icons (ISC License) and the Inter font (SIL Open Font License 1.1).
 
-Made by [Dejavu Moe](https://dejavu.moe) · https://github.com/DejavuMoe/Pail
+Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endorsed by or sponsored by AWS.
