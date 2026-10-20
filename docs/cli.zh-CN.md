@@ -2,7 +2,7 @@
 
 [English](cli.md) | 简体中文
 
-`pail` 是 `internal/app` 之上的一层轻量前端。它与桌面应用共用配置目录和秘密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。
+`pail` 是 `internal/app` 之上的一层轻量前端。它与桌面应用共用配置目录和机密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。
 
 ```powershell
 go build -o bin/pail.exe ./cmd/pail
@@ -31,7 +31,7 @@ S3 路径写作 `s3://bucket/key-or-prefix/`；其他参数一律视为本地路
 | 命令 | 说明 |
 | --- | --- |
 | `accounts` | 名称、ID、服务商、端点、区域。 |
-| `vault status [--vault-password-stdin]` | 秘密后端（`keyring` 或 `vault`）、`vault.json` 是否存在，以及桌面应用的自动锁定设置。带 `--vault-password-stdin` 时还会校验主密码。`--json` 输出 `{"type":"vault","backend":...,"vaultExists":...,"autoLockMinutes":...}`。绝不输出秘密。 |
+| `vault status [--vault-password-stdin]` | 机密后端（`keyring` 或 `vault`）、`vault.json` 是否存在，以及桌面应用的自动锁定设置。带 `--vault-password-stdin` 时还会校验主密码。`--json` 输出 `{"type":"vault","backend":...,"vaultExists":...,"autoLockMinutes":...}`。绝不输出机密。 |
 | `buckets` | 存储桶及其区域。 |
 | `ls [s3://b/prefix/] [-r]` | 文件夹显示为 `PRE name/`；大小以易读格式显示（`--json` 时为原始字节数）。不带路径时：列出存储桶。末尾没有 `/` 且不是文件夹的对象键，只列出该单个对象。 |
 | `cp SRC DST [-r] [--conflict P] [--decode gzip\|zip\|auto]` | 本地到 S3（上传），S3 到本地（下载），S3 到 S3（在账户内复制）。 |
@@ -56,7 +56,7 @@ S3 路径写作 `s3://bucket/key-or-prefix/`；其他参数一律视为本地路
 
 ## 加密保险库
 
-当桌面应用把秘密存放在加密保险库（`vault.json`，由主密码保护）而不是系统钥匙串中时，每次运行命令行时保险库都处于锁定状态。需要凭据的命令（使用静态密钥的账户；存在 ZIP 密码等秘密引用时的 `cp` 和 `sync`）会先将其解锁：
+当桌面应用把机密存放在加密保险库（`vault.json`，由主密码保护）而不是系统钥匙串中时，每次运行命令行时保险库都处于锁定状态。需要凭据的命令（使用静态密钥的账户；存在 ZIP 密码等机密引用时的 `cp` 和 `sync`）会先将其解锁：
 
 - `--vault-password-stdin`：密码取自 stdin 的第一行，例如 `$pw | pail --vault-password-stdin buckets`。此时 stdin 不能再用于 `Proceed? [y/N]` 提示，因此破坏性命令还需要 `--yes`。
 - 在终端中，会出现不回显的提示 `Vault master password:`（最多三次尝试）。

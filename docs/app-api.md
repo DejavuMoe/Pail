@@ -17,12 +17,12 @@
 
 | 文件 | 内容 |
 | --- | --- |
-| `accounts.json` | `[]Account`（不含秘密） |
+| `accounts.json` | `[]Account`（不含机密） |
 | `settings.json` | `Settings` |
 | `upload-rules.json` | `[]rules.UploadRule` |
 | `mime-types.json` | `map[string]string`（扩展名 → Content-Type） |
 | `sync-jobs.json` | `[]SyncJob` |
-| `secret-refs.json` | 秘密引用名（不含值） |
+| `secret-refs.json` | 机密引用名（不含值） |
 | `vault.json` | 可选的加密保险库，见 §1.1（仅 `SecretBackend == "vault"` 时存在） |
 | `logs/pail.log` | 脱敏日志（`Settings.LogToFile` 开启时） |
 
@@ -71,12 +71,12 @@ func (s *Service) SecretRefs() []string
 
 ### 1.1 加密保险库（`vault.go`、`secretbackend.go`）
 
-秘密（secret key、session token、SSE-C key、ZIP 密码）默认放系统钥匙串。可选后端 `vault`：配置目录下的 `vault.json`，用主密码加密。`Service.kr` 是按 `Settings.SecretBackend` 转发的 `secretStore`，账户、引用、客户端缓存的代码不区分后端。
+机密（secret key、session token、SSE-C key、ZIP 密码）默认放系统钥匙串。可选后端 `vault`：配置目录下的 `vault.json`，用主密码加密。`Service.kr` 是按 `Settings.SecretBackend` 转发的 `secretStore`，账户、引用、客户端缓存的代码不区分后端。
 
 ```go
 const (SecretBackendKeyring = "keyring"; SecretBackendVault = "vault")
 type VaultState struct{ Exists, Unlocked bool; AutoLockMinutes int }
-type VaultReset struct{ Accounts, Refs []string } // 账户 ID / 引用名：需要重新输入的秘密
+type VaultReset struct{ Accounts, Refs []string } // 账户 ID / 引用名：需要重新输入的机密
 
 func (s *Service) SecretBackend() string
 func (s *Service) VaultState() VaultState                 // 不访问钥匙串
@@ -90,11 +90,11 @@ func (s *Service) ResetVault() (VaultReset, error)
 - **主密码**：至少 8 个字符（按 rune），至多 1024 字节。不做 Unicode 规范化。
 - **文件格式**：`{"format":"pail-vault","version":1,"kdf":{"name":"argon2id","time":3,"memoryKiB":65536,"threads":4,"salt":b64(16)},"cipher":"xchacha20poly1305","nonce":b64(24),"data":b64}`。旧格式名 `opens3-vault` 的文件仍可打开。`data` 是 JSON 对象（键 → 值）的密文，附加数据（AAD）是除 `nonce`、`data` 之外的头部的 JSON 编码，所以 KDF 参数、盐、算法名不能被调换。每次写入重新生成随机 nonce；文件 0600，临时文件 + fsync + rename。读取时拒绝范围外参数（内存 8 MiB–1 GiB、time 1–10、threads 1–16），先校验再做 KDF。
 - **解密失败的文件永不覆盖**：每次写入前重新读取并用持有的密钥解密；文件头与已解锁状态不一致（别的进程改了密码）返回 `Conflict`，内容无法解密返回 `Invalid`，都不写盘。别的进程对不同键的并发写入会被合并，不会丢失。
-- **锁定**：`LockVault` 清零密钥和已解密条目（尽力而为，Go 字符串无法保证擦除），并丢弃客户端缓存（缓存中含明文凭据）；运行中的任务保留已持有的客户端。后端为 vault 且已锁定时，所有需要秘密的操作（`Buckets`、`TestAccount`、`SaveAccount` 带新秘密、`SetSecret`、`ResolvePassword` ...）立即返回 `Kind == Locked` 的 `*OpError`，不阻塞、不弹系统对话框。启动时后端为 vault 则处于锁定状态。
-- **自动锁定**：`VaultAutoLockMinutes` 分钟无活动后锁定（`s.now` 计时，每 10 秒检查一次，访问时也检查）。任何秘密读写、使用账户（包括命中缓存）都算活动。
+- **锁定**：`LockVault` 清零密钥和已解密条目（尽力而为，Go 字符串无法保证擦除），并丢弃客户端缓存（缓存中含明文凭据）；运行中的任务保留已持有的客户端。后端为 vault 且已锁定时，所有需要机密的操作（`Buckets`、`TestAccount`、`SaveAccount` 带新机密、`SetSecret`、`ResolvePassword` ...）立即返回 `Kind == Locked` 的 `*OpError`，不阻塞、不弹系统对话框。启动时后端为 vault 则处于锁定状态。
+- **自动锁定**：`VaultAutoLockMinutes` 分钟无活动后锁定（`s.now` 计时，每 10 秒检查一次，访问时也检查）。任何机密读写、使用账户（包括命中缓存）都算活动。
 - **迁移 `SetSecretBackend`**：钥匙串不能枚举，所以以账户当前代（`secretGen`）的 secret/session 与 `secret-refs.json` 为清单。顺序：读出全部 → 写入目标 → 回读比较 → 持久化设置 → 删除源。持久化设置之前的任何失败都会清理已写入目标的条目（新建的 vault.json 直接删除），旧后端保持权威且未被改动。只有最后清理源失败时，切换已生效，返回 `Other` 并说明残留。源中已缺失的条目（账户本来就要重新输入）跳过。到 vault：用 `password` 新建（已有文件则必须能用该密码打开）；回钥匙串：保险库须已解锁，或给出 `password`；成功后删除 `vault.json`。迁移期间持有 `acctMu`、`refMu`，账户和引用的写操作被阻塞；读取共享 `backendMu`，不会看到中间状态。
-- **`ResetVault`（忘记密码）**：删除 `vault.json`，后端改回钥匙串，把有秘密的静态账户的 `HasSecret/HasSession` 清除，使 `Account.SecretMissing`（仅派生、不持久化）为 true；引用名保留、值丢失，返回受影响的账户 ID 和引用名。**数据丢失，调用方必须先展示后果并取得明确确认**，Service 不再确认。
-- **无系统钥匙串**：钥匙串返回"没有 Secret Service / D-Bus"类错误（`org.freedesktop.secrets`、`dbus`、`unlock correct collection` 等）时，错误满足 `errors.Is(err, ErrKeyringUnavailable)`，`Kind == Unsupported`，消息 `No system keychain available — use an encrypted vault (...原始错误)`。UI 据此提示并引导到 `SetSecretBackend(vault, ...)`；该切换本身不需要钥匙串（源里没有秘密可读时，只需能读到清单中的条目）。
+- **`ResetVault`（忘记密码）**：删除 `vault.json`，后端改回钥匙串，把有机密的静态账户的 `HasSecret/HasSession` 清除，使 `Account.SecretMissing`（仅派生、不持久化）为 true；引用名保留、值丢失，返回受影响的账户 ID 和引用名。**数据丢失，调用方必须先展示后果并取得明确确认**，Service 不再确认。
+- **无系统钥匙串**：钥匙串返回"没有 Secret Service / D-Bus"类错误（`org.freedesktop.secrets`、`dbus`、`unlock correct collection` 等）时，错误满足 `errors.Is(err, ErrKeyringUnavailable)`，`Kind == Unsupported`，消息 `No system keychain available — use an encrypted vault (...原始错误)`。UI 据此提示并引导到 `SetSecretBackend(vault, ...)`；该切换本身不需要钥匙串（源里没有机密可读时，只需能读到清单中的条目）。
 - **日志**：不记录密码、密钥、条目值；密码和读出的值登记到 `lgAddSecret`；只记录 `secret backend switched`、`vault unlocked/locked/password changed/reset`。
 
 **界面约定**：设置页"安全"区（后端选择、创建/切换、修改密码、自动锁定分钟、忘记密码）；收到 `Kind == Locked` 时弹出主密码框，`UnlockVault` 成功后重试原操作；`VaultState` 轮询（或操作后刷新）显示锁图标，菜单提供"立即锁定"；`Account.SecretMissing` 的账户在列表上标红并引导重新输入；收到 `ErrKeyringUnavailable` 时在账户对话框显示引导。所有调用放在后台线程，通过 Window.Update 回到 UI。
@@ -122,7 +122,7 @@ type Secrets struct{ SecretAccessKey, SessionToken string }
 
 func (s *Service) Accounts() []Account
 func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error)
-// sec == nil 表示保留已有秘密。先写新秘密，再更新账户记录，最后删除旧秘密。
+// sec == nil 表示保留已有机密。先写新机密，再更新账户记录，最后删除旧机密。
 func (s *Service) DeleteAccount(id string) error // also deletes its keyring entries
 func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) error // ListBuckets with a throwaway client
 ```
