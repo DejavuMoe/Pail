@@ -10,7 +10,7 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
-// Menus (docs/design.md "Overlays", "Menus"): the context menus of the object
+// Menus (docs/dev/design.md "Overlays", "Menus"): the context menus of the object
 // table and the sidebar buckets, and the menus of the Upload, account and "⋯"
 // buttons. A call site describes its menu once with a menuBuilder; macOS shows
 // the description as the system's menu (the platform's convention), Windows

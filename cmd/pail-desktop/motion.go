@@ -6,7 +6,7 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
-// Motion (docs/design.md "Motion"): every duration, curve and spring of the
+// Motion (docs/dev/design.md "Motion"): every duration, curve and spring of the
 // interface is defined here, and views name them instead of writing numbers.
 // Motion is quick and quiet: a colour fades in 120ms, a panel or an indicator
 // moves in 200 to 260ms, an overlay comes in on a spring with a small bounce

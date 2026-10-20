@@ -33,7 +33,7 @@ type tokens struct {
 	Scrim, ScrimSoft                     ui.Color // modal backdrop; the lighter one behind the command palette
 	Shadow                               ui.Color // raised segment shadow
 
-	// Overlay surfaces (docs/design.md "Overlays", overlay.go). A shadow token
+	// Overlay surfaces (docs/dev/design.md "Overlays", overlay.go). A shadow token
 	// is the colour of the shadow; its geometry lives in overlay.go. Where the
 	// token is transparent (the dark theme, where a shadow is invisible on a
 	// dark backdrop) overlayPanel draws a 1px BorderStrong outline instead.
@@ -45,7 +45,7 @@ type tokens struct {
 	Knob, KnobShadow ui.Color
 }
 
-// Radii (docs/design.md principle 5): 6 controls, 8 panels (select popups,
+// Radii (docs/dev/design.md principle 5): 6 controls, 8 panels (select popups,
 // menus, toasts), 10 dialogs; 4 for the small keycap.
 const (
 	RadiusControl = 6
