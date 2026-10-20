@@ -179,21 +179,58 @@
   (function () {
     var tile = $('.mini-transfers');
     if (!tile) return;
-    var rows = $$('.tq-row[data-total]', tile).map(function (row, i) {
-      return { row: row, total: +row.getAttribute('data-total'), p: i ? 0.66 : 0.64, v: i ? 0.006 : 0.011, bytes: $('.tq-bytes', row) };
+    // Time-based: progress = elapsed / duration, with a slow sine ripple on the
+    // speed (integral kept monotonic). The fill is scaled, never resized.
+    var DURATIONS = [9000, 16000]; // upload row, download row: ms to cover 0 -> 1
+    var rows = $$('.tq-row[data-total]', tile).filter(function (row) {
+      return !row.classList.contains('is-done');
+    }).map(function (row, i) {
+      return {
+        row: row, total: +row.getAttribute('data-total'), p: i ? 0.66 : 0.64,
+        dur: DURATIONS[i] || DURATIONS[DURATIONS.length - 1], phase: i * 1.7,
+        state: 'run', until: 0, lastText: -1e9,
+        fill: $('.tq-bar i', row), bytes: $('.tq-bytes', row)
+      };
     });
-    function paint(r) {
-      r.row.style.setProperty('--p', r.p.toFixed(3));
+    function paintFill(r) { r.fill.style.transform = 'scaleX(' + r.p.toFixed(4) + ')'; }
+    function paintText(r, now, force) {
+      if (!force && now - r.lastText < 160) return;
+      r.lastText = now;
       r.bytes.textContent = humanSize(Math.round(r.total * r.p)) + ' / ' + humanSize(r.total);
     }
-    rows.forEach(paint);
-    loop(tile, function () {
+    rows.forEach(function (r) { paintFill(r); paintText(r, 0); });
+    var tRaf = 0, tLast = 0, tVisible = false;
+    function tFrame(now) {
+      var dt = tLast ? Math.min(100, now - tLast) : 0;
+      tLast = now;
       rows.forEach(function (r) {
-        r.p += r.v * (0.6 + Math.random() * 0.8);
-        if (r.p >= 1) r.p = 0.04;
-        paint(r);
+        if (r.state === 'run') {
+          // speed factor 1 +/- 20 %, smooth in time
+          var k = 1 + 0.2 * Math.sin(now / 1900 + r.phase);
+          r.p = Math.min(1, r.p + (dt / r.dur) * k);
+          paintFill(r);
+          paintText(r, now);
+          if (r.p >= 1) { r.state = 'hold'; r.until = now + 1200; paintText(r, now, true); }
+        } else if (r.state === 'hold' && now >= r.until) {
+          r.state = 'fadeout'; r.until = now + 320;
+          r.fill.classList.add('is-fading');
+        } else if (r.state === 'fadeout' && now >= r.until) {
+          r.p = 0; paintFill(r); paintText(r, now, true);
+          r.state = 'fadein'; r.until = now + 60;
+        } else if (r.state === 'fadein' && now >= r.until) {
+          r.fill.classList.remove('is-fading');
+          r.state = 'run';
+        }
       });
-    }, 120);
+      tRaf = tVisible && !document.hidden ? requestAnimationFrame(tFrame) : 0;
+      if (!tRaf) tLast = 0;
+    }
+    function tStart() { if (!tRaf && tVisible && !reduced.matches && !document.hidden) tRaf = requestAnimationFrame(tFrame); }
+    new IntersectionObserver(function (entries) {
+      tVisible = entries[entries.length - 1].isIntersecting;
+      if (tVisible) tStart();
+    }).observe(tile);
+    document.addEventListener('visibilitychange', tStart);
     var chips = $$('[data-cycle] .chip', tile), k = 0;
     if (!chips.length) return;
     loop(tile, function () {
@@ -253,7 +290,7 @@
       chips.forEach(function (c) { c.classList.remove('is-lit'); });
       chips[k % chips.length].classList.add('is-lit');
       k += 5;
-    }, 1100);
+    }, 2400);
   })();
 
   // Versions
