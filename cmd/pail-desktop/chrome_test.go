@@ -1,6 +1,7 @@
 package main
 
 import (
+	"runtime"
 	"strings"
 	"testing"
 	"time"
@@ -198,7 +199,11 @@ func TestPaletteListsEveryCommandAndBuckets(t *testing.T) {
 			t.Errorf("the palette lacks %q", "Open bucket "+b.name)
 		}
 	}
-	h.mustHave("Upload files", "Settings", "Theme: Dark", "Open bucket acme-assets", "Ctrl+U", "Ctrl+K")
+	uploadKey, paletteKey := "Ctrl+U", "Ctrl+K"
+	if runtime.GOOS == "darwin" {
+		uploadKey, paletteKey = "⌘U", "⌘K"
+	}
+	h.mustHave("Upload files", "Settings", "Theme: Dark", "Open bucket acme-assets", uploadKey, paletteKey)
 	h.mustNotHave("Lock Vault") // the vault is not in use: not applicable
 	h.snap("palette-open-light")
 	h.tt.Key(0, ui.KeyEscape)
@@ -420,16 +425,18 @@ func TestSettingsAboutSection(t *testing.T) {
 	h.a.openURL = func(u string) error { urls <- u; return nil }
 	h.tt.Scroll(700, 300, 0, 3000) // the About section is the last one
 	h.settle()
-	h.mustClick("Dejavu Moe")
-	h.mustClick("Project page")
-	for _, want := range []string{"https://dejavu.moe", "https://github.com/DejavuMoe/Pail"} {
+	for _, link := range []struct{ label, url string }{
+		{"Dejavu Moe", "https://dejavu.moe"},
+		{"Project page", "https://github.com/DejavuMoe/Pail"},
+	} {
+		h.mustClick(link.label)
 		select {
 		case u := <-urls:
-			if u != want {
-				t.Errorf("opened %q, want %q", u, want)
+			if u != link.url {
+				t.Errorf("opened %q, want %q", u, link.url)
 			}
 		case <-time.After(5 * time.Second):
-			t.Fatalf("%s opened nothing", want)
+			t.Fatalf("%s opened nothing", link.label)
 		}
 	}
 }
@@ -438,7 +445,11 @@ func TestShortcutsDialogListsTheCommandTable(t *testing.T) {
 	h := newHarness(t, "light")
 	h.a.run("shortcuts", "test")
 	h.settle()
-	h.mustHave("Keyboard shortcuts", "TRANSFER", "OBJECT", "NAVIGATE", "VIEW", "APP", "Upload files", "Ctrl+U", "Command palette", "Ctrl+K  ·  Ctrl+Shift+P", "Refresh", "F5  ·  Ctrl+R", "Close")
+	uploadKey, paletteKeys, refreshKeys := "Ctrl+U", "Ctrl+K  ·  Ctrl+Shift+P", "F5  ·  Ctrl+R"
+	if runtime.GOOS == "darwin" {
+		uploadKey, paletteKeys, refreshKeys = "⌘U", "⌘K  ·  ⌘⇧P", "F5  ·  ⌘R"
+	}
+	h.mustHave("Keyboard shortcuts", "TRANSFER", "OBJECT", "NAVIGATE", "VIEW", "APP", "Upload files", uploadKey, "Command palette", paletteKeys, "Refresh", refreshKeys, "Close")
 	h.snap("shortcuts-light")
 	h.tt.Key(0, ui.KeyEscape)
 	h.settle()
