@@ -112,14 +112,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "linux archive contents (pail.desktop, pail.png)"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-47314629177e1939",
@@ -137,14 +137,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "windows archive contents"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-c0fdc4aabd10bb1d",
@@ -162,14 +162,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "Pail.app, LSMinimumSystemVersion 11.0"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-5feceb66ffc86f38",
@@ -461,14 +461,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: 14 bucket settings as forms or JSON"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-baf1178c7e6df785",
@@ -486,14 +486,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: 14 bucket settings as forms or JSON"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-8d616d3509613e95",
@@ -1349,14 +1349,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "default -Targets amd64 and arm64 for every OS"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-55680ad4b4c1a6e8",
@@ -1374,14 +1374,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "default -Targets amd64 and arm64 for every OS"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-4205270569e92c5b",
@@ -1400,14 +1400,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "'other services that speak the S3 API'"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-06136d91987992b4",
@@ -1497,14 +1497,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Install: not code-signed, not notarized, never run on real macOS hardware"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-d5cb968264a5023e",
@@ -2820,14 +2820,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph lists the providers"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-e21f935f11d7e966",
@@ -3190,14 +3190,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: deleting a bucket requires typing its name"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-6940189433657105",
@@ -3731,14 +3731,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "heroTitle1; headline without a factual claim"
       },
       "flags": [],
-      "notes": "headline pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-351de4595d11a1c3",
@@ -3757,14 +3757,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Interface: command palette"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-1088edef8bbfd1c4",
@@ -3785,14 +3785,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "featuresTitle; headline without a factual claim"
       },
       "flags": [],
-      "notes": "headline pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-e68ee04dff59551b",
@@ -4384,14 +4384,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "CHANGELOG.md",
         "reference": "first release; version shown separately"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-1c15c8d4ab53995f",
@@ -4410,14 +4410,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "accessible name composed from the visible section heading strings"
       },
       "flags": [],
-      "notes": "pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-f911e414cf6bdfc5",
@@ -4891,14 +4891,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security / Data and privacy > Secrets"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-f0d66a79c138e951",
@@ -5270,14 +5270,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Logs: off by default"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-c7b68ac37f364473",
@@ -5376,14 +5376,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "'Made by Dejavu Moe'"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-49262491432fdfa0",
@@ -5451,14 +5451,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Upload rules and compression"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-1d09f6fa23235881",
@@ -6016,14 +6016,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "LICENSE",
         "reference": "MIT License"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-dda6e5f49978b235",
@@ -6042,14 +6042,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "LICENSE",
         "reference": "MIT License"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-07c55588fb703109",
@@ -6068,14 +6068,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "LICENSE",
         "reference": "MIT License"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-d1829078fe03f2ec",
@@ -6354,14 +6354,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Quick start step 3: --demo"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-1b8aace2979838cb",
@@ -6406,14 +6406,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: never in config files"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-ee4832c56c8d3154",
@@ -6432,14 +6432,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network: no telemetry"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-46f432218ee7b1b8",
@@ -6458,14 +6458,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network: no telemetry"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-d43c08a70dc65c55",
@@ -6484,14 +6484,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "accessible name composed from the visible section heading strings"
       },
       "flags": [],
-      "notes": "pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-a7e1aed2a0bfff59",
@@ -6510,14 +6510,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network: no update check"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-ba9f261864a180fb",
@@ -6660,14 +6660,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "heroTitle2; headline without a factual claim"
       },
       "flags": [],
-      "notes": "headline pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-e051e876c3fb66c9",
@@ -6686,14 +6686,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-64e037ebaa167632",
@@ -6982,14 +6982,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-5cd868b83783abcb",
@@ -7008,14 +7008,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph (line 5) and License"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-e26d52ac35e74ccc",
@@ -7060,14 +7060,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/images/main-light.png",
         "reference": "describes the screenshot content"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-983dba2b253ae764",
@@ -7086,14 +7086,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/cli.md",
         "reference": "intro: shares configuration; --json; exit codes; never prints credentials"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-900a44360bb57aa7",
@@ -7112,14 +7112,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "product name and category"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-483b4ca2df2d083e",
@@ -7137,14 +7137,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "product name and category"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-9c6e304a0124c9d1",
@@ -7162,14 +7162,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/cli.md",
         "reference": "intro: shares configuration; --json; exit codes; never prints credentials"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-586bed4b73913101",
@@ -7189,14 +7189,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/images/main-light.png",
         "reference": "describes the screenshot content"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-10f974bc4db666ce",
@@ -7214,14 +7214,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-fef4f2397d3a5b55",
@@ -7239,14 +7239,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph (line 5) and License"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-37add976fa163d31",
@@ -7289,14 +7289,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "windows archive contents"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-c31935ba84813001",
@@ -7315,14 +7315,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "linux archive contents (pail.desktop, pail.png)"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-3056137c724c4234",
@@ -7341,14 +7341,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "Pail.app, LSMinimumSystemVersion 11.0"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-19e4bd2d806bed3c",
@@ -8017,14 +8017,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "CDN, presigned URLs, CloudFront"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-ccecaeb25e98d0cb",
@@ -8043,14 +8043,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "CDN, presigned URLs, CloudFront"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-652cdc952791e224",
@@ -8069,14 +8069,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/design.md",
         "reference": "command palette: Ctrl/⌘+K, English and Chinese keywords"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-54a57c3147c49f33",
@@ -8680,14 +8680,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: destructive actions show their scope first"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-49c266baaaa70981",
@@ -8781,14 +8781,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Secrets; Security (Argon2id, XChaCha20-Poly1305)"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-43486fe13d9816d7",
@@ -8807,14 +8807,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Versions section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-da934a59975665f5",
@@ -8833,14 +8833,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-93d4b5a048711c40",
@@ -9257,14 +9257,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs: preview first"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-6725e7bbcd28f3a8",
@@ -9362,14 +9362,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "cliTitle; headline without a factual claim"
       },
       "flags": [],
-      "notes": "headline pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-efb52e7172b77731",
@@ -9680,14 +9680,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Quick start step 3: in-memory server, nothing leaves the machine"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-40f41af6e6a817c8",
@@ -9807,14 +9807,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers: verification before publishing downloads"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-5ba19129d3cac20b",
@@ -10057,14 +10057,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Upload rules and compression"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-3a3533cce627a249",
@@ -10083,14 +10083,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-ca1e32480990770f",
@@ -10259,14 +10259,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: unsupported reported as unsupported"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-4612828a45f10028",
@@ -10314,14 +10314,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Versions section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-056aef5376a3486e",
@@ -10434,14 +10434,14 @@
         "dom-enPalette.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Logs: redaction list"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-d598026a9cbc6050",
@@ -10711,14 +10711,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "heroTitle1; headline without a factual claim"
       },
       "flags": [],
-      "notes": "headline pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-fd48dfc8cacfc82d",
@@ -10736,14 +10736,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-985468fd4defa7f7",
@@ -10761,14 +10761,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-3588c56efb6e306c",
@@ -10836,14 +10836,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Upload rules and compression"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-4673a23061656125",
@@ -10885,14 +10885,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "CHANGELOG.md",
         "reference": "first release; version shown separately"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-e362ab183a7b2393",
@@ -10910,14 +10910,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "accessible name composed from the visible section heading strings"
       },
       "flags": [],
-      "notes": "pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-fdf8d22d152cb52d",
@@ -10958,14 +10958,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network: no update check"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-e429b31a6be70ec7",
@@ -11031,14 +11031,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "CDN, presigned URLs, CloudFront"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-9bae680405099fc8",
@@ -11212,14 +11212,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "'other services that speak the S3 API'"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-57e49404f31854d6",
@@ -11237,14 +11237,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers: verification before publishing downloads"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-a2f59f64d2623d19",
@@ -11309,14 +11309,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "'Made by Dejavu Moe'"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-6a76fda2a4f7a835",
@@ -11334,14 +11334,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: destructive actions show their scope first"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-25ab001ed6ad307b",
@@ -11359,14 +11359,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs: preview first"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-25efb3d5b616c16a",
@@ -11666,14 +11666,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Install: not code-signed, not notarized, never run on real macOS hardware"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-2cd0f3be8738a86c",
@@ -11713,14 +11713,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-6043b97c2ec8bd36",
@@ -11740,14 +11740,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph lists the providers"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-96aa26ac8ddd59e6",
@@ -11767,14 +11767,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "cliTitle; headline without a factual claim"
       },
       "flags": [],
-      "notes": "headline pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-71c7332027d8abb2",
@@ -12048,14 +12048,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "featuresTitle; headline without a factual claim"
       },
       "flags": [],
-      "notes": "headline pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-44db1cdf0ab445c5",
@@ -12214,14 +12214,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Logs: redaction list"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-fe11acd1cade0a82",
@@ -12286,14 +12286,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Interface: command palette"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-88aa5aa97cefa18f",
@@ -12421,14 +12421,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/design.md",
         "reference": "command palette: Ctrl/⌘+K, English and Chinese keywords"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-174cefec532f4d9e",
@@ -12446,14 +12446,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Upload rules and compression"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-44ce7ae909bbb28b",
@@ -12612,14 +12612,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network: no telemetry"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-5bc1b7121d9d8c1b",
@@ -12637,14 +12637,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Logs: off by default"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-de6811e73d403172",
@@ -12732,14 +12732,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Versions section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-1d0fd5f9336d9103",
@@ -12832,14 +12832,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network: no telemetry"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-f21e738293fb8762",
@@ -12857,14 +12857,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "accessible name composed from the visible section heading strings"
       },
       "flags": [],
-      "notes": "pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-aa0819dfc4d8d782",
@@ -12930,14 +12930,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Versions section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-c031c36068c60f86",
@@ -12980,14 +12980,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: unsupported reported as unsupported"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-9ebe1ab0d17f69dd",
@@ -13030,14 +13030,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: deleting a bucket requires typing its name"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-0d53f08678d8101b",
@@ -13077,14 +13077,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Secrets; Security (Argon2id, XChaCha20-Poly1305)"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-9c8eb75c7e58b497",
@@ -13127,14 +13127,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security / Data and privacy > Secrets"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-4ce4cafdd0561280",
@@ -13174,14 +13174,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "heroTitle2; headline without a factual claim"
       },
       "flags": [],
-      "notes": "headline pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-4ce4c98eb27e4b65",
@@ -13436,14 +13436,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Quick start step 3: --demo"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-dc9591e56d502b43",
@@ -13505,14 +13505,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: never in config files"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-305378ddd2b86b60",
@@ -13670,14 +13670,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "CDN, presigned URLs, CloudFront"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-5dc9e01dcc82eb9d",
@@ -13695,14 +13695,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Quick start step 3: in-memory server, nothing leaves the machine"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; pending user approval of this prototype"
+      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     }
   ]
 }
