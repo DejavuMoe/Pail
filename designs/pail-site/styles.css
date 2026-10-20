@@ -615,7 +615,18 @@ code, pre { font-family: var(--font-mono); }
 .tq-row .i { width: 14px; height: 14px; }
 .tq-name { overflow: hidden; color: var(--text); text-overflow: ellipsis; white-space: nowrap; }
 .tq-bar { height: 4px; border-radius: 2px; background: var(--border); overflow: hidden; }
-.tq-bar i { display: block; width: calc(var(--p) * 100%); height: 100%; border-radius: inherit; background: var(--accent); }
+.tq-bar i {
+  display: block;
+  width: 100%;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--accent);
+  transform: scaleX(var(--p));
+  transform-origin: left center;
+  will-change: transform;
+  transition: opacity .3s var(--ease-out), background-color .3s;
+}
+.tq-bar i.is-fading { opacity: 0; }
 .tq-bytes { width: 128px; color: var(--muted); font-size: 12px; font-variant-numeric: tabular-nums; text-align: right; white-space: nowrap; }
 .tq-row.is-done { --p: 1; }
 .tq-row.is-done .i { color: var(--success); }
@@ -635,16 +646,16 @@ code, pre { font-family: var(--font-mono); }
   padding: 4px 10px;
   border: 1px solid var(--border);
   border-radius: 7px;
-  background: var(--surface);
+  background: transparent;
   color: var(--muted);
   font-size: 12px;
-  transition: color .3s, border-color .3s, background-color .3s;
+  transition: color .3s var(--ease), border-color .3s var(--ease), background-color .3s var(--ease), box-shadow .3s var(--ease);
 }
 .chip.is-on {
   border-color: var(--border-strong);
   background: var(--raised);
   color: var(--text);
-  box-shadow: inset 0 -2px 0 var(--accent);
+  box-shadow: 0 1px 2px rgb(var(--shadow-color) / .12);
 }
 
 /* Palette mini */
@@ -689,6 +700,8 @@ code, pre { font-family: var(--font-mono); }
   color: var(--text);
 }
 .mp-list li .i { width: 14px; height: 14px; color: var(--muted); }
+.mp-list li { transition: background-color .2s var(--ease); }
+.mp-list li .i { transition: color .2s var(--ease); }
 .mp-list li.is-hidden { display: none; }
 .mp-list li.is-active { background: var(--selection); }
 .mp-list li.is-active .i { color: var(--accent); }
@@ -707,7 +720,7 @@ code, pre { font-family: var(--font-mono); }
   background: var(--bg);
   color: var(--text);
   font-size: 13px;
-  transition: border-color .3s, background-color .3s, transform .3s var(--ease);
+  transition: color .3s var(--ease), border-color .3s var(--ease), background-color .3s var(--ease);
 }
 .setting-chips li.is-lit { border-color: var(--focus); background: var(--selection); color: var(--text); }
 .setting-chips li.is-unsupported { color: var(--muted); border-style: dashed; }
@@ -783,6 +796,8 @@ code, pre { font-family: var(--font-mono); }
   font-weight: 500;
 }
 .mv-restore .i { width: 13px; height: 13px; }
+.mv-list li { transition: background-color .3s var(--ease), opacity .3s var(--ease); }
+.mv-dot, .mv-restore { transition: color .3s var(--ease), background-color .3s var(--ease), border-color .3s var(--ease); }
 .mini-versions.is-restored .mv-target { background: var(--selection); }
 .mini-versions.is-restored .mv-target .mv-dot { border-color: var(--accent); background: var(--accent); }
 .mini-versions.is-restored .mv-target .mv-restore { border-color: transparent; background: transparent; color: var(--success); }
@@ -819,8 +834,8 @@ code, pre { font-family: var(--font-mono); }
   background: var(--track);
   font-size: 12px;
 }
-.ml-seg span { padding: 3px 10px; border: 1px solid transparent; border-radius: 6px; color: var(--muted); transition: all .25s; }
-.ml-seg span.is-on { border-color: var(--border-strong); background: var(--raised); color: var(--text); box-shadow: inset 0 -2px 0 var(--accent); }
+.ml-seg span { padding: 3px 10px; border: 1px solid transparent; border-radius: 6px; color: var(--muted); transition: color .25s var(--ease), background-color .25s var(--ease), border-color .25s var(--ease), box-shadow .25s var(--ease); }
+.ml-seg span.is-on { border-color: var(--border-strong); background: var(--raised); color: var(--text); box-shadow: 0 1px 2px rgb(var(--shadow-color) / .12); }
 .ml-url {
   display: flex;
   align-items: center;
@@ -852,7 +867,7 @@ code, pre { font-family: var(--font-mono); }
   font-size: 12px;
   font-weight: 500;
 }
-.ml-copy { min-width: 88px; justify-content: center; background: var(--hover); transition: color .2s, background-color .2s; }
+.ml-copy { min-width: 88px; justify-content: center; background: var(--hover); transition: color .25s var(--ease), background-color .25s var(--ease); }
 .ml-copy .i { width: 13px; height: 13px; }
 .ml-copy.is-copied { background: color-mix(in oklab, var(--success) 16%, transparent); color: var(--success); }
 .ml-tag { color: var(--accent); font-family: var(--font-mono); font-size: 11px; }
@@ -920,10 +935,10 @@ code, pre { font-family: var(--font-mono); }
   padding: 0 14px;
   border-bottom: 1px solid var(--term-border);
 }
-.term-tabs { display: flex; gap: 2px; overflow-x: auto; scrollbar-width: none; }
+.term-tabs { display: flex; align-self: stretch; gap: 2px; overflow-x: auto; scrollbar-width: none; }
 .term-tabs button {
   position: relative;
-  height: 44px;
+  height: 100%;
   padding: 0 12px;
   border: 0;
   background: transparent;
@@ -939,9 +954,9 @@ code, pre { font-family: var(--font-mono); }
   position: absolute;
   left: 10px;
   right: 10px;
-  bottom: -1px;
+  bottom: 0;
   height: 2px;
-  border-radius: 1px;
+  border-radius: 1px 1px 0 0;
   background: var(--term-accent);
 }
 .term-body {
@@ -1051,6 +1066,7 @@ code, pre { font-family: var(--font-mono); }
   font-family: var(--font-mono);
   font-size: 12.5px;
   font-weight: 400;
+  transition: border-color .3s var(--ease), box-shadow .3s var(--ease);
 }
 .dlg-caret { width: 1.5px; height: 15px; background: var(--focus); animation: blink 1.1s steps(1) infinite; }
 .dlg-actions { display: flex; justify-content: flex-end; gap: 8px; }
@@ -1064,7 +1080,7 @@ code, pre { font-family: var(--font-mono); }
   font-weight: 500;
 }
 .dbtn-secondary { border: 1px solid var(--border-strong); background: var(--surface); }
-.dbtn-danger { background: var(--danger); color: var(--danger-text); opacity: .4; transition: opacity .3s; }
+.dbtn-danger { background: var(--danger); color: var(--danger-text); opacity: .4; transition: opacity .3s var(--ease); }
 .dialog-demo.is-armed .dbtn-danger { opacity: 1; }
 .dialog-demo.is-armed .dlg-input { border-color: var(--focus); box-shadow: 0 0 0 3px color-mix(in oklab, var(--focus) 25%, transparent); }
 
