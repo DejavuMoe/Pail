@@ -1,9 +1,9 @@
 // Command site builds the static website https://pail.download from site/:
 // one page per language rendered from site/templates with site/locales,
 // fingerprinted static files, a 404 page, robots.txt and sitemap.xml.
-// See docs/site.md.
+// See docs/dev/site.md.
 //
-//	go run ./tools/site -out build/site -version 0.1.0
+//	go run ./tools/site -out build/site -version 0.2.0 [-mirror-url https://pan.zsh.moe/Pail]
 package main
 
 import (
@@ -41,9 +41,9 @@ var languages = []language{
 	{Code: "zh", HTMLLang: "zh-Hans", File: "zh-Hans.json", Path: "/zh/"},
 }
 
-// runtimeKeys are the strings app.js builds at runtime (download button, demo
-// labels). They are embedded in the landing pages as JSON.
-var runtimeKeys = []string{"heroDownloadFor", "miniCopy", "miniCopied"}
+// runtimeKeys are the strings app.js sets at runtime (download button, download
+// source note). They are embedded in the landing pages as JSON.
+var runtimeKeys = []string{"heroDownloadFor", "sourceGithubNote", "sourceMirrorNote"}
 
 // asset is a file served from /assets/ under a content-hashed name.
 type asset struct {
@@ -60,6 +60,7 @@ var assets = []asset{
 	{name: "pail-icon.svg", src: "assets/brand/pail-icon.svg", svg: true},
 	{name: "main-light.webp", src: "docs/images/main-light.webp"},
 	{name: "main-dark.webp", src: "docs/images/main-dark.webp"},
+	{name: "social.webp", src: "docs/images/social.webp"},
 }
 
 // outputs are the top-level entries a build writes. An existing -out
@@ -67,18 +68,20 @@ var assets = []asset{
 var outputs = append([]string{"index.html", "zh", "404.html", "assets", "robots.txt", "sitemap.xml"}, docOutputs...)
 
 type config struct {
-	root    string // repository root
-	out     string
-	version string
-	baseURL string // scheme and host, no trailing slash
+	root      string // repository root
+	out       string
+	version   string
+	baseURL   string // scheme and host, no trailing slash
+	mirrorURL string // download mirror root holding v<version>/ directories; empty: GitHub only
 }
 
 func main() {
 	var c config
 	flag.StringVar(&c.out, "out", "", "output directory (created; a previous build there is replaced)")
-	flag.StringVar(&c.version, "version", "", "release version the download links point to, e.g. 0.1.0")
+	flag.StringVar(&c.version, "version", "", "release version the download links point to, e.g. 0.2.0")
 	flag.StringVar(&c.root, "root", "", "repository root (default: found from the working directory)")
 	flag.StringVar(&c.baseURL, "base-url", "https://pail.download", "public origin for canonical links and the sitemap")
+	flag.StringVar(&c.mirrorURL, "mirror-url", "", "download mirror whose v<version>/ directory holds every release file (omit when it does not)")
 	flag.Parse()
 	if c.root == "" {
 		root, err := findRoot()
@@ -130,12 +133,21 @@ func build(c config) error {
 		return fmt.Errorf("-base-url %q must be an https origin", c.baseURL)
 	}
 	c.baseURL = "https://" + u.Host
+	mirrorBase, mirrorLabel := "", ""
+	if c.mirrorURL != "" {
+		m, err := url.Parse(c.mirrorURL)
+		if err != nil || m.Scheme != "https" || m.Host == "" || m.RawQuery != "" || m.Fragment != "" {
+			return fmt.Errorf("-mirror-url %q must be an https URL without query or fragment", c.mirrorURL)
+		}
+		mirrorLabel = m.Host + strings.TrimRight(m.Path, "/") + "/v" + c.version
+		mirrorBase = "https://" + mirrorLabel + "/"
+	}
 
 	locales, err := loadLocales(c.root)
 	if err != nil {
 		return err
 	}
-	year, err := copyrightYear(c.root)
+	released, err := releaseDate(c.root, c.version)
 	if err != nil {
 		return err
 	}
@@ -163,6 +175,9 @@ func build(c config) error {
 			}
 			return p, nil
 		},
+		"archive": func(target string) string {
+			return "Pail-v" + c.version + "-" + target
+		},
 		"download": func(target string) string {
 			return release + "/Pail-v" + c.version + "-" + target
 		},
@@ -171,7 +186,7 @@ func build(c config) error {
 		"t": func(string) (string, error) { return "", errors.New("t used outside a page") },
 	}
 
-	pageTmpl, err := template.New("index.html.tmpl").Funcs(funcs).ParseFiles(filepath.Join(c.root, "site", "templates", "index.html.tmpl"), filepath.Join(c.root, "site", "templates", "social.html.tmpl"))
+	pageTmpl, err := parseTemplates(c.root, funcs, "index.html.tmpl", "social.html.tmpl", "footer.html.tmpl")
 	if err != nil {
 		return err
 	}
@@ -201,7 +216,9 @@ func build(c config) error {
 			"Version":       c.version,
 			"GitHub":        githubURL,
 			"ReleaseBase":   release,
-			"Year":          year,
+			"Released":      releasedText(locales[lang.Code]["releasedOn"], released),
+			"MirrorBase":    mirrorBase,
+			"MirrorLabel":   mirrorLabel,
 			"Runtime":       template.JS(js),
 		}
 		t, err := pageTmpl.Clone()
@@ -215,11 +232,11 @@ func build(c config) error {
 		}
 	}
 
-	if err := renderDocs(c, locales, funcs, year); err != nil {
+	if err := renderDocs(c, locales, funcs); err != nil {
 		return err
 	}
 
-	notFound, err := template.New("404.html.tmpl").Funcs(funcs).ParseFiles(filepath.Join(c.root, "site", "templates", "404.html.tmpl"))
+	notFound, err := parseTemplates(c.root, funcs, "404.html.tmpl")
 	if err != nil {
 		return err
 	}
@@ -280,19 +297,35 @@ func loadLocales(root string) (map[string]map[string]string, error) {
 	return out, nil
 }
 
-var copyrightRE = regexp.MustCompile(`Copyright \(c\) (\d{4}(?:-\d{4})?) `)
+// parseTemplates parses site/templates files; the first one is the page.
+func parseTemplates(root string, funcs template.FuncMap, names ...string) (*template.Template, error) {
+	files := make([]string, len(names))
+	for i, n := range names {
+		files[i] = filepath.Join(root, "site", "templates", n)
+	}
+	return template.New(names[0]).Funcs(funcs).ParseFiles(files...)
+}
 
-// copyrightYear takes the footer year from LICENSE so builds are reproducible.
-func copyrightYear(root string) (string, error) {
-	b, err := os.ReadFile(filepath.Join(root, "LICENSE"))
+// releaseDate reads the date of a version from CHANGELOG.md
+// ("## [x.y.z] - YYYY-MM-DD"), so builds are reproducible. A version without
+// a dated section (a local preview of an unreleased version) has no date.
+func releaseDate(root, version string) (string, error) {
+	b, err := os.ReadFile(filepath.Join(root, "CHANGELOG.md"))
 	if err != nil {
 		return "", err
 	}
-	m := copyrightRE.FindSubmatch(b)
-	if m == nil {
-		return "", errors.New("LICENSE has no copyright line")
+	re := regexp.MustCompile(`(?m)^## \[` + regexp.QuoteMeta(version) + `\] - (\d{4}-\d{2}-\d{2})\r?$`)
+	if m := re.FindSubmatch(b); m != nil {
+		return string(m[1]), nil
 	}
-	return string(m[1]), nil
+	return "", nil
+}
+
+func releasedText(format, date string) string {
+	if date == "" {
+		return ""
+	}
+	return strings.ReplaceAll(format, "{date}", date)
 }
 
 // prepareOut creates the output directory, or empties one that holds only a
