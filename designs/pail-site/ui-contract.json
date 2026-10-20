@@ -26,7 +26,8 @@
           "palette-open", "palette-filtered", "palette-empty",
           "terminal-ls", "terminal-sync", "terminal-presign", "terminal-json",
           "reduced-motion",
-          "width-390", "width-760", "width-1080", "width-1440"
+          "width-390", "width-760", "width-1080", "width-1440",
+          "not-found"
         ],
         "stableIds": ["top", "features", "cli", "privacy", "download", "palette-list"]
       },

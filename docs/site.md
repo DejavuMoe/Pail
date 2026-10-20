@@ -23,7 +23,7 @@ Only the site uses the `prototype-first-ui` and `baoyu-design` skills (see `AGEN
 ```text
 site/
   templates/index.html.tmpl   one html/template for both languages
-  templates/404.html.tmpl     bilingual not-found page
+  templates/404.html.tmpl     bilingual not-found page (added after the prototype; approved 2026-10-20)
   locales/en.json             source strings (keys match the prototype's i18n.js)
   locales/zh-Hans.json
   static/styles.css           the approved prototype's styles without the review panel's hooks
