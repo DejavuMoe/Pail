@@ -27,6 +27,7 @@ tools/pack         发布打包，保证可执行文件权限为 0755
 - 后台协程不直接改界面状态。需要更新界面时，把闭包交给 `Window.Update`，由 UI 线程执行。事件回调（`Subscribe`）在非 UI 线程触发，每个任务最多每秒 10 次。
 - 钥匙串、网络、磁盘 I/O 不在 `Service.mu` 内执行；该锁只保护内存 map。钥匙串可能弹出系统对话框，持锁调用会冻结界面。
 - 所有网络调用带 `ctx`，关闭窗口时取消。
+- 菜单（`ctxmenu.go`）在 Windows 与 Linux 由界面线程在窗口内绘制，状态只有一份 `app.popup`，每帧由 `menuLayer` 构建；菜单项的动作在菜单关闭后的下一帧经 `post` 在界面线程上运行。macOS 交给系统菜单，动作在 mygo 报告选中的那一帧运行。
 
 ## 3. 任务队列模型
 
@@ -93,7 +94,7 @@ tools/pack         发布打包，保证可执行文件权限为 0755
 | 层 | 位置 | 说明 |
 | --- | --- | --- |
 | 单元与协议 | `internal/*` | 内存 S3（`internal/s3test`）经真实 SDK 驱动；`httptest` 用于 STS、CloudFront 和故障注入 |
-| 界面 headless | `cmd/pail-desktop` | 不开真实窗口：命令表、对话框可达性、对比度、本地化、键盘流程；设置 `PAIL_UI_SNAPSHOT_DIR` 时额外写出亮暗、中英文的截图供人工审阅 |
+| 界面 headless | `cmd/pail-desktop` | 不开真实窗口：命令表、对话框可达性、对比度、本地化、键盘流程；菜单测试在所有平台上驱动窗口内菜单（`TestMain` 关闭 `nativeMenus`），macOS 原生菜单路径另有一个测试经 mygo 的模拟系统菜单验证；设置 `PAIL_UI_SNAPSHOT_DIR` 时额外写出亮暗、中英文的截图供人工审阅 |
 | 命令行 | `cmd/pail` | 进程内运行，对 `internal/s3test` |
 | MinIO 集成 | `integration/` + `scripts/test-integration.ps1` | 隔离的 MinIO 容器，覆盖存储层与应用层 |
 | 外部端点 | `integration/ext_*_test.go` + `scripts/test-external.ps1` | 真实 S3 兼容服务；只写本次运行的唯一前缀，结束时清理 |

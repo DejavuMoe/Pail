@@ -109,13 +109,13 @@ func TestDeleteBucketNeedsTheNameTyped(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	menu := h.tt.Menu()
+	menu := h.menu()
 	for _, want := range []string{"Open", "Bucket settings…", "Empty bucket…", "Delete bucket…", "Copy name"} {
 		if !contains(menu, want) {
 			t.Errorf("bucket menu %q lacks %q", menu, want)
 		}
 	}
-	if err := h.tt.ChooseMenuItem("Delete bucket…"); err != nil {
+	if err := h.chooseMenu("Delete bucket…"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()

@@ -63,28 +63,18 @@ func (a *app) accountButton(c *ui.Context) {
 		})
 		ui.Icon(c, icons.Get("chevron-down")).FontSize(14).TextColor(k.TextMuted)
 	})
-	btn.Menu(func(m *ui.Menu) {
+	a.buttonMenu(c, btn, "account", locales.CommonAccount(), func(m *menuBuilder) {
 		for _, x := range a.accounts {
 			label := x.Name
 			if x.SecretMissing {
 				label = locales.SidebarAccountSecretMissing(x.Name)
 			}
-			if m.Item(label).Checked(x.ID == a.accountID).Chosen() {
-				a.selectAccount(x.ID)
-			}
+			m.Item(label, func() { a.selectAccount(x.ID) }).Icon("user").Checked(x.ID == a.accountID)
 		}
-		if len(a.accounts) > 0 {
-			m.Separator()
-		}
-		if m.Item(locales.SidebarAddAccount()).Chosen() {
-			a.openAccountForm(false)
-		}
-		if m.Item(locales.SidebarEditAccount()).Disabled(ac.ID == "").Chosen() {
-			a.openAccountForm(true)
-		}
-		if m.Item(locales.SidebarRemoveAccount()).Disabled(ac.ID == "").Chosen() {
-			a.askRemoveAccount()
-		}
+		m.Separator()
+		m.Item(locales.SidebarAddAccount(), func() { a.openAccountForm(false) }).Icon("plus")
+		m.Item(locales.SidebarEditAccount(), func() { a.openAccountForm(true) }).Icon("pencil").Disabled(ac.ID == "")
+		m.Item(locales.SidebarRemoveAccount(), a.askRemoveAccount).Icon("trash-2").Disabled(ac.ID == "")
 	})
 }
 
@@ -218,45 +208,32 @@ func (a *app) bucketList(c *ui.Context) {
 						tip += " · " + b.Region
 					}
 					item := a.sidebarItem(c, "b:"+b.Name, icons.Get("database"), b.Name, b.Region, false).Tooltip(tip)
-					item.ContextMenu(func(m *ui.Menu) {
-						if m.Item(locales.SidebarOpen()).Chosen() {
-							a.openBucket(b.Name)
-						}
-						if m.Item(locales.SidebarBucketSettings()).Chosen() {
-							a.openBucketSettings(b.Name)
+					a.contextMenu(item, menuSpec{name: locales.MenuBucketActions(b.Name)}, func(m *menuBuilder) {
+						name := b.Name
+						m.Item(locales.SidebarOpen(), func() { a.openBucket(name) }).Icon("folder-open")
+						m.Item(locales.SidebarBucketSettings(), func() { a.openBucketSettings(name) }).Icon("sliders-horizontal")
+						m.Separator()
+						m.Item(locales.SidebarDownloadBucket(), func() { a.downloadBucket(name) }).Icon("download")
+						m.Item(locales.SidebarCopyContents(), func() { a.openBucketCopy(name, false) }).Icon("copy")
+						m.Item(locales.SidebarMoveContents(), func() { a.openBucketCopy(name, true) }).Icon("arrow-left-right")
+						m.Separator()
+						m.Item(locales.SidebarChangeClass(), func() {
+							a.openRewrite(false, rewriteScope{loc: a.bucketRoot(name), all: true})
+						}).Icon("layers")
+						m.Item(locales.SidebarChangeEncryption(), func() {
+							a.openRewrite(true, rewriteScope{loc: a.bucketRoot(name), all: true})
+						}).Icon("file-lock")
+						if a.cfAvailable() {
+							m.Item(locales.SidebarInvalidateCloudFront(), func() { a.invalidateBucket(name) }).Icon("cloud")
 						}
 						m.Separator()
-						if m.Item(locales.SidebarDownloadBucket()).Chosen() {
-							a.downloadBucket(b.Name)
-						}
-						if m.Item(locales.SidebarCopyContents()).Chosen() {
-							a.openBucketCopy(b.Name, false)
-						}
-						if m.Item(locales.SidebarMoveContents()).Chosen() {
-							a.openBucketCopy(b.Name, true)
-						}
+						m.Item(locales.SidebarEmptyBucket(), func() { a.openEmptyBucket(name) }).Icon("trash-x")
+						m.Item(locales.SidebarDeleteBucket(), func() { a.openDeleteBucket(name) }).Icon("trash-2")
 						m.Separator()
-						if m.Item(locales.SidebarChangeClass()).Chosen() {
-							a.openRewrite(false, rewriteScope{loc: a.bucketRoot(b.Name), all: true})
-						}
-						if m.Item(locales.SidebarChangeEncryption()).Chosen() {
-							a.openRewrite(true, rewriteScope{loc: a.bucketRoot(b.Name), all: true})
-						}
-						if a.cfAvailable() && m.Item(locales.SidebarInvalidateCloudFront()).Chosen() {
-							a.invalidateBucket(b.Name)
-						}
-						m.Separator()
-						if m.Item(locales.SidebarEmptyBucket()).Chosen() {
-							a.openEmptyBucket(b.Name)
-						}
-						if m.Item(locales.SidebarDeleteBucket()).Chosen() {
-							a.openDeleteBucket(b.Name)
-						}
-						m.Separator()
-						if m.Item(locales.SidebarCopyName()).Chosen() {
-							a.copyText(b.Name)
+						m.Item(locales.SidebarCopyName(), func() {
+							a.copyText(name)
 							a.toast(locales.SidebarBucketNameCopied())
-						}
+						}).Icon("tag")
 					})
 				}
 				if shown == 0 && len(a.buckets) > 0 {

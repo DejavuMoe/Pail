@@ -13,6 +13,7 @@ All notable changes to this project are documented in this file. The format foll
 - The bucket settings dialog reuses the standard dialog frame; its dividers show only while the list or the form scrolls.
 - Tooltips and toasts take their colours from the theme tokens, and toasts follow the overlay radius and shadow. The tooltip radius and shadow are still the library's.
 - "Select all" uses a double check icon, so it cannot be mistaken for the check that marks a current choice.
+- On Windows and Linux, the context menus of objects and buckets and the menus of the Upload, account and "⋯" buttons are drawn in the window in the overlay style instead of as system menus: command icons, shortcuts as key caps, a check and a heavier weight for the current choice, submenus that open on hover or with the arrow keys, and full keyboard control (arrows, Home and End, first letter, Enter, Escape). Context menus open at the pointer, or below the current row with Shift+F10 or the menu key, and stay inside the window. A click outside a menu only closes it. macOS keeps the system menus.
 
 ### Fixed
 

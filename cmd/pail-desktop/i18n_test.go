@@ -18,6 +18,9 @@ import (
 var testLocale atomic.Value // string
 
 func TestMain(m *testing.M) {
+	// The suites drive the in-window menus on every platform; the native
+	// path has its own test (TestNativeMenusOnMacOS).
+	nativeMenus = false
 	testLocale.Store("en")
 	i18n.SetLocaleFunc(func() string { return testLocale.Load().(string) })
 	os.Exit(m.Run())

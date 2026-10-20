@@ -54,6 +54,7 @@ func (a *app) view(c *ui.Context) {
 	})
 	a.flushOutput(c)
 	a.dialogs(c)
+	a.menuLayer(c)   // above the dialogs, under the toasts
 	toastViewport(c) // last, so a toast floats above the dialogs
 }
 

@@ -327,7 +327,7 @@ func TestContextMenuFromCommandTable(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	menu := h.tt.Menu()
+	menu := h.menu()
 	for _, want := range []string{"Download", "Copy key", "Copy URI", "Copy URL", "Copy signed URL…", "Delete", "Refresh", "Select all"} {
 		if !contains(menu, want) {
 			t.Errorf("context menu %q missing %q", menu, want)
@@ -337,7 +337,7 @@ func TestContextMenuFromCommandTable(t *testing.T) {
 		t.Errorf("right click did not select the row under the pointer: %v", keys)
 	}
 	h.snap("context-menu-light")
-	h.tt.CloseMenu()
+	h.closeMenu()
 	h.settle()
 }
 

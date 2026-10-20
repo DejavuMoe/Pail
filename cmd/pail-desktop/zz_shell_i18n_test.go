@@ -107,12 +107,12 @@ func TestI18NShell(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	for _, item := range h.tt.Menu() {
+	for _, item := range h.menu() {
 		if !strings.HasPrefix(item, "[") && asciiWord.MatchString(item) && item != "Demo · in-memory S3" {
 			t.Errorf("account menu: %q stays English under en-XA", item)
 		}
 	}
-	h.tt.CloseMenu()
+	h.closeMenu()
 	h.settle()
 
 	// ---- Chinese ----
@@ -148,13 +148,13 @@ func TestI18NShell(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	menu := strings.Join(h.tt.Menu(), "|")
+	menu := strings.Join(h.menu(), "|")
 	for _, want := range []string{"添加账户…", "编辑账户…", "移除账户…"} {
 		if !strings.Contains(menu, want) {
 			t.Errorf("account menu %q lacks %q", menu, want)
 		}
 	}
-	h.tt.CloseMenu()
+	h.closeMenu()
 	h.settle()
 
 	// typeLabel and storageLabel

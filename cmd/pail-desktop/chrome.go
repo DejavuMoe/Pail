@@ -90,44 +90,28 @@ func (a *app) barRight(c *ui.Context) {
 // native menu bar holds on macOS.
 func (a *app) moreMenu(c *ui.Context) {
 	b := ghostButton(c, icons.Get("ellipsis"), "", locales.ChromeMore(), false).Label(locales.ChromeMore())
-	b.Menu(func(m *ui.Menu) {
-		run := func(id string) {
-			a.run(id, "menu")
-		}
-		item := func(id string) {
-			cmd := a.cmd(id)
-			it := m.Item(cmd.text()).Disabled(!a.enabled(cmd))
-			if len(cmd.Chords) > 0 {
-				it.Shortcut(cmd.Chords[0].Mods, cmd.Chords[0].Key)
-			}
-			if it.Chosen() {
-				run(id)
-			}
-		}
-		item("palette")
-		item("tool.settings")
+	a.buttonMenu(c, b, "more", locales.ChromeMore(), func(m *menuBuilder) {
+		m.Command(a, "palette", "menu")
+		m.Command(a, "tool.settings", "menu")
 		m.Separator()
-		m.Submenu(locales.ChromeTheme(), func(sm *ui.Menu) {
+		m.Submenu(locales.ChromeTheme(), func(sm *menuBuilder) {
 			for _, mode := range themeModes {
 				cmd := a.cmd("theme." + mode)
-				if sm.Item(themeName(locales.In(i18n.Locale()), mode)).Checked(a.themeMode() == mode).Chosen() {
-					run(cmd.ID)
-				}
+				sm.Item(themeName(locales.In(i18n.Locale()), mode), func() { a.run(cmd.ID, "menu") }).
+					Icon(cmd.Icon).Checked(a.themeMode() == mode)
 			}
-		})
-		m.Submenu(locales.ChromeLanguage(), func(sm *ui.Menu) {
+		}).Icon("sun")
+		m.Submenu(locales.ChromeLanguage(), func(sm *menuBuilder) {
 			for _, ch := range languageChoices() {
-				if sm.Item(ch.Label).Checked(a.lang == ch.Value).Chosen() {
-					a.setLanguage(ch.Value)
-				}
+				sm.Item(ch.Label, func() { a.setLanguage(ch.Value) }).Checked(a.lang == ch.Value)
 			}
-		})
+		}).Icon("globe")
 		m.Separator()
-		item("shortcuts")
-		item("docs")
-		item("about")
+		m.Command(a, "shortcuts", "menu")
+		m.Command(a, "docs", "menu")
+		m.Command(a, "about", "menu")
 		m.Separator()
-		item("quit")
+		m.Command(a, "quit", "menu")
 	})
 }
 
