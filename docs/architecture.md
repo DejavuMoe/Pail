@@ -6,7 +6,7 @@
 
 ```
 cmd/pail-desktop   桌面程序（Go + mygo）。只调用 internal/app
-cmd/pail           命令行。只调用 internal/app，与桌面程序共用配置目录和秘密存储
+cmd/pail           命令行。只调用 internal/app，与桌面程序共用配置目录和机密存储
 internal/app       Service：账户、浏览、任务队列、传输、批量、版本、属性、规则、同步、桶管理、CloudFront、日志、加密保险库
 internal/storage   S3 协议层：client、传输（分片）、复制、条件写入、能力探测
 internal/cloud     AWS 专有服务（类型化 CloudFront）
@@ -49,7 +49,7 @@ tools/pack         发布打包，保证可执行文件权限为 0755
 7. **原地改写后复核。** 改存储类别、加密、属性用 CopyObject 加 `MetadataDirective: REPLACE`，带回所有未修改的 headers 和 metadata；tags 保持，ACL 尽力保留。完成后对每个对象 HEAD 复核：服务端返回 200 却没有生效的项记为 `failed`，复核本身失败记为 `unknown`。读不到 tags 或 ACL（AccessDenied）时拒绝改写，避免丢失。超过 5 GiB 走分片复制。版本化桶会产生新版本。
 8. **同步只做预览过的动作。** 执行时每个动作先复核前提（create-only、`If-Match`、本地大小与 mtime），世界变了就报告 skipped。本地扫描出错即中止预览；被跳过或排除的项保护其远端对应物不被删除。本地删除只进回收站，Windows 拒绝长路径与网络盘（否则系统会改为永久删除）。
 9. **确认归界面。** 破坏性、批量和云端范围的操作只弹一个确认框，写明账户、桶、前缀、数量、字节；只有删除桶需要输入桶名。Service 不保存计划、令牌或过期时间，`Estimate` 只为确认框计数。
-10. **秘密不落配置文件。** secret key、session token、SSE-C key、ZIP 密码只进系统钥匙串或加密保险库；配置文件只保存引用名。日志脱敏：URL 查询串、Authorization、SigV4、密钥标签与敏感字段名，以及从秘密存储读出的字面值。
+10. **机密不落配置文件。** secret key、session token、SSE-C key、ZIP 密码只进系统钥匙串或加密保险库；配置文件只保存引用名。日志脱敏：URL 查询串、Authorization、SigV4、密钥标签与敏感字段名，以及从机密存储读出的字面值。
 11. **403 不是"不支持"。** 错误统一包装为 `*OpError`，`Kind` 区分 NotFound、AccessDenied、Unsupported、Conflict、Network、Canceled、Invalid、Locked、Other。
 12. **自定义 endpoint 的 checksum 默认 `WhenRequired`**（含 SDK 分片上传器）。经代理时 `Accept-Encoding` 照常发送但不参与签名，复制源 `x-amz-copy-source` 完整百分号编码。
 
@@ -59,16 +59,16 @@ tools/pack         发布打包，保证可执行文件权限为 0755
 
 | 文件 | 内容 |
 | --- | --- |
-| `accounts.json` | 账户（不含秘密；访问密钥 ID 不是秘密，保存在这里） |
+| `accounts.json` | 账户（不含机密；访问密钥 ID 不是机密，保存在这里） |
 | `settings.json` | 设置 |
 | `upload-rules.json` | 上传规则 |
 | `mime-types.json` | 扩展名到 Content-Type 的表 |
 | `sync-jobs.json` | 同步作业 |
-| `secret-refs.json` | 秘密引用名（SSE-C key、ZIP 密码），不含值 |
+| `secret-refs.json` | 机密引用名（SSE-C key、ZIP 密码），不含值 |
 | `vault.json` | 可选的加密保险库（格式 `pail-vault`） |
 | `logs/pail.log` | 脱敏日志，默认关闭；5 MiB 轮转，保留 3 个，权限 0600 |
 
-秘密默认放系统钥匙串，服务名 `Pail`，条目键 `account/<id>/secret`、`account/<id>/session`、`ref/<name>`。文件损坏时加载报错，不静默重置。
+机密默认放系统钥匙串，服务名 `Pail`，条目键 `account/<id>/secret`、`account/<id>/session`、`ref/<name>`。文件损坏时加载报错，不静默重置。
 
 界面语言选择单独保存在用户数据目录的 `language` 文件中（空表示跟随系统），因为窗口创建前就要读取。
 

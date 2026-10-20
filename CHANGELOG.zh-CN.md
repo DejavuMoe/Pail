@@ -21,14 +21,14 @@ Pail 的首个版本。各功能的验证情况记录在 [docs/status.md](docs/s
 - **上传规则**：headers、存储类别、加密和压缩（GZIP、ZIP、带压缩级别的 AES-256 ZIP）；下载时解码。
 - **每个账户的 CDN 域名**（基础 URL 或 `{bucket}`/`{key}` 模板，可选存储桶列表）、预签名 URL 对话框、CloudFront distribution 与失效（AWS 账户）。
 - **命令行**（`pail`）：`accounts`、`buckets`、`ls`、`cp`、`mv`、`rm`、`mb`、`rb`、`presign`、`url`、`versions`、`restore`、`sync`、`vault status`；JSON 输出和稳定的退出码；与应用共用账户和同步作业。见 [docs/cli.zh-CN.md](docs/cli.zh-CN.md)。
-- **安全**：秘密保存在系统钥匙串或可选的加密保险库（Argon2id、XChaCha20-Poly1305）中，支持空闲自动锁定；需主动开启的脱敏诊断日志；每个破坏性或批量操作都会显示范围并要求确认。
+- **安全**：机密保存在系统钥匙串或可选的加密保险库（Argon2id、XChaCha20-Poly1305）中，支持空闲自动锁定；需主动开启的脱敏诊断日志；每个破坏性或批量操作都会显示范围并要求确认。
 - **与 openS3 的兼容**：已有的 `openS3` 配置文件夹和钥匙串条目会自动迁移；仍可读取旧版保险库和 `opens3-*` 对象元数据。
 - **工具链**：`internal/s3test` 内存 S3 服务；MinIO 集成测试套件（`scripts/test-integration.ps1`）；限定前缀的外部端点测试套件（`scripts/test-external.ps1`，`PAIL_EXT_*`）；发布脚本，生成 Windows、Linux 和 macOS（amd64、arm64）压缩包及 `SHA256SUMS`；图标生成器（`go run ./tools/genicons`）。
 
 ### 安全
 
-- 秘密绝不写入配置文件；它们保存在系统钥匙串或加密保险库中。
-- 日志会对 URL 查询串、Authorization 头、签名和已知的秘密值脱敏。
+- 机密绝不写入配置文件；它们保存在系统钥匙串或加密保险库中。
+- 日志会对 URL 查询串、Authorization 头、签名和已知的机密值脱敏。
 - 自定义端点默认使用"仅在需要时"校验和模式；结果未知的请求绝不重放。
 
 ### 已知限制
