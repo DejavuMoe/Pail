@@ -6,13 +6,14 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 
 - Product type: static marketing site for an open-source desktop app and CLI.
 - Primary users: people who manage S3-compatible storage and are deciding whether to install Pail.
-- Primary jobs: understand what Pail does, download the right archive, find the source, docs and changelog.
+- Primary jobs: understand what Pail does, download the right archive, read how to install and use it, find the source.
+- Pages: the landing page, plus on-site docs rendered from the repository (Get started from the README sections Install, Quick start, Command line, Build from source, Data and privacy and Platform status; the CLI reference from `docs/cli.md`; the changelog; the license). Only the open-source project itself — repository, source files, issues, releases and download assets — links to GitHub.
 - UI surface classification: marketing.
 - Content profile: `marketing-approved`.
 
 ## Supported environments
 
-- Current Chrome, Edge, Firefox and Safari; must stay usable without JavaScript (content, links and downloads work; the palette, theme toggle and demos are enhancements).
+- Current Chrome, Edge, Firefox and Safari; must stay usable without JavaScript (content, links and downloads work; the theme toggle, mobile menu and demos are enhancements).
 - Widths from 360px to 1920px with no horizontal page scroll; 16px minimum side gutter.
 - Keyboard, pointer and touch. `prefers-reduced-motion` stops every animation.
 - English at `/`, Simplified Chinese at `/zh/`. Long Chinese and English strings must not clip.
@@ -29,7 +30,8 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 
 ## Explicit non-goals
 
-- No documentation site, blog, account, pricing or newsletter.
+- No site search or command palette, blog, account, pricing or newsletter.
+- Docs pages render the repository's own Markdown; they do not get separately written copy.
 - No claims about providers or platforms beyond `docs/status.md` evidence.
 
 ## Non-negotiable content boundary
@@ -49,9 +51,9 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 
 - Typography: the operating system's default sans-serif (San Francisco, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, then Helvetica/Arial) with CJK fallbacks (PingFang SC, Microsoft YaHei, Noto Sans CJK SC), ending in the generic `sans-serif`; the system monospace (`ui-monospace`, SF Mono, Cascadia Mono, Consolas, …) only for code, keys and CLI output. No webfonts, no serif or italic display accents. Hierarchy comes from size and weight, not from a second family.
 - Forbidden: stock photography, hand-drawn SVG illustration, emoji, gradient or blurred-blob backgrounds, grain overlays, glows, cursor spotlights, announcement pills, uppercase eyebrow labels above headings, oversized decorative wordmarks, faux window controls.
-- Standards: markup passes html-validate (W3C HTML) with native controls preferred over ARIA roles; the one ARIA widget is the palette's WAI-ARIA combobox + listbox. Follow MDN guidance for `prefers-reduced-motion`, `prefers-contrast`, `forced-colors`, `theme-color` and `inert`.
+- Standards: every page passes html-validate (W3C HTML) with no exceptions; native controls before ARIA roles. Follow MDN guidance for `prefers-reduced-motion`, `prefers-contrast`, `forced-colors` and `theme-color`.
 - Accessibility: text contrast 4.5:1 (3:1 for display sizes), visible focus rings, skip link, labelled controls, `lang` on the document.
-- Motion: one load sequence, scroll-linked hero tilt, demos only while visible, all disabled under reduced motion. The falling object keys are hidden below 680px.
+- Motion: one load sequence, scroll-linked hero tilt, demos only while visible, all disabled under reduced motion. The falling object keys are hidden below 680px. Animated demos never change the size of any box (no layout shift): fixed-size containers, tabular numerals, and state changes by color, background and border only. Docs pages have no entrance animation.
 
 ## Privacy and multimodal evidence
 

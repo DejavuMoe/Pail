@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" data-lang="zh" data-theme="light" data-theme-pref="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>快速上手 · Pail</title>
+  <meta name="description" content="安装 Pail、添加账户、使用命令行、从源码构建，以及 Pail 的数据保存位置和各平台的测试情况。">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/pail-icon.svg" type="image/svg+xml">
+  <link rel="alternate" hreflang="en" href="https://pail.download/docs/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://pail.download/zh/docs/">
+  <link rel="alternate" hreflang="x-default" href="https://pail.download/docs/">
+  <script>
+    (function () {
+      var d = document.documentElement, pref = 'system';
+      try { pref = localStorage.getItem('pail-theme') || 'system'; } catch (e) {}
+      var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      d.setAttribute('data-theme-pref', pref);
+      d.setAttribute('data-theme', dark ? 'dark' : 'light');
+      d.classList.add('js');
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M4 6h16"></path><path d="M4 18h16"></path></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">跳到正文</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/pail-icon.svg" alt="" width="28" height="28">
+        <span>Pail</span>
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <a href="index.html#features">功能</a>
+        <a href="index.html#cli">命令行</a>
+        <a href="index.html#privacy">隐私</a>
+        <a href="index.html#download">下载</a>
+        <a class="is-current" href="docs.zh.html" aria-current="page">文档</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn lang-btn" href="docs.html" hreflang="en" lang="en" data-action="lang" data-lang-target="en" aria-label="Switch to English">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
+          <span class="lang-btn-label">EN</span>
+        </a>
+        <fieldset class="theme-seg">
+          <legend class="visually-hidden">主题</legend>
+          <label title="跟随系统"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">跟随系统</span></label>
+          <label title="浅色"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">浅色</span></label>
+          <label title="深色"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">深色</span></label>
+        </fieldset>
+        <a class="icon-btn gh-btn" href="https://github.com/DejavuMoe/Pail" aria-label="GitHub">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+        </a>
+        <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="菜单">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-menu"></use></svg>
+        </button>
+      </div>
+    </div>
+    <nav id="mobile-nav" class="mobile-nav" hidden aria-label="菜单">
+      <a href="index.html#features">功能</a>
+      <a href="index.html#cli">命令行</a>
+      <a href="index.html#privacy">隐私</a>
+      <a href="index.html#download">下载</a>
+      <a class="is-current" href="docs.zh.html" aria-current="page">文档</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="wrap docs-layout">
+      <nav class="docs-nav" aria-label="文档">
+        <ul>
+        <li><a href="docs.zh.html" aria-current="page"><span data-label="快速上手">快速上手</span></a></li>
+        <li><a href="docs-cli.zh.html"><span data-label="命令行">命令行</span></a></li>
+        <li><a href="changelog.zh.html"><span data-label="更新日志">更新日志</span></a></li>
+        <li><a href="license.zh.html"><span data-label="许可证">许可证</span></a></li>
+        </ul>
+      </nav>
+      <div class="docs-main">
+        <header class="doc-head">
+          <h1>快速上手</h1>
+        </header>
+        <div class="prose">
+<h2 id="install">安装 <a class="heading-anchor" href="#install" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p>发布包由 <code>scripts/release.ps1</code> 生成在 <code>build/release/&lt;version&gt;/</code> 中，并附带 <code>SHA256SUMS</code> 文件。每个包内含 <code>pail-desktop</code> 和 <code>pail</code> 两个可执行文件、<code>LICENSE</code> 以及 README。</p>
+<div class="table-wrap" role="group" aria-label="表格: 安装" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">系统</th>
+<th scope="col">压缩包</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows</td>
+<td><code>Pail-&lt;version&gt;-windows-amd64.zip</code>、<code>Pail-&lt;version&gt;-windows-arm64.zip</code></td>
+</tr>
+<tr>
+<td>Linux</td>
+<td><code>Pail-&lt;version&gt;-linux-amd64.tar.gz</code>、<code>Pail-&lt;version&gt;-linux-arm64.tar.gz</code>（含 <code>pail.desktop</code> 和 <code>pail.png</code>）</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td><code>Pail-&lt;version&gt;-darwin-amd64.zip</code>、<code>Pail-&lt;version&gt;-darwin-arm64.zip</code>（内含 <code>Pail.app</code>）</td>
+</tr>
+</tbody>
+</table></div>
+<p>可执行文件没有代码签名。macOS 应用也没有公证，需要手动放行后才能通过 Gatekeeper。<strong>Pail 从未在真实的 macOS 设备上运行过</strong>，macOS 压缩包只做了交叉编译。</p>
+<h2 id="quick-start">快速开始 <a class="heading-anchor" href="#quick-start" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<ol>
+<li><p>启动 <code>pail-desktop</code>，在侧栏打开账户切换器并添加账户。以自建或第三方服务为例：</p>
+<ul>
+<li>端点 <code>https://s3.example.com</code>，区域 <code>us-east-1</code>，填入访问密钥 ID 和私有密钥；</li>
+<li>打开<strong>路径样式</strong>（MinIO 和大多数自建网关需要开启，AWS 保持关闭）；</li>
+<li>可选：设置 <strong>CDN URL</strong>，例如 <code>https://cdn.example.com</code>。</li>
+</ul>
+<p>点击&quot;测试连接&quot;，然后保存。私有密钥会存入系统钥匙串。</p>
+</li>
+<li><p>在侧栏选择存储桶并浏览。把文件拖进窗口即可上传；选中对象后点击下载。</p>
+</li>
+<li><p>没有凭据时可以先体验：运行 <code>pail-desktop --demo</code>，它连接的是进程内的内存 S3 服务，数据不会离开本机，也不会保存任何内容。</p>
+</li>
+</ol>
+<p>其他参数：<code>--config-dir DIR</code>、<code>--theme system|light|dark</code>、<code>--size WxH</code>、<code>--tool sync|cloudfront|rules|mime|multipart|settings</code>、<code>--version</code>。</p>
+<h2 id="command-line">命令行 <a class="heading-anchor" href="#command-line" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p><code>pail</code> 与桌面程序共用账户和同步作业：</p>
+<pre tabindex="0"><code class="language-powershell">pail accounts
+pail ls s3://my-bucket/photos/ -r
+pail cp ./dist s3://my-bucket/site/ -r --conflict newer
+pail sync ./photos s3://my-bucket/photos/ --mode new_changed --dry-run
+pail presign s3://my-bucket/report.pdf --expires 1h</code></pre>
+<p>命令：<code>accounts</code>、<code>buckets</code>、<code>ls</code>、<code>cp</code>、<code>mv</code>、<code>rm</code>、<code>mb</code>、<code>rb</code>、<code>presign</code>、<code>url</code>、<code>versions</code>、<code>restore</code>、<code>sync</code>、<code>vault status</code>。JSON 输出、退出码和加密保险库的用法见 <a href="docs-cli.zh.html">命令行参考</a>（英文）。</p>
+<h2 id="build-from-source">从源码构建 <a class="heading-anchor" href="#build-from-source" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p>需要 Go 1.27.1（见 <code>go.mod</code>），不需要 cgo。</p>
+<pre tabindex="0"><code class="language-powershell">go build ./cmd/pail-desktop ./cmd/pail
+./scripts/release.ps1 -Version 0.1.0   # PowerShell 7.3+，交叉编译所有目标
+go run ./tools/genicons                # 由 assets/brand/pail-icon.svg 重新生成图标</code></pre>
+<p><code>scripts/release.ps1</code> 需要 <code>assets/brand/generated</code> 中已生成的图标。某个目标构建失败时会被跳过，并列在 <code>NOT-BUILT.txt</code> 中。</p>
+<h2 id="data-and-privacy">数据与隐私 <a class="heading-anchor" href="#data-and-privacy" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<ul>
+<li><strong>配置</strong>：系统用户配置目录下的 <code>Pail</code> 文件夹（Windows 为 <code>%AppData%\Pail</code>，Linux 为 <code>~/.config/Pail</code>，macOS 为 <code>~/Library/Application Support/Pail</code>），或 <code>--config-dir</code> 指定的路径。里面有设置、账户文件、同步作业、上传规则和秘密引用的名称。如果存在旧名称留下的 <code>openS3</code> 文件夹，会在首次启动时自动迁移一次。</li>
+<li><strong>秘密</strong>：私有访问密钥、会话令牌和被引用的密码保存在系统钥匙串（Windows 凭据管理器、macOS 钥匙串、Linux 的 Secret Service），服务名为 <code>Pail</code>；也可以选择加密保险库 <code>vault.json</code>（设置 &gt; 安全，适合没有钥匙串的环境）。访问密钥 ID 不是秘密，保存在账户文件中。</li>
+<li><strong>日志</strong>：默认关闭。开启后，脱敏后的日志写入配置目录下的 <code>logs/pail.log</code>。URL 查询串、Authorization 头、签名和已知的秘密值都会被移除；手动输入的密码只能按标签识别，分享日志前请先检查。</li>
+<li><strong>网络</strong>：Pail 只访问你配置的账户所对应的端点，没有遥测，也不检查更新。</li>
+</ul>
+<h2 id="platform-status">平台状态 <a class="heading-anchor" href="#platform-status" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p>已在 Windows 和 Linux（WSLg）上测试。macOS 版本只做了交叉编译，从未在真实设备上运行。目前用过的真实服务端：MinIO（两个版本）和 Cloudflare 后面的自建 VersityGW。AWS 本身，包括 STS 和 CloudFront，尚未测试。各功能的验证结果见 <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/status.md">docs/status.md</a>，与 CS Browser Pro 的对照见 <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/feature-matrix.md">docs/feature-matrix.md</a>。</p>
+        </div>
+      </div>
+      <nav class="docs-toc" aria-labelledby="toc-title">
+        <p class="docs-toc-title" id="toc-title">本页内容</p>
+        <ul>
+          <li><a href="#install">安装</a></li>
+          <li><a href="#quick-start">快速开始</a></li>
+          <li><a href="#command-line">命令行</a></li>
+          <li><a href="#build-from-source">从源码构建</a></li>
+          <li><a href="#data-and-privacy">数据与隐私</a></li>
+          <li><a href="#platform-status">平台状态</a></li>
+        </ul>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html"><img src="assets/pail-icon.svg" alt="" width="28" height="28"><span>Pail</span></a>
+        <p class="footer-made">作者 <a href="https://dejavu.moe">Dejavu Moe</a></p>
+      </div>
+      <nav class="footer-col" aria-labelledby="fc-product">
+        <h2 id="fc-product">产品</h2>
+        <a href="index.html#features">功能</a>
+        <a href="index.html#cli">命令行</a>
+        <a href="index.html#download">下载</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-res">
+        <h2 id="fc-res">资源</h2>
+        <a href="docs.zh.html">文档</a>
+        <a href="changelog.zh.html">更新日志</a>
+        <a href="https://github.com/DejavuMoe/Pail/issues">反馈问题</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-proj">
+        <h2 id="fc-proj">项目</h2>
+        <a href="https://github.com/DejavuMoe/Pail">GitHub</a>
+        <a href="license.zh.html">MIT 许可证</a>
+      </nav>
+    </div>
+    <div class="wrap footer-legal">
+      <p>© 2026 Dejavu Moe</p>
+      <p>Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 无关联，未获其认可或赞助。</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="docs.js"></script>
+</body>
+</html>

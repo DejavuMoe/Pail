@@ -1,0 +1,318 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" data-lang="zh" data-theme="light" data-theme-pref="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>命令行参考 · Pail</title>
+  <meta name="description" content="pail 命令行参考（英文）：全局参数、命令、CDN URL、加密保险库、输出、退出码与限制。">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/pail-icon.svg" type="image/svg+xml">
+  <link rel="alternate" hreflang="en" href="https://pail.download/docs/cli/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://pail.download/zh/docs/cli/">
+  <link rel="alternate" hreflang="x-default" href="https://pail.download/docs/cli/">
+  <script>
+    (function () {
+      var d = document.documentElement, pref = 'system';
+      try { pref = localStorage.getItem('pail-theme') || 'system'; } catch (e) {}
+      var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      d.setAttribute('data-theme-pref', pref);
+      d.setAttribute('data-theme', dark ? 'dark' : 'light');
+      d.classList.add('js');
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M4 6h16"></path><path d="M4 18h16"></path></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">跳到正文</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/pail-icon.svg" alt="" width="28" height="28">
+        <span>Pail</span>
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <a href="index.html#features">功能</a>
+        <a href="index.html#cli">命令行</a>
+        <a href="index.html#privacy">隐私</a>
+        <a href="index.html#download">下载</a>
+        <a class="is-current" href="docs.zh.html" aria-current="page">文档</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn lang-btn" href="docs-cli.html" hreflang="en" lang="en" data-action="lang" data-lang-target="en" aria-label="Switch to English">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
+          <span class="lang-btn-label">EN</span>
+        </a>
+        <fieldset class="theme-seg">
+          <legend class="visually-hidden">主题</legend>
+          <label title="跟随系统"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">跟随系统</span></label>
+          <label title="浅色"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">浅色</span></label>
+          <label title="深色"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">深色</span></label>
+        </fieldset>
+        <a class="icon-btn gh-btn" href="https://github.com/DejavuMoe/Pail" aria-label="GitHub">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+        </a>
+        <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="菜单">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-menu"></use></svg>
+        </button>
+      </div>
+    </div>
+    <nav id="mobile-nav" class="mobile-nav" hidden aria-label="菜单">
+      <a href="index.html#features">功能</a>
+      <a href="index.html#cli">命令行</a>
+      <a href="index.html#privacy">隐私</a>
+      <a href="index.html#download">下载</a>
+      <a class="is-current" href="docs.zh.html" aria-current="page">文档</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="wrap docs-layout">
+      <nav class="docs-nav" aria-label="文档">
+        <ul>
+        <li><a href="docs.zh.html"><span data-label="快速上手">快速上手</span></a></li>
+        <li><a href="docs-cli.zh.html" aria-current="page"><span data-label="命令行">命令行</span></a></li>
+        <li><a href="changelog.zh.html"><span data-label="更新日志">更新日志</span></a></li>
+        <li><a href="license.zh.html"><span data-label="许可证">许可证</span></a></li>
+        </ul>
+      </nav>
+      <div class="docs-main">
+        <header class="doc-head">
+          <h1>命令行参考</h1>
+          <p class="doc-lede">本页仅提供英文版。</p>
+        </header>
+        <div class="prose" lang="en">
+<p><code>pail</code> is a thin front end over <code>internal/app</code>. It shares the configuration directory and the secret store (OS keyring or the encrypted vault) with the desktop app, so accounts and saved sync jobs created there are available here. Accounts cannot be added or changed from the CLI, and no command ever prints credentials.</p>
+<pre tabindex="0"><code class="language-powershell">go build -o bin/pail.exe ./cmd/pail
+pail accounts
+pail ls s3://my-bucket/photos/ -r</code></pre>
+<p>S3 paths are written <code>s3://bucket/key-or-prefix/</code>; any other argument is a local path.</p>
+<h2 id="global-flags">Global flags <a class="heading-anchor" href="#global-flags" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>Accepted before or after the command name.</p>
+<div class="table-wrap" role="group" aria-label="Table: Global flags" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Flag</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>--account NAME|ID</code></td>
+<td>Account to use. Default: the only configured account; with several, the command fails (exit 2) and lists them.</td>
+</tr>
+<tr>
+<td><code>--config-dir DIR</code></td>
+<td>Configuration directory (default: the desktop app&#39;s, <code>&lt;user config dir&gt;/Pail</code>).</td>
+</tr>
+<tr>
+<td><code>--json</code></td>
+<td>Newline-delimited JSON on stdout: one object per listing row or item result and a final <code>{&quot;type&quot;:&quot;summary&quot;,...}</code> object. Failures end with <code>{&quot;type&quot;:&quot;error&quot;,...}</code>.</td>
+</tr>
+<tr>
+<td><code>--quiet</code></td>
+<td>No per-item lines or progress on stderr.</td>
+</tr>
+<tr>
+<td><code>--yes</code></td>
+<td>Assume yes for confirmations.</td>
+</tr>
+<tr>
+<td><code>--timeout D</code></td>
+<td>Abort after D (for example <code>10m</code>); running tasks are cancelled. 0 = no limit.</td>
+</tr>
+<tr>
+<td><code>--vault-password-stdin</code></td>
+<td>Read the encrypted vault&#39;s master password from the first line of stdin (see below).</td>
+</tr>
+</tbody>
+</table></div>
+<h2 id="commands">Commands <a class="heading-anchor" href="#commands" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<div class="table-wrap" role="group" aria-label="Table: Commands" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Command</th>
+<th scope="col">Notes</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td><code>accounts</code></td>
+<td>Name, ID, provider, endpoint, region.</td>
+</tr>
+<tr>
+<td><code>vault status [--vault-password-stdin]</code></td>
+<td>Secret backend (<code>keyring</code> or <code>vault</code>), whether <code>vault.json</code> exists and the desktop auto-lock setting. With <code>--vault-password-stdin</code> it also checks the master password. <code>--json</code> emits <code>{&quot;type&quot;:&quot;vault&quot;,&quot;backend&quot;:...,&quot;vaultExists&quot;:...,&quot;autoLockMinutes&quot;:...}</code>. Never prints secrets.</td>
+</tr>
+<tr>
+<td><code>buckets</code></td>
+<td>Buckets with region.</td>
+</tr>
+<tr>
+<td><code>ls [s3://b/prefix/] [-r]</code></td>
+<td>Folders as <code>PRE name/</code>; sizes human-readable (raw bytes with <code>--json</code>). Without a path: buckets. A key without trailing <code>/</code> that is not a folder lists that single object.</td>
+</tr>
+<tr>
+<td><code>cp SRC DST [-r] [--conflict P] [--decode gzip|zip|auto]</code></td>
+<td>local to S3 (Upload), S3 to local (Download), S3 to S3 (Copy within the account).</td>
+</tr>
+<tr>
+<td><code>mv SRC DST [-r] [--conflict P]</code></td>
+<td>S3 to S3 only. Copy, verify, then delete the source.</td>
+</tr>
+<tr>
+<td><code>rm s3://b/key [-r] [--versions]</code></td>
+<td>Delete. <code>-r</code> treats the key as a folder (<code>s3://b</code> with <code>-r</code> = whole bucket). <code>--versions</code> permanently deletes every version and delete marker of one key.</td>
+</tr>
+<tr>
+<td><code>mb s3://b [--region R] [--object-lock]</code>, <code>rb s3://b</code></td>
+<td>Create / delete (empty) bucket.</td>
+</tr>
+<tr>
+<td><code>presign s3://b/key [--expires 1h] [--method GET|PUT] [--version-id V]</code></td>
+<td>Prints the URL.</td>
+</tr>
+<tr>
+<td><code>url s3://b/key [--kind cdn|public]</code></td>
+<td>Prints the object&#39;s address without any request. Default: the CDN link when the account has a CDN URL for that bucket (set in the desktop app&#39;s account dialog; see below), else the public S3 address. <code>--kind cdn</code> exits 1 when none is configured; <code>--kind public</code> always prints the S3 address. <code>--json</code> emits <code>{&quot;type&quot;:&quot;url&quot;,&quot;kind&quot;:&quot;cdn&quot;|&quot;public&quot;,&quot;url&quot;:...}</code> and the summary. A prefix is a usage error (exit 2).</td>
+</tr>
+<tr>
+<td><code>versions s3://b/prefix/</code></td>
+<td>One folder level; includes delete markers.</td>
+</tr>
+<tr>
+<td><code>restore s3://b/key --version-id V</code> / <code>restore s3://b/prefix/ --deleted [-r]</code></td>
+<td>Make an old version current / undelete keys whose latest entry is a delete marker. History is never deleted.</td>
+</tr>
+<tr>
+<td><code>sync LOCAL s3://b/prefix/</code> / <code>sync s3://b/prefix/ LOCAL</code></td>
+<td><code>--mode new|new_changed|mirror</code>, <code>--compare size_time|size|checksum</code>, repeatable <code>--exclude GLOB</code>, <code>--no-rules</code>, <code>--dry-run</code>.</td>
+</tr>
+<tr>
+<td><code>sync --job NAME [--dry-run]</code></td>
+<td>Run a job saved in the desktop app (uses that job&#39;s account unless <code>--account</code> is given).</td>
+</tr>
+<tr>
+<td><code>version</code></td>
+<td>Prints <code>pail &lt;version&gt;</code>.</td>
+</tr>
+</tbody>
+</table></div>
+<p><code>--conflict</code> is <code>skip</code>, <code>overwrite</code>, <code>rename</code>, <code>newer</code> or <code>different_size</code>. When omitted, <code>cp</code> and <code>mv</code> both use the default saved in the desktop settings (initially <code>rename</code>).</p>
+<p>Destination rules: the destination of an upload or S3 copy is always a folder (a missing trailing <code>/</code> is added), and the source name is kept below it, like <code>cp -r src dst/</code>. The destination of a download is always a local directory (created if missing).</p>
+<h2 id="cdn-urls">CDN URLs <a class="heading-anchor" href="#cdn-urls" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>An account can have a CDN base URL, for example <code>https://s3-cdn.example.com</code>, and optionally a list of buckets it serves (default: all). Without placeholders the link is <code>&lt;base&gt;/&lt;bucket&gt;/&lt;key&gt;</code>, so <code>s3://assets/logo.svg</code> becomes <code>https://s3-cdn.example.com/assets/logo.svg</code>. A template with <code>{key}</code> (and optionally <code>{bucket}</code>), such as <code>https://{bucket}.cdn.example.com/{key}</code>, is filled in instead. The key is percent-encoded like the public URL, keeping <code>/</code>. The setting is stored in <code>accounts.json</code> as <code>cdnUrl</code> / <code>cdnBuckets</code> and is edited in the desktop app; the CLI only reads it.</p>
+<h2 id="encrypted-vault">Encrypted vault <a class="heading-anchor" href="#encrypted-vault" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>When the desktop app stores secrets in its encrypted vault (<code>vault.json</code>, protected by a master password) instead of the OS keychain, every CLI run starts with the vault locked. A command that needs credentials (an account with static keys; <code>cp</code> and <code>sync</code> when secret references such as ZIP passwords exist) unlocks it first:</p>
+<ul>
+<li><code>--vault-password-stdin</code>: the password is the first line of stdin, for example <code>$pw | pail --vault-password-stdin buckets</code>. stdin is then not available for the <code>Proceed? [y/N]</code> prompt, so destructive commands also need <code>--yes</code>.</li>
+<li>On a terminal, a no-echo prompt <code>Vault master password:</code> (three attempts).</li>
+<li>Without either, the command exits 2 with a message saying so. Nothing is asked for accounts that use profiles, default credentials or anonymous access, nor for <code>accounts</code>.</li>
+</ul>
+<p>The password is never accepted as a flag value or environment variable (both are visible to other processes), is not logged and is not echoed. The unlock lasts for one run; the CLI never writes to the vault, creates it, changes its password or resets it: use the desktop app.</p>
+<h2 id="progress-and-output">Progress and output <a class="heading-anchor" href="#progress-and-output" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>One line per finished item goes to stderr (<code>done</code>, <code>skipped</code>, <code>FAILED</code>, <code>UNKNOWN</code>, <code>unprocessed</code>), then a summary line. On a terminal a live line shows items, bytes and speed. Machine-readable results use <code>--json</code>; stdout otherwise carries only listings, URLs and the sync plan.</p>
+<h2 id="confirmation">Confirmation <a class="heading-anchor" href="#confirmation" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p><code>rm</code>, <code>rb</code>, <code>mv</code> and <code>sync</code> with deletes print the scope first: account, bucket/prefix, objects and bytes (counted with <code>Estimate</code>), and for sync the number of deletes (local deletes of a download-direction mirror go to the OS trash). With a terminal on stdin they ask <code>Proceed? [y/N]</code>; without one they exit 2 unless <code>--yes</code> is given. <code>cp</code> is never confirmed, including <code>--conflict overwrite</code>. <code>sync --dry-run</code> prints the plan and exits 0 without changing anything and without asking.</p>
+<h2 id="exit-codes">Exit codes <a class="heading-anchor" href="#exit-codes" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<div class="table-wrap" role="group" aria-label="Table: Exit codes" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">Code</th>
+<th scope="col">Meaning</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>0</td>
+<td>Success (skipped items count as success).</td>
+</tr>
+<tr>
+<td>1</td>
+<td>Failure: error, failed task, every item failed, or confirmation declined.</td>
+</tr>
+<tr>
+<td>2</td>
+<td>Usage or invalid input, confirmation required but no terminal and no <code>--yes</code>, or the encrypted vault is locked and there is no way to ask for the password (no terminal, no <code>--vault-password-stdin</code>).</td>
+</tr>
+<tr>
+<td>3</td>
+<td>Partial failure: some items succeeded, some failed, were unknown (outcome uncertain, never replayed) or unprocessed.</td>
+</tr>
+<tr>
+<td>130</td>
+<td>Interrupted (Ctrl+C): running tasks are cancelled and given up to 10 s to stop. Downloads are written to temporary files that are removed, so no partial file is left.</td>
+</tr>
+</tbody>
+</table></div>
+<p>Errors print the kind in words: not found, access denied, not supported by this provider, conflict, network error, canceled, invalid input, locked. A wrong vault password is &quot;access denied&quot; (exit 1).</p>
+<h2 id="limits">Limits <a class="heading-anchor" href="#limits" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<ul>
+<li>Destinations cannot be renamed on the fly; there is no glob expansion of S3 paths; <code>versions</code> lists one folder level; <code>rm --versions</code> takes a single key.</li>
+<li>Copy and move work inside one account.</li>
+<li>Verification: the commands are covered by in-process tests against <code>internal/s3test</code> (protocol level). The application layer underneath is also tested against MinIO and a self-hosted VersityGW (see <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/status.md">status.md</a>); the CLI front end itself has not been run against a real server.</li>
+</ul>
+        </div>
+      </div>
+      <nav class="docs-toc" aria-labelledby="toc-title">
+        <p class="docs-toc-title" id="toc-title">本页内容</p>
+        <ul lang="en">
+          <li><a href="#global-flags">Global flags</a></li>
+          <li><a href="#commands">Commands</a></li>
+          <li><a href="#cdn-urls">CDN URLs</a></li>
+          <li><a href="#encrypted-vault">Encrypted vault</a></li>
+          <li><a href="#progress-and-output">Progress and output</a></li>
+          <li><a href="#confirmation">Confirmation</a></li>
+          <li><a href="#exit-codes">Exit codes</a></li>
+          <li><a href="#limits">Limits</a></li>
+        </ul>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html"><img src="assets/pail-icon.svg" alt="" width="28" height="28"><span>Pail</span></a>
+        <p class="footer-made">作者 <a href="https://dejavu.moe">Dejavu Moe</a></p>
+      </div>
+      <nav class="footer-col" aria-labelledby="fc-product">
+        <h2 id="fc-product">产品</h2>
+        <a href="index.html#features">功能</a>
+        <a href="index.html#cli">命令行</a>
+        <a href="index.html#download">下载</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-res">
+        <h2 id="fc-res">资源</h2>
+        <a href="docs.zh.html">文档</a>
+        <a href="changelog.zh.html">更新日志</a>
+        <a href="https://github.com/DejavuMoe/Pail/issues">反馈问题</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-proj">
+        <h2 id="fc-proj">项目</h2>
+        <a href="https://github.com/DejavuMoe/Pail">GitHub</a>
+        <a href="license.zh.html">MIT 许可证</a>
+      </nav>
+    </div>
+    <div class="wrap footer-legal">
+      <p>© 2026 Dejavu Moe</p>
+      <p>Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 无关联，未获其认可或赞助。</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="docs.js"></script>
+</body>
+</html>
