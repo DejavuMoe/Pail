@@ -33,8 +33,8 @@ func switchControl(c *ui.Context, on *bool, label string) ui.Element {
 		const in = 2
 		d := r.H - 2*in
 		knob := ui.Rect{X: r.X + in + pos*(r.W-r.H), Y: r.Y + in, W: d, H: d}
-		p.Shadow(knob, d/2, 0, 1, 3, 0, ui.RGBA(0, 0, 0, 0.3))
-		p.Fill(knob, ui.RGB(255, 255, 255), d/2)
+		p.Shadow(knob, d/2, 0, 1, 3, 0, k.KnobShadow)
+		p.Fill(knob, k.Knob, d/2)
 	})
 	sw.DrawOver(func(p *ui.Painter, r ui.Rect) {
 		if sw.FocusVisible() {
@@ -83,7 +83,7 @@ func selectionBar(c *ui.Context, inset float32) ui.Element {
 }
 
 // markSelected paints the same bar over a selected row from outside, for rows
-// whose children are added by the caller (listRow).
+// whose children are added by the caller (toolListRow).
 func markSelected(c *ui.Context, row ui.Element, inset float32) {
 	acc := tk(c).Accent
 	row.DrawOver(func(p *ui.Painter, r ui.Rect) {

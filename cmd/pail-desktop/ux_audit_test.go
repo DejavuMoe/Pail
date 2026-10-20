@@ -297,6 +297,7 @@ func browserCases() []auditCase {
 		{name: "browser-toast", setup: func(h *harness) {
 			h.a.toast("Bucket name copied")
 			h.tt.Frame()
+			h.tt.Advance(time.Second) // past the fade-in
 			h.tt.Frame()
 		}},
 		{name: "browser-context-menu", setup: func(h *harness) {

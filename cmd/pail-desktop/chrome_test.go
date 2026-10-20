@@ -199,11 +199,15 @@ func TestPaletteListsEveryCommandAndBuckets(t *testing.T) {
 			t.Errorf("the palette lacks %q", "Open bucket "+b.name)
 		}
 	}
-	uploadKey, paletteKey := "Ctrl+U", "Ctrl+K"
+	// A shortcut is drawn as one keycap per key (Ctrl, U), so the keys are
+	// looked for one by one; Esc is a keycap too.
+	uploadKeys, paletteKeys := []string{"Ctrl", "U"}, []string{"Ctrl", "K"}
 	if runtime.GOOS == "darwin" {
-		uploadKey, paletteKey = "⌘U", "⌘K"
+		uploadKeys, paletteKeys = []string{"⌘", "U"}, []string{"⌘", "K"}
 	}
-	h.mustHave("Upload files", "Settings", "Theme: Dark", "Open bucket acme-assets", uploadKey, paletteKey)
+	h.mustHave("Upload files", "Settings", "Theme: Dark", "Open bucket acme-assets", "Esc")
+	h.mustHave(uploadKeys...)
+	h.mustHave(paletteKeys...)
 	h.mustNotHave("Lock Vault") // the vault is not in use: not applicable
 	h.snap("palette-open-light")
 	h.tt.Key(0, ui.KeyEscape)
@@ -331,8 +335,8 @@ func TestPaletteDisabledCommandsAreDimmedAndDoNotRun(t *testing.T) {
 		t.Fatal("a disabled command closed the palette")
 	}
 	// The first row of the list: the palette is 96px from the top, its search
-	// row is 48px and the list pads 4px; rows are 32px.
-	h.tt.ClickAt(testW/2, 96+49+4+16)
+	// row is 48px and the list pads 4px; rows are listRowH (28px).
+	h.tt.ClickAt(testW/2, 96+paletteHeaderH+1+4+listRowH/2)
 	h.settle()
 	if !h.a.pal.open {
 		t.Fatal("clicking a disabled command ran it")

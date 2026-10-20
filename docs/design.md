@@ -8,7 +8,7 @@
 2. **颜色是信号，不是装饰。** 强调色只用在五处：选中行（`Selection`）、焦点环（`Focus`）、进度与激活指示（`Accent`）、文件夹图标（`FolderIcon`）、主按钮。危险色只用于破坏性动作和失败状态。其余图标一律单色：`TextMuted`，次要为 `TextSubtle`。
 3. **激活态用中性填充。** 侧栏选中项、工具栏开关、分段控件的当前项用 `ActiveFill` 或 `SurfacePressed`，文字用 `Text`、字重 500。不用蓝色胶囊。
 4. **字重只用 400 / 500 / 600。** 层次靠字号与灰度，不靠粗体。字号：13 正文、12 次要、11 分组标签、15 标题。
-5. **间距基数为 4**，常用 4 / 8 / 12 / 16 / 20 / 24。控件高 28，表格行高 30，圆角 6（控件）、8（面板）、10（对话框）。
+5. **间距基数为 4**，常用 4 / 8 / 12 / 16 / 20 / 24。控件高 28，表格行高 30，圆角 6（控件）、8（面板）、10（对话框）；键帽是 4。这些数值是 `theme.go` 里的常量 `RadiusControl`、`RadiusPopover`、`RadiusDialog`、`RadiusKeycap`，视图里不写裸数字。
 6. **界面里不放解释性段落。** 必要的提示放 Tooltip 或空状态。
 
 ## 状态
@@ -24,8 +24,10 @@
 | 开关 | 关闭时轨道 `ControlOff`，开启时 `Accent` | 白色圆钮，位置随状态变化 |
 | 复选框 | 未选时 1.5px `BorderStrong` 边框；选中时 `Accent` 填充 | 白色对勾 |
 | 表格选中行 | `Selection` | 若有焦点行，焦点行另加 1px `Focus` 内描边 |
+| 命令面板、下拉选项的"当前值"（当前主题、语言、已打开的存储桶、选择框当前项） | 无填充 | `Accent` 对勾加字重 600 |
+| 命令面板、下拉选项的"高亮"（键盘光标或鼠标悬停） | `SurfaceHover` | 无：高亮是临时的指向，不是状态；它与"当前值"是两件事，同一行可以同时有两者 |
 
-悬停只改填充（`SurfaceHover`），不能与选中状态混淆。禁用状态用透明度 0.4，同时不响应悬停。
+悬停只改填充（`SurfaceHover`），不能与选中状态混淆。禁用状态用透明度 0.4，同时不响应悬停。浮层列表里键盘光标与鼠标悬停是同一种外观（见"浮层"）。
 
 ## 对比度（`cmd/pail-desktop/theme_test.go` 强制检查）
 
@@ -48,6 +50,37 @@
 - 分隔条（mygo `Split`）悬停用 `BorderStrong`、拖动用 `TextSubtle`，不用 `Accent`（超出强调色的五处用途）；经 `app.split` 给 `Split` 一份私有主题副本实现。
 - 单行文本不要用 `Grow(n)`：它同时把 basis 设为 0，文本的最小内容宽度为 0，会被冻结成 0 宽，只剩省略号。要让标签占满剩余空间，把它放进 `Grow(1).MinWidth(0)` 的容器，文本自己用 `Shrink(1).MinWidth(0)`（参见 `kvedit.go`、`help.go`）。
 
+## 浮层
+
+所有浮在窗口之上的界面共用一套外观，实现在 `cmd/pail-desktop/overlay.go`，数值来自 `theme.go`。新增浮层必须经 `overlayPanel`，列表型浮层的行必须经 `listRow`，不得自行写圆角、阴影或高亮色。
+
+**面板种类**（`overlayPanel(kind)`）：
+
+| 种类 | 用于 | 圆角 | 底色 | 边缘 |
+| --- | --- | --- | --- | --- |
+| `overlayDialog` | 对话框、命令面板、存储桶设置 | `RadiusDialog` 10 | `Surface` | 亮色：阴影 `ShadowDialog`（0 12 32，约 18% 黑）；暗色：1px `BorderStrong` |
+| `overlayPopover` | 下拉选项、菜单 | `RadiusPopover` 8 | `Surface` | 亮色：阴影 `ShadowPopover`（0 8 24，约 14% 黑）；暗色：1px `BorderStrong` |
+| `overlayTip` | Toast | `RadiusPopover` 8 | `Inverse`，文字 `InverseText` | 亮暗都无描边：反色块本身足够醒目 |
+
+- 暗色背景上阴影看不见，所以暗色的阴影 token 是透明的，面板改用 1px `BorderStrong` 描边；亮色不描边，只靠阴影。两种做法由 token 是否透明决定，视图里不判断主题。
+- 只有一层面板，不嵌套边框；对话框内部的滚动、分隔线规则见"滚动"。
+- Tooltip 取 `Inverse` / `InverseText` 的颜色（`applyTheme` 设置）。mygo v0.5.5 没有改写 `Element.Tooltip` 外观的钩子，它的圆角（5）和阴影仍由库内决定，是已知的例外。
+
+**列表行**（`listRow`，命令面板、下拉选项，以及之后的菜单共用）：
+
+- 高 28（`listRowH`），左右内边距 8，圆角 6，子项间距 8；从左到右依次是：14px 图标（`TextMuted`）、标签（13px `Text`）、副文字（12px `TextMuted`）、键帽、对勾（14px `Accent`）、子菜单箭头（`chevron-right`，`TextMuted`）。
+- **高亮**：键盘光标所在行与鼠标悬停所在行外观相同，都是 `SurfaceHover` 填充，像原生菜单一样；不用蓝色 `Selection`。鼠标移动时光标跟着鼠标，鼠标静止时键盘方向键夺回光标。
+- **当前值**：`Accent` 对勾加字重 600（两种线索）。当前值与高亮互不影响，可以出现在同一行。
+- **禁用**：透明度 0.4，不响应悬停，不可点击，键盘光标跳过。
+- 命令面板：每行显示命令自己的图标；浏览时命令按分组排列，分组标题用 `sectionLabel`，"此处不可用"也是一个分组标题；有搜索词时跨分组排序，分组名作为副文字显示在行内。
+- 选项文字单行截断，不换行。
+
+**键帽**（`keycap`）：高 20，左右内边距 4，圆角 `RadiusKeycap` 4，1px `Border` 描边，12px `TextSubtle`；一个按键一个键帽（`Ctrl`、`Shift`、`U` 是三个）。键帽落在高亮行上时，`Border` 与 `SurfaceHover` 太接近，描边升为 `BorderStrong`、文字升为 `TextMuted`。命令面板的 `Esc` 也是键帽。
+
+**分隔线**（`listSeparator`）：1px `Border`，上下各留 4px 外边距，用于列表里的分组之间。
+
+**Toast**：窗口底部居中，`overlayTip`，内边距 8 / 16，13px 文字，动作按钮 13px / 600，悬停时用 `InverseText` 14% 透明度的填充。
+
 ## 窗口外观
 
 - **标题栏与应用融为一体**：所有平台都用 `TitleBarStyle: hidden`（macOS 用 `hiddenInset`），并设置 `TitleBarHeight: 44`，让系统窗口按钮与 44px 的工具栏同高。
@@ -59,7 +92,7 @@
   - 所有命令通过三个入口找到：
     1. 工具栏上的按钮；
     2. 右键菜单；
-    3. **命令面板**（`Ctrl/⌘+K`，也可用 `Ctrl/⌘+Shift+P`）：一个搜索框，列出命令表里的全部命令，显示快捷键和当前是否可用，支持中英文关键字。
+    3. **命令面板**（`Ctrl/⌘+K`，也可用 `Ctrl/⌘+Shift+P`）：一个搜索框，列出命令表里的全部命令，每行显示图标、快捷键（键帽）和当前是否可用，支持中英文关键字；外观见"浮层"。
   - 工具栏最右侧（系统按钮左边）有一个 `⋯` 菜单按钮，分组列出：命令面板、设置、主题、语言、键盘快捷键、文档、关于 Pail、退出。
 - "关于"对话框：图标、版本、许可证与第三方声明（Lucide ISC、Inter OFL），以及项目链接。
 
@@ -183,7 +216,7 @@
 ### 对话框
 
 - 遮罩用 `Scrim`。
-- 卡片：`Surface` 底，圆角 10，宽 440，内边距 20。亮色无边框，带柔和阴影（0 12 32，约 18% 黑）；暗色用 1px `BorderStrong`。只有一层卡片，不要嵌套边框。
+- 卡片：`overlayDialog`（`Surface` 底，圆角 `RadiusDialog`，亮色阴影 `ShadowDialog`、暗色 1px `BorderStrong`，见"浮层"），宽 440，内边距 20。只有一层卡片，不要嵌套边框。存储桶设置对话框用同一个外框（`dialogFrame`）和同样的标题行、底部行，宽 760、高固定，列表和表单各自滚动，分隔线只在其中之一可滚动时显示。
 - 标题 15px / 600。
 - 范围信息用两列网格：标签 12px `TextSubtle`，值 13px `Text`。
 - key 列表块：`Sidebar` 底，圆角 6，内边距 8 / 10，12px 等宽字体，最多 5 行，之后接"and N more"。
