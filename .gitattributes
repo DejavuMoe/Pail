@@ -15,6 +15,7 @@
 *.html  text eol=lf
 *.css   text eol=lf
 *.js    text eol=lf
+*.tmpl  text eol=lf
 
 *.png   binary
 *.ico   binary

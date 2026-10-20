@@ -4,10 +4,10 @@ The public website lives in this repository next to the application. It is a sta
 
 | Path | Contents | State |
 | --- | --- | --- |
-| `designs/pail-site/` | Reviewable prototype (`index.html`, `styles.css`, `i18n.js`, `app.js`; `tweaks.js` is a review-only control panel) plus the prototype-first-ui records (`_d_meta.json`, `ui-contract.json`, `content-inventory.json`, `design-sources.json`) | waiting for approval |
-| `site/` | Production templates, locale files and static assets | written after the prototype is approved |
-| `tools/site/` | Go generator: `go run ./tools/site -out <dir> -version <x.y.z>` | written after the prototype is approved |
-| `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | written; runs once `tools/site` exists |
+| `designs/pail-site/` | Reviewable prototype (`index.html`, `styles.css`, `i18n.js`, `app.js`; `tweaks.js` is a review-only control panel) plus the prototype-first-ui records (`_d_meta.json`, `ui-contract.json`, `content-inventory.json`, `design-sources.json`) | approved 2026-10-20 |
+| `site/` | Production templates, locale files and static assets | implemented |
+| `tools/site/` | Go generator: `go run ./tools/site -out <dir> -version <x.y.z>` | implemented, tested |
+| `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | written; not yet run (needs the repository secrets and a published release) |
 | `docs/product/constraints.md` | Content and UX rules for the site | current |
 
 Only the site uses the `prototype-first-ui` and `baoyu-design` skills (see `AGENTS.md`). A visible change starts in `designs/pail-site/`, is approved, and is then implemented in `site/` in a separate commit.
@@ -18,26 +18,34 @@ Only the site uses the `prototype-first-ui` and `baoyu-design` skills (see `AGEN
 - A Go generator needs nothing beyond the toolchain the project already pins in `go.mod`, so the same `golang` image builds the app and the site, and `go test ./...` covers the generator. There is no `package.json`, no lockfile and no `node_modules` for Go's `./...` patterns to trip over.
 - The output is plain HTML, CSS and a small script; it can be served by any static host.
 
-## Production layout (planned)
+## Production layout
 
 ```text
 site/
   templates/index.html.tmpl   one html/template for both languages
+  templates/404.html.tmpl     bilingual not-found page
   locales/en.json             source strings (keys match the prototype's i18n.js)
   locales/zh-Hans.json
-  static/                     styles.css, app.js
+  static/styles.css           the approved prototype's styles without the review panel's hooks
+  static/app.js               theme, palette, demos; no runtime translation
 tools/site/                   generator and tests
 ```
 
-The generator:
+The generator (`tools/site/main.go`):
 
-- renders `/index.html` (English) and `/zh/index.html` (Simplified Chinese) with `hreflang` alternates and a canonical URL;
-- copies `docs/images/main-{light,dark}.png` and `assets/brand/pail-icon.svg` instead of keeping second copies;
-- fingerprints static files (`styles.<hash>.css`) so they can be cached forever while HTML is revalidated;
+- renders `/index.html` (English) and `/zh/index.html` (Simplified Chinese) with `hreflang` alternates and a canonical URL; text is rendered on the server, and only the strings `app.js` builds at runtime (`runtimeKeys`) are embedded as JSON;
+- copies `docs/images/main-{light,dark}.png` and `assets/brand/pail-icon.svg` (XML comments removed) instead of keeping second copies;
+- fingerprints every file under `/assets/` (`styles.<hash>.css`) so it can be cached forever while HTML is revalidated;
 - writes `404.html`, `robots.txt` and `sitemap.xml`;
-- fails when a locale misses a key, when the two locales' key sets differ, or when `-version` does not match `^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$`.
+- takes the footer year from `LICENSE`, so the same commit and version always produce the same files;
+- fails when a locale misses a key, when the two locales' key sets differ, when a string is empty, or when `-version` does not match `^\d+\.\d+\.\d+(-[0-9A-Za-z.-]+)?$`;
+- replaces an existing `-out` directory only when it holds nothing but a previous build.
 
-Behaviour carried over from the prototype: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, the command palette (`Ctrl/⌘ K`), and reduced-motion support. Without JavaScript every section, link and download still works.
+Flags: `-out`, `-version` (required); `-root` (default: found by walking up to this module's `go.mod`); `-base-url` (default `https://pail.download`, used for canonical links and the sitemap).
+
+The tests (`go test ./tools/site/...`) build the real site and check both languages, that the six download links match the targets in `scripts/release.ps1`, that every `src`/`href` stays on the site or points to GitHub, that `app.js` only asks for embedded strings, fingerprinting, and input validation.
+
+Behaviour carried over from the prototype: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, the command palette (`Ctrl/⌘ K`), and reduced-motion support. Without JavaScript every section, link and download still works; the palette, theme control and object-key backdrop are hidden, and the terminal shows its first example.
 
 The site loads no webfonts. Text uses each operating system's default sans-serif and monospace stacks with CJK fallbacks (see `docs/product/constraints.md`), so the prototype and production make no third-party requests and there are no font licences to ship.
 
@@ -89,9 +97,11 @@ Prototype: serve `designs/` and open `http://127.0.0.1:4311/pail-site/`.
 python -m http.server 4311 --bind 127.0.0.1 --directory designs
 ```
 
-Production, once `tools/site` exists:
+Production:
 
 ```powershell
 go run ./tools/site -out build/site -version 0.1.0
 python -m http.server 4312 --bind 127.0.0.1 --directory build/site
 ```
+
+`python -m http.server` does not send `404.html` for missing paths; open `/404.html` directly to check it. Download links point to the real release, so they fail until that version is published.
