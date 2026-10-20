@@ -530,7 +530,7 @@ func firstNonEmpty(a, b string) string {
 
 func (a *app) syncRow(c *ui.Context, key string, on bool, j core.SyncJob, click func()) {
 	k := tk(c)
-	row := listRow(c, key, on)
+	row := toolListRow(c, key, on)
 	row.Children(func() {
 		icon := "arrow-up"
 		if j.Direction == "download" {

@@ -56,6 +56,10 @@ type bucketSettings struct {
 	section int
 	secs    map[core.BucketConfig]*cfgState
 	gen     int
+
+	// navScroll and paneScroll report whether the nav list and the form
+	// overflowed in the last frame, which decides whether the dividers show.
+	navScroll, paneScroll ui.ScrollState
 }
 
 // cfgState is one section: what the service holds and what the form shows.
@@ -455,26 +459,27 @@ func (a *app) bucketSettingsDialog(c *ui.Context) {
 	_, winH := c.Size()
 	ui.DialogBase(c, &bs.open, func(backdrop, panel ui.Element) {
 		backdrop.Background(k.Scrim)
-		panel.Width(760).Height(min(560, max(360, winH-64))).Radius(10).Background(k.Surface).Clip()
-		if c.Theme().Dark {
-			panel.Border(1, k.BorderStrong)
-		} else {
-			panel.Shadow(0, 12, 32, 0, ui.RGBA(0, 0, 0, 0.18))
-		}
-		ui.Row(c).Padding(14, 20).Gap(8).AlignItems(ui.Center).Shrink(0).Children(func() {
-			sectionTitle(c, locales.BucketSettingsTitle())
+		// The same card as every dialog (dialogFrame); only the height is fixed,
+		// since the nav and the pane share it and scroll inside it.
+		dialogFrame(c, panel, 760, winH)
+		panel.Height(min(560, max(360, winH-dialogMargin)))
+		dialogHeader(c, locales.BucketSettingsTitle(), func() {
 			ui.Text(c, bs.bucket).FontSize(sizeBody).TextColor(k.TextMuted).SingleLine()
 		})
-		hairline(c)
+		// As in dialogW, the dividers show only while something scrolls.
+		overflow := bs.navScroll.MaxY > 0 || bs.paneScroll.MaxY > 0
+		divider(c, overflow)
 		ui.Row(c).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Children(func() {
 			a.settingsNav(c)
 			a.settingsPane(c)
 		})
-		hairline(c)
-		ui.Row(c).Padding(12, 20).Justify(ui.End).Shrink(0).Children(func() {
-			if secondaryButton(c, locales.CommonClose(), false).Clicked() {
-				bs.open = false
-			}
+		divider(c, overflow)
+		dialogFooter(c, func() {
+			buttonRow(c, func() {
+				if secondaryButton(c, locales.CommonClose(), false).Clicked() {
+					bs.open = false
+				}
+			})
 		})
 	})
 }
@@ -482,7 +487,7 @@ func (a *app) bucketSettingsDialog(c *ui.Context) {
 func (a *app) settingsNav(c *ui.Context) {
 	bs := &a.mg.bs
 	k := tk(c)
-	ui.Scroll(c).Width(208).Shrink(0).MinHeight(0).Background(k.Sidebar).ScrollbarInsets(0, 1, 0, 0).Children(func() {
+	ui.Scroll(c).TrackScroll(&bs.navScroll).Width(208).Shrink(0).MinHeight(0).Background(k.Sidebar).ScrollbarInsets(0, 1, 0, 0).Children(func() {
 		ui.Column(c).Padding(8, scrollGutter, 8, 8).Gap(2).Children(func() {
 			for i, sec := range bsSections {
 				on := i == bs.section
@@ -539,10 +544,11 @@ func (a *app) settingsPane(c *ui.Context) {
 			}
 		}
 		if !scrolls {
+			bs.paneScroll = ui.ScrollState{} // nothing scrolls here: no stale overflow
 			ui.Column(c).Grow(1).MinHeight(0).Padding(0, 20, 20, 20).Gap(16).Children(body)
 			return
 		}
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		ui.Scroll(c).TrackScroll(&bs.paneScroll).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
 			ui.Column(c).Padding(0, 20, 20, 20).Gap(16).Children(body)
 		})
 	})

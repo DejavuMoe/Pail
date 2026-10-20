@@ -31,8 +31,28 @@ type tokens struct {
 	Selection, Focus, FolderIcon         ui.Color
 	Danger, DangerText, Warning, Success ui.Color
 	Scrim, ScrimSoft                     ui.Color // modal backdrop; the lighter one behind the command palette
-	Shadow                               ui.Color // raised segment / popover shadow
+	Shadow                               ui.Color // raised segment shadow
+
+	// Overlay surfaces (docs/design.md "Overlays", overlay.go). A shadow token
+	// is the colour of the shadow; its geometry lives in overlay.go. Where the
+	// token is transparent (the dark theme, where a shadow is invisible on a
+	// dark backdrop) overlayPanel draws a 1px BorderStrong outline instead.
+	ShadowPopover, ShadowDialog ui.Color
+	// Inverse and InverseText fill and colour tooltips and toasts: the theme
+	// turned over, so that they stand out from what they float above.
+	Inverse, InverseText ui.Color
+	// Knob and KnobShadow are the thumb of a switch and its shadow.
+	Knob, KnobShadow ui.Color
 }
+
+// Radii (docs/design.md principle 5): 6 controls, 8 panels (select popups,
+// menus, toasts), 10 dialogs; 4 for the small keycap.
+const (
+	RadiusControl = 6
+	RadiusPopover = 8
+	RadiusDialog  = 10
+	RadiusKeycap  = 4
+)
 
 var lightTokens = tokens{
 	Background: ui.Hex("#FBFAF8"), Sidebar: ui.Hex("#F3F1EC"), Surface: ui.Hex("#FFFFFF"),
@@ -46,7 +66,10 @@ var lightTokens = tokens{
 	Danger: ui.Hex("#B3402E"), DangerText: ui.Hex("#FFFFFF"),
 	Warning: ui.Hex("#A0691A"), Success: ui.Hex("#3B7653"),
 	Scrim: ui.Hex("#141311").Alpha(0.32), ScrimSoft: ui.Hex("#141311").Alpha(0.12),
-	Shadow: ui.RGBA(20, 19, 17, 0.12),
+	Shadow:        ui.RGBA(20, 19, 17, 0.12),
+	ShadowPopover: ui.RGBA(0, 0, 0, 0.14), ShadowDialog: ui.RGBA(0, 0, 0, 0.18),
+	Inverse: ui.Hex("#2A2926"), InverseText: ui.Hex("#F5F3EE"),
+	Knob: ui.Hex("#FFFFFF"), KnobShadow: ui.RGBA(0, 0, 0, 0.3),
 }
 
 var darkTokens = tokens{
@@ -61,7 +84,10 @@ var darkTokens = tokens{
 	Danger: ui.Hex("#E0806C"), DangerText: ui.Hex("#1A1A18"),
 	Warning: ui.Hex("#D7A955"), Success: ui.Hex("#82BE98"),
 	Scrim: ui.Hex("#000000").Alpha(0.5), ScrimSoft: ui.Hex("#000000").Alpha(0.28),
-	Shadow: ui.RGBA(0, 0, 0, 0.4),
+	Shadow:        ui.RGBA(0, 0, 0, 0.4),
+	ShadowPopover: ui.Transparent, ShadowDialog: ui.Transparent,
+	Inverse: ui.Hex("#EAE8E3"), InverseText: ui.Hex("#1A1A18"),
+	Knob: ui.Hex("#FFFFFF"), KnobShadow: ui.RGBA(0, 0, 0, 0.3),
 }
 
 func tokensFor(dark bool) tokens {
@@ -101,8 +127,10 @@ func applyTheme(c *ui.Context, mode string) tokens {
 	t.Accent, t.AccentHover, t.AccentPressed, t.AccentText = k.Accent, k.AccentHover, k.AccentPressed, k.AccentText
 	t.Selection, t.Focus = k.Selection, k.Focus
 	t.Danger, t.Warning, t.Success = k.Danger, k.Warning, k.Success
+	// Tooltips (mygo's own, see overlay.go) and toasts take these two.
+	t.Inverse, t.InverseText = k.Inverse, k.InverseText
 	t.Scrollbar = k.TextSubtle.Alpha(0.5)
-	t.Radius, t.Spacing = 6, 4
+	t.Radius, t.Spacing = RadiusControl, 4
 	t.FontSize = sizeBody * max(1, c.Preferences().TextScale)
 	if uiFont != "" {
 		t.Font = uiFont

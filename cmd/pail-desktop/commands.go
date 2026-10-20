@@ -257,7 +257,7 @@ func commandTable() []command {
 			Enabled: func(a *app) bool { return deletedOn(a) && len(a.rows) > 0 }, Run: func(a *app) { a.askRestoreAll() }},
 		{ID: "refresh", Label: locales.Messages.CmdRefresh, Icon: "refresh-cw", Chords: []chord{{0, ui.KeyF5, "F5"}, {ui.Cmd, ui.KeyR, "Ctrl+R"}}, Accel: "F5",
 			Enabled: (*app).browsing, Run: func(a *app) { a.reload() }},
-		{ID: "selectall", Label: locales.Messages.CmdSelectAll, Icon: "check", Chords: []chord{{ui.Cmd, ui.KeyA, "Ctrl+A"}},
+		{ID: "selectall", Label: locales.Messages.CmdSelectAll, Icon: "check-check", Chords: []chord{{ui.Cmd, ui.KeyA, "Ctrl+A"}},
 			Enabled: func(a *app) bool { return a.browsing() && len(a.rows) > 0 }, Run: func(a *app) { a.selectAll() }},
 		{ID: "up", Label: locales.Messages.CmdUp, Icon: "arrow-up", Chords: []chord{{0, ui.KeyBackspace, "Backspace"}, {ui.Alt, ui.KeyUp, "Alt+Up"}},
 			Enabled: func(a *app) bool { return a.browsing() && a.scope.Prefix != "" }, Run: func(a *app) { a.up() }},
