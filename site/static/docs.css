@@ -220,14 +220,20 @@
 
 .prose code {
   font-family: var(--font-mono);
-  overflow-wrap: break-word;
+  -webkit-hyphens: none;
+  hyphens: none;
 }
+/* Inline code breaks only at its spaces: the generator wraps each space-separated
+   token in .tok, so a flag such as --vault-password-stdin never splits at a hyphen. */
 .prose :not(pre) > code {
   padding: .08em .3em;
   border-radius: 4px;
   background: var(--hover);
   font-size: .88em;
+  -webkit-box-decoration-break: clone;
+  box-decoration-break: clone;
 }
+.prose code .tok { white-space: nowrap; }
 
 .prose pre {
   padding: 16px 20px;
@@ -301,6 +307,10 @@
 /* ---------- Narrow screens ---------- */
 @media (max-width: 480px) {
   .prose pre { padding: 14px 16px; }
+  /* A two-column reference table fits a 360px screen: the name column is one
+     unbreakable token, so the cells give up padding and type size instead. */
+  .prose table { font-size: 13.5px; }
+  .prose th, .prose td { padding: 8px 10px; }
 }
 
 /* ---------- Forced colours ---------- */

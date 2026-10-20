@@ -81,7 +81,7 @@
           "go test ./tools/site/..."
         ]
       },
-      "status": "approved"
+      "status": "implemented"
     },
     {
       "id": "docs-pages",
@@ -146,7 +146,7 @@
           "go test ./tools/site/..."
         ]
       },
-      "status": "approved"
+      "status": "implemented"
     }
   ]
 }

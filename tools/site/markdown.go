@@ -124,6 +124,7 @@ func (r *siteRenderer) RegisterFuncs(reg renderer.NodeRendererFuncRegisterer) {
 	reg.Register(ast.KindHeading, r.renderHeading)
 	reg.Register(ast.KindFencedCodeBlock, r.renderCode)
 	reg.Register(ast.KindCodeBlock, r.renderCode)
+	reg.Register(ast.KindCodeSpan, r.renderCodeSpan)
 	reg.Register(ast.KindLink, r.renderLink)
 	reg.Register(ast.KindImage, r.renderImage)
 	reg.Register(ast.KindRawHTML, r.renderRaw)
@@ -223,6 +224,44 @@ func (r *siteRenderer) renderCode(w util.BufWriter, src []byte, node ast.Node, e
 		class = ` class="language-` + html.EscapeString(lang) + `"`
 	}
 	fmt.Fprintf(w, "<pre tabindex=\"0\"><code%s>%s</code></pre>\n", class, escText(strings.TrimSuffix(code.String(), "\n")))
+	return ast.WalkSkipChildren, nil
+}
+
+// renderCodeSpan wraps every run of non-space characters of an inline code span
+// in <span class="tok">. The stylesheet keeps a token on one line, so the span
+// breaks only at spaces and never inside a flag such as --vault-password-stdin.
+func (r *siteRenderer) renderCodeSpan(w util.BufWriter, src []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
+	if !entering {
+		return ast.WalkContinue, nil
+	}
+	var code bytes.Buffer
+	for c := node.FirstChild(); c != nil; c = c.NextSibling() {
+		t, ok := c.(*ast.Text)
+		if !ok {
+			return ast.WalkStop, fmt.Errorf("unexpected %s in a code span", c.Kind())
+		}
+		value := t.Segment.Value(src)
+		// A line break inside a span reads as a space.
+		if bytes.HasSuffix(value, []byte("\n")) {
+			code.Write(value[:len(value)-1])
+			code.WriteByte(' ')
+		} else {
+			code.Write(value)
+		}
+	}
+	_, _ = w.WriteString("<code>")
+	for i, tok := range strings.Split(code.String(), " ") {
+		if i > 0 {
+			_ = w.WriteByte(' ')
+		}
+		if tok == "" {
+			continue
+		}
+		_, _ = w.WriteString(`<span class="tok">`)
+		_, _ = w.Write(util.EscapeHTML([]byte(tok)))
+		_, _ = w.WriteString("</span>")
+	}
+	_, _ = w.WriteString("</code>")
 	return ast.WalkSkipChildren, nil
 }
 
