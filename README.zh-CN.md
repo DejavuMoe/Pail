@@ -6,8 +6,8 @@ Pail 是一款跨平台的桌面端 S3 兼容对象存储管理器，支持 Amaz
 
 Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有任何隶属、认可或赞助关系。
 
-![Pail 亮色主题](docs/images/main-light.png)
-![Pail 暗色主题](docs/images/main-dark.png)
+![Pail 亮色主题](docs/images/main-light.webp)
+![Pail 暗色主题](docs/images/main-dark.webp)
 
 ## 功能
 
@@ -52,12 +52,13 @@ Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有任何隶属、认
 - 破坏性操作先显示范围，删除存储桶需要输入桶名。可选的诊断日志会脱敏。
 
 **界面**
-- 命令面板（`Ctrl+K`，macOS 为 `⌘K`）、右键菜单、键盘快捷键。
+- 命令面板（`Ctrl+K`，macOS 为 `⌘K`）、键盘快捷键；Windows/Linux 使用窗口内菜单，macOS 使用系统菜单。
+- 统一的对话框与弹出层、带动效的指示条与面板过渡，遵循系统的减少动态效果偏好。
 - 英文与简体中文，亮色与暗色主题，默认跟随系统。
 
 ## 安装
 
-发布包由 `scripts/release.ps1` 生成在 `build/release/<version>/` 中，并附带 `SHA256SUMS` 文件。每个包内含桌面和 CLI 两个可执行文件、`LICENSE` 以及中英文 README。
+发布包由 `scripts/release.ps1` 生成在 `build/release/<version>/` 中，并附带 `SHA256SUMS` 文件。每个包内含桌面和 CLI 两个可执行文件、`LICENSE`；使用文档见 [pail.download](https://pail.download/zh/docs/)。
 
 | 系统 | 压缩包 |
 | --- | --- |
@@ -65,7 +66,7 @@ Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有任何隶属、认
 | Linux | `Pail-v<version>-linux-amd64.tar.gz`、`Pail-v<version>-linux-arm64.tar.gz`（含 `pail.desktop` 和 `pail.png`） |
 | macOS | `Pail-v<version>-darwin-amd64.zip`、`Pail-v<version>-darwin-arm64.zip`（内含 `Pail.app`） |
 
-从 [Pail v0.1.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.1.0) 下载，并用同一 Release 的 `SHA256SUMS` 校验压缩包。可执行文件名包含版本与目标平台，例如 `pail-desktop-v0.1.0-windows-amd64.exe` 和 `pail-v0.1.0-windows-amd64.exe`。macOS 保留 `Pail.app`，内部程序名同样包含版本。下文使用安装后的短名称 `pail-desktop` 和 `pail`；安装时可重命名或创建别名。Linux 的 `.desktop` 文件要求带版本的桌面程序位于 `PATH` 中。不提供 32 位桌面包。
+从 [Pail v0.2.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.2.0) 下载，并用同一 Release 的 `SHA256SUMS` 校验压缩包。可执行文件名包含版本与目标平台，例如 `pail-desktop-v0.2.0-windows-amd64.exe` 和 `pail-v0.2.0-windows-amd64.exe`。macOS 保留 `Pail.app`，内部程序名同样包含版本。下文使用安装后的短名称 `pail-desktop` 和 `pail`；安装时可重命名或创建别名。Linux 的 `.desktop` 文件要求带版本的桌面程序位于 `PATH` 中。不提供 32 位桌面包。
 
 可执行文件没有开发者代码签名，macOS 应用也没有公证，可能被 Gatekeeper 阻止。CI 要求原生自动化测试和版本冒烟通过，但这不等于 macOS 或 ARM64 的人工 GUI 验收。
 
@@ -98,15 +99,15 @@ pail presign s3://my-bucket/report.pdf --expires 1h
 
 ## 从源码构建
 
-`mise.toml` 锁定 Go 1.27.2、Node.js 24.19.0（仅 CI 脚本使用）与 PowerShell 7.6.7。先运行 `mise trust` 和 `mise install go node powershell`；未启用 shell 集成时，使用 `mise exec -- <命令>`。Go 依赖仍由 `go.mod` 和 `go.sum` 锁定。除 race 测试外不需要 cgo。
+`mise.toml` 锁定 Go 1.27.2 与 Node.js 24.19.0（仅 CI 脚本使用）。先运行 `mise trust` 和 `mise install go node`；未启用 shell 集成时，使用 `mise exec -- <命令>`。Go 依赖仍由 `go.mod` 和 `go.sum` 锁定。构建应用只需要 Go；可选的发布与集成测试 PowerShell 包装脚本需要在 Windows、Linux 或 macOS 上另行安装 PowerShell 7.3+。除 race 测试外不需要 cgo。
 
 ```powershell
 go build ./cmd/pail-desktop ./cmd/pail
-./scripts/release.ps1 -Version 0.1.0   # PowerShell 7.3+，交叉编译所有目标
+./scripts/release.ps1 -Version 0.2.0   # PowerShell 7.3+，交叉编译所有目标
 go run ./tools/genicons                # 由 assets/brand/pail-icon.svg 重新生成图标
 ```
 
-`scripts/release.ps1` 需要 `assets/brand/generated` 中已生成的图标。任何目标构建失败都会让脚本失败。发布前运行 `go run ./tools/verify-release -dir build/release/0.1.0 -version 0.1.0`，检查六个压缩包、校验和、二进制目标平台与执行权限。
+`scripts/release.ps1` 需要 `assets/brand/generated` 中已生成的图标。任何目标构建失败都会让脚本失败。发布前运行 `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0`，检查六个压缩包、校验和、二进制目标平台与执行权限。
 
 ## 测试
 

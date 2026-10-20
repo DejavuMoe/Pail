@@ -91,7 +91,7 @@ func verifyArchive(data []byte, base, version, osName, arch string) error {
 	cli := "pail" + suffix + exe
 	desktop := "pail-desktop" + suffix + exe
 	desktopPath := desktop
-	required := map[string]bool{"LICENSE": false, "README.md": false, "README.zh-CN.md": false, cli: false}
+	required := map[string]bool{"LICENSE": false, cli: false}
 	if osName == "darwin" {
 		desktopPath = "Pail.app/Contents/MacOS/" + desktop
 		required["Pail.app/Contents/Info.plist"] = false

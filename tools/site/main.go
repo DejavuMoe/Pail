@@ -58,8 +58,8 @@ var assets = []asset{
 	{name: "app.js", src: "site/static/app.js"},
 	{name: "docs.js", src: "site/static/docs.js"},
 	{name: "pail-icon.svg", src: "assets/brand/pail-icon.svg", svg: true},
-	{name: "main-light.png", src: "docs/images/main-light.png"},
-	{name: "main-dark.png", src: "docs/images/main-dark.png"},
+	{name: "main-light.webp", src: "docs/images/main-light.webp"},
+	{name: "main-dark.webp", src: "docs/images/main-dark.webp"},
 }
 
 // outputs are the top-level entries a build writes. An existing -out
@@ -149,6 +149,13 @@ func build(c config) error {
 
 	release := githubURL + "/releases/download/v" + c.version
 	funcs := template.FuncMap{
+		"absoluteAsset": func(name string) (string, error) {
+			p, ok := paths[name]
+			if !ok {
+				return "", fmt.Errorf("unknown asset %q", name)
+			}
+			return c.baseURL + p, nil
+		},
 		"asset": func(name string) (string, error) {
 			p, ok := paths[name]
 			if !ok {
@@ -164,7 +171,7 @@ func build(c config) error {
 		"t": func(string) (string, error) { return "", errors.New("t used outside a page") },
 	}
 
-	pageTmpl, err := template.New("index.html.tmpl").Funcs(funcs).ParseFiles(filepath.Join(c.root, "site", "templates", "index.html.tmpl"))
+	pageTmpl, err := template.New("index.html.tmpl").Funcs(funcs).ParseFiles(filepath.Join(c.root, "site", "templates", "index.html.tmpl"), filepath.Join(c.root, "site", "templates", "social.html.tmpl"))
 	if err != nil {
 		return err
 	}
@@ -187,6 +194,8 @@ func build(c config) error {
 			"PathZh":        languages[1].Path,
 			"Links":         linksFor(lang),
 			"Canonical":     c.baseURL + lang.Path,
+			"SocialTitle":   locales[lang.Code]["docTitle"],
+			"Description":   locales[lang.Code]["docDescription"],
 			"URLEn":         c.baseURL + languages[0].Path,
 			"URLZh":         c.baseURL + languages[1].Path,
 			"Version":       c.version,

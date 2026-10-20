@@ -1,13 +1,80 @@
 package main
 
 import (
+	"bytes"
+	"fmt"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
+
+	"golang.org/x/image/webp"
 )
+
+func TestSocialMetadata(t *testing.T) {
+	out := filepath.Join(t.TempDir(), "site")
+	const origin = "https://preview.example"
+	if err := build(config{root: repoRoot(t), out: out, version: "0.2.0", baseURL: origin}); err != nil {
+		t.Fatal(err)
+	}
+	for _, lang := range languages {
+		paths := []string{lang.Path}
+		for _, doc := range docPages {
+			paths = append(paths, docURL(doc, lang))
+		}
+		locale, alternate := "en_US", "zh_CN"
+		if lang.Code == "zh" {
+			locale, alternate = alternate, locale
+		}
+		for _, path := range paths {
+			page := read(t, filepath.Join(out, filepath.FromSlash(strings.TrimPrefix(path, "/")), "index.html"))
+			for _, want := range []string{
+				`property="og:type" content="website"`,
+				`property="og:url" content="` + origin + path + `"`,
+				`property="og:locale" content="` + locale + `"`,
+				`property="og:locale:alternate" content="` + alternate + `"`,
+				`name="twitter:card" content="summary_large_image"`,
+				`property="og:image:type" content="image/webp"`,
+			} {
+				if !strings.Contains(page, want) {
+					t.Errorf("%s lacks %s", path, want)
+				}
+			}
+			for _, pair := range [][2]string{
+				{"og:title", "twitter:title"}, {"og:description", "twitter:description"},
+				{"og:image", "twitter:image"}, {"og:image:alt", "twitter:image:alt"},
+			} {
+				a := regexp.MustCompile(`property="` + pair[0] + `" content="([^"]+)"`).FindStringSubmatch(page)
+				b := regexp.MustCompile(`name="` + pair[1] + `" content="([^"]+)"`).FindStringSubmatch(page)
+				if len(a) != 2 || len(b) != 2 || a[1] != b[1] {
+					t.Fatalf("%s inconsistent %v", path, pair)
+				}
+			}
+			imageURL := regexp.MustCompile(`property="og:image" content="([^"]+)"`).FindStringSubmatch(page)[1]
+			if !strings.HasPrefix(imageURL, origin+"/assets/main-light.") {
+				t.Fatalf("%s: noncanonical image URL %s", path, imageURL)
+			}
+			data, err := os.ReadFile(filepath.Join(out, filepath.FromSlash(strings.TrimPrefix(imageURL, origin+"/"))))
+			if err != nil {
+				t.Fatal(err)
+			}
+			dim, err := webp.DecodeConfig(bytes.NewReader(data))
+			if err != nil {
+				t.Fatal(err)
+			}
+			for key, value := range map[string]int{"width": dim.Width, "height": dim.Height} {
+				if !strings.Contains(page, fmt.Sprintf(`property="og:image:%s" content="%d"`, key, value)) {
+					t.Errorf("%s: wrong declared image %s", path, key)
+				}
+			}
+		}
+	}
+	if page := read(t, filepath.Join(out, "404.html")); !strings.Contains(page, `content="noindex"`) || strings.Contains(page, `property="og:`) {
+		t.Error("404 must remain nonindexable without social metadata")
+	}
+}
 
 func repoRoot(t *testing.T) string {
 	t.Helper()
@@ -121,7 +188,7 @@ func TestAssetsAreFingerprintedAndClean(t *testing.T) {
 	if len(entries) != len(assets) {
 		t.Fatalf("%d assets, want %d", len(entries), len(assets))
 	}
-	hashed := regexp.MustCompile(`^[a-z-]+\.[0-9a-f]{10}\.(css|js|svg|png)$`)
+	hashed := regexp.MustCompile(`^[a-z-]+\.[0-9a-f]{10}\.(css|js|svg|webp)$`)
 	for _, e := range entries {
 		if !hashed.MatchString(e.Name()) {
 			t.Errorf("asset %s is not fingerprinted", e.Name())
