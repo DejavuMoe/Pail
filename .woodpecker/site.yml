@@ -1,0 +1,52 @@
+# Builds and deploys https://pail.download from site/ (docs/site.md).
+# Application tests and releases do not run here (docs/ci.md).
+
+when:
+  - event: [push, manual]
+    branch: main
+    path:
+      include:
+        - "site/**"
+        - "tools/site/**"
+        - "docs/images/**"
+        - "assets/brand/pail-icon.svg"
+        - ".woodpecker/site.yml"
+  - event: tag
+    ref: refs/tags/v*
+
+clone:
+  - name: clone
+    image: woodpeckerci/plugin-git
+    settings:
+      tags: true
+
+steps:
+  - name: build
+    image: golang:1.27
+    commands:
+      - go test ./tools/site/...
+      - VERSION="$(git describe --tags --abbrev=0 --match 'v[0-9]*' | sed 's/^v//')"
+      - test -n "$${VERSION}"
+      - curl -fsSIL -o /dev/null "https://github.com/DejavuMoe/Pail/releases/download/v$${VERSION}/SHA256SUMS"
+      - go run ./tools/site -out public -version "$${VERSION}"
+
+  - name: deploy
+    image: alpine:3.22
+    environment:
+      DEPLOY_HOST:
+        from_secret: site_deploy_host
+      DEPLOY_USER:
+        from_secret: site_deploy_user
+      DEPLOY_PATH:
+        from_secret: site_deploy_path
+      DEPLOY_KEY:
+        from_secret: site_deploy_key
+      DEPLOY_KNOWN_HOSTS:
+        from_secret: site_deploy_known_hosts
+    commands:
+      - apk add --no-cache rsync openssh-client
+      - install -d -m 700 ~/.ssh
+      - printf '%s\n' "$${DEPLOY_KEY}" > ~/.ssh/id_ed25519
+      - chmod 600 ~/.ssh/id_ed25519
+      - printf '%s\n' "$${DEPLOY_KNOWN_HOSTS}" > ~/.ssh/known_hosts
+      - rsync -rlz --delete --delay-updates --checksum -e "ssh -o StrictHostKeyChecking=yes" public/ "$${DEPLOY_USER}@$${DEPLOY_HOST}:$${DEPLOY_PATH}/"
