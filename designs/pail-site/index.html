@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title data-i18n="docTitle">Pail · Desktop manager for S3-compatible storage</title>
-  <meta name="description" data-i18n-content="docDescription" content="Pail is a free, open-source desktop manager for Amazon S3, MinIO, Cloudflare R2 and any service that speaks the S3 API, for Windows, Linux and macOS.">
+  <title data-i18n="docTitle">Pail · Desktop app for S3-compatible storage</title>
+  <meta name="description" data-i18n-content="docDescription" content="Pail is a free, open-source desktop app for managing Amazon S3, MinIO, Cloudflare R2 and other S3-compatible storage on Windows, Linux and macOS.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
@@ -111,7 +111,7 @@
             <span class="hero-line" data-i18n="heroTitle1">Every bucket.</span>
             <span class="hero-line" data-i18n="heroTitle2">One Pail.</span>
           </h1>
-          <p class="hero-sub" data-i18n="heroSub">A desktop manager for Amazon S3, MinIO, Cloudflare R2 and any service that speaks the S3 API. Free and open source, for Windows, Linux and macOS.</p>
+          <p class="hero-sub" data-i18n="heroSub">Browse and manage Amazon S3, MinIO, Cloudflare R2 and any other S3-compatible storage from one desktop app. Free and open source, for Windows, Linux and macOS.</p>
           <div class="hero-cta">
             <a class="btn btn-primary" href="#download" data-os-cta>
               <svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg>
@@ -125,14 +125,14 @@
           <ul class="hero-meta">
             <li><a href="changelog.html" data-i18n-href="hrefChangelog">v0.1.0</a></li>
             <li data-i18n="metaLicense">MIT license</li>
-            <li data-i18n="metaArch">amd64 and arm64</li>
+            <li data-i18n="metaArch">x64 and Arm</li>
             <li data-i18n="metaTelemetry">No telemetry</li>
           </ul>
         </div>
         <div class="hero-stage">
           <figure class="window" data-tilt>
-            <img class="shot shot-light" src="assets/main-light.png" width="1440" height="900" data-i18n-alt="shotAlt" alt="Pail main window with the bucket list, an object table and the inspector">
-            <img class="shot shot-dark" src="assets/main-dark.png" width="1440" height="900" data-i18n-alt="shotAlt" alt="Pail main window with the bucket list, an object table and the inspector">
+            <img class="shot shot-light" src="assets/main-light.png" width="1440" height="900" data-i18n-alt="shotAlt" alt="The Pail main window: bucket list, object table and inspector">
+            <img class="shot shot-dark" src="assets/main-dark.png" width="1440" height="900" data-i18n-alt="shotAlt" alt="The Pail main window: bucket list, object table and inspector">
           </figure>
         </div>
       </div>
@@ -140,14 +140,14 @@
 
     <section class="providers" aria-labelledby="providers-label" data-screen-label="Providers">
       <div class="wrap providers-inner">
-        <p class="providers-label" id="providers-label" data-i18n="providersLabel">Connects to</p>
+        <p class="providers-label" id="providers-label" data-i18n="providersLabel">Works with</p>
         <ul class="providers-list">
           <li>Amazon S3</li>
           <li>MinIO</li>
           <li>Cloudflare R2</li>
           <li>VersityGW</li>
           <li>Wasabi</li>
-          <li class="providers-any" data-i18n="providersAny">any S3-compatible endpoint</li>
+          <li class="providers-any" data-i18n="providersAny">and any S3-compatible service</li>
         </ul>
       </div>
     </section>
@@ -161,8 +161,8 @@
         <div class="bento">
           <article class="tile tile-transfers reveal" data-demo="transfers">
             <div class="tile-copy">
-              <h3 data-i18n="fTransfersTitle">Transfers that check their work</h3>
-              <p data-i18n="fTransfersBody">Separate upload and download queues with progress, speed, cancel and retry. Multipart uploads, checksums and conflict policies; a download lands on disk only after it is verified.</p>
+              <h3 data-i18n="fTransfersTitle">Transfers with checks built in</h3>
+              <p data-i18n="fTransfersBody">Uploads and downloads run in separate queues, with progress, speed, cancel and retry. Large files go up in parts with checksums, and a download reaches its destination only after it has been verified.</p>
             </div>
             <div class="mini mini-transfers" aria-hidden="true">
               <div class="tq-head">
@@ -189,7 +189,7 @@
                 <span class="tq-bytes">18.3 KB</span>
               </div>
               <div class="conflict">
-                <span class="conflict-label" data-i18n="miniConflictRow">When a file already exists</span>
+                <span class="conflict-label" data-i18n="miniConflictRow">If the file already exists</span>
                 <div class="chips" data-cycle>
                   <span class="chip is-on" data-i18n="conflictRename">Keep both (rename)</span>
                   <span class="chip" data-i18n="conflictSkip">Skip existing</span>
@@ -204,7 +204,7 @@
           <article class="tile tile-palette reveal" data-demo="palette">
             <div class="tile-copy">
               <h3 data-i18n="fPaletteTitle">Every command, one shortcut</h3>
-              <p data-i18n="fPaletteBody">Press Ctrl K, or ⌘K on macOS, to search every command, bucket and tool, in English or Chinese.</p>
+              <p data-i18n="fPaletteBody">Press Ctrl+K (⌘K on macOS) to find any command, bucket or tool. English and Chinese keywords both work.</p>
             </div>
             <div class="mini mini-palette" aria-hidden="true">
               <div class="mp-input">
@@ -226,7 +226,7 @@
           <article class="tile tile-settings reveal">
             <div class="tile-copy">
               <h3 data-i18n="fSettingsTitle">14 bucket settings, as forms or JSON</h3>
-              <p data-i18n="fSettingsBody">Versioning, encryption, policy, CORS, lifecycle, replication and more. When a provider lacks a setting, Pail says it is unsupported instead of showing it as empty.</p>
+              <p data-i18n="fSettingsBody">Versioning, encryption, policy, CORS, lifecycle, replication and more. If your provider does not support a setting, Pail says so instead of showing it as empty.</p>
             </div>
             <div class="mini mini-settings" aria-hidden="true">
               <ul class="setting-chips">
@@ -251,7 +251,7 @@
           <article class="tile tile-versions reveal" data-demo="versions">
             <div class="tile-copy">
               <h3 data-i18n="fVersionsTitle">Versions and delete markers</h3>
-              <p data-i18n="fVersionsBody">See every version of a key, restore an old one or undelete a key, and permanently delete only the versions you pick.</p>
+              <p data-i18n="fVersionsBody">See every version of an object, restore an older one or undo a delete, and permanently remove only the versions you choose.</p>
             </div>
             <div class="mini mini-versions" aria-hidden="true">
               <div class="mv-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file"></use></svg><span>reports/q3.csv</span></div>
@@ -266,7 +266,7 @@
           <article class="tile tile-sync reveal">
             <div class="tile-copy">
               <h3 data-i18n="fSyncTitle">Sync that shows its plan first</h3>
-              <p data-i18n="fSyncBody">Upload, download or mirror; compare by size and time, size, or checksum; exclude by glob. Only previewed actions run, and local deletions go to the system trash.</p>
+              <p data-i18n="fSyncBody">Upload, download or mirror a folder. Compare by size and time, size only, or checksum, and exclude files by pattern. Only the actions you previewed run, and local files Pail deletes go to the system trash.</p>
             </div>
             <div class="mini mini-sync" aria-hidden="true">
               <div class="ms-row ms-up"><span class="ms-op">upload</span><span class="ms-path">2026/04/IMG_2231.heic</span><span class="ms-why">new</span></div>
@@ -279,7 +279,7 @@
           <article class="tile tile-links reveal" data-demo="links">
             <div class="tile-copy">
               <h3 data-i18n="fLinksTitle">Presigned and CDN links</h3>
-              <p data-i18n="fLinksBody">Presigned GET or PUT URLs with an expiry, for one object or many. Add a CDN domain to an account and copy CDN links right after an upload.</p>
+              <p data-i18n="fLinksBody">Create presigned GET or PUT links with an expiry, for one object or many. Set a CDN domain on an account and copy the CDN link as soon as an upload finishes.</p>
             </div>
             <div class="mini mini-links" aria-hidden="true">
               <div class="ml-seg">
@@ -293,7 +293,7 @@
           <article class="tile tile-rules reveal">
             <div class="tile-copy">
               <h3 data-i18n="fRulesTitle">Upload rules and compression</h3>
-              <p data-i18n="fRulesBody">Match a bucket and key pattern to set headers, storage class and encryption, or compress with GZIP, ZIP or AES-256 ZIP on the way up.</p>
+              <p data-i18n="fRulesBody">Rules matched by bucket and key pattern set headers, storage class and encryption on upload, and can compress files with GZIP, ZIP or AES-256 ZIP.</p>
             </div>
             <div class="mini mini-rules" aria-hidden="true">
               <dl class="mr-grid">
@@ -313,7 +313,7 @@
       <div class="wrap cli-grid">
         <header class="section-head reveal">
           <h2 class="section-title" id="cli-title" data-i18n="cliTitle">The same accounts, in your terminal.</h2>
-          <p class="section-lede" data-i18n="cliBody">pail shares accounts and saved sync jobs with the desktop app. It prints JSON on request, returns stable exit codes and never prints credentials.</p>
+          <p class="section-lede" data-i18n="cliBody">pail uses the same accounts and saved sync jobs as the desktop app. Add --json for machine-readable output. Exit codes are stable, and credentials are never printed.</p>
           <ul class="cli-cmds">
             <li>accounts</li><li>buckets</li><li>ls</li><li>cp</li><li>mv</li><li>rm</li><li>mb</li><li>rb</li><li>presign</li><li>url</li><li>versions</li><li>restore</li><li>sync</li><li>vault status</li>
           </ul>
@@ -338,27 +338,27 @@
         <header class="section-head reveal">
           <h2 class="privacy-title" id="privacy-title">
             <span data-i18n="privacyLine1">No telemetry.</span>
-            <span data-i18n="privacyLine2">No update check.</span>
-            <span class="privacy-dim" data-i18n="privacyLine3">No secrets in config files.</span>
+            <span data-i18n="privacyLine2">No update checks.</span>
+            <span class="privacy-dim" data-i18n="privacyLine3">No secrets in plain-text files.</span>
           </h2>
         </header>
         <div class="privacy-grid">
           <ul class="facts reveal">
             <li>
               <svg class="i" aria-hidden="true" focusable="false"><use href="#i-key"></use></svg>
-              <div><h3 data-i18n="pKeysTitle">Keychain or encrypted vault</h3><p data-i18n="pKeysBody">Secret keys go to Windows Credential Manager, macOS Keychain or Secret Service, or to an optional vault encrypted with Argon2id and XChaCha20-Poly1305.</p></div>
+              <div><h3 data-i18n="pKeysTitle">Keychain or encrypted vault</h3><p data-i18n="pKeysBody">Secret keys are stored in Windows Credential Manager, macOS Keychain or the Linux Secret Service. Where there is no keychain, use the optional vault, encrypted with Argon2id and XChaCha20-Poly1305.</p></div>
             </li>
             <li>
               <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
-              <div><h3 data-i18n="pNetTitle">Only your endpoints</h3><p data-i18n="pNetBody">Pail connects only to the endpoints of the accounts you add.</p></div>
+              <div><h3 data-i18n="pNetTitle">Only your endpoints</h3><p data-i18n="pNetBody">Pail talks only to the storage endpoints of the accounts you add, and to nothing else.</p></div>
             </li>
             <li>
               <svg class="i" aria-hidden="true" focusable="false"><use href="#i-scroll"></use></svg>
-              <div><h3 data-i18n="pLogTitle">Logs off by default</h3><p data-i18n="pLogBody">When you turn the diagnostic log on, signatures, authorization headers, query strings and known secrets are removed.</p></div>
+              <div><h3 data-i18n="pLogTitle">Logs off by default</h3><p data-i18n="pLogBody">The diagnostic log stays off until you turn it on, and it strips signatures, Authorization headers, URL query strings and known secrets.</p></div>
             </li>
             <li>
               <svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg>
-              <div><h3 data-i18n="pScopeTitle">Scope before you confirm</h3><p data-i18n="pScopeBody">Destructive actions show what they will touch first. Deleting a bucket requires typing its name.</p></div>
+              <div><h3 data-i18n="pScopeTitle">See the scope before you confirm</h3><p data-i18n="pScopeBody">Destructive actions list what they will affect before they run. To delete a bucket, you type its name.</p></div>
             </li>
           </ul>
           <div class="dialog-demo reveal" data-demo="dialog" aria-hidden="true">
@@ -391,7 +391,7 @@
         <div class="os-grid">
           <article class="os-card reveal" data-os="windows">
             <header class="os-head"><h3>Windows</h3><span class="os-badge" data-i18n="yourSystem">Your system</span></header>
-            <p class="os-req" data-i18n="osWindowsReq">Windows 10 or later · .zip</p>
+            <p class="os-req" data-i18n="osWindowsReq">A .zip with pail-desktop and pail</p>
             <div class="os-links">
               <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-windows-amd64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
               <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-windows-arm64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
@@ -399,7 +399,7 @@
           </article>
           <article class="os-card reveal" data-os="linux">
             <header class="os-head"><h3>Linux</h3><span class="os-badge" data-i18n="yourSystem">Your system</span></header>
-            <p class="os-req" data-i18n="osLinuxReq">.tar.gz with .desktop entry and icon</p>
+            <p class="os-req" data-i18n="osLinuxReq">A .tar.gz with pail-desktop, pail, a .desktop entry and an icon</p>
             <div class="os-links">
               <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-linux-amd64.tar.gz"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
               <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-linux-arm64.tar.gz"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
@@ -407,7 +407,7 @@
           </article>
           <article class="os-card reveal" data-os="macos">
             <header class="os-head"><h3>macOS</h3><span class="os-badge" data-i18n="yourSystem">Your system</span></header>
-            <p class="os-req" data-i18n="osMacReq">macOS 11 or later · Pail.app in .zip</p>
+            <p class="os-req" data-i18n="osMacReq">A .zip with Pail.app and pail · macOS 11 or later</p>
             <div class="os-links">
               <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-darwin-arm64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span data-i18n="appleSilicon">Apple silicon</span><small>arm64</small></a>
               <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-darwin-amd64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Intel</span><small>amd64</small></a>
@@ -415,7 +415,7 @@
           </article>
         </div>
         <div class="download-foot reveal">
-          <p class="download-note" data-i18n="downloadNote">Archives are not code-signed. The macOS app is not notarized and has not yet been tested on a real Mac.</p>
+          <p class="download-note" data-i18n="downloadNote">The archives are not code-signed. The macOS app is not notarized and has not been tested on a real Mac yet.</p>
           <ul class="download-links">
             <li><a href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/SHA256SUMS">SHA256SUMS</a></li>
             <li><a href="https://github.com/DejavuMoe/Pail/releases" data-i18n="allReleases">All releases</a></li>
@@ -424,7 +424,7 @@
           </ul>
           <div class="demo-hint">
             <svg class="i" aria-hidden="true" focusable="false"><use href="#i-terminal"></use></svg>
-            <p><span data-i18n="demoHint1">No account yet? Run</span> <code>pail-desktop --demo</code> <span data-i18n="demoHint2">to try Pail on a built-in in-memory S3 server. Nothing leaves your machine.</span></p>
+            <p><span data-i18n="demoHint1">No account yet? Run</span> <code>pail-desktop --demo</code> <span data-i18n="demoHint2">to try Pail against a built-in in-memory S3 server. Nothing leaves your computer.</span></p>
           </div>
         </div>
       </div>

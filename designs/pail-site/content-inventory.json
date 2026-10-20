@@ -15,7 +15,7 @@
       "dom-license.zh.json",
       "dom-zh.json"
     ],
-    "capturedAt": "2026-10-20T05:10:40Z",
+    "capturedAt": "2026-10-20T06:10:25Z",
     "surfaces": [
       "landing-page: en light + tweaks panel open",
       "landing-page: zh light",
@@ -2138,8 +2138,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-50a2e989e9cce45a",
-      "text": ".tar.gz 内含 pail-desktop、pail、.desktop 文件与图标",
+      "id": "content-94478a26350e3e4a",
+      "text": ".tar.gz 压缩包，含 pail-desktop、pail、.desktop 文件和图标",
       "channels": [
         "text"
       ],
@@ -2153,18 +2153,18 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "linux archive contents (pail.desktop, pail.png)"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-47314629177e1939",
-      "text": ".zip 内含 pail-desktop 与 pail",
+      "id": "content-d725e3d836e10192",
+      "text": ".zip 压缩包，含 pail-desktop 和 pail",
       "channels": [
         "text"
       ],
@@ -2178,18 +2178,18 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "windows archive contents"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-c0fdc4aabd10bb1d",
-      "text": ".zip 内含 Pail.app 与 pail · macOS 11 及以上",
+      "id": "content-82ab77bca0f7de8a",
+      "text": ".zip 压缩包，含 Pail.app 和 pail · 需要 macOS 11 及以上",
       "channels": [
         "text"
       ],
@@ -2203,14 +2203,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "Pail.app, LSMinimumSystemVersion 11.0"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-8a5edab282632443",
@@ -2515,8 +2515,8 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
-      "id": "content-baf1178c7e6df785",
-      "text": "14 项存储桶设置，表单或 JSON",
+      "id": "content-a5a628af05a69950",
+      "text": "14 项存储桶设置，可用表单或 JSON 编辑",
       "channels": [
         "text"
       ],
@@ -2530,14 +2530,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: 14 bucket settings as forms or JSON"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-8d616d3509613e95",
@@ -3641,13 +3641,13 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-f1508426211a75bf",
-      "text": "A desktop manager for Amazon S3, MinIO, Cloudflare R2 and any service that speaks the S3 API. Free and open source, for Windows, Linux and macOS.",
+      "id": "content-a9f89a00f222e9de",
+      "text": "A .tar.gz with pail-desktop, pail, a .desktop entry and an icon",
       "channels": [
         "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > p.hero-sub"
+        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(2) > p.os-req"
       ],
       "visibility": [
         "visible"
@@ -3655,12 +3655,65 @@
       "captures": [
         "dom-en.json"
       ],
-      "purpose": "domain-value",
-      "origin": "production-domain",
-      "decision": "allow",
-      "evidence": null,
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "scripts/release.ps1",
+        "reference": "linux archive contents (pail.desktop, pail.png)"
+      },
       "flags": [],
-      "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-6ffc66d065771d4c",
+      "text": "A .zip with pail-desktop and pail",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(1) > p.os-req"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "scripts/release.ps1",
+        "reference": "windows archive contents"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-489dc3125c194bab",
+      "text": "A .zip with Pail.app and pail · macOS 11 or later",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(3) > p.os-req"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "scripts/release.ps1",
+        "reference": "Pail.app, LSMinimumSystemVersion 11.0"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-b772063df586a3b5",
@@ -4097,8 +4150,8 @@
       "notes": null
     },
     {
-      "id": "content-b783a60b5cb479c6",
-      "text": "Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 无关联，未获其认可或赞助。",
+      "id": "content-cae1cd5d07802f3a",
+      "text": "Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有关联，也未获其认可或赞助。",
       "channels": [
         "text"
       ],
@@ -4116,14 +4169,14 @@
         "dom-zh.json"
       ],
       "purpose": "legal-approved",
-      "origin": "existing-approved-ui-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "trademark notice (line 7)"
       },
       "flags": [],
-      "notes": null
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-5861314d7fccb39c",
@@ -4149,56 +4202,6 @@
       "evidence": null,
       "flags": [],
       "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
-    },
-    {
-      "id": "content-b87c9b2f3cdf3115",
-      "text": "amd64 and arm64",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "scripts/release.ps1",
-        "reference": "default -Targets amd64 and arm64 for every OS"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
-      "id": "content-55680ad4b4c1a6e8",
-      "text": "amd64 与 arm64",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "scripts/release.ps1",
-        "reference": "default -Targets amd64 and arm64 for every OS"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-6aa26f3ff9d98ddb",
@@ -4256,6 +4259,31 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-52293097f35a4680",
+      "text": "and any S3-compatible service",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > section.providers:nth-of-type(2) > div.wrap.providers-inner > ul.providers-list > li.providers-any:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "'other services that speak the S3 API'"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-a6b5a39c8ace3ed6",
@@ -4333,31 +4361,6 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-4205270569e92c5b",
-      "text": "any S3-compatible endpoint",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "main#main > section.providers:nth-of-type(2) > div.wrap.providers-inner > ul.providers-list > li.providers-any:nth-of-type(6)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "'other services that speak the S3 API'"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-06136d91987992b4",
@@ -4452,31 +4455,6 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-3dedd924f96ba553",
-      "text": "Archives are not code-signed. The macOS app is not notarized and has not yet been tested on a real Mac.",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#download > div.wrap > div.download-foot.reveal:nth-of-type(2) > p.download-note"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Install: not code-signed, not notarized, never run on real macOS hardware"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-d5cb968264a5023e",
@@ -4730,6 +4708,28 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-5e9ecf7a7b5b2167",
+      "text": "Browse and manage Amazon S3, MinIO, Cloudflare R2 and any other S3-compatible storage from one desktop app. Free and open source, for Windows, Linux and macOS.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > p.hero-sub"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "orientation",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": null,
+      "flags": [],
+      "notes": "new in this revision; pending user approval"
     },
     {
       "id": "content-05724bb997cebcfb",
@@ -6470,33 +6470,6 @@
       "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
-      "id": "content-d762c91580159f52",
-      "text": "Connects to",
-      "channels": [
-        "aria-labelledby",
-        "text"
-      ],
-      "locations": [
-        "main#main > section.providers:nth-of-type(2)",
-        "p#providers-label"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "intro paragraph lists the providers"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-e21f935f11d7e966",
       "text": "Copy",
       "channels": [
@@ -6754,6 +6727,31 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-207a8791b48ba588",
+      "text": "Create presigned GET or PUT links with an expiry, for one object or many. Set a CDN domain on an account and copy the CDN link as soon as an upload finishes.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#features > div.wrap > div.bento > article.tile.tile-links:nth-of-type(6) > div.tile-copy:nth-of-type(1) > p"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "CDN, presigned URLs, CloudFront"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-8a2264e4cd9205ed",
@@ -7138,8 +7136,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-5c9df96ab3d3a955",
-      "text": "Destructive actions show what they will touch first. Deleting a bucket requires typing its name.",
+      "id": "content-8a59485a0971beae",
+      "text": "Destructive actions list what they will affect before they run. To delete a bucket, you type its name.",
       "channels": [
         "text"
       ],
@@ -7153,14 +7151,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Security: deleting a bucket requires typing its name"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-6940189433657105",
@@ -7548,7 +7546,7 @@
       "decision": "review",
       "evidence": null,
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-a4c3ed04a95a3da1",
@@ -8944,7 +8942,7 @@
       "flags": [
         "dom-metadata"
       ],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-9814d34e8ccc1afe",
@@ -9434,8 +9432,8 @@
       "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
-      "id": "content-ec1277aa9b450016",
-      "text": "How to install Pail, add an account, use the command line, build from source, where Pail keeps its data, and which platforms have been tested.",
+      "id": "content-ea6b358ec2250782",
+      "text": "How to install Pail, add an account, use the command line and build from source, plus where Pail keeps your data and which platforms are tested.",
       "channels": [
         "meta:description"
       ],
@@ -9789,6 +9787,28 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-b8b15afcf413d2b9",
+      "text": "If the file already exists",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.mini.mini-transfers:nth-of-type(2) > div.conflict:nth-of-type(5) > span.conflict-label"
+      ],
+      "visibility": [
+        "accessibility-hidden"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "domain-field",
+      "origin": "production-domain",
+      "decision": "review",
+      "evidence": null,
+      "flags": [],
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-fe8b590004a7bb19",
@@ -10587,7 +10607,7 @@
       "flags": [
         "dom-metadata"
       ],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-cc1d3b0234846714",
@@ -10797,7 +10817,7 @@
       "decision": "review",
       "evidence": null,
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-eef8b9fd5d437dd9",
@@ -11273,31 +11293,6 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-94568e4558833363",
-      "text": "Match a bucket and key pattern to set headers, storage class and encryption, or compress with GZIP, ZIP or AES-256 ZIP on the way up.",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#features > div.wrap > div.bento > article.tile.tile-rules:nth-of-type(7) > div.tile-copy:nth-of-type(1) > p"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Upload rules and compression"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-1d09f6fa23235881",
@@ -12516,8 +12511,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-6fd3cc9ea4f08c1f",
-      "text": "No secrets in config files.",
+      "id": "content-f1758b4ee6af8375",
+      "text": "No secrets in plain-text files.",
       "channels": [
         "text"
       ],
@@ -12531,14 +12526,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Security: never in config files"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-ee4832c56c8d3154",
@@ -12591,8 +12586,8 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
-      "id": "content-d43c08a70dc65c55",
-      "text": "No telemetry. No update check. No secrets in config files.",
+      "id": "content-b6c921299f6eceb2",
+      "text": "No telemetry. No update checks. No secrets in plain-text files.",
       "channels": [
         "aria-labelledby"
       ],
@@ -12606,18 +12601,18 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
-        "reference": "accessible name composed from the visible section heading strings"
+        "reference": "accessible name composed from the visible privacy headline lines"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "pending user approval of this revision"
     },
     {
-      "id": "content-a7e1aed2a0bfff59",
-      "text": "No update check.",
+      "id": "content-92498aa68abd7711",
+      "text": "No update checks.",
       "channels": [
         "text"
       ],
@@ -12631,14 +12626,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network: no update check"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-ba9f261864a180fb",
@@ -12990,7 +12985,7 @@
       "decision": "review",
       "evidence": null,
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-801c5d4ff786a9d1",
@@ -13547,31 +13542,6 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-19f9ac056213e81f",
-      "text": "Pail connects only to the endpoints of the accounts you add.",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(2) > div > p"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Data and privacy > Network"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-3e472665d6b2916f",
       "text": "Pail has never been run on real macOS hardware",
       "channels": [
@@ -13597,8 +13567,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-5cd868b83783abcb",
-      "text": "Pail is a free, open-source desktop manager for Amazon S3, MinIO, Cloudflare R2 and any service that speaks the S3 API, for Windows, Linux and macOS.",
+      "id": "content-959df14be85aba24",
+      "text": "Pail is a free, open-source desktop app for managing Amazon S3, MinIO, Cloudflare R2 and other S3-compatible storage on Windows, Linux and macOS.",
       "channels": [
         "meta:description"
       ],
@@ -13612,14 +13582,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph (line 5) and License"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-1aa0600a8c5c2488",
@@ -13670,35 +13640,33 @@
       "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
     },
     {
-      "id": "content-72d482fe19127129",
-      "text": "Pail main window with the bucket list, an object table and the inspector",
+      "id": "content-662a5f43cf3dc9de",
+      "text": "Pail talks only to the storage endpoints of the accounts you add, and to nothing else.",
       "channels": [
-        "alt"
+        "text"
       ],
       "locations": [
-        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-dark:nth-of-type(2)",
-        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-light:nth-of-type(1)"
+        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(2) > div > p"
       ],
       "visibility": [
-        "hidden",
         "visible"
       ],
       "captures": [
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
-        "source": "docs/images/main-light.png",
-        "reference": "describes the screenshot content"
+        "source": "README.md",
+        "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-983dba2b253ae764",
-      "text": "pail shares accounts and saved sync jobs with the desktop app. It prints JSON on request, returns stable exit codes and never prints credentials.",
+      "id": "content-5f43d22a7be3dfa6",
+      "text": "pail uses the same accounts and saved sync jobs as the desktop app. Add --json for machine-readable output. Exit codes are stable, and credentials are never printed.",
       "channels": [
         "text"
       ],
@@ -13712,18 +13680,18 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "docs/cli.md",
         "reference": "intro: shares configuration; --json; exit codes; never prints credentials"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-900a44360bb57aa7",
-      "text": "Pail · Desktop manager for S3-compatible storage",
+      "id": "content-abcc1c0d5f1bc6de",
+      "text": "Pail · Desktop app for S3-compatible storage",
       "channels": [
         "text"
       ],
@@ -13737,18 +13705,18 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "product name and category"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-483b4ca2df2d083e",
-      "text": "Pail · S3 兼容对象存储桌面管理器",
+      "id": "content-6d6929efcffb26d6",
+      "text": "Pail · S3 兼容对象存储的桌面应用",
       "channels": [
         "text"
       ],
@@ -13762,18 +13730,18 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "product name and category"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-9c6e304a0124c9d1",
-      "text": "pail 与桌面应用共用账户和已保存的同步任务。可按需输出 JSON，退出码稳定，从不打印凭据。",
+      "id": "content-402643bcfee7dadc",
+      "text": "pail 与桌面应用共用账户和已保存的同步任务。加上 --json 输出机器可读的结果；退出码固定，绝不打印凭据。",
       "channels": [
         "text"
       ],
@@ -13787,18 +13755,18 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "docs/cli.md",
         "reference": "intro: shares configuration; --json; exit codes; never prints credentials"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-586bed4b73913101",
-      "text": "Pail 主窗口：存储桶列表、对象表与检查器",
+      "id": "content-f721ccaf473cd19a",
+      "text": "Pail 主窗口：存储桶列表、对象表格和检查器",
       "channels": [
         "alt"
       ],
@@ -13814,14 +13782,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "docs/images/main-light.png",
         "reference": "describes the screenshot content"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-a811044ea1dccb58",
@@ -13874,8 +13842,8 @@
       "notes": "new in this revision; pending user approval"
     },
     {
-      "id": "content-10f974bc4db666ce",
-      "text": "Pail 只连接你添加的账户所对应的端点。",
+      "id": "content-27a53749612a9cd8",
+      "text": "Pail 只访问你添加的账户所对应的存储端点，不连接其他任何地址。",
       "channels": [
         "text"
       ],
@@ -13889,14 +13857,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-c661b517e6ff4d26",
@@ -13949,8 +13917,8 @@
       "notes": "new in this revision; pending user approval"
     },
     {
-      "id": "content-fef4f2397d3a5b55",
-      "text": "Pail 是免费开源的桌面管理器，适用于 Amazon S3、MinIO、Cloudflare R2 以及一切兼容 S3 API 的服务，支持 Windows、Linux 与 macOS。",
+      "id": "content-d0a849a0475f5585",
+      "text": "Pail 是免费开源的桌面应用，用来管理 Amazon S3、MinIO、Cloudflare R2 等兼容 S3 的对象存储，支持 Windows、Linux 和 macOS。",
       "channels": [
         "meta:description"
       ],
@@ -13964,14 +13932,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph (line 5) and License"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-afaca6ea5110cc98",
@@ -14186,56 +14154,6 @@
       "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
     },
     {
-      "id": "content-1273e9e9fa66e30a",
-      "text": "pail-desktop and pail in a .zip",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(1) > p.os-req"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "scripts/release.ps1",
-        "reference": "windows archive contents"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
-      "id": "content-c31935ba84813001",
-      "text": "pail-desktop, pail, a .desktop entry and an icon in a .tar.gz",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(2) > p.os-req"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "scripts/release.ps1",
-        "reference": "linux archive contents (pail.desktop, pail.png)"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-2071fee25985e734",
       "text": "pail-sha256",
       "channels": [
@@ -14286,31 +14204,6 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-3056137c724c4234",
-      "text": "Pail.app and pail in a .zip · macOS 11 or later",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(3) > p.os-req"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "scripts/release.ps1",
-        "reference": "Pail.app, LSMinimumSystemVersion 11.0"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-4ab2619491f394de",
@@ -15042,31 +14935,6 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
-      "id": "content-ccecaeb25e98d0cb",
-      "text": "Presigned GET or PUT URLs with an expiry, for one object or many. Add a CDN domain to an account and copy CDN links right after an upload.",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#features > div.wrap > div.bento > article.tile.tile-links:nth-of-type(6) > div.tile-copy:nth-of-type(1) > p"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "CDN, presigned URLs, CloudFront"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-d76e850d8d87b1da",
       "text": "Press \"Test connection\", then save. The secret key goes to the OS keychain.",
       "channels": [
@@ -15092,8 +14960,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-652cdc952791e224",
-      "text": "Press Ctrl K, or ⌘K on macOS, to search every command, bucket and tool, in English or Chinese.",
+      "id": "content-e21f2ef0f583df68",
+      "text": "Press Ctrl+K (⌘K on macOS) to find any command, bucket or tool. English and Chinese keywords both work.",
       "channels": [
         "text"
       ],
@@ -15107,14 +14975,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "docs/design.md",
         "reference": "command palette: Ctrl/⌘+K, English and Chinese keywords"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-ab1fa2dc4ed8a56e",
@@ -16218,6 +16086,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-ffe258abac52b90c",
+      "text": "Rules matched by bucket and key pattern set headers, storage class and encryption on upload, and can compress files with GZIP, ZIP or AES-256 ZIP.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#features > div.wrap > div.bento > article.tile.tile-rules:nth-of-type(7) > div.tile-copy:nth-of-type(1) > p"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Upload rules and compression"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
       "id": "content-1ff0a521c8d3bbe6",
       "text": "Run a job saved in the desktop app (uses that job's account unless",
       "channels": [
@@ -16374,31 +16267,6 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-0087daa98c5591d4",
-      "text": "Scope before you confirm",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(4) > div > h3"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Security: destructive actions show their scope first"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-646c3121d3f5b1ce",
       "text": "scripts/release.ps1",
       "channels": [
@@ -16531,8 +16399,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-deb6977a387a5863",
-      "text": "Secret keys go to Windows Credential Manager, macOS Keychain or Secret Service, or to an optional vault encrypted with Argon2id and XChaCha20-Poly1305.",
+      "id": "content-b67f61eabd168f3f",
+      "text": "Secret keys are stored in Windows Credential Manager, macOS Keychain or the Linux Secret Service. Where there is no keychain, use the optional vault, encrypted with Argon2id and XChaCha20-Poly1305.",
       "channels": [
         "text"
       ],
@@ -16546,14 +16414,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Secrets; Security (Argon2id, XChaCha20-Poly1305)"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-d8707d411d997657",
@@ -16634,8 +16502,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-43486fe13d9816d7",
-      "text": "See every version of a key, restore an old one or undelete a key, and permanently delete only the versions you pick.",
+      "id": "content-3a58254711ac159c",
+      "text": "See every version of an object, restore an older one or undo a delete, and permanently remove only the versions you choose.",
       "channels": [
         "text"
       ],
@@ -16649,23 +16517,23 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Versions section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-da934a59975665f5",
-      "text": "Separate upload and download queues with progress, speed, cancel and retry. Multipart uploads, checksums and conflict policies; a download lands on disk only after it is verified.",
+      "id": "content-16e7f77574392f5d",
+      "text": "See the scope before you confirm",
       "channels": [
         "text"
       ],
       "locations": [
-        "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.tile-copy:nth-of-type(1) > p"
+        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(4) > div > h3"
       ],
       "visibility": [
         "visible"
@@ -16674,14 +16542,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
-        "reference": "Transfers section"
+        "reference": "Security: destructive actions show their scope first"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-93d4b5a048711c40",
@@ -17781,6 +17649,83 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-b25a70de17ae5a0c",
+      "text": "The archives are not code-signed. The macOS app is not notarized and has not been tested on a real Mac yet.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#download > div.wrap > div.download-foot.reveal:nth-of-type(2) > p.download-note"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Install: not code-signed, not notarized, never run on real macOS hardware"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-fefaa3cbf819b803",
+      "text": "The diagnostic log stays off until you turn it on, and it strips signatures, Authorization headers, URL query strings and known secrets.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(3) > div > p"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Data and privacy > Logs: redaction list"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-8b7041291bce200a",
+      "text": "The Pail main window: bucket list, object table and inspector",
+      "channels": [
+        "alt"
+      ],
+      "locations": [
+        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-dark:nth-of-type(2)",
+        "section#top > div.wrap.hero-grid > div.hero-stage:nth-of-type(2) > figure.window > img.shot.shot-light:nth-of-type(1)"
+      ],
+      "visibility": [
+        "hidden",
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "docs/images/main-light.png",
+        "reference": "describes the screenshot content"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
       "id": "content-3f4deeefb88ed528",
       "text": "The password is never accepted as a flag value or environment variable (both are visible to other processes), is not logged and is not echoed. The unlock lasts for one run; the CLI never writes to the vault, creates it, changes its password or resets it: use the desktop app.",
       "channels": [
@@ -18039,8 +17984,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-cdfb311aa4dd6ea0",
-      "text": "to try Pail on a built-in in-memory S3 server. Nothing leaves your machine.",
+      "id": "content-a0b2bd889f84c102",
+      "text": "to try Pail against a built-in in-memory S3 server. Nothing leaves your computer.",
       "channels": [
         "text"
       ],
@@ -18054,14 +17999,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Quick start step 3: in-memory server, nothing leaves the machine"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-a1d2e4e5ac5c3a44",
@@ -18216,8 +18161,8 @@
       "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
     },
     {
-      "id": "content-5578e614dabe0ed4",
-      "text": "Transfers that check their work",
+      "id": "content-bed38853e17c3537",
+      "text": "Transfers with checks built in",
       "channels": [
         "text"
       ],
@@ -18231,14 +18176,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers: verification before publishing downloads"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-fcd2f17e9131e1fb",
@@ -18565,8 +18510,8 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
-      "id": "content-3a3533cce627a249",
-      "text": "Upload, download or mirror; compare by size and time, size, or checksum; exclude by glob. Only previewed actions run, and local deletions go to the system trash.",
+      "id": "content-24148ed31fabe1a8",
+      "text": "Upload, download or mirror a folder. Compare by size and time, size only, or checksum, and exclude files by pattern. Only the actions you previewed run, and local files Pail deletes go to the system trash.",
       "channels": [
         "text"
       ],
@@ -18580,14 +18525,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-ca1e32480990770f",
@@ -18638,6 +18583,31 @@
         "dom-metadata"
       ],
       "notes": "stable identifier attribute (i18n key, demo/state hook or element id)"
+    },
+    {
+      "id": "content-bfefcceec199e908",
+      "text": "Uploads and downloads run in separate queues, with progress, speed, cancel and retry. Large files go up in parts with checksums, and a download reaches its destination only after it has been verified.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.tile-copy:nth-of-type(1) > p"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Transfers section"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-28e5ebabd9d8f6e2",
@@ -18984,8 +18954,8 @@
       "notes": null
     },
     {
-      "id": "content-1d52f1a93551bf2e",
-      "text": "Versioning, encryption, policy, CORS, lifecycle, replication and more. When a provider lacks a setting, Pail says it is unsupported instead of showing it as empty.",
+      "id": "content-a9c81fec96c91bb3",
+      "text": "Versioning, encryption, policy, CORS, lifecycle, replication and more. If your provider does not support a setting, Pail says so instead of showing it as empty.",
       "channels": [
         "text"
       ],
@@ -18999,14 +18969,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: unsupported reported as unsupported"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-f89ea27036ac1d31",
@@ -19216,28 +19186,6 @@
       "notes": "new in this revision; pending user approval"
     },
     {
-      "id": "content-834d6f27c4072412",
-      "text": "When a file already exists",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.mini.mini-transfers:nth-of-type(2) > div.conflict:nth-of-type(5) > span.conflict-label"
-      ],
-      "visibility": [
-        "accessibility-hidden"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "domain-field",
-      "origin": "production-domain",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": "mirrors desktop app labels in a static demo fragment"
-    },
-    {
       "id": "content-1363acb06856e5a7",
       "text": "when secret references such as ZIP passwords exist) unlocks it first:",
       "channels": [
@@ -19288,31 +19236,6 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-1363cba57b8f5564",
-      "text": "When you turn the diagnostic log on, signatures, authorization headers, query strings and known secrets are removed.",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(3) > div > p"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-en.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Data and privacy > Logs: redaction list"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-d598026a9cbc6050",
@@ -19444,6 +19367,33 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-48f187a73308b319",
+      "text": "Works with",
+      "channels": [
+        "aria-labelledby",
+        "text"
+      ],
+      "locations": [
+        "main#main > section.providers:nth-of-type(2)",
+        "p#providers-label"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "intro paragraph lists the providers"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
       "id": "content-5609f728403e197b",
       "text": "x64",
       "channels": [
@@ -19466,6 +19416,56 @@
       "evidence": null,
       "flags": [],
       "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
+    },
+    {
+      "id": "content-c303789c015bbcbb",
+      "text": "x64 and Arm",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "scripts/release.ps1",
+        "reference": "default -Targets amd64 and arm64 for every OS"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-60294bdc7dbf7bce",
+      "text": "x64 与 Arm",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > ul.hero-meta > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "scripts/release.ps1",
+        "reference": "default -Targets amd64 and arm64 for every OS"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-df0883e9e67b72cc",
@@ -19955,8 +19955,8 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
-      "id": "content-fd48dfc8cacfc82d",
-      "text": "上传、下载或镜像；按大小与时间、大小或校验和比较；按通配符排除。只执行预览过的动作，本地删除进入系统回收站。",
+      "id": "content-05703dd522a8c75f",
+      "text": "上传、下载或镜像整个文件夹，可按大小和时间、仅大小或校验和比较，也能按通配符排除文件。只执行你预览过的操作，删除的本地文件会进入系统回收站。",
       "channels": [
         "text"
       ],
@@ -19970,18 +19970,18 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-985468fd4defa7f7",
-      "text": "上传与下载分队列执行，显示进度与速度，可取消、可重试。支持分段上传、校验和与冲突策略；下载核验通过后才写入磁盘。",
+      "id": "content-7a2abb4285dd1bc3",
+      "text": "上传和下载分开排队，显示进度和速度，随时可以取消或重试。大文件分段上传并带校验和；下载先写入临时文件，校验通过后才放到目标位置。",
       "channels": [
         "text"
       ],
@@ -19995,14 +19995,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-3588c56efb6e306c",
@@ -20383,8 +20383,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-281d0f538d6d8f32",
-      "text": "为一个或多个对象生成带有效期的 GET 或 PUT 预签名 URL。为账户设置 CDN 域名后，上传完成即可复制 CDN 链接。",
+      "id": "content-6631012c4b8caa76",
+      "text": "为一个或多个对象生成带有效期的 GET 或 PUT 预签名链接。给账户设好 CDN 域名后，上传一完成就能复制 CDN 链接。",
       "channels": [
         "text"
       ],
@@ -20398,14 +20398,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "CDN, presigned URLs, CloudFront"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-9bae680405099fc8",
@@ -20538,8 +20538,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-b8d2af578f1a90c4",
-      "text": "任意 S3 兼容端点",
+      "id": "content-a50544b817326c22",
+      "text": "以及任何兼容 S3 的服务",
       "channels": [
         "text"
       ],
@@ -20553,39 +20553,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "'other services that speak the S3 API'"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
-      "id": "content-57e49404f31854d6",
-      "text": "会核对结果的传输",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.tile-copy:nth-of-type(1) > h3"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Transfers: verification before publishing downloads"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-a2f59f64d2623d19",
@@ -20665,33 +20640,33 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
-      "id": "content-6a76fda2a4f7a835",
-      "text": "先看范围，再确认",
+      "id": "content-a12351c08da88907",
+      "text": "你的系统",
       "channels": [
         "text"
       ],
       "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(4) > div > h3"
+        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(1) > header.os-head > span.os-badge",
+        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(2) > header.os-head > span.os-badge",
+        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(3) > header.os-head > span.os-badge"
       ],
       "visibility": [
+        "hidden",
         "visible"
       ],
       "captures": [
         "dom-zh.json"
       ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Security: destructive actions show their scope first"
-      },
+      "purpose": "state",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": null,
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
-      "id": "content-25ab001ed6ad307b",
-      "text": "先给出计划的同步",
+      "id": "content-182ac9ac745f113e",
+      "text": "先预览、再执行的同步",
       "channels": [
         "text"
       ],
@@ -20705,14 +20680,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs: preview first"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-25efb3d5b616c16a",
@@ -21012,31 +20987,6 @@
       "notes": null
     },
     {
-      "id": "content-12af43e0e23e462b",
-      "text": "发布包未做代码签名。macOS 应用未经公证，也尚未在真实的 Mac 上测试。",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#download > div.wrap > div.download-foot.reveal:nth-of-type(2) > p.download-note"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Install: not code-signed, not notarized, never run on real macOS hardware"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-a7f354b258f62c10",
       "text": "发布包由",
       "channels": [
@@ -21084,8 +21034,8 @@
       "notes": "mirrors desktop app labels in a static demo fragment"
     },
     {
-      "id": "content-6be3f81e87800d27",
-      "text": "只连接你的端点",
+      "id": "content-c4cf88e82abfb7d9",
+      "text": "只连你自己的端点",
       "channels": [
         "text"
       ],
@@ -21099,14 +21049,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-7d34d3108c3db4c9",
@@ -21134,33 +21084,6 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-6043b97c2ec8bd36",
-      "text": "可连接",
-      "channels": [
-        "aria-labelledby",
-        "text"
-      ],
-      "locations": [
-        "main#main > section.providers:nth-of-type(2)",
-        "p#providers-label"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "intro paragraph lists the providers"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-4513dfd4c4dd696a",
       "text": "可选：设置",
       "channels": [
@@ -21186,8 +21109,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-96aa26ac8ddd59e6",
-      "text": "同样的账户，搬进终端。",
+      "id": "content-9f0e1ce3afb5c0f8",
+      "text": "同一套账户，在终端里也能用。",
       "channels": [
         "aria-labelledby",
         "text"
@@ -21203,14 +21126,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "cliTitle; headline without a factual claim"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-56410fc65314dfb5",
@@ -21426,6 +21349,28 @@
       "notes": null
     },
     {
+      "id": "content-19759ed394007cf3",
+      "text": "在一个桌面应用里浏览和管理 Amazon S3、MinIO、Cloudflare R2 以及任何兼容 S3 的存储。免费开源，支持 Windows、Linux 和 macOS。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > p.hero-sub"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "orientation",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": null,
+      "flags": [],
+      "notes": "new in this revision; pending user approval"
+    },
+    {
       "id": "content-26312cc7e07dc9c5",
       "text": "在侧栏选择存储桶并浏览。把文件拖进窗口即可上传；选中对象后点击下载。",
       "channels": [
@@ -21549,6 +21494,31 @@
       "notes": null
     },
     {
+      "id": "content-ff21163c077b5c83",
+      "text": "如何安装 Pail、添加账户、使用命令行和从源码构建，以及 Pail 的数据存放位置和各平台的测试情况。",
+      "channels": [
+        "meta:description"
+      ],
+      "locations": [
+        "html.js > head > meta:nth-of-type(3)"
+      ],
+      "visibility": [
+        "hidden"
+      ],
+      "captures": [
+        "dom-docs.zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "one factual sentence describing the page"
+      },
+      "flags": [],
+      "notes": "new in this revision; pending user approval"
+    },
+    {
       "id": "content-144fcb8679ede24d",
       "text": "存储桶",
       "channels": [
@@ -21569,33 +21539,6 @@
       "evidence": null,
       "flags": [],
       "notes": "mirrors desktop app labels in a static demo fragment"
-    },
-    {
-      "id": "content-976466a6018249cc",
-      "text": "存储桶要做的事，一个窗口办完。",
-      "channels": [
-        "aria-labelledby",
-        "text"
-      ],
-      "locations": [
-        "h2#features-title",
-        "section#features"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "designs/pail-site/i18n.js",
-        "reference": "featuresTitle; headline without a factual claim"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-44db1cdf0ab445c5",
@@ -21671,29 +21614,79 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-757e5bb8df8356e5",
-      "text": "安装 Pail、添加账户、使用命令行、从源码构建，以及 Pail 的数据保存位置和各平台的测试情况。",
+      "id": "content-27f93e7a3ff529b1",
+      "text": "安装包没有代码签名。macOS 应用未经公证，也还没有在真机 Mac 上测试过。",
       "channels": [
-        "meta:description"
+        "text"
       ],
       "locations": [
-        "html.js > head > meta:nth-of-type(3)"
+        "section#download > div.wrap > div.download-foot.reveal:nth-of-type(2) > p.download-note"
       ],
       "visibility": [
-        "hidden"
+        "visible"
       ],
       "captures": [
-        "dom-docs.zh.json"
+        "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
       "origin": "agent-generated-task-copy",
       "decision": "review",
       "evidence": {
         "source": "README.md",
-        "reference": "one factual sentence describing the page"
+        "reference": "Install: not code-signed, not notarized, never run on real macOS hardware"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-2d46957242711634",
+      "text": "密钥不以明文存放。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h2#privacy-title > span.privacy-dim:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Security: never in config files"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-e1bad89606b59dbd",
+      "text": "密钥存进 Windows 凭据管理器、macOS 钥匙串或 Linux 的 Secret Service；没有钥匙串时，可以改用以 Argon2id 和 XChaCha20-Poly1305 加密的保险库。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(1) > div > p"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Data and privacy > Secrets; Security (Argon2id, XChaCha20-Poly1305)"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-53f92c0639631885",
@@ -21841,56 +21834,6 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-e12a8879c7bd938c",
-      "text": "开启诊断日志后，签名、Authorization 请求头、URL 查询串和已知的密钥都会被去除。",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(3) > div > p"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Data and privacy > Logs: redaction list"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
-      "id": "content-fe11acd1cade0a82",
-      "text": "当前系统",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(1) > header.os-head > span.os-badge",
-        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(2) > header.os-head > span.os-badge",
-        "section#download > div.wrap > div.os-grid:nth-of-type(1) > article.os-card.reveal:nth-of-type(3) > header.os-head > span.os-badge"
-      ],
-      "visibility": [
-        "hidden",
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "state",
-      "origin": "agent-generated-task-copy",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": null
-    },
-    {
       "id": "content-bfc47d6b4af9d289",
       "text": "快速上手",
       "channels": [
@@ -21918,7 +21861,7 @@
       "flags": [
         "dom-metadata"
       ],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-2acd266b352bef07",
@@ -22095,8 +22038,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-2e48ac7f67a195c5",
-      "text": "按 Ctrl K（macOS 上为 ⌘K）搜索全部命令、存储桶和工具，中英文关键字都能用。",
+      "id": "content-5ea066a3cbc63420",
+      "text": "按 Ctrl+K（macOS 上是 ⌘K）就能找到任何命令、存储桶或工具，中英文关键词都能搜。",
       "channels": [
         "text"
       ],
@@ -22110,18 +22053,18 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "docs/design.md",
         "reference": "command palette: Ctrl/⌘+K, English and Chinese keywords"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-174cefec532f4d9e",
-      "text": "按存储桶和键模式匹配，设置请求头、存储类别与加密，或在上传时用 GZIP、ZIP、AES-256 ZIP 压缩。",
+      "id": "content-30645cb661d5384d",
+      "text": "按存储桶和对象键规则，在上传时自动设置请求头、存储类别和加密，还能用 GZIP、ZIP 或 AES-256 ZIP 压缩。",
       "channels": [
         "text"
       ],
@@ -22135,14 +22078,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Upload rules and compression"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-ae221d1d4417c3c9",
@@ -22168,6 +22111,33 @@
       },
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-d93373f81363e3cc",
+      "text": "支持",
+      "channels": [
+        "aria-labelledby",
+        "text"
+      ],
+      "locations": [
+        "main#main > section.providers:nth-of-type(2)",
+        "p#providers-label"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "intro paragraph lists the providers"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-ebdc835e8f877509",
@@ -22269,28 +22239,6 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-00f51dc4df0d631e",
-      "text": "文件已存在时",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.mini.mini-transfers:nth-of-type(2) > div.conflict:nth-of-type(5) > span.conflict-label"
-      ],
-      "visibility": [
-        "accessibility-hidden"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "domain-field",
-      "origin": "production-domain",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": "mirrors desktop app labels in a static demo fragment"
     },
     {
       "id": "content-2687ccdbb1d2288a",
@@ -22579,7 +22527,7 @@
       "decision": "review",
       "evidence": null,
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-ab00aee24a3e17de",
@@ -22604,11 +22552,11 @@
       "decision": "review",
       "evidence": null,
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
-      "id": "content-fbc04833bde87c02",
-      "text": "查看一个键的全部版本，恢复旧版本或撤销删除，只永久删除你选中的版本。",
+      "id": "content-45b7d8c7a9651794",
+      "text": "查看对象的每个版本，恢复旧版本或撤销删除，只永久删除你选中的版本。",
       "channels": [
         "text"
       ],
@@ -22622,14 +22570,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Versions section"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-1d0fd5f9336d9103",
@@ -22732,8 +22680,8 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
-      "id": "content-f21e738293fb8762",
-      "text": "没有遥测。 不检查更新。 配置文件里没有密钥。",
+      "id": "content-6e901604186e29b1",
+      "text": "没有遥测。 不检查更新。 密钥不以明文存放。",
       "channels": [
         "aria-labelledby"
       ],
@@ -22747,14 +22695,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
-        "reference": "accessible name composed from the visible section heading strings"
+        "reference": "accessible name composed from the visible privacy headline lines"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "pending user approval of this revision"
     },
     {
       "id": "content-aa0819dfc4d8d782",
@@ -22888,8 +22836,8 @@
       "notes": null
     },
     {
-      "id": "content-cd502919dc2b35d1",
-      "text": "版本控制、加密、策略、CORS、生命周期、复制等。服务商不支持的设置会标为“不支持”，而不是显示为空。",
+      "id": "content-7a328fc52ed19804",
+      "text": "版本控制、加密、策略、CORS、生命周期、复制等。服务商不支持的设置会明确标为“不支持”，不会显示成空白。",
       "channels": [
         "text"
       ],
@@ -22903,14 +22851,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: unsupported reported as unsupported"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-9ebe1ab0d17f69dd",
@@ -22963,8 +22911,30 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-13c313342dba8a64",
-      "text": "破坏性操作会先列出影响范围。删除存储桶需要输入它的名称。",
+      "id": "content-81b04f33d376102d",
+      "text": "目标文件已存在时",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.mini.mini-transfers:nth-of-type(2) > div.conflict:nth-of-type(5) > span.conflict-label"
+      ],
+      "visibility": [
+        "accessibility-hidden"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "domain-field",
+      "origin": "production-domain",
+      "decision": "review",
+      "evidence": null,
+      "flags": [],
+      "notes": "wording changed in this revision; pending user approval"
+    },
+    {
+      "id": "content-37d93f15bee27a79",
+      "text": "破坏性操作执行前会列出受影响的内容；删除存储桶时需要输入桶名确认。",
       "channels": [
         "text"
       ],
@@ -22978,14 +22948,39 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
       "evidence": {
         "source": "README.md",
         "reference": "Security: deleting a bucket requires typing its name"
       },
       "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-9375ca0c09ad0b44",
+      "text": "确认前先看清范围",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(4) > div > h3"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Security: destructive actions show their scope first"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-0d53f08678d8101b",
@@ -23008,31 +23003,6 @@
       "evidence": null,
       "flags": [],
       "notes": null
-    },
-    {
-      "id": "content-44d3e1a900534c7c",
-      "text": "私有密钥保存在 Windows 凭据管理器、macOS 钥匙串或 Secret Service 中，也可以改用以 Argon2id 与 XChaCha20-Poly1305 加密的保险库。",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(1) > div > p"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Data and privacy > Secrets; Security (Argon2id, XChaCha20-Poly1305)"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
       "id": "content-062a2931da683a98",
@@ -23110,6 +23080,33 @@
       "notes": null
     },
     {
+      "id": "content-3025e89a2e06085b",
+      "text": "管理存储桶的事，在一个窗口里做完。",
+      "channels": [
+        "aria-labelledby",
+        "text"
+      ],
+      "locations": [
+        "h2#features-title",
+        "section#features"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "designs/pail-site/i18n.js",
+        "reference": "featuresTitle; headline without a factual claim"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
       "id": "content-5b50d7c4b5950dc5",
       "text": "系统",
       "channels": [
@@ -23183,6 +23180,31 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-43a646782fbeade3",
+      "text": "自带校验的传输",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.tile-copy:nth-of-type(1) > h3"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Transfers: verification before publishing downloads"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-4ce4cafdd0561280",
@@ -23311,7 +23333,7 @@
       "flags": [
         "dom-metadata"
       ],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-7193ea3a12af8b26",
@@ -23341,6 +23363,31 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-4cb42fe705b10bb4",
+      "text": "诊断日志需要手动开启；写入前会去掉签名、Authorization 请求头、URL 查询参数和已知的密钥。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#privacy > div.wrap > div.privacy-grid > ul.facts.reveal > li:nth-of-type(3) > div > p"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Data and privacy > Logs: redaction list"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-68df2358eb9e60c6",
@@ -23641,31 +23688,6 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-04b6f0c59f9623b7",
-      "text": "配置文件里没有密钥。",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "h2#privacy-title > span.privacy-dim:nth-of-type(3)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Security: never in config files"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-6286b5459dca17e3",
       "text": "链接到本节",
       "channels": [
@@ -23690,7 +23712,7 @@
       "decision": "review",
       "evidence": null,
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "wording changed in this revision; pending user approval"
     },
     {
       "id": "content-721b00cbfa23cc25",
@@ -23816,28 +23838,6 @@
       },
       "flags": [],
       "notes": null
-    },
-    {
-      "id": "content-795f2d5692ee12cb",
-      "text": "面向 Amazon S3、MinIO、Cloudflare R2 以及一切兼容 S3 API 服务的桌面管理器。免费开源，支持 Windows、Linux 与 macOS。",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#top > div.wrap.hero-grid > div.hero-copy:nth-of-type(1) > p.hero-sub"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "domain-value",
-      "origin": "production-domain",
-      "decision": "allow",
-      "evidence": null,
-      "flags": [],
-      "notes": "sanitized fixture or product/provider name (demo data from cmd/pail-desktop/demo.go, CLI formats from cmd/pail)"
     },
     {
       "id": "content-79f326be4409d51f",
@@ -24269,31 +24269,6 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-5dc9e01dcc82eb9d",
-      "text": "，在内置的内存 S3 服务上试用 Pail，数据不会离开本机。",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "section#download > div.wrap > div.download-foot.reveal:nth-of-type(2) > div.demo-hint > p > span:nth-of-type(2)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-zh.json"
-      ],
-      "purpose": "approved-product-copy",
-      "origin": "agent-generated-approved-copy",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.md",
-        "reference": "Quick start step 3: in-memory server, nothing leaves the machine"
-      },
-      "flags": [],
-      "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
-    },
-    {
       "id": "content-cde6b065b3947e25",
       "text": "，填入访问密钥 ID 和私有密钥；",
       "channels": [
@@ -24342,6 +24317,31 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-a0407eabc5f1b77a",
+      "text": "，用内置的内存 S3 服务试用 Pail，数据不会离开你的电脑。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#download > div.wrap > div.download-foot.reveal:nth-of-type(2) > div.demo-hint > p > span:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "approved-product-copy",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": {
+        "source": "README.md",
+        "reference": "Quick start step 3: in-memory server, nothing leaves the machine"
+      },
+      "flags": [],
+      "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
       "id": "content-8641306364f15793",
