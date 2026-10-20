@@ -150,9 +150,9 @@ go run ./tools/genicons                # 由 assets/brand/pail-icon.svg 重新�
 <p><code>scripts/release.ps1</code> 需要 <code>assets/brand/generated</code> 中已生成的图标。某个目标构建失败时会被跳过，并列在 <code>NOT-BUILT.txt</code> 中。</p>
 <h2 id="data-and-privacy">数据与隐私 <a class="heading-anchor" href="#data-and-privacy" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
 <ul>
-<li><strong>配置</strong>：系统用户配置目录下的 <code>Pail</code> 文件夹（Windows 为 <code>%AppData%\Pail</code>，Linux 为 <code>~/.config/Pail</code>，macOS 为 <code>~/Library/Application Support/Pail</code>），或 <code>--config-dir</code> 指定的路径。里面有设置、账户文件、同步作业、上传规则和秘密引用的名称。如果存在旧名称留下的 <code>openS3</code> 文件夹，会在首次启动时自动迁移一次。</li>
-<li><strong>秘密</strong>：私有访问密钥、会话令牌和被引用的密码保存在系统钥匙串（Windows 凭据管理器、macOS 钥匙串、Linux 的 Secret Service），服务名为 <code>Pail</code>；也可以选择加密保险库 <code>vault.json</code>（设置 &gt; 安全，适合没有钥匙串的环境）。访问密钥 ID 不是秘密，保存在账户文件中。</li>
-<li><strong>日志</strong>：默认关闭。开启后，脱敏后的日志写入配置目录下的 <code>logs/pail.log</code>。URL 查询串、Authorization 头、签名和已知的秘密值都会被移除；手动输入的密码只能按标签识别，分享日志前请先检查。</li>
+<li><strong>配置</strong>：系统用户配置目录下的 <code>Pail</code> 文件夹（Windows 为 <code>%AppData%\Pail</code>，Linux 为 <code>~/.config/Pail</code>，macOS 为 <code>~/Library/Application Support/Pail</code>），或 <code>--config-dir</code> 指定的路径。里面有设置、账户文件、同步作业、上传规则和机密引用的名称。如果存在旧名称留下的 <code>openS3</code> 文件夹，会在首次启动时自动迁移一次。</li>
+<li><strong>机密</strong>：私有访问密钥、会话令牌和被引用的密码保存在系统钥匙串（Windows 凭据管理器、macOS 钥匙串、Linux 的 Secret Service），服务名为 <code>Pail</code>；也可以选择加密保险库 <code>vault.json</code>（设置 &gt; 安全，适合没有钥匙串的环境）。访问密钥 ID 不是机密，保存在账户文件中。</li>
+<li><strong>日志</strong>：默认关闭。开启后，脱敏后的日志写入配置目录下的 <code>logs/pail.log</code>。URL 查询串、Authorization 头、签名和已知的机密值都会被移除；手动输入的密码只能按标签识别，分享日志前请先检查。</li>
 <li><strong>网络</strong>：Pail 只访问你配置的账户所对应的端点，没有遥测，也不检查更新。</li>
 </ul>
 <h2 id="platform-status">平台状态 <a class="heading-anchor" href="#platform-status" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>

@@ -15,7 +15,7 @@
       "dom-license.zh.json",
       "dom-zh.json"
     ],
-    "capturedAt": "2026-10-20T06:17:59Z",
+    "capturedAt": "2026-10-20T06:36:41Z",
     "surfaces": [
       "landing-page: en light + tweaks panel open",
       "landing-page: zh light",
@@ -2117,14 +2117,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "linux archive contents (pail.desktop, pail.png)"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-d725e3d836e10192",
@@ -2142,14 +2142,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "windows archive contents"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-82ab77bca0f7de8a",
@@ -2167,14 +2167,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "Pail.app, LSMinimumSystemVersion 11.0"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-8a5edab282632443",
@@ -2494,14 +2494,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: 14 bucket settings as forms or JSON"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-8d616d3509613e95",
@@ -3601,14 +3601,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "linux archive contents (pail.desktop, pail.png)"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-6ffc66d065771d4c",
@@ -3626,14 +3626,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "windows archive contents"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-489dc3125c194bab",
@@ -3651,14 +3651,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "Pail.app, LSMinimumSystemVersion 11.0"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-b772063df586a3b5",
@@ -4106,14 +4106,14 @@
         "dom-zh.json"
       ],
       "purpose": "legal-approved",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "trademark notice (line 7)"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-5861314d7fccb39c",
@@ -4211,14 +4211,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "'other services that speak the S3 API'"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-a6b5a39c8ace3ed6",
@@ -4653,11 +4653,11 @@
         "dom-en.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-05724bb997cebcfb",
@@ -5565,11 +5565,11 @@
         "dom-changelog.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "page title; new in this revision; pending user approval"
+      "notes": "page title; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-9306177822e5f407",
@@ -6006,11 +6006,11 @@
         "dom-docs-cli.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "page title; new in this revision; pending user approval"
+      "notes": "page title; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-98b5f8cfbca9225d",
@@ -6660,14 +6660,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "CDN, presigned URLs, CloudFront"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-8a2264e4cd9205ed",
@@ -7087,14 +7087,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: deleting a bucket requires typing its name"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-6940189433657105",
@@ -7478,11 +7478,11 @@
         "dom-license.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-a4c3ed04a95a3da1",
@@ -8862,13 +8862,13 @@
         "dom-license.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [
         "dom-metadata"
       ],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-9814d34e8ccc1afe",
@@ -8886,11 +8886,11 @@
         "dom-docs.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "page title; new in this revision; pending user approval"
+      "notes": "page title; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-b7e168ac737558dd",
@@ -9371,14 +9371,14 @@
         "dom-docs.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "one factual sentence describing the page"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-1618ecc089879ca0",
@@ -9729,10 +9729,10 @@
       ],
       "purpose": "domain-field",
       "origin": "production-domain",
-      "decision": "review",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-fe8b590004a7bb19",
@@ -10515,13 +10515,13 @@
         "dom-license.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [
         "dom-metadata"
       ],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-cc1d3b0234846714",
@@ -10724,11 +10724,11 @@
         "dom-docs.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-eef8b9fd5d437dd9",
@@ -11904,11 +11904,11 @@
         "dom-license.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "page title; new in this revision; pending user approval"
+      "notes": "page title; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-07c55588fb703109",
@@ -11957,11 +11957,11 @@
         "dom-license.zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "page title; new in this revision; pending user approval"
+      "notes": "page title; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-1f8cea1caedd7a8a",
@@ -12451,14 +12451,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: never in config files"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-ee4832c56c8d3154",
@@ -12526,14 +12526,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "accessible name composed from the visible privacy headline lines"
       },
       "flags": [],
-      "notes": "pending user approval of this revision"
+      "notes": "; approved by the user on 2026-10-20"
     },
     {
       "id": "content-92498aa68abd7711",
@@ -12551,14 +12551,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network: no update check"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-ba9f261864a180fb",
@@ -12899,11 +12899,11 @@
         "dom-docs.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-801c5d4ff786a9d1",
@@ -13497,14 +13497,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph (line 5) and License"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-1aa0600a8c5c2488",
@@ -13522,14 +13522,14 @@
         "dom-license.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "LICENSE",
         "reference": "one factual sentence describing the page"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-e26d52ac35e74ccc",
@@ -13570,14 +13570,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-5f43d22a7be3dfa6",
@@ -13595,14 +13595,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/cli.md",
         "reference": "intro: shares configuration; --json; exit codes; never prints credentials"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-abcc1c0d5f1bc6de",
@@ -13620,14 +13620,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "product name and category"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-6d6929efcffb26d6",
@@ -13645,14 +13645,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "product name and category"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-402643bcfee7dadc",
@@ -13670,14 +13670,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/cli.md",
         "reference": "intro: shares configuration; --json; exit codes; never prints credentials"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-f721ccaf473cd19a",
@@ -13697,14 +13697,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/images/main-light.png",
         "reference": "describes the screenshot content"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-a811044ea1dccb58",
@@ -13747,14 +13747,14 @@
         "dom-license.zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "LICENSE",
         "reference": "one factual sentence describing the page"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-27a53749612a9cd8",
@@ -13772,14 +13772,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-7fcbabfb76749ac6",
@@ -13797,14 +13797,14 @@
         "dom-changelog.zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "CHANGELOG.md",
         "reference": "one factual sentence describing the page"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-e6edfddc4c4977a5",
@@ -13822,14 +13822,14 @@
         "dom-docs-cli.zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/cli.md",
         "reference": "one factual sentence describing the page"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-d0a849a0475f5585",
@@ -13847,14 +13847,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph (line 5) and License"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-7267d43cd68f8b4f",
@@ -14913,14 +14913,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/design.md",
         "reference": "command palette: Ctrl/⌘+K, English and Chinese keywords"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-ab1fa2dc4ed8a56e",
@@ -15539,14 +15539,14 @@
         "dom-docs-cli.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/cli.md",
         "reference": "one factual sentence describing the page"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-0e91610117029a62",
@@ -16031,14 +16031,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Upload rules and compression"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-1ff0a521c8d3bbe6",
@@ -16365,14 +16365,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Secrets; Security (Argon2id, XChaCha20-Poly1305)"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-d8707d411d997657",
@@ -16466,14 +16466,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Versions section"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-16e7f77574392f5d",
@@ -16491,14 +16491,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: destructive actions show their scope first"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-93d4b5a048711c40",
@@ -17339,11 +17339,11 @@
         "dom-docs-cli.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-207442050c0f758c",
@@ -17361,11 +17361,11 @@
         "dom-docs-cli.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-b7427cecc01d0628",
@@ -17383,11 +17383,11 @@
         "dom-docs-cli.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-9a763c41cf09dcf2",
@@ -17405,11 +17405,11 @@
         "dom-docs.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-1331275bc537b4c2",
@@ -17628,14 +17628,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Install: not code-signed, not notarized, never run on real macOS hardware"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-fefaa3cbf819b803",
@@ -17653,14 +17653,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Logs: redaction list"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-8b7041291bce200a",
@@ -17680,14 +17680,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/images/main-light.png",
         "reference": "describes the screenshot content"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-3f4deeefb88ed528",
@@ -17962,14 +17962,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Quick start step 3: in-memory server, nothing leaves the machine"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-a1d2e4e5ac5c3a44",
@@ -18137,14 +18137,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers: verification before publishing downloads"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-fcd2f17e9131e1fb",
@@ -18483,14 +18483,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs section"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-ca1e32480990770f",
@@ -18558,14 +18558,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers section"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-28e5ebabd9d8f6e2",
@@ -18925,14 +18925,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: unsupported reported as unsupported"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-f89ea27036ac1d31",
@@ -19131,14 +19131,14 @@
         "dom-changelog.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "CHANGELOG.md",
         "reference": "one factual sentence describing the page"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-1363acb06856e5a7",
@@ -19334,14 +19334,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph lists the providers"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-5609f728403e197b",
@@ -19383,14 +19383,14 @@
         "dom-en.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "default -Targets amd64 and arm64 for every OS"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-60294bdc7dbf7bce",
@@ -19408,14 +19408,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "scripts/release.ps1",
         "reference": "default -Targets amd64 and arm64 for every OS"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-df0883e9e67b72cc",
@@ -19897,8 +19897,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-a477425f8ce5d3c2",
-      "text": "。URL 查询串、Authorization 头、签名和已知的秘密值都会被移除；手动输入的密码只能按标签识别，分享日志前请先检查。",
+      "id": "content-1c7db9da49d93ce7",
+      "text": "。URL 查询串、Authorization 头、签名和已知的机密值都会被移除；手动输入的密码只能按标签识别，分享日志前请先检查。",
       "channels": [
         "text"
       ],
@@ -19997,8 +19997,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-557203c7bae9416d",
-      "text": "。绝不输出秘密。",
+      "id": "content-7b0ba68b15276cee",
+      "text": "。绝不输出机密。",
       "channels": [
         "text"
       ],
@@ -20087,14 +20087,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs section"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-7a2abb4285dd1bc3",
@@ -20112,14 +20112,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers section"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-3588c56efb6e306c",
@@ -20715,14 +20715,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "CDN, presigned URLs, CloudFront"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-9bae680405099fc8",
@@ -20777,8 +20777,8 @@
       "notes": null
     },
     {
-      "id": "content-c6e5d02695d94874",
-      "text": "之上的一层轻量前端。它与桌面应用共用配置目录和秘密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。",
+      "id": "content-36592fd5a6f7c4dd",
+      "text": "之上的一层轻量前端。它与桌面应用共用配置目录和机密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。",
       "channels": [
         "text"
       ],
@@ -20995,14 +20995,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "'other services that speak the S3 API'"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-08dcbdfa8ff7136f",
@@ -21153,11 +21153,11 @@
         "dom-zh.json"
       ],
       "purpose": "state",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-70e3cfe04ea78c43",
@@ -21200,14 +21200,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Sync jobs: preview first"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-c49aa5cd5e393320",
@@ -21846,14 +21846,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Network"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-7d34d3108c3db4c9",
@@ -21973,14 +21973,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "cliTitle; headline without a factual claim"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-12ea3470da4d0cb5",
@@ -22245,11 +22245,11 @@
         "dom-docs-cli.zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "page title; new in this revision; pending user approval"
+      "notes": "page title; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-dfb006d46dfc45e2",
@@ -22418,11 +22418,11 @@
         "dom-zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-26312cc7e07dc9c5",
@@ -22688,14 +22688,14 @@
         "dom-docs.zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "one factual sentence describing the page"
       },
       "flags": [],
-      "notes": "new in this revision; pending user approval"
+      "notes": "new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-dc20f6dfff9118c5",
@@ -22887,14 +22887,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Install: not code-signed, not notarized, never run on real macOS hardware"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-da6094b974f81daa",
@@ -22937,14 +22937,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: never in config files"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-e1bad89606b59dbd",
@@ -22962,14 +22962,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Secrets; Security (Argon2id, XChaCha20-Poly1305)"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-53f92c0639631885",
@@ -23242,8 +23242,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-081e2d6be542eafc",
-      "text": "当桌面应用把秘密存放在加密保险库（",
+      "id": "content-616946e7e7505105",
+      "text": "当桌面应用把机密存放在加密保险库（",
       "channels": [
         "text"
       ],
@@ -23288,13 +23288,13 @@
         "dom-license.zh.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [
         "dom-metadata"
       ],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-2acd266b352bef07",
@@ -23312,11 +23312,11 @@
         "dom-docs.zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "page title; new in this revision; pending user approval"
+      "notes": "page title; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-5a7bebd5f98bcd40",
@@ -23597,8 +23597,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-7952a2dea8a31cd4",
-      "text": "指定的路径。里面有设置、账户文件、同步作业、上传规则和秘密引用的名称。如果存在旧名称留下的",
+      "id": "content-a75590386d2412b6",
+      "text": "指定的路径。里面有设置、账户文件、同步作业、上传规则和机密引用的名称。如果存在旧名称留下的",
       "channels": [
         "text"
       ],
@@ -23637,14 +23637,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "docs/design.md",
         "reference": "command palette: Ctrl/⌘+K, English and Chinese keywords"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-30645cb661d5384d",
@@ -23662,14 +23662,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Upload rules and compression"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-45af35415d145d77",
@@ -23739,14 +23739,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "intro paragraph lists the providers"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-ebdc835e8f877509",
@@ -24009,8 +24009,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-6a82dd6d63dd61c9",
-      "text": "日志会对 URL 查询串、Authorization 头、签名和已知的秘密值脱敏。",
+      "id": "content-da51cdf91b3f469b",
+      "text": "日志会对 URL 查询串、Authorization 头、签名和已知的机密值脱敏。",
       "channels": [
         "text"
       ],
@@ -24207,11 +24207,11 @@
         "dom-changelog.zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "page title; new in this revision; pending user approval"
+      "notes": "page title; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-9cad1d9b01fc095e",
@@ -24408,11 +24408,11 @@
         "dom-docs.zh.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-0bc73e4946aca54f",
@@ -24422,6 +24422,81 @@
       ],
       "locations": [
         "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-3fcc476715c11fd7",
+      "text": "机密",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul > li:nth-of-type(2) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "README.zh-CN.md",
+        "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-fabb30931c8fce49",
+      "text": "机密后端（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-840d7587001a4377",
+      "text": "机密绝不写入配置文件；它们保存在系统钥匙串或加密保险库中。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(1)"
       ],
       "visibility": [
         "visible"
@@ -24480,14 +24555,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Versions section"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-1d0fd5f9336d9103",
@@ -24755,14 +24830,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "accessible name composed from the visible privacy headline lines"
       },
       "flags": [],
-      "notes": "pending user approval of this revision"
+      "notes": "; approved by the user on 2026-10-20"
     },
     {
       "id": "content-aa0819dfc4d8d782",
@@ -24961,14 +25036,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Buckets: unsupported reported as unsupported"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-9ebe1ab0d17f69dd",
@@ -25087,10 +25162,10 @@
       ],
       "purpose": "domain-field",
       "origin": "production-domain",
-      "decision": "review",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-b93928d06c8316c6",
@@ -25158,14 +25233,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: deleting a bucket requires typing its name"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-36f33adaf0942634",
@@ -25209,14 +25284,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Security: destructive actions show their scope first"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-0d53f08678d8101b",
@@ -25239,81 +25314,6 @@
       "evidence": null,
       "flags": [],
       "notes": null
-    },
-    {
-      "id": "content-062a2931da683a98",
-      "text": "秘密",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul > li:nth-of-type(2) > strong"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-docs.zh.json"
-      ],
-      "purpose": "approved-content",
-      "origin": "production-domain",
-      "decision": "allow",
-      "evidence": {
-        "source": "README.zh-CN.md",
-        "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
-      },
-      "flags": [],
-      "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-cc0dc6789c1b6f44",
-      "text": "秘密后端（",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-docs-cli.zh.json"
-      ],
-      "purpose": "approved-content",
-      "origin": "production-domain",
-      "decision": "allow",
-      "evidence": {
-        "source": "docs/cli.zh-CN.md",
-        "reference": "rendered in full"
-      },
-      "flags": [],
-      "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-7cff70f0ac85584e",
-      "text": "秘密绝不写入配置文件；它们保存在系统钥匙串或加密保险库中。",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(1)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-changelog.zh.json"
-      ],
-      "purpose": "approved-content",
-      "origin": "production-domain",
-      "decision": "allow",
-      "evidence": {
-        "source": "CHANGELOG.zh-CN.md",
-        "reference": "rendered in full"
-      },
-      "flags": [],
-      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-52fff1680de153af",
@@ -25383,14 +25383,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "designs/pail-site/i18n.js",
         "reference": "featuresTitle; headline without a factual claim"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-5b50d7c4b5950dc5",
@@ -25558,14 +25558,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Transfers: verification before publishing downloads"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-4ce4cafdd0561280",
@@ -25611,11 +25611,11 @@
         "dom-docs-cli.zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-aba0a3821404c028",
@@ -25633,11 +25633,11 @@
         "dom-docs-cli.zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-5f36d5be1849275f",
@@ -25655,11 +25655,11 @@
         "dom-docs.zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-7126bc670a1df388",
@@ -25677,11 +25677,11 @@
         "dom-docs-cli.zh.json"
       ],
       "purpose": "orientation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-aa44a9c6d83a397c",
@@ -25829,13 +25829,13 @@
         "dom-license.zh.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [
         "dom-metadata"
       ],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-7193ea3a12af8b26",
@@ -25882,11 +25882,11 @@
         "dom-license.zh.json"
       ],
       "purpose": "availability",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-4cb42fe705b10bb4",
@@ -25904,14 +25904,14 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Data and privacy > Logs: redaction list"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-4262c45dc797bb0c",
@@ -26554,11 +26554,11 @@
         "dom-docs.zh.json"
       ],
       "purpose": "navigation",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": null,
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "wording changed in this revision; approved by the user on 2026-10-20"
     },
     {
       "id": "content-45b4b940dd166389",
@@ -26991,8 +26991,8 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-dfaf45fabe098870",
-      "text": "（设置 > 安全，适合没有钥匙串的环境）。访问密钥 ID 不是秘密，保存在账户文件中。",
+      "id": "content-74dcdd516845d0a1",
+      "text": "（设置 > 安全，适合没有钥匙串的环境）。访问密钥 ID 不是机密，保存在账户文件中。",
       "channels": [
         "text"
       ],
@@ -27861,18 +27861,18 @@
         "dom-zh.json"
       ],
       "purpose": "approved-product-copy",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
+      "origin": "agent-generated-approved-copy",
+      "decision": "allow",
       "evidence": {
         "source": "README.md",
         "reference": "Quick start step 3: in-memory server, nothing leaves the machine"
       },
       "flags": [],
-      "notes": "copy rewritten for clarity in this revision; pending user approval"
+      "notes": "copy rewritten for clarity in this revision; approved by the user on 2026-10-20"
     },
     {
-      "id": "content-547cf4930951089c",
-      "text": "，由主密码保护）而不是系统钥匙串中时，每次运行命令行时保险库都处于锁定状态。需要凭据的命令（使用静态密钥的账户；存在 ZIP 密码等秘密引用时的",
+      "id": "content-43c50258733f81f1",
+      "text": "，由主密码保护）而不是系统钥匙串中时，每次运行命令行时保险库都处于锁定状态。需要凭据的命令（使用静态密钥的账户；存在 ZIP 密码等机密引用时的",
       "channels": [
         "text"
       ],
@@ -28196,6 +28196,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-114b00e2b074d8e3",
+      "text": "：机密保存在系统钥匙串或可选的加密保险库（Argon2id、XChaCha20-Poly1305）中，支持空闲自动锁定；需主动开启的脱敏诊断日志；每个破坏性或批量操作都会显示范围并要求确认。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(12)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-721b3e46508c55c0",
       "text": "：私有访问密钥、会话令牌和被引用的密码保存在系统钥匙串（Windows 凭据管理器、macOS 钥匙串、Linux 的 Secret Service），服务名为",
       "channels": [
@@ -28216,31 +28241,6 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
-      },
-      "flags": [],
-      "notes": "the repository's own documentation, rendered on the site"
-    },
-    {
-      "id": "content-ea0bd90f900fe0c6",
-      "text": "：秘密保存在系统钥匙串或可选的加密保险库（Argon2id、XChaCha20-Poly1305）中，支持空闲自动锁定；需主动开启的脱敏诊断日志；每个破坏性或批量操作都会显示范围并要求确认。",
-      "channels": [
-        "text"
-      ],
-      "locations": [
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(12)"
-      ],
-      "visibility": [
-        "visible"
-      ],
-      "captures": [
-        "dom-changelog.zh.json"
-      ],
-      "purpose": "approved-content",
-      "origin": "production-domain",
-      "decision": "allow",
-      "evidence": {
-        "source": "CHANGELOG.zh-CN.md",
-        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
