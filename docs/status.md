@@ -17,23 +17,25 @@
 | Linux（WSL，含 WSLg） | `go vet ./...`、`go test -race ./...`（全部包）；WSLg 原生窗口冒烟；Linux tar.gz 在 WSL 解压后 `--version` 与冒烟通过；中文经 fontconfig 回退到 Noto Sans CJK SC 正常显示 |
 | MinIO | `scripts/test-integration.ps1`：固定版本 RELEASE.2025-04-22（本地从源码构建）与最新上游 RELEASE.2025-10-15（从源码构建），存储层与应用层套件全部通过 |
 | VersityGW | 自托管，前面是 Cloudflare，path-style，桶 `test`，另有 CDN 域名。外部套件通过，每次运行结束后前缀为空、桶内原有对象不变、日志中无密钥 |
-| macOS / arm64 | v0.1.0 发布提交 `3125867` 的 GitHub Actions CI 通过：六个目标（Windows、Linux、macOS 的 amd64 与 arm64）原生 `go vet`、`go test` 与版本冒烟，另有 Race、MinIO、govulncheck 与 CodeQL。人工 GUI 验收未完成，`.app` 没有开发者签名、未公证 |
-| GitHub Release | v0.1.0 于 2026-10-20 发布，六个安装包与 `SHA256SUMS` 由 Release 工作流打包、校验后发布 |
-| 网站 | https://pail.download 由 Woodpecker 部署到 netcup-vps500，2026-10-20 实测：`/`、`/zh/`、`/docs/` 返回 200 且显示 v0.1.0，缺失路径返回 404，HTML `no-cache`、带指纹的资源长期缓存、启用 HSTS |
+| macOS / arm64 | v0.2.0 发布提交 `b12f8a0` 的 GitHub Actions CI 通过：六个目标（Windows、Linux、macOS 的 amd64 与 arm64）原生 `go vet`、`go test` 与版本冒烟，另有 Race、MinIO、govulncheck 与 CodeQL。人工 GUI 验收未完成，`.app` 没有开发者签名、未公证 |
+| GitHub Release | v0.2.0 于 2026-10-20 发布，六个安装包与 `SHA256SUMS` 由 Release 工作流打包、校验后发布；下载公开产物再次验包通过，全部不含 README |
+| 网站 | https://pail.download 由 Woodpecker 部署到 netcup-vps500，2026-10-20 发布后实测：十个中英文页面返回 200，下载入口为 v0.2.0；SEO、分享图、robots、sitemap、404 与七个下载链接均通过检查 |
 | AWS | 没有测试 |
 
 更名为 Pail 之后（2026-10-20）重跑了：Windows `gofmt`/`go vet`/`go test`、Linux `go vet` 与 `go test -race`（全部包）、六个目标的发布构建与包内容检查、MinIO 固定版本套件、`--demo` 冒烟与 README 截图重新生成。VersityGW 外部套件和 MinIO 最新上游套件在更名后尚未重跑，上表这两行的结果来自更名前的同一份功能代码。
 
 VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-None-Match` / `If-Match`，CopyObject 忽略 `If-None-Match`；五种 checksum 与对象标签可用；读取对象 ACL 返回 NotImplemented（应用报 Unsupported）；存储类别与 SSE 被静默忽略（应用把这些项报为 failed）；未开启版本控制；Cloudflare 会解压 gzip 对象，HEAD 与 GET 的大小不一致（应用拒绝发布这类下载）。
 
-## v0.2.0 发版准备（2026-10-20）
+## v0.2.0 发布验收（2026-10-20）
 
 - **本地源码**：在包含浮层、菜单、动效及本次发版准备的源码上，Windows 与 Debian WSL2 均通过 `go vet ./...`、`go test ./...`、`go build ./...`；修改的 Go 文件已经 `gofmt`。Linux 经 `linux-task.ps1 -Mode build` 串行执行。
 - **桌面与文档图**：Windows 原生 `--demo` 亮暗窗口启动、`--smoke-exit` 与 `--smoke-screenshot` 成功。文档中的 1440×900 截图来自当前源码的 `TestShellRendersKeyTexts` / `TestDarkModeRenders` 受控 UI 渲染，使用 PicForge 的 WebP 默认参数（质量 75、不缩放），不是原生窗口截图。静态截图不证明动画观感或完整交互验收。
 - **本地发行包**：改为 Go 入口后，Windows 与 Debian WSL2 分别通过 `go run ./tools/release -version 0.2.0` 构建全部六目标并自动验包，校验文件清单、SHA256、架构和执行权限。包中不再含 README；Windows 与 Linux amd64 解压后的 CLI `version` 与桌面 `--version` 均输出 0.2.0。旧 PowerShell 兼容入口已在 Windows 验证子目录调用、相对输出目录、双目标参数与 CLI-only 模式；CI 不再使用它。交叉编译不代表 macOS / ARM64 真机验证。
 - **网站**：本地构建和 Chrome 检查覆盖英文、中文、明暗主题与 WebP 加载；所有十个可索引页面的分享元信息、绝对图片 URL、真实图片尺寸及 404 的 `noindex` 由回归测试验证。发布门禁脚本的 15 个 Node 测试、网站部署夹具测试、生成物检查与 CI 固定版本的 actionlint 工作流检查通过。
-- **未完成的发布门禁**：本次尚未推送、建立 v0.2.0 标签、运行对应提交的远端 CI / CodeQL、发布 Release 或部署网站。仓库语言统计的排除规则已由 `git check-attr` 检查，远端统计须推送后等待重算。社交平台预览缓存尚未验证。
-- **沿用的历史证据**：本次未重跑 race、MinIO、VersityGW 或真实 AWS；上节真实服务端与已发布 v0.1.0 的结果不能当作 v0.2.0 的新验收。
+- **远端门禁与标签**：Forgejo 与 GitHub 镜像的发布提交均为 `b12f8a00b42897f4b657830c33c32cfc8544bbc0`。[CI](https://github.com/DejavuMoe/Pail/actions/runs/39433664571) 九项和 [CodeQL](https://github.com/DejavuMoe/Pail/actions/runs/39433664533) 五项全部通过，`scripts/check-release.mjs` 复核成功后才创建并推送签名标签 `v0.2.0`。本地与 GitHub 均确认标签签名有效。CodeQL 没有开放告警；两条 SSE-C MD5 历史误报仍按 `docs/ci.md` 的依据关闭。
+- **公开发行包**：[Release 工作流](https://github.com/DejavuMoe/Pail/actions/runs/39435625839) 首次上传遇到 GitHub 资源名冲突，保持草稿；重跑失败的发布任务后成功公开 [v0.2.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.2.0)。下载六个公开压缩包与 `SHA256SUMS` 后，`tools/verify-release` 再次校验通过；Windows 与 Debian WSL2 上的 amd64 公开产物均通过 CLI `version` 和桌面 `--version` 的 0.2.0 断言。
+- **生产网站与语言统计**：发布后手动运行 [Woodpecker #4](https://ci.via.moe/repos/10/pipeline/4)，从已公开 Release 读取 v0.2.0 并原子部署。十个页面的 canonical、hreflang、Open Graph、Twitter 大图卡片与语言信息正确；公开分享图为 1440×900 WebP，与仓库浅色截图 SHA256 一致；robots、sitemap、缺失页 404/noindex，以及六个压缩包和校验和的七个下载链接均通过 HTTP 检查。Forgejo 与 GitHub 的语言统计字节数一致，Go 为 94.26%，技能目录和网站原型已排除。HTML `no-cache` 与图片资源 `immutable` 缓存头通过检查。
+- **验收边界**：本次 CI 已重跑 Race 与 MinIO；未重跑 VersityGW 或真实 AWS，历史外部服务端结果不能当作 v0.2.0 的新验收。未完成人工 macOS / ARM64 GUI 验收，也未验证社交平台预览缓存。
 
 ## 功能
 
