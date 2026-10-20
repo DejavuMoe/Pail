@@ -25,7 +25,7 @@ site/
   templates/index.html.tmpl   one html/template for both languages
   locales/en.json             source strings (keys match the prototype's i18n.js)
   locales/zh-Hans.json
-  static/                     styles.css, app.js, fonts/*.woff2 with their OFL texts
+  static/                     styles.css, app.js
 tools/site/                   generator and tests
 ```
 
@@ -39,7 +39,7 @@ The generator:
 
 Behaviour carried over from the prototype: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, the command palette (`Ctrl/⌘ K`), and reduced-motion support. Without JavaScript every section, link and download still works.
 
-Fonts (Bricolage Grotesque, Instrument Sans, Geist Mono; all SIL OFL 1.1) are self-hosted. The prototype loads them from Google Fonts only for review; production makes no third-party requests.
+The site loads no webfonts. Text uses each operating system's default sans-serif and monospace stacks with CJK fallbacks (see `docs/product/constraints.md`), so the prototype and production make no third-party requests and there are no font licences to ship.
 
 ## Version and download links
 
@@ -79,7 +79,7 @@ Woodpecker secrets for the deploy step (repository secrets, available to the `pu
 
 Web server expectations: serve `/zh/` from `zh/index.html`, return `404.html` with status 404, send `Cache-Control: public, max-age=31536000, immutable` for fingerprinted files and `no-cache` for HTML, and serve over HTTPS with HSTS. DNS and TLS for pail.download are configured outside this repository.
 
-The deploy target is still open: rsync over SSH is written in the pipeline because it works with any static web server. Switching to an object-storage bucket or a hosted static service changes only the deploy step.
+Deploy target: a static site directory on a designated server, written by rsync over SSH. The pipeline only replaces the contents of `site_deploy_path`; the web server's own configuration is managed on that server.
 
 ## Preview
 
