@@ -1,0 +1,8 @@
+/bin/
+/build/
+*.exe
+*.log
+.env
+*.local.json
+__pycache__/
+*.pyc

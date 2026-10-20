@@ -1,0 +1,20 @@
+# Source-only MinIO test fixture. This is not a production deployment image.
+FROM golang:1.24.2-bookworm AS build
+ENV GOTOOLCHAIN=local CGO_ENABLED=0
+WORKDIR /src
+# RELEASE.2025-04-22T22-12-26Z, resolved from the official repository tag.
+RUN curl --fail --show-error --location \
+      https://codeload.github.com/minio/minio/tar.gz/0d7408fc9969caf07de6a8c3a84f9fbb10a6739e \
+      --output /tmp/minio-source.tar.gz \
+    && tar -xzf /tmp/minio-source.tar.gz --strip-components=1 -C /src \
+    && go build -trimpath -ldflags="-s -w" -o /out/minio .
+
+FROM scratch
+LABEL org.opencontainers.image.source="https://github.com/minio/minio" \
+      org.opencontainers.image.revision="0d7408fc9969caf07de6a8c3a84f9fbb10a6739e" \
+      org.opencontainers.image.licenses="AGPL-3.0-only"
+COPY --from=build /out/minio /minio
+COPY --from=build /src/LICENSE /LICENSE
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+WORKDIR /data
+ENTRYPOINT ["/minio"]

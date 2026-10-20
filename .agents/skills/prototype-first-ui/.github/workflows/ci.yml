@@ -1,0 +1,105 @@
+name: Validate and release
+
+on:
+  push:
+    branches: [master]
+    tags: ['v*']
+  pull_request:
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: skill-${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+env:
+  PYTHONDONTWRITEBYTECODE: '1'
+  PYTHONUTF8: '1'
+
+jobs:
+  validate:
+    name: ${{ matrix.os }} / Python ${{ matrix.python }}
+    runs-on: ${{ matrix.os }}
+    timeout-minutes: 15
+    strategy:
+      fail-fast: false
+      matrix:
+        include:
+          - os: ubuntu-latest
+            python: '3.9'
+          - os: ubuntu-latest
+            python: '3.14'
+          - os: windows-latest
+            python: '3.14'
+    defaults:
+      run:
+        shell: bash
+        working-directory: prototype-first-ui
+    steps:
+      - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
+        with:
+          path: prototype-first-ui
+          persist-credentials: false
+      - uses: actions/setup-python@5fda3b95a4ea91299a34e894583c3862153e4b97 # v7.0.0
+        with:
+          python-version: ${{ matrix.python }}
+      - uses: actions/setup-node@820762786026740c76f36085b0efc47a31fe5020 # v7.0.0
+        with:
+          node-version: '24'
+      - name: Validate and package the checked-out revision
+        env:
+          REF_TYPE: ${{ github.ref_type }}
+          REF_NAME: ${{ github.ref_name }}
+        run: |
+          args=()
+          if [[ "$REF_TYPE" == tag ]]; then
+            args+=(--tag "$REF_NAME")
+          fi
+          python -B scripts/package_skill.py --source . \
+            --output ../dist/prototype-first-ui.zip "${args[@]}"
+      - name: Test the actual release ZIP
+        run: |
+          python -m zipfile -e ../dist/prototype-first-ui.zip ../installed
+          python -B ../installed/prototype-first-ui/tests/run_all.py \
+            --report ../dist/validation-${{ matrix.os }}-${{ matrix.python }}.json
+      - name: Preserve validation evidence and package
+        if: always()
+        uses: actions/upload-artifact@043fb46d1a93c77aae656e7c1c64a875d1fc6a0a # v7.0.1
+        with:
+          name: package-${{ matrix.os }}-${{ matrix.python }}
+          path: dist/
+          if-no-files-found: error
+          retention-days: 30
+
+  release:
+    if: github.event_name == 'push' && startsWith(github.ref, 'refs/tags/v')
+    needs: validate
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    permissions:
+      actions: read
+      contents: write
+    steps:
+      - uses: actions/download-artifact@3e5f45b2cfb9172054b4087a40e8e0b5a5461e7c # v8.0.1
+        with:
+          pattern: package-*
+          path: artifacts
+      - name: Verify and publish the tested package
+        env:
+          GH_TOKEN: ${{ github.token }}
+          GH_REPO: ${{ github.repository }}
+          RELEASE_TAG: ${{ github.ref_name }}
+          SOURCE_SHA: ${{ github.sha }}
+          RUN_URL: ${{ github.server_url }}/${{ github.repository }}/actions/runs/${{ github.run_id }}
+        run: |
+          cd artifacts/package-ubuntu-latest-3.14
+          sha256sum --check prototype-first-ui.zip.sha256
+          printf '\nSource commit: `%s`\n\n[Validation run](%s)\n' \
+            "$SOURCE_SHA" "$RUN_URL" >> prototype-first-ui.notes.md
+          gh release create "$RELEASE_TAG" \
+            --verify-tag --title "$RELEASE_TAG" \
+            --notes-file prototype-first-ui.notes.md \
+            prototype-first-ui.zip prototype-first-ui.zip.sha256 \
+            ../package-*/validation-*.json

@@ -1,0 +1,25 @@
+# Source-only MinIO test fixture for "the latest upstream release". Docker Hub and
+# quay.io no longer carry current community images, so the release tag is built from
+# source. Not a production image. Used by scripts/test-integration.ps1 -MinioImage latest.
+ARG GO_IMAGE=golang:1.24.8-bookworm
+FROM ${GO_IMAGE} AS build
+ARG MINIO_TAG
+ENV GOTOOLCHAIN=local CGO_ENABLED=0
+WORKDIR /src
+RUN test -n "$MINIO_TAG" \
+    && curl --fail --show-error --location \
+      "https://codeload.github.com/minio/minio/tar.gz/refs/tags/${MINIO_TAG}" \
+      --output /tmp/minio-source.tar.gz \
+    && tar -xzf /tmp/minio-source.tar.gz --strip-components=1 -C /src \
+    && go build -trimpath \
+      -ldflags="-s -w -X github.com/minio/minio/cmd.ReleaseTag=${MINIO_TAG} -X github.com/minio/minio/cmd.Version=${MINIO_TAG#RELEASE.}" \
+      -o /out/minio .
+
+FROM scratch
+LABEL org.opencontainers.image.source="https://github.com/minio/minio" \
+      org.opencontainers.image.licenses="AGPL-3.0-only"
+COPY --from=build /out/minio /minio
+COPY --from=build /src/LICENSE /LICENSE
+COPY --from=build /etc/ssl/certs/ca-certificates.crt /etc/ssl/certs/ca-certificates.crt
+WORKDIR /data
+ENTRYPOINT ["/minio"]
