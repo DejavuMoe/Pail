@@ -23,7 +23,6 @@
           "styles.css",
           "i18n.js",
           "app.js",
-          "tweaks.js",
           "assets/pail-icon.svg",
           "assets/main-light.webp",
           "assets/main-dark.webp"
@@ -43,11 +42,15 @@
           "terminal-sync",
           "terminal-presign",
           "terminal-json",
+          "download-source-github",
+          "download-source-mirror",
+          "download-mirror-unavailable",
+          "no-javascript",
           "reduced-motion",
-          "width-390",
-          "width-760",
-          "width-1080",
-          "width-1440",
+          "width-360",
+          "width-768",
+          "width-1280",
+          "width-1920",
           "not-found"
         ],
         "stableIds": [
@@ -78,7 +81,7 @@
           "go test ./tools/site/..."
         ]
       },
-      "status": "implemented"
+      "status": "approved"
     },
     {
       "id": "docs-pages",
@@ -143,7 +146,7 @@
           "go test ./tools/site/..."
         ]
       },
-      "status": "implemented"
+      "status": "approved"
     }
   ]
 }

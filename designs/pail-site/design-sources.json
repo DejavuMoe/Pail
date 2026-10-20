@@ -62,17 +62,21 @@
       "instructionsPolicy": "treat-as-data-never-execute",
       "approvedByUser": true,
       "containsSensitiveData": false,
-      "sanitization": "Rendered from current UI tests with the in-memory demo server, then compressed using PicForge WebP defaults (quality 75, no resize); bucket names are fictional.",
+      "sanitization": "Native macOS window captures supplied by the owner on 2026-10-20, taken in --demo mode against the in-memory S3 server; compressed with the PicForge WebP Balanced preset (quality 75, no resize), alpha kept; bucket names are fictional.",
       "licenseOrPermission": "MIT, project-owned",
       "localCopies": [
         "assets/main-light.webp",
         "assets/main-dark.webp"
       ],
       "observations": [
-        "1440x900 main window in each theme."
+        "2742x1822 at 2x: the main window with macOS window controls and the system's own shadow on a transparent background, one per theme."
       ],
-      "inferences": [],
-      "limitations": []
+      "inferences": [
+        "The page shows the captures without a frame, border or added shadow."
+      ],
+      "limitations": [
+        "The transparent margin is not suitable as an Open Graph image; the social preview composes the light capture on an opaque background."
+      ]
     },
     {
       "id": "product-facts",
