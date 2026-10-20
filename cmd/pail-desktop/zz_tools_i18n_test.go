@@ -31,14 +31,14 @@ var toolsPlainOK = []*regexp.Regexp{
 	regexp.MustCompile(`^(CloudFront|S3|AWS|MinIO|Pail)$`),
 	regexp.MustCompile(`^s3://[\w./-]+$`),
 	regexp.MustCompile(`^(Site|Site 2|Images|abc|bad|Pail)$`),
-	regexp.MustCompile(`^[\w./*-]+ / [\w./*-]+$`), // a rule mask: acme-* / *.png
-	regexp.MustCompile(`^.+ ↔ s3://`),             // a job row: folder ↔ s3://bucket/prefix
-	regexp.MustCompile(`^[A-Za-z]:\\`),            // a local path on Windows
-	regexp.MustCompile(`^[\w-]{10}…$`),            // a shortened upload ID
-	regexp.MustCompile(`^rule \d+ \(.*\): `),      // a rule problem from the application layer, kept verbatim
-	regexp.MustCompile(`^[a-z]{2}-[a-z]+-\d$`),    // region ids
-	regexp.MustCompile(`^\d+ active · `),          // the transfers bar
-	regexp.MustCompile(`^(/tmp|[A-Za-z]:\\).*`),   // a temporary folder path (user data)
+	regexp.MustCompile(`^[\w./*-]+ / [\w./*-]+$`),                                      // a rule mask: acme-* / *.png
+	regexp.MustCompile(`^.+ ↔ s3://`),                                                  // a job row: folder ↔ s3://bucket/prefix
+	regexp.MustCompile(`^[A-Za-z]:\\`),                                                 // a local path on Windows
+	regexp.MustCompile(`^[\w-]{10}…$`),                                                 // a shortened upload ID
+	regexp.MustCompile(`^rule \d+ \(.*\): `),                                           // a rule problem from the application layer, kept verbatim
+	regexp.MustCompile(`^[a-z]{2}-[a-z]+-\d$`),                                         // region ids
+	regexp.MustCompile(`^\d+ active · `),                                               // the transfers bar
+	regexp.MustCompile(`^` + regexp.QuoteMeta(filepath.Clean(os.TempDir())) + `[/\\]`), // temporary folder paths are user data
 	regexp.MustCompile(`^(Account|BUCKETS|TOOLS|New bucket|Filter buckets|Sync jobs|Upload rules|MIME types|Multipart uploads|Settings|Tool|Back|More|Toggle transfers|Transfers|Cancel|Standard|Standard-IA)$`),
 }
 
