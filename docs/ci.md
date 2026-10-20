@@ -37,6 +37,10 @@ Each native job checks its actual GOOS/GOARCH, runs `go vet ./...`, `go test -co
 
 Quality checks formatting, workflow syntax, release-gate tests, deployment fixtures and known Go vulnerabilities. Race runs `go test -race -count=1 -timeout 15m ./...` with cgo and a C compiler on Linux. MinIO uses the existing isolated integration suite, loading a fixed-source image built with the GitHub Actions Buildx cache. No real endpoint credentials are supplied to CI.
 
+Security triage for v0.1.0: Goldmark was upgraded to v1.7.17 for [GO-2026-5320](https://pkg.go.dev/vuln/GO-2026-5320). Govulncheck also reports [GO-2026-5932](https://pkg.go.dev/vuln/GO-2026-5932) at module level: it concerns `golang.org/x/crypto/openpgp`, which Pail does not import. A passing scan means no vulnerable imported packages or reachable symbols were found, not that every package in every required module is vulnerability-free.
+
+CodeQL alerts `go/weak-sensitive-data-hashing` in `internal/app/upload_rules.go` and `internal/app/rewrite.go` were reviewed as protocol-related false positives. Both compute the SSE-C `SSECustomerKeyMD5` header specified by the [S3 API](https://docs.aws.amazon.com/AmazonS3/latest/API/API_PutObject.html#API_PutObject_RequestSyntax); both paths require HTTPS before reading or sending the 32-byte customer key. The MD5 is a transfer checksum, not password storage, key derivation or the encryption algorithm (AES256). Replacing it with SHA-256 would break the protocol. Keep the CodeQL rule enabled; review each new occurrence separately. This source review does not claim real AWS SSE-C acceptance.
+
 ## Release sequence
 
 1. Prepare both changelogs and download documentation on `master`. Commit and push to Forgejo; verify that GitHub has the identical SHA.
