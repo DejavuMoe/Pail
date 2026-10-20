@@ -52,8 +52,8 @@ func (h *harness) rightClickChoose(text string, item ...string) {
 		h.t.Fatal(err)
 	}
 	h.tt.Frame()
-	if err := h.tt.ChooseMenuItem(item...); err != nil {
-		h.t.Fatalf("menu %q: %v", h.tt.Menu(), err)
+	if err := h.chooseMenu(item...); err != nil {
+		h.t.Fatalf("menu %q: %v", h.menu(), err)
 	}
 	h.settle()
 }
@@ -99,10 +99,10 @@ func TestChangeStorageClassOfTheSelection(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if m := menuHas(h.tt.Menu(), "Change storage class…", "Change encryption…"); len(m) > 0 {
-		t.Fatalf("context menu %q lacks %q", h.tt.Menu(), m)
+	if m := menuHas(h.menu(), "Change storage class…", "Change encryption…"); len(m) > 0 {
+		t.Fatalf("context menu %q lacks %q", h.menu(), m)
 	}
-	if err := h.tt.ChooseMenuItem("Change storage class…"); err != nil {
+	if err := h.chooseMenu("Change storage class…"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()
@@ -180,7 +180,7 @@ func TestChangeStorageClassOfAWholeBucketFromTheBucketMenu(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	menu := h.tt.Menu()
+	menu := h.menu()
 	if m := menuHas(menu, "Open", "Bucket settings…", "Download bucket…", "Copy contents to…", "Move contents to…",
 		"Change storage class…", "Change encryption…", "Empty bucket…", "Delete bucket…", "Copy name"); len(m) > 0 {
 		t.Fatalf("bucket menu %q lacks %q", menu, m)
@@ -188,7 +188,7 @@ func TestChangeStorageClassOfAWholeBucketFromTheBucketMenu(t *testing.T) {
 	if contains(menu, "Invalidate CloudFront…") {
 		t.Error("CloudFront belongs to AWS accounts only")
 	}
-	if err := h.tt.ChooseMenuItem("Change storage class…"); err != nil {
+	if err := h.chooseMenu("Change storage class…"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()

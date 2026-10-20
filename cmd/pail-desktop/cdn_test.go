@@ -135,8 +135,8 @@ func TestCDNContextMenuAndBucketFilter(t *testing.T) {
 			t.Fatal(err)
 		}
 		h.tt.Frame()
-		m := h.tt.Menu()
-		h.tt.CloseMenu()
+		m := h.menu()
+		h.closeMenu()
 		h.settle()
 		return m
 	}

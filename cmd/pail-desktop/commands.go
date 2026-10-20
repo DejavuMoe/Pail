@@ -334,11 +334,12 @@ var contextLayout = [][]string{
 	{"delete"},
 }
 
-// buildMenu fills a context menu from the command table.
-func (a *app) buildMenu(m *ui.Menu) {
+// buildMenu fills the object table's context menu from the command table.
+func (a *app) buildMenu(m *menuBuilder) {
 	// A right click on a row outside the selection selects it first, as file
 	// managers do (hoverKey is the row under the pointer, "" over blank space).
-	if a.hoverKey != "" && !a.sel.Has(a.hoverKey) {
+	// From the keyboard the menu is for the selection as it is.
+	if !m.keyboard && a.hoverKey != "" && !a.sel.Has(a.hoverKey) {
 		a.setSingle(a.hoverKey)
 	}
 	shown := 0
@@ -357,23 +358,29 @@ func (a *app) buildMenu(m *ui.Menu) {
 		}
 		shown++
 		for _, id := range ids {
-			cmd := a.cmd(id)
-			item := m.Item(cmd.text()).Disabled(!a.enabled(cmd))
-			if len(cmd.Chords) > 0 {
-				item.Shortcut(cmd.Chords[0].Mods, cmd.Chords[0].Key)
-			}
-			if item.Chosen() {
-				a.run(id, "context")
-			}
+			m.Command(a, id, "context")
 		}
 	}
+}
+
+// cursorCorner is where Shift+F10 opens the table's context menu: below the
+// name of the row the keyboard is on.
+func (a *app) cursorCorner() (x, y float32, ok bool) {
+	if a.cursor < 0 || a.cursor >= len(a.rows) {
+		return 0, 0, false
+	}
+	r, ok := a.rowRects[a.rows[a.cursor].Key]
+	if !ok || r.W <= 0 {
+		return 0, 0, false
+	}
+	return r.X, r.Y + r.H, true
 }
 
 // pollShortcuts runs the in-window shortcuts of the command table. Keys
 // that a text field uses are ignored while one has the focus; modal
 // dialogs hold the keyboard themselves.
 func (a *app) pollShortcuts(c *ui.Context) {
-	if a.modalOpen() {
+	if a.modalOpen() || a.popup.open {
 		return
 	}
 	typing := a.searchH.Focused(c) || a.filterH.Focused(c) || a.mgTyping()

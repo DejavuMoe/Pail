@@ -101,7 +101,7 @@ func TestMoreMenuHasTheAppCommands(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick("More")
 	h.tt.Frame()
-	menu := h.tt.Menu()
+	menu := h.menu()
 	for _, want := range []string{"Command palette", "Settings", "Theme", "Keyboard shortcuts", "Documentation", "About Pail", "Quit"} {
 		if !contains(menu, want) {
 			t.Errorf("more menu %q is missing %q", menu, want)
@@ -109,7 +109,7 @@ func TestMoreMenuHasTheAppCommands(t *testing.T) {
 	}
 	h.snap("more-menu-light")
 
-	if err := h.tt.ChooseMenuItem("Theme", "Dark"); err != nil {
+	if err := h.chooseMenu("Theme", "Dark"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()
@@ -119,12 +119,12 @@ func TestMoreMenuHasTheAppCommands(t *testing.T) {
 	// Settings, palette, shortcuts, about and quit from the menu.
 	h.mustClick("More")
 	h.tt.Frame()
-	if err := h.tt.ChooseMenuItem("Settings"); err != nil || h.a.tool != "settings" {
+	if err := h.chooseMenu("Settings"); err != nil || h.a.tool != "settings" {
 		t.Fatalf("Settings: %v, tool %q", err, h.a.tool)
 	}
 	h.mustClick("More")
 	h.tt.Frame()
-	if err := h.tt.ChooseMenuItem("Command palette"); err != nil {
+	if err := h.chooseMenu("Command palette"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()
@@ -139,7 +139,7 @@ func TestMoreMenuHasTheAppCommands(t *testing.T) {
 	} {
 		h.mustClick("More")
 		h.tt.Frame()
-		if err := h.tt.ChooseMenuItem(item); err != nil {
+		if err := h.chooseMenu(item); err != nil {
 			t.Fatal(err)
 		}
 		h.settle()
@@ -154,7 +154,7 @@ func TestMoreMenuHasTheAppCommands(t *testing.T) {
 	h.a.openURL = func(u string) error { urls <- u; return nil }
 	h.mustClick("More")
 	h.tt.Frame()
-	if err := h.tt.ChooseMenuItem("Documentation"); err != nil {
+	if err := h.chooseMenu("Documentation"); err != nil {
 		t.Fatal(err)
 	}
 	select {
@@ -170,7 +170,7 @@ func TestMoreMenuHasTheAppCommands(t *testing.T) {
 	h.a.quit = func() { quit = true }
 	h.mustClick("More")
 	h.tt.Frame()
-	if err := h.tt.ChooseMenuItem("Quit"); err != nil || !quit {
+	if err := h.chooseMenu("Quit"); err != nil || !quit {
 		t.Fatalf("Quit: %v, quit=%v", err, quit)
 	}
 }

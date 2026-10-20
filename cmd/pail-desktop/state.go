@@ -67,6 +67,7 @@ type app struct {
 	localeSet func(tag string)
 	langSave  func(tag string)
 
+	popup menuState    // the in-window menu (ctxmenu.go)
 	pal   paletteState // the command palette (palette.go)
 	about aboutState   // the About dialog (about.go)
 	keys  keysState    // the keyboard shortcuts dialog (about.go)
