@@ -6,6 +6,14 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Changed
+
+- Overlays now share one look: dialogs, the bucket settings dialog, the command palette, select popups and toasts take their radius (6 controls, 8 popups, 10 dialogs), shadow and dark-theme outline from the design tokens instead of per-view values, and no colour is written outside `theme.go` any more.
+- Command palette and select popups use one list row: 28 px high, with the command icon, shortcuts drawn as key caps (also `Esc`), and a neutral highlight that follows both the keyboard and the pointer. The current value is marked by a check and a heavier weight instead of the blue selection fill. The "Unavailable here" group and the command groups are section labels.
+- The bucket settings dialog reuses the standard dialog frame; its dividers show only while the list or the form scrolls.
+- Tooltips and toasts take their colours from the theme tokens, and toasts follow the overlay radius and shadow. The tooltip radius and shadow are still the library's.
+- "Select all" uses a double check icon, so it cannot be mistaken for the check that marks a current choice.
+
 ### Fixed
 
 - Inspector: the standard header labels (Content-Type, Cache-Control and so on) showed only an ellipsis next to the "?" icon. The label no longer takes a zero-width flex basis; it shrinks and truncates only when the panel is really too narrow, and its tooltip shows the full name.

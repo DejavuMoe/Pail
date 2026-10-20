@@ -56,6 +56,15 @@ func TestTokenContrastFloors(t *testing.T) {
 			{"Raised on Track", k.Raised, k.Track, 1.2},
 			{"Selection on Background", k.Selection, k.Background, 1.2},
 			{"Selection on Surface (palette row)", k.Selection, k.Surface, 1.17},
+			// Overlay rows (overlay.go): the highlight is the cursor's one look.
+			{"SurfaceHover on Surface (highlighted row)", k.SurfaceHover, k.Surface, 1.1},
+			{"Text on SurfaceHover", k.Text, k.SurfaceHover, 7},
+			{"TextMuted on SurfaceHover (icon, group)", k.TextMuted, k.SurfaceHover, 4.5},
+			{"BorderStrong on SurfaceHover (keycap outline)", k.BorderStrong, k.SurfaceHover, 1.3},
+			{"Accent on SurfaceHover (check)", k.Accent, k.SurfaceHover, 4.5},
+			// Toasts and tooltips: the inverse chip and its text.
+			{"InverseText on Inverse", k.InverseText, k.Inverse, 7},
+			{"Inverse on Background", k.Inverse, k.Background, 7},
 		}
 		for _, ch := range checks {
 			if got := contrast(ch.fg, ch.bg); got < ch.min {

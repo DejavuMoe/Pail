@@ -425,7 +425,7 @@ func (a *app) rulesList(c *ui.Context) {
 			ui.Column(c).Gap(2).Padding(0, 0, 8, 0).Children(func() {
 				for i := range rs.draft {
 					r := rs.draft[i]
-					row := listRow(c, "rule:"+strconv.Itoa(i), i == rs.sel)
+					row := toolListRow(c, "rule:"+strconv.Itoa(i), i == rs.sel)
 					row.Children(func() {
 						ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
 							name := r.Name

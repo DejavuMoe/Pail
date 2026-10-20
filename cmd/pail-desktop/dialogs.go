@@ -65,31 +65,42 @@ func dialogW(c *ui.Context, open *bool, title string, width float32, body, foote
 	ui.DialogBase(c, open, func(backdrop, panel ui.Element) {
 		backdrop.Background(k.Scrim)
 		dialogFrame(c, panel, width, winH)
-		ui.Row(c).Padding(dialogPad, dialogPad, 12, dialogPad).Shrink(0).Children(func() {
-			sectionTitle(c, title)
-		})
+		dialogHeader(c, title, nil)
 		overflow := st.MaxY > 0
 		divider(c, overflow)
 		ui.Scroll(c).TrackScroll(st).Shrink(1).MinHeight(0).ScrollbarInsets(0, scrollBarInset, 0, 0).Children(func() {
 			ui.Column(c).Padding(8, dialogPad, 4, dialogPad).Gap(16).Children(body)
 		})
 		divider(c, overflow)
-		if footer != nil {
-			ui.Column(c).Padding(12, dialogPad, dialogPad, dialogPad).Gap(8).Shrink(0).Children(footer)
-		}
+		dialogFooter(c, footer)
 	})
 }
 
 // dialogFrame styles the card: width, no padding (the parts pad themselves),
-// a height cap of the window minus dialogMargin, a clipped radius-10 surface.
+// a height cap of the window minus dialogMargin, and the overlayDialog
+// surface (radius 10, shadow or outline from the tokens).
 func dialogFrame(c *ui.Context, panel ui.Element, width, winH float32) {
-	k := tk(c)
-	panel.Width(width).Radius(10).Background(k.Surface).MaxHeight(max(240, winH-dialogMargin)).Clip()
-	if c.Theme().Dark {
-		panel.Border(1, k.BorderStrong)
-		return
+	panel.Width(width).MaxHeight(max(240, winH-dialogMargin)).Clip()
+	overlayPanel(c, panel, overlayDialog)
+}
+
+// dialogHeader is the fixed title row of a dialog; extra, when not nil, adds
+// quiet text after the title (the bucket name in bucket settings).
+func dialogHeader(c *ui.Context, title string, extra func()) {
+	ui.Row(c).Padding(dialogPad, dialogPad, 12, dialogPad).Gap(8).AlignItems(ui.Center).Shrink(0).Children(func() {
+		sectionTitle(c, title)
+		if extra != nil {
+			extra()
+		}
+	})
+}
+
+// dialogFooter is the fixed bottom row of a dialog (its buttons and any result
+// line); a nil footer draws nothing.
+func dialogFooter(c *ui.Context, footer func()) {
+	if footer != nil {
+		ui.Column(c).Padding(12, dialogPad, dialogPad, dialogPad).Gap(8).Shrink(0).Children(footer)
 	}
-	panel.Shadow(0, 12, 32, 0, ui.RGBA(0, 0, 0, 0.18))
 }
 
 // divider is a 1px full-width separator that is only drawn when on.

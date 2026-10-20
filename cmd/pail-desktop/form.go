@@ -192,30 +192,13 @@ func selectBox(c *ui.Context, label string, value *string, opts []choice, width 
 		ui.Icon(c, icons.Get("chevron-down")).FontSize(14).TextColor(k.TextMuted)
 	})
 	sel.Popup(func(panel ui.Element) {
-		panel.Margin(2, 0, 0, 0).Padding(4).Radius(8).Background(k.Surface).Border(1, k.BorderStrong).
-			Shadow(0, 8, 24, 0, ui.RGBA(0, 0, 0, 0.14))
+		panel.Margin(4, 0, 0, 0).Padding(4)
+		overlayPanel(c, panel, overlayPopover)
 		for _, o := range opts {
-			// The current option carries Selection, an Accent bar, a check and
-			// weight 600; the pointer's option only a SurfaceHover fill.
-			current := o.Value == *value
-			item := sel.Item(o.Value).Padding(0, 8).Height(28).Radius(6).Gap(8).AlignItems(ui.Center)
-			switch {
-			case current:
-				item.Background(k.Selection)
-			case item.Highlighted():
-				item.Background(k.SurfaceHover)
-			}
-			item.Children(func() {
-				w := 400
-				if current {
-					w = 600
-					selectionBar(c, 6)
-				}
-				ui.Text(c, o.Label).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)
-				if current {
-					ui.Icon(c, icons.Get("check")).FontSize(14).TextColor(k.Accent).Shrink(0)
-				}
-			})
+			// The row under the pointer or the arrows is highlighted (SurfaceHover);
+			// the current option is a different cue: an Accent check and weight 600.
+			item := sel.Item(o.Value)
+			listRow(c, item, rowSpec{Label: o.Label, Checked: o.Value == *value, Highlighted: item.Highlighted()})
 		}
 	})
 	return sel.Trigger.Changed()

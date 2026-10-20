@@ -54,6 +54,7 @@ func (a *app) view(c *ui.Context) {
 	})
 	a.flushOutput(c)
 	a.dialogs(c)
+	toastViewport(c) // last, so a toast floats above the dialogs
 }
 
 // welcome is the empty state shown until the first account exists.

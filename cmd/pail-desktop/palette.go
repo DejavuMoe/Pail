@@ -18,28 +18,35 @@ import (
 // Enter, Escape); the mouse works too.
 
 const (
-	paletteW    = 560
-	paletteMaxH = 420
-	paletteRowH = 32
+	paletteW       = 560
+	paletteMaxH    = 420
+	paletteHeaderH = 48
 )
 
 type paletteState struct {
 	open   bool
 	query  string
 	seen   string // the query the list was last filtered with
-	cur    int    // the row Enter runs
+	cur    int    // the row Enter runs: the keyboard's, or the pointer's once it moved
 	reveal bool   // scroll the current row into view (the keyboard moved it)
 	scroll ui.ScrollState
+	// ptr is where the pointer last was in the list (relative to the list, which
+	// does not scroll); a pointer at rest does not take the cursor back from the
+	// keyboard. ptrSeen is false until the first frame of the list, so a pointer
+	// already over it as the palette opens moves nothing.
+	ptr     [2]float32
+	ptrSeen bool
 }
 
 // palEntry is one row of the palette. label is the localized text shown;
 // english is searched too, so "upload" finds the command in a Chinese UI;
 // group is the group id (commands.go) and heading its localized name; hay is
-// everything the query is matched against, lower-cased.
+// everything the query is matched against, lower-cased. icon is the Lucide
+// name of the command's icon.
 type palEntry struct {
-	label, english, group, heading, hay, shortcut string
-	enabled, current                              bool // current: the active choice of a group, shown with a check
-	run                                           func()
+	label, english, group, heading, hay, shortcut, icon string
+	enabled, current                                    bool // current: the active choice of a group, shown with a check
+	run                                                 func()
 }
 
 func (a *app) openPalette() { a.pal = paletteState{open: true} }
@@ -60,7 +67,7 @@ func (a *app) paletteEntries() []palEntry {
 		e := palEntry{
 			label: strings.TrimSuffix(cmd.text(), "…"), english: strings.TrimSuffix(cmd.english(), "…"),
 			group: cmd.Group, heading: groupName(m, cmd.Group),
-			shortcut: cmd.hint(), enabled: a.enabled(cmd),
+			shortcut: cmd.hint(), icon: cmd.Icon, enabled: a.enabled(cmd),
 			run: func() { a.run(id, "palette") },
 		}
 		// Every language of the app is searched, so "upload" and "上传" both find
@@ -87,7 +94,7 @@ func (a *app) paletteEntries() []palEntry {
 			name := b.Name
 			e := palEntry{
 				label: m.PaletteOpenBucket(name), english: en.PaletteOpenBucket(name),
-				group: groupNavigate, heading: groupName(m, groupNavigate), enabled: true,
+				group: groupNavigate, heading: groupName(m, groupNavigate), icon: "database", enabled: true,
 				current: a.tool == "" && a.scope.Bucket == name,
 				run:     func() { a.openBucket(name) },
 			}
@@ -261,69 +268,83 @@ func (a *app) paletteDialog(c *ui.Context) {
 			p.open = false // the key that opened it closes it
 		}
 
-		ui.Row(c).Height(48).Padding(0, 16).Gap(10).AlignItems(ui.Center).Shrink(0).Children(func() {
-			ui.Icon(c, icons.Get("search")).FontSize(16).TextColor(k.TextMuted)
+		ui.Row(c).Height(paletteHeaderH).Padding(0, 16).Gap(8).AlignItems(ui.Center).Shrink(0).Children(func() {
+			ui.Icon(c, icons.Get("search")).FontSize(14).TextColor(k.TextMuted).Shrink(0)
 			in := ui.TextInputBase(c.Key("palette-input"), &p.query).Label(locales.PaletteLabel()).
-				Placeholder(locales.PaletteSearch()).FontSize(15).Grow(1).MinWidth(0).AutoFocus()
+				Placeholder(locales.PaletteSearch()).FontSize(sizeBody).Grow(1).MinWidth(0).AutoFocus()
 			if in.Submitted() && len(entries) > 0 {
 				a.runPalette(entries[p.cur])
 			}
-			ui.Text(c, locales.PaletteEsc()).FontSize(sizeLabel).TextColor(k.TextSubtle).Padding(1, 5).Radius(4).Border(1, k.Border).Shrink(0)
+			keycap(c, locales.PaletteEsc(), false)
 		})
 		hairline(c).Shrink(0)
 		if len(entries) == 0 {
 			ui.Text(c, locales.PaletteNoMatch()).FontSize(sizeBody).TextColor(k.TextMuted).Padding(24, 16).TextAlign(ui.Center).Shrink(0)
 			return
 		}
-		ui.Scroll(c).TrackScroll(&p.scroll).Shrink(1).MinHeight(0).ScrollbarInsets(0, scrollBarInset, 0, 0).KeepFocus().Children(func() {
+		list := ui.Scroll(c).TrackScroll(&p.scroll).Shrink(1).MinHeight(0).ScrollbarInsets(0, scrollBarInset, 0, 0).KeepFocus()
+		// The list does not scroll itself, so the pointer's place in it changes
+		// only when the pointer moves: that, and not a row scrolling under a
+		// resting pointer, hands the cursor to the row under it.
+		px, py, over := list.PointerPosition()
+		moved := over && p.ptrSeen && (px != p.ptr[0] || py != p.ptr[1])
+		if over {
+			p.ptr = [2]float32{px, py}
+		}
+		p.ptrSeen = true
+		list.Children(func() {
 			ui.Column(c).Padding(4, scrollGutter, 4, 8).Children(func() {
+				browse := strings.TrimSpace(p.query) == ""
 				for i, e := range entries {
-					// The commands that cannot run here come after a quiet label.
-					divide := strings.TrimSpace(p.query) == "" && !e.enabled && i > 0 && entries[i-1].enabled
-					if divide {
-						ui.Text(c, strings.ToUpper(locales.PaletteUnavailable())).FontSize(sizeLabel).FontWeight(600).TextColor(k.TextSubtle).SingleLine().Padding(10, 10, 4, 10).Shrink(0)
+					// Browsing: a section label heads each group of what can run, and
+					// the commands that cannot run here follow after one more label.
+					// Searching ranks across groups, so the group is shown beside the
+					// command instead.
+					unavailable := browse && !e.enabled && (i == 0 || entries[i-1].enabled)
+					switch {
+					case unavailable:
+						paletteLabel(c, locales.PaletteUnavailable(), i == 0)
+					case browse && e.enabled && (i == 0 || entries[i-1].group != e.group):
+						paletteLabel(c, e.heading, i == 0)
 					}
-					showGroup := i == 0 || divide || entries[i-1].group != e.group
-					a.paletteRow(c, e, i == p.cur, showGroup)
+					secondary := ""
+					if !browse || !e.enabled {
+						secondary = e.heading
+					}
+					a.paletteRow(c, e, i, secondary, moved)
 				}
 			})
 		})
 	})
 }
 
-// paletteRow is one row: the heading (on the first row of a run), the label,
-// then the shortcut or a check. The current row carries the two cues: a
-// Selection fill and a 2px Accent bar. A disabled command is dimmed.
-func (a *app) paletteRow(c *ui.Context, e palEntry, current, showGroup bool) {
-	k := tk(c)
-	p := &a.pal
-	row := ui.ButtonBase(c.Key("pal:"+e.group+":"+e.english)).Label(e.label).Height(paletteRowH).Padding(0, 10).Gap(8).Radius(6).AlignItems(ui.Center).Shrink(0)
-	switch {
-	case !e.enabled:
-		row.Opacity(0.4)
-	case current:
-		row.Background(k.Selection)
-	case row.Hovered():
-		row.Background(k.SurfaceHover)
+// paletteLabel is a section label of the list: 11px, upper case, 12px of room
+// above unless it is the first.
+func paletteLabel(c *ui.Context, text string, first bool) {
+	top := float32(12)
+	if first {
+		top = 4
 	}
-	row.Children(func() {
-		w := 400
-		if current && e.enabled {
-			w = 600
-			selectionBar(c, 6)
-		}
-		heading := ""
-		if showGroup {
-			heading = e.heading
-		}
-		ui.Text(c, heading).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().Width(88).Shrink(0)
-		ui.Text(c, e.label).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)
-		switch {
-		case e.current:
-			ui.Icon(c, icons.Get("check")).FontSize(14).TextColor(k.Accent).Shrink(0)
-		case e.shortcut != "":
-			ui.Text(c, e.shortcut).FontSize(sizeSecondary).TextColor(k.TextSubtle).SingleLine().Shrink(0)
-		}
+	sectionLabel(c, strings.ToUpper(text)).Padding(top, 8, 4, 8).Shrink(0)
+}
+
+// paletteRow is one row of the list (see listRow). The cursor row is
+// highlighted with SurfaceHover whether the keyboard or the pointer put it
+// there; an active choice (the current theme or language, the open bucket)
+// is checked, which is a different cue. A command that cannot run is dimmed,
+// ignores the pointer and does not run. moved says the pointer moved in this
+// frame: the row under it takes the cursor.
+func (a *app) paletteRow(c *ui.Context, e palEntry, i int, secondary string, moved bool) {
+	p := &a.pal
+	row := ui.ButtonBase(c.Key("pal:" + e.group + ":" + e.english)).Label(e.label)
+	if moved && e.enabled && row.Hovered() && p.cur != i {
+		p.cur = i
+		c.AnimationFrame() // the row that had the cursor, above this one, was drawn before it moved
+	}
+	current := i == p.cur
+	listRow(c, row, rowSpec{
+		Icon: icons.Get(e.icon), Label: e.label, Secondary: secondary, Shortcut: e.shortcut,
+		Checked: e.current, Disabled: !e.enabled, Highlighted: current && e.enabled,
 	})
 	if current && p.reveal {
 		row.ScrollIntoView()

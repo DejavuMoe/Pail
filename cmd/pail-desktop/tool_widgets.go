@@ -102,9 +102,9 @@ func chip(c *ui.Context, icon, text string, col ui.Color, danger bool) {
 	})
 }
 
-// listRow is the frame of a row in a tool's left-hand list: 8px outside, 12px
+// toolListRow is the frame of a row in a tool's left-hand list: 8px outside, 12px
 // inside, Selection when chosen. It returns the row for Clicked.
-func listRow(c *ui.Context, key string, on bool) ui.Element {
+func toolListRow(c *ui.Context, key string, on bool) ui.Element {
 	k := tk(c)
 	r := ui.Row(c.Key(key)).Margin(0, 8).Padding(8, 12).Gap(8).Radius(6).AlignItems(ui.Center)
 	switch {
