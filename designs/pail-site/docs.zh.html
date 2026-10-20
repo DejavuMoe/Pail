@@ -141,7 +141,7 @@ pail ls s3://my-bucket/photos/ -r
 pail cp ./dist s3://my-bucket/site/ -r --conflict newer
 pail sync ./photos s3://my-bucket/photos/ --mode new_changed --dry-run
 pail presign s3://my-bucket/report.pdf --expires 1h</code></pre>
-<p>命令：<code>accounts</code>、<code>buckets</code>、<code>ls</code>、<code>cp</code>、<code>mv</code>、<code>rm</code>、<code>mb</code>、<code>rb</code>、<code>presign</code>、<code>url</code>、<code>versions</code>、<code>restore</code>、<code>sync</code>、<code>vault status</code>。JSON 输出、退出码和加密保险库的用法见 <a href="docs-cli.zh.html">命令行参考</a>（英文）。</p>
+<p>命令：<code>accounts</code>、<code>buckets</code>、<code>ls</code>、<code>cp</code>、<code>mv</code>、<code>rm</code>、<code>mb</code>、<code>rb</code>、<code>presign</code>、<code>url</code>、<code>versions</code>、<code>restore</code>、<code>sync</code>、<code>vault status</code>。JSON 输出、退出码和加密保险库的用法见 <a href="docs-cli.zh.html">命令行参考</a>。</p>
 <h2 id="build-from-source">从源码构建 <a class="heading-anchor" href="#build-from-source" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
 <p>需要 Go 1.27.1（见 <code>go.mod</code>），不需要 cgo。</p>
 <pre tabindex="0"><code class="language-powershell">go build ./cmd/pail-desktop ./cmd/pail
