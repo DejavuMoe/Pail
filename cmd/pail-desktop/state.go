@@ -117,10 +117,11 @@ type app struct {
 	inspTab       int
 	inspW         float32
 	sidebarW      float32
-	compact       bool    // the center column is narrower than compactBelow: icon-only path bar buttons
-	tbCompact     bool    // the toolbar has less room than its labels need: icon-only commands
-	tableW, pathW float32 // last laid-out widths of the object table and the path bar
-	narrowSet     bool    // the narrow-window panel widths were applied
+	lay           layoutMetrics // this frame's widths and breakpoint tiers
+	layMem        layoutState   // what the breakpoints remember between frames
+	fxSide        splitFx       // divider styles of the three Splits
+	fxInsp        splitFx
+	fxTrans       splitFx
 	head          core.ObjectInfo
 	headKey       string
 	headState     int // 0 none, 1 loading, 2 ready, 3 failed
@@ -173,6 +174,7 @@ func newApp(svc *core.Service, opts options) *app {
 		pending:       make(chan func(), 4096),
 		inspectorOpen: true, transfersOpen: true,
 		inspW: 320, sidebarW: 248, transH: 168,
+		layMem:    newLayoutState(),
 		sort:      ui.SortOrder{Column: "name"},
 		cursor:    -1,
 		rowRects:  map[string]ui.Rect{},

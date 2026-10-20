@@ -16,14 +16,9 @@ func (a *app) pathBar(c *ui.Context) {
 	items := append([]string{a.scope.Bucket}, parts...)
 	last := len(items) - 1
 	// The filter gives way to the breadcrumb: about a third of the bar, 140-240px.
-	searchW := float32(240)
-	if a.pathW > 0 {
-		searchW = min(240, max(140, a.pathW*0.3))
-	}
-	bar := ui.Row(c).Height(40).Padding(0, 12).Gap(12).AlignItems(ui.Center).
-		BorderWidth(0, 0, 1, 0).BorderColor(k.Border).Label(locales.PathbarPath())
-	defer func() { a.pathW = bar.Bounds().W }()
-	bar.Children(func() {
+	searchW := min(240, max(140, a.lay.centerW*0.3))
+	ui.Row(c).Height(40).Padding(0, 12).Gap(12).AlignItems(ui.Center).
+		BorderWidth(0, 0, 1, 0).BorderColor(k.Border).Label(locales.PathbarPath()).Children(func() {
 		ui.Row(c).Grow(1).MinWidth(0).Gap(2).AlignItems(ui.Center).Children(func() {
 			ui.Icon(c, icons.Get("database")).FontSize(14).TextColor(k.TextMuted).MarginX(4)
 			for i, name := range items {
@@ -82,7 +77,7 @@ func (a *app) deletedToggle(c *ui.Context) {
 	if known && !versioned {
 		tip = locales.PathbarNoVersionsTip()
 	}
-	if ghostToggle(c, icons.Get("trash-2"), locales.PathbarShowDeleted(), tip, a.mg.del.on, known && !versioned, a.compact).Clicked() {
+	if ghostToggle(c, icons.Get("trash-2"), locales.PathbarShowDeleted(), tip, a.mg.del.on, known && !versioned, a.lay.compact).Clicked() {
 		a.toggleDeleted()
 	}
 }

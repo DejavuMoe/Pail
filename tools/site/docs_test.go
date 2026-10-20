@@ -91,10 +91,10 @@ func TestDocsPagesHaveStableIDs(t *testing.T) {
 			t.Errorf("%s: zh headings %v differ from en %v", p.Key, zh, en)
 		}
 	}
-	if n := len(headingRE.FindAllString(mainOf(read(t, filepath.Join(out, "changelog", "index.html"))), -1)); n != 4 {
-		t.Errorf("changelog has %d headings, want 4", n)
+	if n := len(headingRE.FindAllString(mainOf(read(t, filepath.Join(out, "changelog", "index.html"))), -1)); n != 6 { // [Unreleased] and Fixed, then [0.1.0] with its three
+		t.Errorf("changelog has %d headings, want 6", n)
 	}
-	for _, id := range []string{`id="s-0-1-0-2026-10-20"`, `id="added"`, `id="known-limitations"`} {
+	for _, id := range []string{`id="s-0-1-0-2026-10-20"`, `id="fixed"`, `id="added"`, `id="known-limitations"`} {
 		if !strings.Contains(read(t, filepath.Join(out, "zh", "changelog", "index.html")), id) {
 			t.Errorf("zh changelog lacks %s", id)
 		}
