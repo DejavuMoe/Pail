@@ -91,9 +91,7 @@ try {
         }
         Remove-Item Env:GOOS, Env:GOARCH
         $base = "Pail-$suffix"
-        foreach ($f in 'LICENSE', 'README.md', 'README.zh-CN.md') {
-            if (Test-Path (Join-Path $root $f)) { Copy-Item (Join-Path $root $f) $dir } elseif ($f -ne 'README.zh-CN.md') { throw "missing $f" }
-        }
+        Copy-Item -LiteralPath (Join-Path $root 'LICENSE') -Destination $dir -ErrorAction Stop
         switch ($os) {
             'windows' {
                 $archive = Join-Path $out "$base.zip"

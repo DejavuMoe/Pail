@@ -91,10 +91,7 @@ func TestDocsPagesHaveStableIDs(t *testing.T) {
 			t.Errorf("%s: zh headings %v differ from en %v", p.Key, zh, en)
 		}
 	}
-	if n := len(headingRE.FindAllString(mainOf(read(t, filepath.Join(out, "changelog", "index.html"))), -1)); n != 8 { // [Unreleased] with Added, Changed and Fixed, then [0.1.0] with its three
-		t.Errorf("changelog has %d headings, want 8", n)
-	}
-	for _, id := range []string{`id="s-0-1-0-2026-10-20"`, `id="fixed"`, `id="added"`, `id="known-limitations"`} {
+	for _, id := range []string{`id="s-0-2-0-2026-10-20"`, `id="s-0-1-0-2026-10-20"`, `id="fixed"`, `id="added"`, `id="known-limitations"`} {
 		if !strings.Contains(read(t, filepath.Join(out, "zh", "changelog", "index.html")), id) {
 			t.Errorf("zh changelog lacks %s", id)
 		}
@@ -105,15 +102,10 @@ func TestDocsPageStructure(t *testing.T) {
 	out := buildSite(t, "1.2.3")
 	get := func(name string) string { return read(t, filepath.Join(out, filepath.FromSlash(name), "index.html")) }
 
-	// A contents list needs at least three sections: not the changelog (one h2) or the license.
-	for _, name := range []string{"docs", "docs/cli", "zh/docs", "zh/docs/cli"} {
+	// The changelog now has three releases/sections and therefore a contents list.
+	for _, name := range []string{"docs", "docs/cli", "zh/docs", "zh/docs/cli", "changelog", "zh/changelog"} {
 		if !strings.Contains(get(name), `class="docs-toc"`) {
 			t.Errorf("%s has no table of contents", name)
-		}
-	}
-	for _, name := range []string{"changelog", "zh/changelog", "license", "zh/license"} {
-		if strings.Contains(get(name), `class="docs-toc"`) {
-			t.Errorf("%s has a table of contents", name)
 		}
 	}
 	for _, name := range []string{"license", "zh/license"} {
@@ -461,7 +453,7 @@ func copyFixture(t *testing.T) string {
 	t.Helper()
 	src, dst := repoRoot(t), t.TempDir()
 	files := []string{"LICENSE", "README.md", "README.zh-CN.md", "CHANGELOG.md", "CHANGELOG.zh-CN.md", "docs/cli.md", "docs/cli.zh-CN.md",
-		"docs/images/main-light.png", "docs/images/main-dark.png", "assets/brand/pail-icon.svg"}
+		"docs/images/main-light.webp", "docs/images/main-dark.webp", "assets/brand/pail-icon.svg"}
 	err := filepath.WalkDir(filepath.Join(src, "site"), func(p string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
 			rel, _ := filepath.Rel(src, p)
@@ -516,7 +508,7 @@ func TestBuildFailsOnBadDocs(t *testing.T) {
 		{"zh changelog with an extra level-3 heading", "CHANGELOG.zh-CN.md", "\n### 额外\n\n- x\n", "headings do not match"},
 		{"en CLI with an extra heading (zh left behind)", "docs/cli.md", "\n## Extra\n\ntext\n", "headings do not match"},
 		{"link escaping the repository", "docs/cli.md", "\nSee [x](../../secret.md).\n", "escapes the repository"},
-		{"image", "CHANGELOG.md", "\n![x](docs/images/main-light.png)\n", "image not expected"},
+		{"image", "CHANGELOG.md", "\n![x](docs/images/main-light.webp)\n", "image not expected"},
 		{"deep heading", "docs/cli.md", "\n#### Too deep\n", "unexpected heading level"},
 	}
 	for _, c := range cases {

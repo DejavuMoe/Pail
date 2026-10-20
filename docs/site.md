@@ -38,7 +38,8 @@ The generator (`tools/site/main.go`):
 
 - renders `/index.html` (English) and `/zh/index.html` (Simplified Chinese) with `hreflang` alternates and a canonical URL; text is rendered on the server, and only the strings `app.js` builds at runtime (`runtimeKeys`) are embedded as JSON;
 - renders the docs pages (below) and adds them to `sitemap.xml` with their language alternates;
-- copies `docs/images/main-{light,dark}.png` and `assets/brand/pail-icon.svg` (XML comments removed) instead of keeping second copies;
+- copies `docs/images/main-{light,dark}.webp` and `assets/brand/pail-icon.svg` (XML comments removed) instead of keeping second copies;
+- renders Open Graph and Twitter large-image metadata in the initial HTML of both landing pages and every documentation page: localized title, description and image alt text, page canonical URL, `en_US` / `zh_CN` locales, and an absolute fingerprinted image URL using `-base-url`. The shared light screenshot is WebP, 1440×900; consumers may crop it. The 404 page remains `noindex` and has no social card;
 - fingerprints every file under `/assets/` (`styles.<hash>.css`) so it can be cached forever while HTML is revalidated;
 - writes `404.html`, `robots.txt` and `sitemap.xml`;
 - takes the footer year from `LICENSE`, so the same commit and version always produce the same files;
@@ -52,6 +53,10 @@ The tests (`go test ./tools/site/...`) build the real site and check both langua
 Behaviour carried over from the prototype: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, a disclosure menu for narrow screens, and reduced-motion support. There is no site search or command palette. Without JavaScript every section, link and download still works; the theme control, menu button and object-key backdrop are hidden, the mobile navigation is shown as a plain list on narrow screens, and the terminal shows its first example.
 
 The site loads no webfonts. Text uses each operating system's default sans-serif and monospace stacks with CJK fallbacks (see `docs/product/constraints.md`), so the prototype and production make no third-party requests and there are no font licences to ship.
+
+Documentation screenshots are rendered from the actual desktop UI by `TestShellRendersKeyTexts` and `TestDarkModeRenders` with `PAIL_UI_SNAPSHOT_DIR` pointing to a temporary output directory. Compress the resulting PNGs at https://picforge.de/?tool=compression, select WebP and keep the defaults (quality 75, resize off), then save them under `docs/images/`. These are controlled UI renders, not native OS window captures. The light screenshot is also the approved social preview; its dimensions must match the metadata and are checked by `TestSocialMetadata`. Local HTML/asset checks do not prove a social platform has refreshed its cache.
+
+Social fields follow the [Open Graph protocol](https://ogp.me/); canonical and language alternates continue to identify the individual page. Metadata is rendered at build time, so crawlers do not need JavaScript.
 
 ## Documentation pages
 

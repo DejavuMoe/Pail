@@ -6,11 +6,13 @@ Forgejo (`ssh://git@ssh.via.moe/dejavu/Pail.git`) is the primary repository. Pus
 
 Woodpecker deploys only the static website. Its live acceptance is separate from the application release gates; see [site.md](site.md). GitHub Actions never deploys the website.
 
+`.gitattributes` marks `.agents/skills/**` and `designs/pail-site/**` as `linguist-vendored` to exclude authoring tools and prototypes from GitHub/Forgejo language statistics. Application and shipped website sources remain counted. Hosts recompute their statistics after a push; local `git check-attr` verifies the rules, not the remote refresh.
+
 ## Locked tools and dependencies
 
-`mise.toml` pins Go 1.27.2, Node.js 24.19.0 and PowerShell 7.6.7. Run `mise trust` and `mise install go node powershell`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
+`mise.toml` pins Go 1.27.2 and Node.js 24.19.0. Run `mise trust` and `mise install go node`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
 
-Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node or PowerShell install only those tools with the pinned mise action. Third-party actions are pinned to full commit SHAs, and website containers to image digests. Changing the Go pin also requires updating the website builder image.
+Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node install it with the pinned mise action. Packaging uses PowerShell preinstalled in the Ubuntu runner image; `release.ps1` enforces PowerShell 7.3+. Local packaging requires a separate PowerShell installation on any supported host; ordinary Go builds do not. Third-party actions are pinned to full commit SHAs, and website containers to image digests. Changing the Go pin also requires updating the website builder image.
 
 Windows owns all source edits and Git writes. For Linux validation use `linux-task.ps1 -Mode build -Project <repo> -Command '...'`; build mirrors are disposable and contain no `.git`. Linux CI runs the same commands directly. Pass workflow paths explicitly to actionlint, which otherwise relies on Git discovery.
 
@@ -56,7 +58,7 @@ Dependabot security/version update PRs and agentic autofix remain disabled: fixe
 1. Prepare both changelogs and download documentation on `master`. Commit and push to Forgejo; verify that GitHub has the identical SHA.
 2. Wait for every required CI and CodeQL job for that SHA. Review CodeQL alerts; a successful analysis upload alone is not a claim that the code has no findings.
 3. Run `node scripts/check-release.mjs DejavuMoe/Pail <sha>`. The check rejects missing, skipped, failed, pending, wrong-commit, wrong-branch and changed-attempt results. The same check runs again inside Release.
-4. On Windows, create a signed annotated tag, for example `git tag -s v0.1.0 -m "Pail v0.1.0"`, and push only that tag to Forgejo: `git push origin v0.1.0`.
+4. On Windows, create a signed annotated tag, for example `git tag -s v0.2.0 -m "Pail v0.2.0"`, and push only that tag to Forgejo: `git push origin v0.2.0`.
 5. Use local `gh run list --repo DejavuMoe/Pail --commit <sha>` and `gh run watch <run-id> --repo DejavuMoe/Pail --exit-status` to monitor the mirrored workflow. Release verifies that the tag is a semantic version and its commit belongs to `master`, then extracts matching English and Chinese changelog sections.
 6. Package all six targets, verify the archives, upload them to a draft Release, then publish only after every upload succeeds. A published Release is not overwritten; failed draft uploads can be rerun. Do not move an existing release tag.
 7. Download the published archives and `SHA256SUMS`, verify them again, and run native version checks where available. Trigger the `master` website workflow separately after the release is public.
@@ -66,18 +68,18 @@ The release workflow needs `actions: read` for preflight and `contents: write` o
 ## Building and checking release archives
 
 ```powershell
-pwsh ./scripts/release.ps1 -Version 0.1.0
+pwsh ./scripts/release.ps1 -Version 0.2.0
 # Optional: -Targets linux/amd64,linux/arm64 -OutDir <directory> -CliOnly
-go run ./tools/verify-release -dir build/release/0.1.0 -version 0.1.0
+go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0
 ```
 
 `-Version` accepts SemVer without the `v` prefix. `-Targets` accepts only the six supported targets; a comma-separated string works with `pwsh -File`. The default output is `<repo>/build/release/<version>/`; an explicit relative `-OutDir` resolves from the caller's directory. The per-version output and staging folders are replaced, with resolved-path and symlink checks. Run only one packaging script at a time in a checkout. A failed target fails the script; partial output is never publishable.
 
 | File | Contents |
 | --- | --- |
-| `Pail-v<V>-windows-<arch>.zip` | `pail-desktop-v<V>-windows-<arch>.exe`, `pail-v<V>-windows-<arch>.exe`, license and READMEs |
-| `Pail-v<V>-linux-<arch>.tar.gz` | Versioned desktop/CLI binaries, `pail.desktop`, `pail.png`, license and READMEs |
-| `Pail-v<V>-darwin-<arch>.zip` | `Pail.app/Contents/MacOS/pail-desktop-v<V>-darwin-<arch>`, matching `CFBundleExecutable`, versioned CLI, license and READMEs |
+| `Pail-v<V>-windows-<arch>.zip` | `pail-desktop-v<V>-windows-<arch>.exe`, `pail-v<V>-windows-<arch>.exe`, license |
+| `Pail-v<V>-linux-<arch>.tar.gz` | Versioned desktop/CLI binaries, `pail.desktop`, `pail.png`, license |
+| `Pail-v<V>-darwin-<arch>.zip` | `Pail.app/Contents/MacOS/pail-desktop-v<V>-darwin-<arch>`, matching `CFBundleExecutable`, versioned CLI, license |
 | `SHA256SUMS` | Exactly one SHA256 for every archive |
 
 Each archive has a top-level directory matching its filename without the extension. `tools/pack` preserves executable mode 0755 even when packaging on Windows. `tools/verify-release` rejects missing/unexpected files, incorrect checksums, unsafe archive entries, wrong executable permissions, wrong GOOS/GOARCH, cgo-enabled binaries, incorrect executable packages and broken platform launch entries. For a subset build, pass the same `-targets` list to the verifier. `-CliOnly` is a local convenience and is not accepted as a complete release by the verifier.
