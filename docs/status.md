@@ -17,7 +17,9 @@
 | Linux（WSL，含 WSLg） | `go vet ./...`、`go test -race ./...`（全部包）；WSLg 原生窗口冒烟；Linux tar.gz 在 WSL 解压后 `--version` 与冒烟通过；中文经 fontconfig 回退到 Noto Sans CJK SC 正常显示 |
 | MinIO | `scripts/test-integration.ps1`：固定版本 RELEASE.2025-04-22（本地从源码构建）与最新上游 RELEASE.2025-10-15（从源码构建），存储层与应用层套件全部通过 |
 | VersityGW | 自托管，前面是 Cloudflare，path-style，桶 `test`，另有 CDN 域名。外部套件通过，每次运行结束后前缀为空、桶内原有对象不变、日志中无密钥 |
-| macOS / arm64 | CI 配置要求六个目标的原生测试与版本冒烟；以发布提交的 CI 结果为准。人工 GUI 验收未完成，`.app` 没有开发者签名、未公证 |
+| macOS / arm64 | v0.1.0 发布提交 `3125867` 的 GitHub Actions CI 通过：六个目标（Windows、Linux、macOS 的 amd64 与 arm64）原生 `go vet`、`go test` 与版本冒烟，另有 Race、MinIO、govulncheck 与 CodeQL。人工 GUI 验收未完成，`.app` 没有开发者签名、未公证 |
+| GitHub Release | v0.1.0 于 2026-10-20 发布，六个安装包与 `SHA256SUMS` 由 Release 工作流打包、校验后发布 |
+| 网站 | https://pail.download 由 Woodpecker 部署到 netcup-vps500，2026-10-20 实测：`/`、`/zh/`、`/docs/` 返回 200 且显示 v0.1.0，缺失路径返回 404，HTML `no-cache`、带指纹的资源长期缓存、启用 HSTS |
 | AWS | 没有测试 |
 
 更名为 Pail 之后（2026-10-20）重跑了：Windows `gofmt`/`go vet`/`go test`、Linux `go vet` 与 `go test -race`（全部包）、六个目标的发布构建与包内容检查、MinIO 固定版本套件、`--demo` 冒烟与 README 截图重新生成。VersityGW 外部套件和 MinIO 最新上游套件在更名后尚未重跑，上表这两行的结果来自更名前的同一份功能代码。
@@ -119,7 +121,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | `pail` 命令行（accounts、buckets、ls、cp、mv、rm、mb、rb、presign、url、versions、restore、sync、vault status） | ✅ | n/a | ✅ 进程内对 `internal/s3test` | ❌ 命令行外壳本身没有对真实服务端运行 | 它调用的应用层在真实服务端验证过 |
-| 发布包（Windows / Linux / macOS，amd64 与 arm64）与 SHA256SUMS | n/a | n/a | ✅ 打包工具保留 Unix 权限位（tar.gz 与 zip 各有测试） | ⚠️ Windows 与 Linux amd64 解压后运行过；六平台 CI 原生测试与版本冒烟不等于人工 GUI 验收 | |
+| 发布包（Windows / Linux / macOS，amd64 与 arm64）与 SHA256SUMS | n/a | n/a | ✅ 打包工具保留 Unix 权限位（tar.gz 与 zip 各有测试） | ⚠️ Windows 与 Linux amd64 解压后运行过；v0.1.0 六平台 CI 原生测试与版本冒烟通过，不等于人工 GUI 验收 | v0.1.0 已在 GitHub Releases 发布 |
 
 ## 已知限制与未验证
 
