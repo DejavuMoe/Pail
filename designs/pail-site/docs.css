@@ -307,6 +307,10 @@
 /* ---------- Narrow screens ---------- */
 @media (max-width: 480px) {
   .prose pre { padding: 14px 16px; }
+  /* A two-column reference table fits a 360px screen: the name column is one
+     unbreakable token, so the cells give up padding and type size instead. */
+  .prose table { font-size: 13.5px; }
+  .prose th, .prose td { padding: 8px 10px; }
 }
 
 /* ---------- Forced colours ---------- */
