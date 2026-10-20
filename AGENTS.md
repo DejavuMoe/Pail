@@ -16,6 +16,7 @@
 - 基础验证：`gofmt`、`go vet ./...`、`go test ./...`、Windows 与 Linux 构建。macOS 交叉编译不代表真机验证。
 - 视觉与交互规范见 `docs/design.md`：颜色只来自 `cmd/pail-desktop/theme.go`；选中、开启、当前状态至少两种线索；对比度由 `theme_test.go` 检查；可滚动区域给滚动条留槽；最小窗口 960×600 下所有控件可操作。
 - 本地化：每个用户可见的界面字符串都放进 `cmd/pail-desktop/locales/` 的 `en.json` 与 `zh-Hans.json`，经生成的函数调用，视图里不写死文案；中文术语表在 `docs/design.md`。
+- 双语文档：`README.md`、`docs/cli.md`、`CHANGELOG.md` 各有中文版（`README.zh-CN.md`、`docs/cli.zh-CN.md`、`CHANGELOG.zh-CN.md`），网站据此生成中英文页面。改英文版时在同一提交里同步中文版，标题层级与顺序保持一一对应。`LICENSE` 只保留英文原文。
 - 命名与兼容：产品名 Pail。不得破坏旧版 openS3 的用户数据——配置目录、钥匙串服务名、保险库格式、`opens3-*` 对象 metadata 一律"读旧写新"，不删除用户数据。
 
 ## 脚本与 CI
