@@ -73,7 +73,7 @@ func TestDocsPagesHaveStableIDs(t *testing.T) {
 				got = append(got, m[2])
 			}
 		}
-		want := []string{"install", "quick-start", "command-line", "build-from-source", "data-and-privacy", "platform-status"}
+		want := []string{"install", "quick-start", "command-line", "data-and-privacy", "tested", "build-from-source"}
 		if !slices.Equal(got, want) {
 			t.Errorf("%s: h2 ids %v, want %v", dir, got, want)
 		}
@@ -148,15 +148,15 @@ func TestDocsPageStructure(t *testing.T) {
 		}
 	}
 	// Tables are wrapped, labelled and use column headers.
-	if page := get("docs"); !strings.Contains(page, `<div class="table-wrap" role="group" aria-label="Table: Install" tabindex="0"><table>`) ||
-		!strings.Contains(page, `<th scope="col">OS</th>`) {
-		t.Error("Install table is not wrapped and labelled")
+	if page := get("docs"); !strings.Contains(page, `<div class="table-wrap" role="group" aria-label="Table: Quick start" tabindex="0"><table>`) ||
+		!strings.Contains(page, `<th scope="col">Flag</th>`) {
+		t.Error("Quick start table is not wrapped and labelled")
 	}
-	if !strings.Contains(get("zh/docs"), `aria-label="表格: 安装"`) {
-		t.Error("Chinese Install table label missing")
+	if !strings.Contains(get("zh/docs"), `aria-label="表格: 快速开始"`) {
+		t.Error("Chinese Quick start table label missing")
 	}
 	// Code blocks are focusable.
-	if !strings.Contains(get("docs"), `<pre tabindex="0"><code class="language-powershell">`) {
+	if !strings.Contains(get("docs"), `<pre tabindex="0"><code class="language-sh">`) {
 		t.Error("code block markup")
 	}
 }
@@ -368,7 +368,7 @@ func TestMarkdownRendering(t *testing.T) {
 		`<h3 id="s-2-fast-loose">2 Fast &amp; loose `,
 		`<div class="table-wrap" role="group" aria-label="Table: 2 Fast &amp; loose" tabindex="0"><table>`,
 		"<th scope=\"col\">A</th>",
-		"<td><code>&lt;x&gt;</code></td>",
+		`<td><code><span class="tok">&lt;x&gt;</span></code></td>`,
 		`<h2 id="unreleased-2">`, // duplicate ids get a suffix
 	} {
 		if !strings.Contains(out, want) {
@@ -383,6 +383,20 @@ func TestMarkdownRendering(t *testing.T) {
 	if err != nil || !strings.Contains(out, "<pre tabindex=\"0\"><code class=\"language-powershell\">a &lt; b &amp;&amp; c</code></pre>") ||
 		!strings.Contains(out, "<pre tabindex=\"0\"><code>indented</code></pre>") {
 		t.Errorf("code blocks: %v\n%s", err, out)
+	}
+
+	// Inline code breaks only between space-separated tokens; code blocks stay plain.
+	for md, want := range map[string]string{
+		"`cp SRC DST [-r]`":        `<code><span class="tok">cp</span> <span class="tok">SRC</span> <span class="tok">DST</span> <span class="tok">[-r]</span></code>`,
+		"`--vault-password-stdin`": `<code><span class="tok">--vault-password-stdin</span></code>`,
+		"`<a&b> \"q\"`":            `<code><span class="tok">&lt;a&amp;b&gt;</span> <span class="tok">&quot;q&quot;</span></code>`,
+		"`a\nb`":                   `<code><span class="tok">a</span> <span class="tok">b</span></code>`,
+		"``x `y` z``":              `<code><span class="tok">x</span> <span class="tok">` + "`y`" + `</span> <span class="tok">z</span></code>`,
+	} {
+		out, _, err = render("", md)
+		if err != nil || !strings.Contains(out, want) {
+			t.Errorf("code span %q: %v\n%s", md, err, out)
+		}
 	}
 
 	// A link that names a site page by its file path shows the page title.
@@ -453,7 +467,7 @@ func copyFixture(t *testing.T) string {
 	t.Helper()
 	src, dst := repoRoot(t), t.TempDir()
 	files := []string{"LICENSE", "README.md", "README.zh-CN.md", "CHANGELOG.md", "CHANGELOG.zh-CN.md", "docs/cli.md", "docs/cli.zh-CN.md",
-		"docs/images/main-light.webp", "docs/images/main-dark.webp", "assets/brand/pail-icon.svg"}
+		"docs/images/main-light.webp", "docs/images/main-dark.webp", "docs/images/social.webp", "assets/brand/pail-icon.svg"}
 	err := filepath.WalkDir(filepath.Join(src, "site"), func(p string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
 			rel, _ := filepath.Rel(src, p)

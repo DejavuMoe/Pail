@@ -56,13 +56,13 @@
       <div class="header-actions">
         <a class="icon-btn lang-btn" href="{{.OtherPath}}" hreflang="{{.OtherHTMLLang}}" lang="{{.OtherHTMLLang}}" data-action="lang" data-lang-target="{{.OtherLang}}" aria-label="{{t "langSwitch"}}">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
-          <span class="lang-btn-label">{{t "langShort"}}</span>
+          <span>{{t "langShort"}}</span>
         </a>
-        <fieldset class="theme-seg">
+        <fieldset class="seg theme-seg">
           <legend class="visually-hidden">{{t "themeLabel"}}</legend>
-          <label title="{{t "themeSystem"}}"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">{{t "themeSystem"}}</span></label>
-          <label title="{{t "themeLight"}}"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">{{t "themeLight"}}</span></label>
-          <label title="{{t "themeDark"}}"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">{{t "themeDark"}}</span></label>
+          <label title="{{t "themeSystem"}}"><input type="radio" name="theme" value="system" checked><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg></span><span class="visually-hidden">{{t "themeSystem"}}</span></label>
+          <label title="{{t "themeLight"}}"><input type="radio" name="theme" value="light"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg></span><span class="visually-hidden">{{t "themeLight"}}</span></label>
+          <label title="{{t "themeDark"}}"><input type="radio" name="theme" value="dark"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg></span><span class="visually-hidden">{{t "themeDark"}}</span></label>
         </fieldset>
         <a class="icon-btn gh-btn" href="{{.GitHub}}" aria-label="GitHub">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
@@ -114,35 +114,7 @@
     </div>
   </main>
 
-  <footer class="site-footer">
-    <div class="wrap footer-grid">
-      <div class="footer-brand">
-        <a class="brand" href="{{.Links.Home}}"><img src="{{asset "pail-icon.svg"}}" alt="" width="28" height="28"><span>Pail</span></a>
-        <p class="footer-made">{{t "madeBy"}} <a href="https://dejavu.moe">Dejavu Moe</a></p>
-      </div>
-      <nav class="footer-col" aria-labelledby="fc-product">
-        <h2 id="fc-product">{{t "footProduct"}}</h2>
-        <a href="{{.Links.Home}}#features">{{t "navFeatures"}}</a>
-        <a href="{{.Links.Home}}#cli">{{t "navCli"}}</a>
-        <a href="{{.Links.Home}}#download">{{t "navDownload"}}</a>
-      </nav>
-      <nav class="footer-col" aria-labelledby="fc-res">
-        <h2 id="fc-res">{{t "footResources"}}</h2>
-        <a href="{{.Links.Docs}}">{{t "navDocs"}}</a>
-        <a href="{{.Links.Changelog}}">{{t "changelog"}}</a>
-        <a href="{{.GitHub}}/issues">{{t "issues"}}</a>
-      </nav>
-      <nav class="footer-col" aria-labelledby="fc-proj">
-        <h2 id="fc-proj">{{t "footProject"}}</h2>
-        <a href="{{.GitHub}}">GitHub</a>
-        <a href="{{.Links.License}}">{{t "license"}}</a>
-      </nav>
-    </div>
-    <div class="wrap footer-legal">
-      <p>© {{.Year}} Dejavu Moe</p>
-      <p>{{t "trademark"}}</p>
-    </div>
-  </footer>
+  {{template "footer" .}}
 
   <script src="{{asset "app.js"}}"></script>
   <script src="{{asset "docs.js"}}"></script>

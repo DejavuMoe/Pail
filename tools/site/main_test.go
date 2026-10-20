@@ -53,7 +53,7 @@ func TestSocialMetadata(t *testing.T) {
 				}
 			}
 			imageURL := regexp.MustCompile(`property="og:image" content="([^"]+)"`).FindStringSubmatch(page)[1]
-			if !strings.HasPrefix(imageURL, origin+"/assets/main-light.") {
+			if !strings.HasPrefix(imageURL, origin+"/assets/social.") {
 				t.Fatalf("%s: noncanonical image URL %s", path, imageURL)
 			}
 			data, err := os.ReadFile(filepath.Join(out, filepath.FromSlash(strings.TrimPrefix(imageURL, origin+"/"))))
@@ -116,11 +116,11 @@ func TestBuildWritesBothLanguages(t *testing.T) {
 		{en, `<html lang="en" data-lang="en"`},
 		{en, `<link rel="canonical" href="https://pail.download/">`},
 		{en, `href="/zh/" hreflang="zh-Hans"`},
-		{en, "Every bucket."},
+		{en, "A desktop client for S3"},
 		{zh, `<html lang="zh-Hans" data-lang="zh"`},
 		{zh, `<link rel="canonical" href="https://pail.download/zh/">`},
 		{zh, `href="/" hreflang="en"`},
-		{zh, "装下所有存储桶。"},
+		{zh, "S3 兼容存储的桌面客户端"},
 	} {
 		if !strings.Contains(c.page, c.want) {
 			t.Errorf("page lacks %q", c.want)
@@ -165,6 +165,48 @@ func TestDownloadsMatchReleaseScript(t *testing.T) {
 	}
 	if !strings.Contains(page, "releases/download/v1.2.3/SHA256SUMS") {
 		t.Error("no SHA256SUMS link")
+	}
+}
+
+// The mirror is offered only when the build is told the version is there, and
+// then for every archive under the same file name.
+func TestMirrorDownloads(t *testing.T) {
+	page := read(t, filepath.Join(buildSite(t, "1.2.3"), "index.html"))
+	if strings.Contains(page, "data-mirror-base") || strings.Contains(page, `name="source"`) {
+		t.Error("mirror offered without -mirror-url")
+	}
+
+	out := filepath.Join(t.TempDir(), "site")
+	if err := build(config{root: repoRoot(t), out: out, version: "1.2.3", baseURL: "https://pail.download", mirrorURL: "https://pan.zsh.moe/Pail/"}); err != nil {
+		t.Fatal(err)
+	}
+	for _, p := range []string{"index.html", "zh/index.html"} {
+		page := read(t, filepath.Join(out, filepath.FromSlash(p)))
+		for _, want := range []string{
+			`data-github-base="https://github.com/DejavuMoe/Pail/releases/download/v1.2.3/"`,
+			`data-mirror-base="https://pan.zsh.moe/Pail/v1.2.3/"`,
+			`<a href="https://pan.zsh.moe/Pail/v1.2.3/">pan.zsh.moe/Pail/v1.2.3</a>`,
+			`name="source" value="mirror"`,
+		} {
+			if !strings.Contains(page, want) {
+				t.Errorf("%s lacks %s", p, want)
+			}
+		}
+		if n := len(regexp.MustCompile(`data-asset="Pail-v1\.2\.3-[a-z0-9-]+\.(zip|tar\.gz)"`).FindAllString(page, -1)); n != 6 {
+			t.Errorf("%s: %d archives carry data-asset, want 6", p, n)
+		}
+	}
+}
+
+func TestReleaseDate(t *testing.T) {
+	for version, want := range map[string]string{"0.2.0": "2026-10-20", "0.1.0": "2026-10-20", "1.2.3": ""} {
+		got, err := releaseDate(repoRoot(t), version)
+		if err != nil || got != want {
+			t.Errorf("releaseDate(%s) = %q, %v; want %q", version, got, err, want)
+		}
+	}
+	if releasedText("{date} 发布", "2026-10-20") != "2026-10-20 发布" || releasedText("Released {date}", "") != "" {
+		t.Error("releasedText")
 	}
 }
 
@@ -219,6 +261,11 @@ func TestRejectsBadInput(t *testing.T) {
 	for _, u := range []string{"http://pail.download", "https://pail.download/sub", "pail.download"} {
 		if err := build(config{root: root, out: t.TempDir(), version: "1.2.3", baseURL: u}); err == nil {
 			t.Errorf("base URL %q accepted", u)
+		}
+	}
+	for _, u := range []string{"http://pan.zsh.moe/Pail", "pan.zsh.moe/Pail", "https://pan.zsh.moe/Pail?x=1"} {
+		if err := build(config{root: root, out: t.TempDir(), version: "1.2.3", baseURL: "https://pail.download", mirrorURL: u}); err == nil {
+			t.Errorf("mirror URL %q accepted", u)
 		}
 	}
 }

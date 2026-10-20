@@ -13,7 +13,7 @@ import (
 )
 
 // docPage is one documentation page. Its content comes from the repository's
-// own Markdown (docs/site.md), never from separately written copy.
+// own Markdown (docs/dev/site.md), never from separately written copy.
 type docPage struct {
 	Key         string
 	Path        string            // URL path below the language root, with trailing slash
@@ -93,14 +93,14 @@ func linksFor(l language) pageLinks {
 // sections, which must carry the expected title (so a reordered README fails
 // the build instead of publishing the wrong text).
 var readmeTitles = map[string][]string{
-	"en": {"Features", "Install", "Quick start", "Command line", "Build from source", "Testing", "Data and privacy", "Platform status", "Documentation", "License"},
-	"zh": {"功能", "安装", "快速开始", "命令行", "从源码构建", "测试", "数据与隐私", "平台状态", "文档", "许可证"},
+	"en": {"Features", "Install", "Quick start", "Command line", "Data and privacy", "Tested platforms and services", "Build from source", "License"},
+	"zh": {"功能", "安装", "快速开始", "命令行", "数据与隐私", "已测试的平台与服务", "从源码构建", "许可证"},
 }
 
 var readmeKeep = []struct {
 	Index int
 	ID    string
-}{{1, "install"}, {2, "quick-start"}, {3, "command-line"}, {4, "build-from-source"}, {6, "data-and-privacy"}, {7, "platform-status"}}
+}{{1, "install"}, {2, "quick-start"}, {3, "command-line"}, {4, "data-and-privacy"}, {5, "tested"}, {6, "build-from-source"}}
 
 type docContent struct {
 	HTML     string
@@ -247,6 +247,13 @@ func buildDocContent(root string, p docPage, lang language, locales map[string]m
 				return docContent{}, fmt.Errorf("%s: section %d is %q, want %q", source, i+1, s.Title, wantTitles[i])
 			}
 		}
+		// The Chinese README reuses every English id, subsections included.
+		if en != nil {
+			ctx.paired = true
+			for _, h := range en.Headings {
+				ctx.idQueue = append(ctx.idQueue, h.ID)
+			}
+		}
 		var parts []string
 		for _, k := range readmeKeep {
 			ctx.fixedIDs = []string{k.ID}
@@ -299,8 +306,8 @@ type navItem struct {
 }
 
 // renderDocs writes every docs page in every language.
-func renderDocs(c config, locales map[string]map[string]string, funcs template.FuncMap, year string) error {
-	base, err := template.New("docs.html.tmpl").Funcs(funcs).ParseFiles(filepath.Join(c.root, "site", "templates", "docs.html.tmpl"), filepath.Join(c.root, "site", "templates", "social.html.tmpl"))
+func renderDocs(c config, locales map[string]map[string]string, funcs template.FuncMap) error {
+	base, err := parseTemplates(c.root, funcs, "docs.html.tmpl", "social.html.tmpl", "footer.html.tmpl")
 	if err != nil {
 		return err
 	}
@@ -343,7 +350,6 @@ func renderDocs(c config, locales map[string]map[string]string, funcs template.F
 				"EnglishOnly":   p.EnglishOnly && lang.Code != "en",
 				"Content":       template.HTML(strings.TrimRight(content.HTML, "\n")),
 				"GitHub":        githubURL,
-				"Year":          year,
 			}
 			t, err := base.Clone()
 			if err != nil {
