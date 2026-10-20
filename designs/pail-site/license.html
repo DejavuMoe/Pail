@@ -55,11 +55,11 @@
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
           <span class="lang-btn-label">中文</span>
         </a>
-        <fieldset class="theme-seg">
+        <fieldset class="seg theme-seg">
           <legend class="visually-hidden">Theme</legend>
-          <label title="System"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">System</span></label>
-          <label title="Light"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">Light</span></label>
-          <label title="Dark"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">Dark</span></label>
+          <label title="System"><input type="radio" name="theme" value="system" checked><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg></span><span class="visually-hidden">System</span></label>
+          <label title="Light"><input type="radio" name="theme" value="light"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg></span><span class="visually-hidden">Light</span></label>
+          <label title="Dark"><input type="radio" name="theme" value="dark"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg></span><span class="visually-hidden">Dark</span></label>
         </fieldset>
         <a class="icon-btn gh-btn" href="https://github.com/DejavuMoe/Pail" aria-label="GitHub">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
@@ -103,31 +103,19 @@
   </main>
 
   <footer class="site-footer">
-    <div class="wrap footer-grid">
-      <div class="footer-brand">
-        <a class="brand" href="index.html"><img src="assets/pail-icon.svg" alt="" width="28" height="28"><span>Pail</span></a>
-        <p class="footer-made">Made by <a href="https://dejavu.moe">Dejavu Moe</a></p>
-      </div>
-      <nav class="footer-col" aria-labelledby="fc-product">
-        <h2 id="fc-product">Product</h2>
-        <a href="index.html#features">Features</a>
-        <a href="index.html#cli">Command line</a>
-        <a href="index.html#download">Download</a>
-      </nav>
-      <nav class="footer-col" aria-labelledby="fc-res">
-        <h2 id="fc-res">Resources</h2>
+    <div class="wrap footer-inner">
+      <a class="brand" href="index.html"><img src="assets/pail-icon.svg" alt="" width="24" height="24"><span>Pail</span></a>
+      <nav class="footer-nav" aria-label="Footer">
         <a href="docs.html">Docs</a>
+        <a href="docs-cli.html">Command line</a>
         <a href="changelog.html">Changelog</a>
+        <a href="https://github.com/DejavuMoe/Pail/releases">Releases</a>
         <a href="https://github.com/DejavuMoe/Pail/issues">Report an issue</a>
-      </nav>
-      <nav class="footer-col" aria-labelledby="fc-proj">
-        <h2 id="fc-proj">Project</h2>
         <a href="https://github.com/DejavuMoe/Pail">GitHub</a>
         <a href="license.html">MIT License</a>
       </nav>
     </div>
     <div class="wrap footer-legal">
-      <p>© 2026 Dejavu Moe</p>
       <p>Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endorsed by or sponsored by AWS.</p>
     </div>
   </footer>
