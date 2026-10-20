@@ -1,0 +1,149 @@
+<!DOCTYPE html>
+<html lang="{{.HTMLLang}}" data-lang="{{.Lang}}" data-theme="light" data-theme-pref="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{.Title}} · Pail</title>
+  <meta name="description" content="{{.Description}}">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
+  <link rel="canonical" href="{{.Canonical}}">
+  <link rel="alternate" hreflang="en" href="{{.URLEn}}">
+  <link rel="alternate" hreflang="zh-Hans" href="{{.URLZh}}">
+  <link rel="alternate" hreflang="x-default" href="{{.URLEn}}">
+  <link rel="icon" href="{{asset "pail-icon.svg"}}" type="image/svg+xml">
+  <script>
+    (function () {
+      var d = document.documentElement, pref = 'system';
+      try { pref = localStorage.getItem('pail-theme') || 'system'; } catch (e) {}
+      if (pref !== 'light' && pref !== 'dark') pref = 'system';
+      var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      d.setAttribute('data-theme-pref', pref);
+      d.setAttribute('data-theme', dark ? 'dark' : 'light');
+      d.classList.add('js');
+    })();
+  </script>
+  <link rel="stylesheet" href="{{asset "styles.css"}}">
+  <link rel="stylesheet" href="{{asset "docs.css"}}">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M4 6h16"></path><path d="M4 18h16"></path></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">{{t "skip"}}</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="{{.Links.Home}}">
+        <img src="{{asset "pail-icon.svg"}}" alt="" width="28" height="28">
+        <span>Pail</span>
+      </a>
+      <nav class="nav" aria-label="{{t "navLabel"}}">
+        <a href="{{.Links.Home}}#features">{{t "navFeatures"}}</a>
+        <a href="{{.Links.Home}}#cli">{{t "navCli"}}</a>
+        <a href="{{.Links.Home}}#privacy">{{t "navPrivacy"}}</a>
+        <a href="{{.Links.Home}}#download">{{t "navDownload"}}</a>
+        <a class="is-current" href="{{.Links.Docs}}" aria-current="page">{{t "navDocs"}}</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn lang-btn" href="{{.OtherPath}}" hreflang="{{.OtherHTMLLang}}" lang="{{.OtherHTMLLang}}" data-action="lang" data-lang-target="{{.OtherLang}}" aria-label="{{t "langSwitch"}}">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
+          <span class="lang-btn-label">{{t "langShort"}}</span>
+        </a>
+        <fieldset class="theme-seg">
+          <legend class="visually-hidden">{{t "themeLabel"}}</legend>
+          <label title="{{t "themeSystem"}}"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">{{t "themeSystem"}}</span></label>
+          <label title="{{t "themeLight"}}"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">{{t "themeLight"}}</span></label>
+          <label title="{{t "themeDark"}}"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">{{t "themeDark"}}</span></label>
+        </fieldset>
+        <a class="icon-btn gh-btn" href="{{.GitHub}}" aria-label="GitHub">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+        </a>
+        <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="{{t "menu"}}">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-menu"></use></svg>
+        </button>
+      </div>
+    </div>
+    <nav id="mobile-nav" class="mobile-nav" hidden aria-label="{{t "menu"}}">
+      <a href="{{.Links.Home}}#features">{{t "navFeatures"}}</a>
+      <a href="{{.Links.Home}}#cli">{{t "navCli"}}</a>
+      <a href="{{.Links.Home}}#privacy">{{t "navPrivacy"}}</a>
+      <a href="{{.Links.Home}}#download">{{t "navDownload"}}</a>
+      <a class="is-current" href="{{.Links.Docs}}" aria-current="page">{{t "navDocs"}}</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="wrap docs-layout">
+      <nav class="docs-nav" aria-label="{{t "docNavLabel"}}">
+        <ul>
+{{- range .Nav}}
+        <li><a href="{{.URL}}"{{if .Current}} aria-current="page"{{end}}><span data-label="{{.Label}}">{{.Label}}</span></a></li>
+{{- end}}
+        </ul>
+      </nav>
+      <div class="docs-main">
+        <header class="doc-head">
+          <h1>{{.Title}}</h1>
+          {{- if .EnglishOnly}}
+          <p class="doc-lede">{{t "docEnglishOnly"}}</p>
+          {{- end}}
+        </header>
+        <div class="prose"{{if .EnglishOnly}} lang="en"{{end}}>
+{{.Content}}
+        </div>
+      </div>
+{{- if .TOC}}
+      <nav class="docs-toc" aria-labelledby="toc-title">
+        <p class="docs-toc-title" id="toc-title">{{t "docToc"}}</p>
+        <ul{{if .EnglishOnly}} lang="en"{{end}}>
+{{- range .TOC}}
+          <li><a href="#{{.ID}}">{{.Text}}</a></li>
+{{- end}}
+        </ul>
+      </nav>
+{{- end}}
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="{{.Links.Home}}"><img src="{{asset "pail-icon.svg"}}" alt="" width="28" height="28"><span>Pail</span></a>
+        <p class="footer-made">{{t "madeBy"}} <a href="https://dejavu.moe">Dejavu Moe</a></p>
+      </div>
+      <nav class="footer-col" aria-labelledby="fc-product">
+        <h2 id="fc-product">{{t "footProduct"}}</h2>
+        <a href="{{.Links.Home}}#features">{{t "navFeatures"}}</a>
+        <a href="{{.Links.Home}}#cli">{{t "navCli"}}</a>
+        <a href="{{.Links.Home}}#download">{{t "navDownload"}}</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-res">
+        <h2 id="fc-res">{{t "footResources"}}</h2>
+        <a href="{{.Links.Docs}}">{{t "navDocs"}}</a>
+        <a href="{{.Links.Changelog}}">{{t "changelog"}}</a>
+        <a href="{{.GitHub}}/issues">{{t "issues"}}</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-proj">
+        <h2 id="fc-proj">{{t "footProject"}}</h2>
+        <a href="{{.GitHub}}">GitHub</a>
+        <a href="{{.Links.License}}">{{t "license"}}</a>
+      </nav>
+    </div>
+    <div class="wrap footer-legal">
+      <p>© {{.Year}} Dejavu Moe</p>
+      <p>{{t "trademark"}}</p>
+    </div>
+  </footer>
+
+  <script src="{{asset "app.js"}}"></script>
+  <script src="{{asset "docs.js"}}"></script>
+</body>
+</html>

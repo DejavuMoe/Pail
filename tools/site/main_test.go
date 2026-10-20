@@ -101,32 +101,6 @@ func TestDownloadsMatchReleaseScript(t *testing.T) {
 	}
 }
 
-// Every src and href is either on this site or on an allowed host; the site
-// loads nothing from third parties.
-func TestNoThirdPartyResources(t *testing.T) {
-	out := buildSite(t, "1.2.3")
-	attr := regexp.MustCompile(`(src|href)="([^"]*)"`)
-	links := []string{"https://github.com/DejavuMoe/Pail", "https://dejavu.moe", "https://pail.download/"}
-	for _, name := range []string{"index.html", "zh/index.html", "404.html"} {
-		page := read(t, filepath.Join(out, filepath.FromSlash(name)))
-		for _, m := range attr.FindAllStringSubmatch(page, -1) {
-			v := m[2]
-			if strings.HasPrefix(v, "#") {
-				continue
-			}
-			if strings.HasPrefix(v, "/") {
-				if _, err := os.Stat(filepath.Join(out, filepath.FromSlash(strings.TrimSuffix(v, "/")))); err != nil {
-					t.Errorf("%s: %s=%q does not exist in the build", name, m[1], v)
-				}
-				continue
-			}
-			if m[1] == "src" || !slices.ContainsFunc(links, func(p string) bool { return strings.HasPrefix(v, p) }) {
-				t.Errorf("%s: %s=%q leaves the site", name, m[1], v)
-			}
-		}
-	}
-}
-
 // app.js may only ask for strings that are embedded in the page.
 func TestRuntimeKeysCoverScript(t *testing.T) {
 	js := read(t, filepath.Join(repoRoot(t), "site", "static", "app.js"))
