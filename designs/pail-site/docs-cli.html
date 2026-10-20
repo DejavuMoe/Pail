@@ -261,7 +261,7 @@ pail ls s3://my-bucket/photos/ -r</code></pre>
 <ul>
 <li>Destinations cannot be renamed on the fly; there is no glob expansion of S3 paths; <code>versions</code> lists one folder level; <code>rm --versions</code> takes a single key.</li>
 <li>Copy and move work inside one account.</li>
-<li>Verification: the commands are covered by in-process tests against <code>internal/s3test</code> (protocol level). The application layer underneath is also tested against MinIO and a self-hosted VersityGW (see <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/status.md">status.md</a>); the CLI front end itself has not been run against a real server.</li>
+<li>Verification: the commands are covered by in-process tests against <code>internal/s3test</code> (protocol level). The application layer underneath is also tested against MinIO and a self-hosted VersityGW (see <a href="https://github.com/DejavuMoe/Pail/blob/master/docs/status.md">status.md</a>); the CLI front end itself has not been run against a real server.</li>
 </ul>
         </div>
       </div>
