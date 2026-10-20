@@ -101,7 +101,7 @@
     {
       "id": "docs-content",
       "type": "code",
-      "location": "README.md, README.zh-CN.md, docs/cli.md, CHANGELOG.md, LICENSE",
+      "location": "README.md, README.zh-CN.md, docs/cli.md, docs/cli.zh-CN.md, CHANGELOG.md, CHANGELOG.zh-CN.md, LICENSE",
       "roles": [
         "content-authority"
       ],
@@ -116,7 +116,7 @@
         "changelog.html", "changelog.zh.html", "license.html", "license.zh.html"
       ],
       "observations": [
-        "The docs pages render these files on the site. Get started uses the README sections Install, Quick start, Command line, Build from source, Data and privacy and Platform status, in English and Chinese; the CLI reference, changelog and license exist in English only."
+        "The docs pages render these files on the site. Get started uses the README sections Install, Quick start, Command line, Build from source, Data and privacy and Platform status, in English and Chinese. The CLI reference and the changelog have Chinese counterparts kept in step with the English files; the license is shown in English only, its binding text."
       ],
       "inferences": [
         "Links to other repository files (source, status and design notes) stay on GitHub because they are the open-source project itself."

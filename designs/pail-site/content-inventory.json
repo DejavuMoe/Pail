@@ -15,7 +15,7 @@
       "dom-license.zh.json",
       "dom-zh.json"
     ],
-    "capturedAt": "2026-10-20T06:10:25Z",
+    "capturedAt": "2026-10-20T06:17:59Z",
     "surfaces": [
       "landing-page: en light + tweaks panel open",
       "landing-page: zh light",
@@ -168,8 +168,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -194,8 +193,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -220,8 +218,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -296,8 +293,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -322,8 +318,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -399,8 +394,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -425,8 +419,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -476,8 +469,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -502,8 +494,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -528,8 +519,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -558,9 +548,7 @@
       ],
       "captures": [
         "dom-changelog.json",
-        "dom-changelog.zh.json",
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -610,8 +598,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -636,8 +623,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -662,8 +648,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -688,8 +673,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -714,8 +698,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -740,8 +723,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -766,8 +748,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -827,7 +808,6 @@
       ],
       "captures": [
         "dom-changelog.json",
-        "dom-changelog.zh.json",
         "dom-docs-cli.json",
         "dom-docs-cli.zh.json",
         "dom-docs.json"
@@ -880,8 +860,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -906,8 +885,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -932,8 +910,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -1058,8 +1035,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -1084,8 +1060,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -1135,8 +1110,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -1161,8 +1135,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -1865,9 +1838,7 @@
       ],
       "captures": [
         "dom-changelog.json",
-        "dom-changelog.zh.json",
         "dom-docs-cli.json",
-        "dom-docs-cli.zh.json",
         "dom-docs.json"
       ],
       "purpose": "approved-content",
@@ -1918,8 +1889,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -1969,8 +1939,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -2020,8 +1989,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -2046,8 +2014,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -2072,8 +2039,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -2098,8 +2064,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -2124,8 +2089,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -2932,8 +2896,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -2958,8 +2921,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -2984,8 +2946,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3010,8 +2971,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3036,8 +2996,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3062,8 +3021,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3088,8 +3046,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3139,8 +3096,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3240,8 +3196,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3291,8 +3246,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3317,8 +3271,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3343,8 +3296,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3369,8 +3321,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3395,8 +3346,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3421,8 +3371,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3447,8 +3396,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3473,8 +3421,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3549,8 +3496,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3627,8 +3573,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3728,8 +3673,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3754,8 +3698,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3780,8 +3723,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3828,8 +3770,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3854,8 +3795,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -3985,8 +3925,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4011,8 +3950,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4084,8 +4022,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4216,8 +4153,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4247,7 +4183,6 @@
       ],
       "captures": [
         "dom-docs-cli.json",
-        "dom-docs-cli.zh.json",
         "dom-docs.json"
       ],
       "purpose": "approved-content",
@@ -4298,8 +4233,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4349,8 +4283,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4518,8 +4451,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4570,8 +4502,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4619,8 +4550,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4645,8 +4575,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4696,8 +4625,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -4744,8 +4672,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -5192,8 +5119,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -5250,8 +5176,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -5397,8 +5322,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -5417,12 +5341,15 @@
         "text"
       ],
       "locations": [
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ol > li:nth-of-type(1) > ul > li:nth-of-type(3) > strong"
+        "h2#cdn-urls",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ol > li:nth-of-type(1) > ul > li:nth-of-type(3) > strong",
+        "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(3) > a"
       ],
       "visibility": [
         "visible"
       ],
       "captures": [
+        "dom-docs-cli.zh.json",
         "dom-docs.json",
         "dom-docs.zh.json"
       ],
@@ -5450,8 +5377,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -5960,8 +5886,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -5986,8 +5911,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -6023,7 +5947,6 @@
       ],
       "captures": [
         "dom-changelog.json",
-        "dom-changelog.zh.json",
         "dom-docs-cli.json",
         "dom-docs.json",
         "dom-en.json",
@@ -6132,8 +6055,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -6183,8 +6105,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -6278,8 +6199,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -6304,8 +6224,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -6331,8 +6250,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -6504,8 +6422,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -6715,8 +6632,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -6792,14 +6708,38 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
       "decision": "allow",
       "evidence": {
         "source": "CHANGELOG.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-dd506da66d841382",
+      "text": "D 时间后中止（例如",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(6) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
         "reference": "rendered in full"
       },
       "flags": [],
@@ -6971,8 +6911,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -7070,8 +7009,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -7096,8 +7034,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -7122,8 +7059,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -7694,8 +7630,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -7781,8 +7716,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -7858,8 +7792,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -8034,8 +7967,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -8061,8 +7993,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -8087,8 +8018,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -8164,8 +8094,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -8274,8 +8203,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -8300,8 +8228,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -8426,8 +8353,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -9043,8 +8969,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -9220,8 +9145,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -9873,8 +9797,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10003,8 +9926,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10054,8 +9976,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10080,8 +10001,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10106,8 +10026,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10132,8 +10051,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10158,8 +10076,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10184,8 +10101,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10235,8 +10151,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10435,8 +10350,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10763,8 +10677,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10807,9 +10720,7 @@
       ],
       "captures": [
         "dom-changelog.json",
-        "dom-changelog.zh.json",
         "dom-docs-cli.json",
-        "dom-docs-cli.zh.json",
         "dom-docs.json"
       ],
       "purpose": "navigation",
@@ -10908,8 +10819,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -10934,8 +10844,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -11010,8 +10919,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -11174,14 +11082,38 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
       "decision": "allow",
       "evidence": {
         "source": "CHANGELOG.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-d120a5cd3568f0cb",
+      "text": "macOS 和 arm64 构建只做了交叉编译，从未在真实硬件上运行过；macOS 应用未签名、未公证。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
         "reference": "rendered in full"
       },
       "flags": [],
@@ -11281,8 +11213,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -11388,8 +11319,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -11493,8 +11423,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12047,8 +11976,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12132,8 +12060,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12446,8 +12373,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12497,8 +12423,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12671,8 +12596,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12697,8 +12621,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12749,8 +12672,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12824,8 +12746,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12850,8 +12771,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12901,8 +12821,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -12949,8 +12868,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -13000,8 +12918,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -13026,8 +12943,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -13183,8 +13099,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -13867,8 +13782,8 @@
       "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
-      "id": "content-c661b517e6ff4d26",
-      "text": "Pail 各版本的变更记录（英文）：新增功能、安全说明与已知限制。",
+      "id": "content-7fcbabfb76749ac6",
+      "text": "Pail 各版本的变更记录：新增功能、安全说明与已知限制。",
       "channels": [
         "meta:description"
       ],
@@ -13892,8 +13807,8 @@
       "notes": "new in this revision; pending user approval"
     },
     {
-      "id": "content-51b53079bcb81ebd",
-      "text": "pail 命令行参考（英文）：全局参数、命令、CDN URL、加密保险库、输出、退出码与限制。",
+      "id": "content-e6edfddc4c4977a5",
+      "text": "pail 命令行参考：全局参数、命令、CDN URL、加密保险库、输出、退出码与限制。",
       "channels": [
         "meta:description"
       ],
@@ -13940,6 +13855,31 @@
       },
       "flags": [],
       "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-7267d43cd68f8b4f",
+      "text": "Pail 的首个版本。各功能的验证情况记录在",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-afaca6ea5110cc98",
@@ -14346,8 +14286,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -14397,8 +14336,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -14997,8 +14935,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -15023,8 +14960,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -15049,8 +14985,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -15075,8 +15010,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -15265,8 +15199,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -15319,8 +15252,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -15579,8 +15511,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -15988,8 +15919,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -16123,8 +16053,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -16149,8 +16078,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -16175,14 +16103,38 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
       "decision": "allow",
       "evidence": {
         "source": "docs/cli.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-993ff89fbf0ab55b",
+      "text": "S3 路径写作",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
         "reference": "rendered in full"
       },
       "flags": [],
@@ -16383,8 +16335,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -16461,8 +16412,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -16488,8 +16438,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -17007,6 +16956,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-42dd1e61ef9d8a57",
+      "text": "stderr 上不输出逐项行和进度。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-31f72a24f2f0b77d",
       "text": "Storage class",
       "channels": [
@@ -17041,8 +17015,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -17208,8 +17181,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -17234,8 +17206,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -17365,8 +17336,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "orientation",
       "origin": "agent-generated-task-copy",
@@ -17388,8 +17358,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "orientation",
       "origin": "agent-generated-task-copy",
@@ -17411,8 +17380,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "orientation",
       "origin": "agent-generated-task-copy",
@@ -17481,8 +17449,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -17507,8 +17474,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -17533,8 +17499,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -17609,8 +17574,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -17738,8 +17702,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -18046,8 +18009,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -18125,7 +18087,6 @@
       ],
       "captures": [
         "dom-changelog.json",
-        "dom-changelog.zh.json",
         "dom-en.json"
       ],
       "purpose": "domain-field",
@@ -18198,8 +18159,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -18346,8 +18306,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -18471,8 +18430,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -18703,8 +18661,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -18889,8 +18846,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -18991,8 +18947,7 @@
         "visible"
       ],
       "captures": [
-        "dom-changelog.json",
-        "dom-changelog.zh.json"
+        "dom-changelog.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -19198,8 +19153,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -19224,8 +19178,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -19301,8 +19254,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -19327,8 +19279,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -19353,8 +19304,7 @@
         "visible"
       ],
       "captures": [
-        "dom-docs-cli.json",
-        "dom-docs-cli.zh.json"
+        "dom-docs-cli.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
@@ -19833,13 +19783,20 @@
         "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap > table > tbody > tr:nth-of-type(1) > td:nth-of-type(2)",
         "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)",
         "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(13) > td:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)",
         "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(3)",
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(5)"
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(4)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(5)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(9)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(11)"
       ],
       "visibility": [
         "visible"
       ],
       "captures": [
+        "dom-changelog.zh.json",
+        "dom-docs-cli.zh.json",
         "dom-docs.zh.json"
       ],
       "purpose": "approved-content",
@@ -19853,20 +19810,55 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-c0dd3f76c5e6ac2f",
+      "text": "、可重复的",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(13) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-eb0d5884569b398e",
       "text": "。",
       "channels": [
         "text"
       ],
       "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(13) > td:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(15) > td:nth-of-type(2)",
         "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ol > li:nth-of-type(1) > ul > li:nth-of-type(3)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(1)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(2)",
         "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(3)",
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(8)"
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(5)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(8)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(11)"
       ],
       "visibility": [
         "visible"
       ],
       "captures": [
+        "dom-changelog.zh.json",
+        "dom-docs-cli.zh.json",
         "dom-docs.zh.json"
       ],
       "purpose": "approved-content",
@@ -19925,6 +19917,131 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-a5b5e1de5b696a0f",
+      "text": "。如果使用含",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-68f8a5b0b3167375",
+      "text": "。此时 stdin 不能再用于",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-1d1c7634edb774ec",
+      "text": "。省略时，",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(4)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-557203c7bae9416d",
+      "text": "。绝不输出秘密。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-8fed8205b08759ff",
+      "text": "。该设置存储在",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -20055,6 +20172,31 @@
       "notes": null
     },
     {
+      "id": "content-0cf9126c6e8739e9",
+      "text": "上传规则",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(9) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-e8a58d8c7ff027e6",
       "text": "上传规则与压缩",
       "channels": [
@@ -20078,6 +20220,31 @@
       },
       "flags": [],
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+    },
+    {
+      "id": "content-197330afd74fa53d",
+      "text": "上测试）。已测试的真实服务端：MinIO（两个版本）和 Cloudflare 后面的自建 VersityGW。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-4673a23061656125",
@@ -20181,6 +20348,31 @@
       "notes": null
     },
     {
+      "id": "content-8659eadaa48cb788",
+      "text": "不发出任何请求，直接输出对象的地址。默认：账户为该存储桶设置了 CDN URL 时（在桌面应用的账户对话框中设置；见下文）输出 CDN 链接，否则输出公开的 S3 地址。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(10) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-258602e26b83e6b7",
       "text": "不检查更新。",
       "channels": [
@@ -20206,6 +20398,56 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
+      "id": "content-45219528d9541cb3",
+      "text": "不能即时重命名目标；S3 路径不做通配符展开；",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-9db84728b64aba9e",
+      "text": "与 openS3 的兼容",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(13) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-ddcf64faf942bf93",
       "text": "与桌面程序共用账户和同步作业：",
       "channels": [
@@ -20226,6 +20468,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-d5d230da4eac3567",
+      "text": "且不是文件夹的对象键，只列出该单个对象。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -20279,6 +20546,31 @@
       },
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-cd4c5c509938e4bc",
+      "text": "两者都没有时，命令以 2 退出并给出相应说明。使用 profile、默认凭据或匿名访问的账户不会询问，",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-7a8f39287a5c1c81",
@@ -20356,6 +20648,31 @@
       "evidence": null,
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-6aa76eb439e4e2b4",
+      "text": "中，字段为",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-a459c8df332a8199",
@@ -20460,6 +20777,56 @@
       "notes": null
     },
     {
+      "id": "content-c6e5d02695d94874",
+      "text": "之上的一层轻量前端。它与桌面应用共用配置目录和秘密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-f05fece1aea1dda3",
+      "text": "也不会。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-aea82737cc01867d",
       "text": "产品",
       "channels": [
@@ -20486,6 +20853,81 @@
       "evidence": null,
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-43295b2e11d52494",
+      "text": "仅限 S3 到 S3。先复制，校验后再删除源。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(6) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-d2114b65e6650043",
+      "text": "从 stdin 的第一行读取加密保险库的主密码（见下文）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(7) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-9d76f21e51448125",
+      "text": "从不需要确认，包括",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-e64b63bfb488039f",
@@ -20563,18 +21005,71 @@
       "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
+      "id": "content-08dcbdfa8ff7136f",
+      "text": "会变成",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-e603aafd7e84bce5",
+      "text": "会自动补上），源名称保留在其下，与",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(5)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-a2f59f64d2623d19",
       "text": "传输",
       "channels": [
         "text"
       ],
       "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(4) > strong",
         "section#features > div.wrap > div.bento > article.tile.tile-transfers:nth-of-type(1) > div.mini.mini-transfers:nth-of-type(2) > div.tq-head:nth-of-type(1) > span.tq-title:nth-of-type(1)"
       ],
       "visibility": [
-        "accessibility-hidden"
+        "accessibility-hidden",
+        "visible"
       ],
       "captures": [
+        "dom-changelog.zh.json",
         "dom-zh.json"
       ],
       "purpose": "domain-field",
@@ -20665,6 +21160,31 @@
       "notes": "wording changed in this revision; pending user approval"
     },
     {
+      "id": "content-70e3cfe04ea78c43",
+      "text": "元数据的对象，校验和同步会重复传输。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(5)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-182ac9ac745f113e",
       "text": "先预览、再执行的同步",
       "channels": [
@@ -20688,6 +21208,32 @@
       },
       "flags": [],
       "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-c49aa5cd5e393320",
+      "text": "全局参数",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h2#global-flags",
+        "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(1) > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-25efb3d5b616c16a",
@@ -20762,6 +21308,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-313d2e539729dc7d",
+      "text": "内存 S3 服务；MinIO 集成测试套件（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(14)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-871dbab0b1df0460",
       "text": "切换到中文",
       "channels": [
@@ -20787,6 +21358,81 @@
       "evidence": null,
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-9aa3571c115add43",
+      "text": "列出一层文件夹；包含删除标记。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(11) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-39476df9301d1f96",
+      "text": "创建 / 删除（空的）存储桶。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(8) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-bec62be40b3335a3",
+      "text": "删除。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(7) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-8106d830cf7a01f8",
@@ -20888,6 +21534,31 @@
       "notes": null
     },
     {
+      "id": "content-f0f0327bc55750d6",
+      "text": "加",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(7) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-320c254572c48488",
       "text": "加密",
       "channels": [
@@ -20912,6 +21583,32 @@
       },
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-f5ec1d605cc86cc1",
+      "text": "加密保险库",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h2#encrypted-vault",
+        "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(4) > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-a22879cda61a8da0",
@@ -20956,6 +21653,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-9634fb0832be624f",
+      "text": "参数",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > thead > tr > th:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -21012,6 +21734,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-49c2d06bc93e2034",
+      "text": "取值为",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(4)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-2cd0f3be8738a86c",
       "text": "取消",
       "channels": [
@@ -21032,6 +21779,56 @@
       "evidence": null,
       "flags": [],
       "notes": "mirrors desktop app labels in a static demo fragment"
+    },
+    {
+      "id": "content-5b658266cd19f680",
+      "text": "只列一层文件夹；",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-5355004ecfc1a350",
+      "text": "只接受单个键。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-c4cf88e82abfb7d9",
@@ -21084,6 +21881,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-21e0198ce7b83f73",
+      "text": "可放在命令名之前或之后。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-4513dfd4c4dd696a",
       "text": "可选：设置",
       "channels": [
@@ -21104,6 +21926,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-e87a3d777777c0d9",
+      "text": "右键弹出菜单未做视觉评审；对象列表表头无法与设计规范完全一致（mygo 的限制）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(9)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -21136,6 +21983,107 @@
       "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
+      "id": "content-12ea3470da4d0cb5",
+      "text": "同步作业",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(8) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-a0ddf070bfd9c521",
+      "text": "同步可能漏掉大小相同的修改；对没有",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(5)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-3680a72abd2ce7c8",
+      "text": "名称、ID、服务商、端点、区域。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(1) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-8e5c1c8ce04b746f",
+      "text": "含义",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > thead > tr > th:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > thead > tr > th:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-56410fc65314dfb5",
       "text": "启动",
       "channels": [
@@ -21161,6 +22109,33 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-928f87d4507bf9a0",
+      "text": "命令",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h2#commands",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > thead > tr > th:nth-of-type(1)",
+        "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(2) > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-71c7332027d8abb2",
       "text": "命令行",
       "channels": [
@@ -21171,6 +22146,7 @@
         "h2#command-line",
         "html.js > body > footer.site-footer > div.wrap.footer-grid:nth-of-type(1) > nav.footer-col:nth-of-type(1) > a:nth-of-type(2)",
         "html.js > body > header.site-header > div.wrap.header-inner > nav.nav > a:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(11) > strong",
         "main#main > div.wrap.docs-layout > nav.docs-nav > ul > li:nth-of-type(2) > a > span",
         "main#main > div.wrap.docs-layout > nav.docs-nav:nth-of-type(1) > ul > li:nth-of-type(2) > a > span",
         "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(3) > a",
@@ -21308,12 +22284,15 @@
       ],
       "locations": [
         "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)",
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(1)"
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(1)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(4)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(7)"
       ],
       "visibility": [
         "visible"
       ],
       "captures": [
+        "dom-docs-cli.zh.json",
         "dom-docs.zh.json"
       ],
       "purpose": "approved-content",
@@ -21322,6 +22301,56 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-31d858defa4068a6",
+      "text": "和汇总。给出前缀属于用法错误（退出码 2）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(10) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-2bd3c7cf08356ffe",
+      "text": "在 Cloudflare 后面，gzip 编码的对象会被代理解压，因此它们的下载会被拒绝（大小不一致）；不会写入任何错误内容。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -21347,6 +22376,31 @@
       "evidence": null,
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-3a9c8ff8cb2ebaaf",
+      "text": "在 stdout 输出按行分隔的 JSON：每个列表行或每个项目结果一个对象，最后是一个",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-19759ed394007cf3",
@@ -21396,6 +22450,81 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-a4ac6270dc979ccc",
+      "text": "在未配置时以 1 退出；",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(10) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-b94b4ba1ebf06b99",
+      "text": "在终端中，会出现不回显的提示",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-763c26bb189a862c",
+      "text": "在重命名冲突策略下，只写账户无法检测因重放而产生的 412；大小写冲突的键的编号在多次扫描之间不会被记住。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-63d90d977348ab1f",
       "text": "复制",
       "channels": [
@@ -21420,6 +22549,31 @@
       },
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-f7fbe8bdfd07a6e0",
+      "text": "复制和移动只能在同一个账户内进行。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-4993e21f9378b066",
@@ -21494,6 +22648,31 @@
       "notes": null
     },
     {
+      "id": "content-642b5ee86e4059fe",
+      "text": "失败：出错、任务失败、所有项目都失败，或确认被拒绝。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-ff21163c077b5c83",
       "text": "如何安装 Pail、添加账户、使用命令行和从源码构建，以及 Pail 的数据存放位置和各平台的测试情况。",
       "channels": [
@@ -21519,18 +22698,46 @@
       "notes": "new in this revision; pending user approval"
     },
     {
+      "id": "content-dc20f6dfff9118c5",
+      "text": "始终输出 S3 地址。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(10) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-144fcb8679ede24d",
       "text": "存储桶",
       "channels": [
         "text"
       ],
       "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(7) > strong",
         "section#features > div.wrap > div.bento > article.tile.tile-rules:nth-of-type(7) > div.mini.mini-rules:nth-of-type(2) > dl.mr-grid > dt:nth-of-type(1)"
       ],
       "visibility": [
-        "accessibility-hidden"
+        "accessibility-hidden",
+        "visible"
       ],
       "captures": [
+        "dom-changelog.zh.json",
         "dom-zh.json"
       ],
       "purpose": "domain-field",
@@ -21539,6 +22746,31 @@
       "evidence": null,
       "flags": [],
       "notes": "mirrors desktop app labels in a static demo fragment"
+    },
+    {
+      "id": "content-d224ee3e0c4bf208",
+      "text": "存储桶及其区域。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-44db1cdf0ab445c5",
@@ -21586,6 +22818,32 @@
       "evidence": null,
       "flags": [],
       "notes": "mirrors desktop app labels in a static demo fragment"
+    },
+    {
+      "id": "content-afb63a620bdcff15",
+      "text": "安全",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h3#security",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(12) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-e8f88f51ccb085ea",
@@ -21637,6 +22895,31 @@
       },
       "flags": [],
       "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-da6094b974f81daa",
+      "text": "密码绝不作为参数值或环境变量接受（两者都能被其他进程看到），不会写入日志，也不会回显。解锁只在本次运行内有效；命令行绝不写入保险库、创建保险库、更改其密码或重置它：请使用桌面应用。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(8)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-2d46957242711634",
@@ -21711,6 +22994,56 @@
       "notes": "mirrors desktop app labels in a static demo fragment"
     },
     {
+      "id": "content-245d064e948f4870",
+      "text": "对象。失败时以",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-0b7478a84ff82569",
+      "text": "对象元数据。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(13)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-78b5bbe88c142111",
       "text": "对象所有权",
       "channels": [
@@ -21736,6 +23069,31 @@
       "notes": null
     },
     {
+      "id": "content-d56722d25f000200",
+      "text": "对象管理",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(5) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-44a6527c6644356e",
       "text": "对象锁定",
       "channels": [
@@ -21759,6 +23117,31 @@
       },
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-4faf856ef0575587",
+      "text": "工具链",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(14) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-322e50ff86052230",
@@ -21808,6 +23191,31 @@
       "notes": "mirrors desktop app labels in a static demo fragment"
     },
     {
+      "id": "content-f90b034f28036e40",
+      "text": "已知限制",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h3#known-limitations"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-79612d07708f27c8",
       "text": "平台状态",
       "channels": [
@@ -21829,6 +23237,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-081e2d6be542eafc",
+      "text": "当桌面应用把秘密存放在加密保险库（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(7)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -21963,6 +23396,57 @@
       "notes": "mirrors desktop app labels in a static demo fragment"
     },
     {
+      "id": "content-05f6105207da6c1a",
+      "text": "成功（跳过的项目算作成功）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > tbody > tr:nth-of-type(1) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-a2123d69506f51ff",
+      "text": "或",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(4)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-521452f36360dc71",
       "text": "所有命令，一个快捷键",
       "channels": [
@@ -21988,6 +23472,56 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
+      "id": "content-69b006e256d191bb",
+      "text": "所有确认一律视为同意。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-7fab4d8175911ff6",
+      "text": "手动输入的 ZIP 密码和 SSE-C 密钥只能按标签或字段名从日志中脱敏。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(7)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-c771248e511fbf93",
       "text": "打开",
       "channels": [
@@ -22008,6 +23542,56 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-31b458ec94d4aa50",
+      "text": "把旧版本恢复为当前版本 / 恢复最新记录为删除标记的键。历史记录绝不会被删除。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(12) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-8976430da0cbfc78",
+      "text": "把该键当作文件夹处理（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(7) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -22086,6 +23670,31 @@
       },
       "flags": [],
       "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-45af35415d145d77",
+      "text": "提示，因此破坏性命令还需要",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-ae221d1d4417c3c9",
@@ -22191,6 +23800,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-2f6b7b043db676d4",
+      "text": "文件夹显示为",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-db7f8dc1eb99fe66",
       "text": "文件夹（Windows 为",
       "channels": [
@@ -22275,6 +23909,31 @@
       "notes": null
     },
     {
+      "id": "content-0006d696d8e1ec28",
+      "text": "新增",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h3#added"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-84244abc71de03ac",
       "text": "新建文件夹",
       "channels": [
@@ -22350,6 +24009,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-6a82dd6d63dd61c9",
+      "text": "日志会对 URL 查询串、Authorization 头、签名和已知的秘密值脱敏。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-5bc1b7121d9d8c1b",
       "text": "日志默认关闭",
       "channels": [
@@ -22373,6 +24057,106 @@
       },
       "flags": [],
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+    },
+    {
+      "id": "content-a99a30051ae1d3d6",
+      "text": "时为原始字节数）。不带路径时：列出存储桶。末尾没有",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-934607e8c59b0c9c",
+      "text": "时还会校验主密码。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-b5141d3d19e9a048",
+      "text": "是",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-ca8b81c5a0f8275e",
+      "text": "是否存在，以及桌面应用的自动锁定设置。带",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-de6811e73d403172",
@@ -22506,28 +24290,104 @@
       "notes": null
     },
     {
-      "id": "content-dbdffe96318acfe7",
-      "text": "本页仅提供英文版。",
+      "id": "content-926f4d92408df955",
+      "text": "未发布",
       "channels": [
         "text"
       ],
       "locations": [
-        "main#main > div.wrap.docs-layout > div.docs-main > header.doc-head > p.doc-lede"
+        "h2#unreleased"
       ],
       "visibility": [
         "visible"
       ],
       "captures": [
-        "dom-changelog.zh.json",
-        "dom-docs-cli.zh.json",
-        "dom-license.zh.json"
+        "dom-changelog.zh.json"
       ],
-      "purpose": "availability",
-      "origin": "agent-generated-task-copy",
-      "decision": "review",
-      "evidence": null,
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
       "flags": [],
-      "notes": "wording changed in this revision; pending user approval"
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-bd7ffb2ee28cc246",
+      "text": "未在真实 AWS 上测试（STS AssumeRole 和 CloudFront 只在",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-52359269a0f6148a",
+      "text": "未验证：VersityGW 上的版本控制（该服务上已禁用）；SSE-S3、SSE-KMS 和 SSE-C 的成功路径；通过就地重写处理大于 5 GiB 的对象；本地镜像删除进入真实的系统回收站。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(4)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-62fa1ac90d4673c1",
+      "text": "本地到 S3（上传），S3 到本地（下载），S3 到 S3（在账户内复制）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-ab00aee24a3e17de",
@@ -22553,6 +24413,56 @@
       "evidence": null,
       "flags": [],
       "notes": "wording changed in this revision; pending user approval"
+    },
+    {
+      "id": "content-0bc73e4946aca54f",
+      "text": "本项目所有值得注意的变更都记录在此文件中。格式遵循",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-085f8c6b5d095a49",
+      "text": "来自应用层和命令行的任务标题未本地化。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(3) > li:nth-of-type(8)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-45b7d8c7a9651794",
@@ -22605,6 +24515,81 @@
       "notes": null
     },
     {
+      "id": "content-f6e7febc0bccfd0d",
+      "text": "桌面应用",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-4e3c6e0bd1e71ee7",
+      "text": "模式。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-e810bdd627864c24",
+      "text": "模板，可选存储桶列表）、预签名 URL 对话框、CloudFront distribution 与失效（AWS 账户）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(10)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-0c7c957c8b3ce214",
       "text": "此服务商不支持",
       "channels": [
@@ -22628,6 +24613,81 @@
       },
       "flags": [],
       "notes": null
+    },
+    {
+      "id": "content-b185231917a2c463",
+      "text": "每个账户的 CDN 域名",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(10) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-3a205b68ff544fc1",
+      "text": "每完成一个项目，stderr 上输出一行（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(9)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-f1fa1696c4f3b38a",
+      "text": "永久删除某个键的所有版本和删除标记。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(7) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-46182178357b40ea",
@@ -22733,6 +24793,31 @@
       "notes": null
     },
     {
+      "id": "content-1bfd193efb729532",
+      "text": "浏览与预览",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(3) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-a6b75d0680322a61",
       "text": "深色",
       "channels": [
@@ -22781,6 +24866,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-5f76b2bf82dd2c5d",
+      "text": "版本",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(6) > strong"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -22911,6 +25021,56 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-22acc8ae51f97c16",
+      "text": "用法错误或输入无效、需要确认但没有终端且没有",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-d49e8845ae495abe",
+      "text": "的进程内测试覆盖（协议层）。其下的应用层也针对 MinIO 和自建 VersityGW 测试过（见",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-81b04f33d376102d",
       "text": "目标文件已存在时",
       "channels": [
@@ -22931,6 +25091,56 @@
       "evidence": null,
       "flags": [],
       "notes": "wording changed in this revision; pending user approval"
+    },
+    {
+      "id": "content-b93928d06c8316c6",
+      "text": "目标路径规则：上传或 S3 复制的目标始终是文件夹（缺少末尾的",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(5)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-9a16edd32a6a75e2",
+      "text": "相同。下载的目标始终是本地目录（不存在则创建）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(5)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-37d93f15bee27a79",
@@ -22956,6 +25166,32 @@
       },
       "flags": [],
       "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-36f33adaf0942634",
+      "text": "确认",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h2#confirmation",
+        "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(6) > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-9375ca0c09ad0b44",
@@ -23025,6 +25261,56 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-cc0dc6789c1b6f44",
+      "text": "秘密后端（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-7cff70f0ac85584e",
+      "text": "秘密绝不写入配置文件；它们保存在系统钥匙串或加密保险库中。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -23157,6 +25443,56 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
+      "id": "content-8a789718e6a99d40",
+      "text": "结束。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-af262ee2c030e8b0",
+      "text": "统计），对于 sync 还有删除数量（下载方向镜像的本地删除会进入系统回收站）。stdin 是终端时，它们会询问",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-97b31b5d63f57e51",
       "text": "网络",
       "channels": [
@@ -23177,6 +25513,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-5187b3a90cd78152",
+      "text": "自定义端点默认使用\"仅在需要时\"校验和模式；结果未知的请求绝不重放。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -23235,6 +25596,50 @@
       "notes": null
     },
     {
+      "id": "content-b8a5de7904b87bae",
+      "text": "表格: 全局参数",
+      "channels": [
+        "aria-label"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "orientation",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": null,
+      "flags": [],
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+    },
+    {
+      "id": "content-aba0a3821404c028",
+      "text": "表格: 命令",
+      "channels": [
+        "aria-label"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "orientation",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": null,
+      "flags": [],
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+    },
+    {
       "id": "content-5f36d5be1849275f",
       "text": "表格: 安装",
       "channels": [
@@ -23255,6 +25660,78 @@
       "evidence": null,
       "flags": [],
       "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+    },
+    {
+      "id": "content-7126bc670a1df388",
+      "text": "表格: 退出码",
+      "channels": [
+        "aria-label"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "orientation",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": null,
+      "flags": [],
+      "notes": "accessible name of a scrollable table: label + nearest heading; new in this revision; pending user approval"
+    },
+    {
+      "id": "content-aa44a9c6d83a397c",
+      "text": "表示整个存储桶）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(7) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-38c0720825b546d5",
+      "text": "被中断（Ctrl+C）：运行中的任务被取消，并有最多 10 秒的时间停止。下载写入的是会被删除的临时文件，因此不会留下残缺的文件。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > tbody > tr:nth-of-type(5) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-1eeb1543e8512529",
@@ -23280,6 +25757,31 @@
       },
       "flags": [],
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
+    },
+    {
+      "id": "content-ca347fbe4c7ad4f6",
+      "text": "要使用的账户。默认：唯一已配置的账户；有多个账户时命令失败（退出码 2）并列出这些账户。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(1) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-4ce4c98eb27e4b65",
@@ -23365,6 +25867,28 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-e8ddfa9426044d46",
+      "text": "许可证仅有英文原文，以英文原文为准。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > header.doc-head > p.doc-lede"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-license.zh.json"
+      ],
+      "purpose": "availability",
+      "origin": "agent-generated-task-copy",
+      "decision": "review",
+      "evidence": null,
+      "flags": [],
+      "notes": "wording changed in this revision; pending user approval"
+    },
+    {
       "id": "content-4cb42fe705b10bb4",
       "text": "诊断日志需要手动开启；写入前会去掉签名、Authorization 请求头、URL 查询参数和已知的密钥。",
       "channels": [
@@ -23388,6 +25912,31 @@
       },
       "flags": [],
       "notes": "copy rewritten for clarity in this revision; pending user approval"
+    },
+    {
+      "id": "content-4262c45dc797bb0c",
+      "text": "说明",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > thead > tr > th:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-68df2358eb9e60c6",
@@ -23421,12 +25970,15 @@
         "text"
       ],
       "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(2) > strong",
         "section#privacy > div.wrap > div.privacy-grid > div.dialog-demo.reveal > div.dlg > dl.dlg-scope > dt:nth-of-type(1)"
       ],
       "visibility": [
-        "accessibility-hidden"
+        "accessibility-hidden",
+        "visible"
       ],
       "captures": [
+        "dom-changelog.zh.json",
         "dom-zh.json"
       ],
       "purpose": "domain-field",
@@ -23435,6 +25987,31 @@
       "evidence": null,
       "flags": [],
       "notes": "mirrors desktop app labels in a static demo fragment"
+    },
+    {
+      "id": "content-df8ef5e874bcc035",
+      "text": "账户可以设置一个 CDN 基础 URL，例如",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-daa6d02a55bc3de9",
@@ -23616,6 +26193,108 @@
       "notes": "mirrors desktop app labels in a static demo fragment"
     },
     {
+      "id": "content-fb04addb4c2654f5",
+      "text": "输出",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(10) > td:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(15) > td:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-ff3fea21a4ecc2ea",
+      "text": "输出 URL。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(9) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-e40b5670759e355a",
+      "text": "输出计划后以 0 退出，不做任何修改，也不询问。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-9d0831963aa1888e",
+      "text": "运行在桌面应用中保存的作业（除非给出",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(14) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-8a8398230ac4e26e",
       "text": "还没有账户？运行",
       "channels": [
@@ -23641,6 +26320,32 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
+      "id": "content-cd958fde094e5720",
+      "text": "进度与输出",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h2#progress-and-output",
+        "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(5) > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-dc9591e56d502b43",
       "text": "进行中",
       "channels": [
@@ -23661,6 +26366,83 @@
       "evidence": null,
       "flags": [],
       "notes": "mirrors desktop app labels in a static demo fragment"
+    },
+    {
+      "id": "content-0a67f363af794abe",
+      "text": "退出码",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h2#exit-codes",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > thead > tr > th:nth-of-type(1)",
+        "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(7) > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-4d7e208c26d02390",
+      "text": "部分失败：部分项目成功，部分失败、结果未知（结果不确定，绝不重放）或未处理。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-9a03641d1074e777",
+      "text": "都使用桌面应用设置中保存的默认值（初始为",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(4)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-148d195e21b05db5",
@@ -23688,6 +26470,56 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-b8a82dee5b1dd388",
+      "text": "配置文件夹和钥匙串条目会自动迁移；仍可读取旧版保险库和",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(13)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-b715588ac673ae51",
+      "text": "配置目录（默认：桌面应用所用的目录，",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-6286b5459dca17e3",
       "text": "链接到本节",
       "channels": [
@@ -23695,16 +26527,30 @@
       ],
       "locations": [
         "h2#build-from-source > a.heading-anchor",
+        "h2#cdn-urls > a.heading-anchor",
         "h2#command-line > a.heading-anchor",
+        "h2#commands > a.heading-anchor",
+        "h2#confirmation > a.heading-anchor",
         "h2#data-and-privacy > a.heading-anchor",
+        "h2#encrypted-vault > a.heading-anchor",
+        "h2#exit-codes > a.heading-anchor",
+        "h2#global-flags > a.heading-anchor",
         "h2#install > a.heading-anchor",
+        "h2#limits > a.heading-anchor",
         "h2#platform-status > a.heading-anchor",
-        "h2#quick-start > a.heading-anchor"
+        "h2#progress-and-output > a.heading-anchor",
+        "h2#quick-start > a.heading-anchor",
+        "h2#unreleased > a.heading-anchor",
+        "h3#added > a.heading-anchor",
+        "h3#known-limitations > a.heading-anchor",
+        "h3#security > a.heading-anchor"
       ],
       "visibility": [
         "visually-hidden"
       ],
       "captures": [
+        "dom-changelog.zh.json",
+        "dom-docs-cli.zh.json",
         "dom-docs.zh.json"
       ],
       "purpose": "navigation",
@@ -23713,6 +26559,31 @@
       "evidence": null,
       "flags": [],
       "notes": "wording changed in this revision; pending user approval"
+    },
+    {
+      "id": "content-45b4b940dd166389",
+      "text": "错误会用文字（英文原文）说明类别：not found、access denied、not supported by this provider、conflict、network error、canceled、invalid input、locked。保险库密码错误属于 \"access denied\"（退出码 1）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(11)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-721b00cbfa23cc25",
@@ -23735,6 +26606,32 @@
       "evidence": null,
       "flags": [],
       "notes": "mirrors desktop app labels in a static demo fragment"
+    },
+    {
+      "id": "content-688f892378eef276",
+      "text": "限制",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "h2#limits",
+        "main#main > div.wrap.docs-layout > nav.docs-toc:nth-of-type(2) > ul > li:nth-of-type(8) > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
     },
     {
       "id": "content-86651d17a401c55b",
@@ -23893,6 +26790,57 @@
       "notes": "marketing copy drafted from the cited facts; approved by the user with the prototype on 2026-10-20"
     },
     {
+      "id": "content-8b96c42182c3c504",
+      "text": "验证：这些命令由针对",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-da047c04c9b5e27e",
+      "text": "（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(11)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-903b9d7a1e869ad8",
       "text": "（MinIO 和大多数自建网关需要开启，AWS 保持关闭）；",
       "channels": [
@@ -23913,6 +26861,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-01047d0a4c91fa11",
+      "text": "（也可含",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -23968,26 +26941,51 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
-      "id": "content-30e6303954d08aef",
-      "text": "（英文）。",
+      "id": "content-968d10010fddf3a7",
+      "text": "（基础 URL 或",
       "channels": [
         "text"
       ],
       "locations": [
-        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(5)"
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(10)"
       ],
       "visibility": [
         "visible"
       ],
       "captures": [
-        "dom-docs.zh.json"
+        "dom-changelog.zh.json"
       ],
       "purpose": "approved-content",
       "origin": "production-domain",
       "decision": "allow",
       "evidence": {
-        "source": "README.zh-CN.md",
-        "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-2991fd1e2144017f",
+      "text": "（最多三次尝试）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -24044,6 +27042,135 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-a49dfcaccf6e27be",
+      "text": "）、",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-873441d60e56a761",
+      "text": "）、右键菜单和快捷键、亮色与暗色主题、English 与 简体中文，以及基于内存 S3 服务的",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-7161a4cc8d794143",
+      "text": "）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(2) > td:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(4)",
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(14)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json",
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-ef54c9dbe432fe99",
+      "text": "）会先将其解锁：",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(7)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-4fe7a298e8a73796",
+      "text": "）的模板，例如",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-3fea24e2c25495d8",
       "text": "），不需要 cgo。",
       "channels": [
@@ -24089,6 +27216,206 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-2215e46e0d5a5084",
+      "text": "），最后是一行汇总。在终端中，会有一行实时显示项目数、字节数和速度。机器可读的结果请用",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(9)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-98c5b19799da10d8",
+      "text": "）：",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(11)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-719a7800b47e32de",
+      "text": "）；发布脚本，生成 Windows、Linux 和 macOS（amd64、arm64）压缩包及",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(14)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-c9e9018361d09d4c",
+      "text": "）；命令行前端本身尚未对真实服务端运行过。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(2) > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-29bb96408d2286ba",
+      "text": "）；运行中的任务会被取消。0 表示不限时。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(1) > table > tbody > tr:nth-of-type(6) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-9baf6610e9e2e22b",
+      "text": "）；限定前缀的外部端点测试套件（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(14)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-ad9464da161a8d5a",
+      "text": "，",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(14)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-060e4828c57c3eb0",
+      "text": "，Go + mygo，支持 Windows、Linux 和 macOS）：带账户切换器和存储桶列表的侧栏、面包屑、虚拟化的可排序多选对象表（自动分页）、搜索、平铺视图、检查器、传输面板、状态栏、命令面板（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -24194,6 +27521,56 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-3564ff1f9dc0d9bb",
+      "text": "，以及会删除内容的",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-f9b43c134318279e",
+      "text": "，会先输出范围：账户、存储桶/前缀、对象数和字节数（用",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-ad10591b8ebd49ac",
       "text": "，例如",
       "channels": [
@@ -24214,6 +27591,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-5a1a9da877ba033c",
+      "text": "，则按模板填充。对象键与公开 URL 一样做百分号编码，保留",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -24244,6 +27646,81 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-be0ffc99791828b5",
+      "text": "，否则以 2 退出。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-5a27a544b9c25f0a",
+      "text": "，否则使用该作业的账户）。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(14) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-db54fac2c8fd8b22",
+      "text": "，因此",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-c6799e4092d62672",
       "text": "，在侧栏打开账户切换器并添加账户。以自建或第三方服务为例：",
       "channels": [
@@ -24264,6 +27741,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-9baaef14ece43019",
+      "text": "，在桌面应用里编辑；命令行只读取它。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -24319,6 +27821,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-2f24dfdfa2ce866b",
+      "text": "，或加密保险库已锁定而无法询问密码（没有终端，也没有",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(3) > table > tbody > tr:nth-of-type(3) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-a0407eabc5f1b77a",
       "text": "，用内置的内存 S3 服务试用 Pail，数据不会离开你的电脑。",
       "channels": [
@@ -24344,6 +27871,106 @@
       "notes": "copy rewritten for clarity in this revision; pending user approval"
     },
     {
+      "id": "content-547cf4930951089c",
+      "text": "，由主密码保护）而不是系统钥匙串中时，每次运行命令行时保险库都处于锁定状态。需要凭据的命令（使用静态密钥的账户；存在 ZIP 密码等秘密引用时的",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(7)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-dbb1ffa7960cab8a",
+      "text": "，还可以选择性地给出它所服务的存储桶列表（默认：全部）。不含占位符时，链接为",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-f114611cd61000bf",
+      "text": "：",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(14)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-03f4ba306e3d124c",
+      "text": "：headers、存储类别、加密和压缩（GZIP、ZIP、带压缩级别的 AES-256 ZIP）；下载时解码。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(9)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-8641306364f15793",
       "text": "：Pail 只访问你配置的账户所对应的端点，没有遥测，也不检查更新。",
       "channels": [
@@ -24364,6 +27991,206 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-8e5b19db13b71fb1",
+      "text": "：上传、下载和镜像，带预览、三种比较方式和排除 glob；执行时逐项复核已预览的动作；本地删除进入系统回收站。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(8)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-c1f049bfc440fd93",
+      "text": "：上传和下载文件、文件夹、版本与整个存储桶，支持拖放；上传、下载、其他三类独立队列，并发上限可配置，可取消和重试；五种冲突策略；分片传输；仅创建的条件写入，对不支持它的服务商提供回退方案；下载在校验后以原子方式发布。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(4)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-d73a403a87e49b13",
+      "text": "：列出版本和删除标记，恢复某个版本或已删除的键，下载并永久删除多个版本。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(6)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-5e6427775fc8c67c",
+      "text": "：创建、删除和清空；复制、移动或下载整个存储桶；14 项存储桶设置，可用表单或 JSON 编辑；列出并中止未完成的分片上传。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(7)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-87d205d3b50699ca",
+      "text": "：复制、移动和重命名（同一存储桶内及跨存储桶）；批量删除并给出逐项结果；编辑 headers、元数据、标签、ACL、存储类别和服务端加密（SSE-S3、SSE-KMS、SSE-C），事后复核；MIME 类型表。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(5)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-bab797ca1a33691f",
+      "text": "：存储桶和文件夹导航，JSON、CSV、XML、文本、图片和十六进制预览，复制对象键、URI、URL 和预签名 URL。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(3)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-fcb7b81e4542bac9",
+      "text": "：密码取自 stdin 的第一行，例如",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(1)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-c6fb0c1ee9063d64",
+      "text": "：已有的",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(13)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -24394,6 +28221,31 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-ea0bd90f900fe0c6",
+      "text": "：秘密保存在系统钥匙串或可选的加密保险库（Argon2id、XChaCha20-Poly1305）中，支持空闲自动锁定；需主动开启的脱敏诊断日志；每个破坏性或批量操作都会显示范围并要求确认。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(12)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-1767885ff2933542",
       "text": "：系统用户配置目录下的",
       "channels": [
@@ -24414,6 +28266,31 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-878dd91b6c9a87e6",
+      "text": "：账户数量不限，支持 AWS 与 S3 兼容服务（自定义端点、区域、路径样式、访问密钥、AWS profile、默认凭据链、匿名、AssumeRole）；连接测试；按账户设置校验和模式。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
@@ -24444,6 +28321,56 @@
       "notes": "the repository's own documentation, rendered on the site"
     },
     {
+      "id": "content-f395aac7ce147fa2",
+      "text": "；JSON 输出和稳定的退出码；与应用共用账户和同步作业。见",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(11)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-1a447b9a273bd059",
+      "text": "；不是终端时，除非给出",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(10)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
       "id": "content-e544011fe20e08d8",
       "text": "；也可以选择加密保险库",
       "channels": [
@@ -24464,6 +28391,106 @@
       "evidence": {
         "source": "README.zh-CN.md",
         "reference": "安装、快速开始、命令行、从源码构建、数据与隐私、平台状态"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-a9951c6648232e93",
+      "text": "；其他参数一律视为本地路径。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-33e5e01e24711dac",
+      "text": "；否则 stdout 只输出列表、URL 和同步计划。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > p:nth-of-type(9)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-f22a602f806feaba",
+      "text": "；图标生成器（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > ul:nth-of-type(1) > li:nth-of-type(14)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-changelog.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "CHANGELOG.zh-CN.md",
+        "reference": "rendered in full"
+      },
+      "flags": [],
+      "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-eda7fe59279d14f3",
+      "text": "；大小以易读格式显示（",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "main#main > div.wrap.docs-layout > div.docs-main > div.prose > div.table-wrap:nth-of-type(2) > table > tbody > tr:nth-of-type(4) > td:nth-of-type(2)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-docs-cli.zh.json"
+      ],
+      "purpose": "approved-content",
+      "origin": "production-domain",
+      "decision": "allow",
+      "evidence": {
+        "source": "docs/cli.zh-CN.md",
+        "reference": "rendered in full"
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
