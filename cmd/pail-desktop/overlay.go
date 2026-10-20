@@ -8,7 +8,7 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
-// Overlays (docs/design.md "Overlays"): everything that floats above the
+// Overlays (docs/dev/design.md "Overlays"): everything that floats above the
 // window shares one surface style (overlayPanel) and, when it lists choices,
 // one row (listRow). The dialogs, the command palette, the select popup, the
 // toasts and the in-window menus (ctxmenu.go) all go through here, so a radius, a

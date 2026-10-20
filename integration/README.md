@@ -98,6 +98,6 @@ Safety rules the suite enforces, and that the script checks afterwards:
 - CDN checks fetch only unique keys of the run prefix plus one read-only GET of the public reference object. A 403 or 404 from the CDN is recorded as "not public via CDN" and skips that sub-check.
 - Credentials are read from the environment only. After a run the script fails if the log contains the secret key or the access key (raw or URL-escaped).
 
-A passing external run establishes behaviour against that one server and CDN only. Server limits (no versioning, no lifecycle, ignored storage class or SSE, ...) are recorded in the log as capabilities, not as failures. Results are summarized in [docs/status.md](../docs/status.md).
+A passing external run establishes behaviour against that one server and CDN only. Server limits (no versioning, no lifecycle, ignored storage class or SSE, ...) are recorded in the log as capabilities, not as failures. Results are summarized in [docs/dev/status.md](../docs/dev/status.md).
 
 CI can pass `PAIL_IT_MINIO_IMAGE=local:pail-test-minio:ci` after loading the fixed-source Buildx image. This mode requires the image to exist locally and never pulls or rebuilds it.

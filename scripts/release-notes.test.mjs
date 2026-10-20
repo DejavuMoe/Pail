@@ -4,11 +4,11 @@ import { test } from 'node:test';
 import { releaseNotes, semver } from './release-notes.mjs';
 
 test('release notes require matching bilingual sections', () => {
-  const text = '# Changelog\n\n## [0.1.0] - 2026-10-20\n\n### Added\n\n- [Test](docs/status.md)\n\n## [0.0.1] - 2026-01-01\n\nOld\n';
+  const text = '# Changelog\n\n## [0.1.0] - 2026-10-20\n\n### Added\n\n- [Test](docs/dev/status.md)\n\n## [0.0.1] - 2026-01-01\n\nOld\n';
   const notes = releaseNotes('v0.1.0', text, text);
   assert.ok(notes.includes('## 简体中文'));
   assert.ok(!notes.includes('Old'));
-  assert.ok(notes.includes('https://github.com/DejavuMoe/Pail/blob/v0.1.0/docs/status.md'));
+  assert.ok(notes.includes('https://github.com/DejavuMoe/Pail/blob/v0.1.0/docs/dev/status.md'));
   assert.throws(() => releaseNotes('v0.2.0', text, text));
   assert.throws(() => releaseNotes('v0.1.0', text, ''));
 });

@@ -64,7 +64,7 @@ CodeQL alerts `go/weak-sensitive-data-hashing` in `internal/app/upload_rules.go`
 
 ## Security alerts and reporting
 
-The GitHub repository has dependency graph, Dependabot vulnerability and malware alerts, private vulnerability reporting, secret scanning and push protection enabled. Report suspected vulnerabilities using [SECURITY.md](../SECURITY.md). These repository settings live on GitHub, outside Git; check them again if the repository is recreated.
+The GitHub repository has dependency graph, Dependabot vulnerability and malware alerts, private vulnerability reporting, secret scanning and push protection enabled. Report suspected vulnerabilities using [SECURITY.md](../../SECURITY.md). These repository settings live on GitHub, outside Git; check them again if the repository is recreated.
 
 Maintainers should subscribe to **Watch > Custom > Security alerts** and enable GitHub/email delivery in their personal notification settings. Dependabot's new-vulnerability notifications and digest have separate account preferences. Enabling a repository feature alone does not prove email delivery; GitHub's immediate Dependabot notifications focus on new high/critical advisories, so also review the alerts dashboard and digest.
 
@@ -107,7 +107,7 @@ The Go tool supplies target environment variables only to child processes; it ne
 
 ## Integration and manual-only checks
 
-`bash scripts/integration-minio.sh` builds the pinned MinIO fixture, binds it only to localhost, uses generated credentials and tmpfs data, and removes only its owned container. `PAIL_IT_MINIO_IMAGE=local:<image>` uses a previously loaded local image and fails if missing; the CI Buildx step uses this to avoid rebuilding or pulling the fixture twice. `-MinioImage latest` in the PowerShell wrapper remains an explicit compatibility check, not a moving CI dependency. See [integration/README.md](../integration/README.md) for all inputs.
+`bash scripts/integration-minio.sh` builds the pinned MinIO fixture, binds it only to localhost, uses generated credentials and tmpfs data, and removes only its owned container. `PAIL_IT_MINIO_IMAGE=local:<image>` uses a previously loaded local image and fails if missing; the CI Buildx step uses this to avoid rebuilding or pulling the fixture twice. `-MinioImage latest` in the PowerShell wrapper remains an explicit compatibility check, not a moving CI dependency. See [integration/README.md](../../integration/README.md) for all inputs.
 
 Plain `go test ./...` skips integration tests unless their endpoint variables are present. Never provide `PAIL_EXT_*` to ordinary CI: doing so enables the real external suite. `scripts/test-external.ps1` is manual only, scoped to the authorized endpoint and a unique `pail-e2e/` prefix. It must never run with fork credentials or automatically after a push.
 

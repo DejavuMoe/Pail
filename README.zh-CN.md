@@ -1,161 +1,136 @@
-# Pail
+<p align="center">
+  <img src="assets/brand/pail-icon.svg" width="80" height="80" alt="">
+</p>
 
-[English](README.md) | 简体中文
+<h1 align="center">Pail</h1>
 
-Pail 是一款跨平台的桌面端 S3 兼容对象存储管理器，支持 Amazon S3、MinIO、Cloudflare R2、VersityGW、Wasabi 等兼容 S3 API 的服务。它使用 Go 和 [mygo](https://github.com/egoist/mygo) 界面库编写，可在 Windows、Linux 和 macOS 上运行，并附带命令行工具 `pail`。
+<p align="center">
+  Amazon S3、Cloudflare R2、MinIO 等 S3 兼容存储的桌面客户端。<br>
+  支持 Windows、macOS 和 Linux，免费开源。
+</p>
 
-Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有任何隶属、认可或赞助关系。
+<p align="center">
+  <a href="https://pail.download/zh/">网站</a> ·
+  <a href="https://github.com/DejavuMoe/Pail/releases/latest">下载</a> ·
+  <a href="https://pail.download/zh/docs/">文档</a> ·
+  <a href="README.md">English</a>
+</p>
 
-![Pail 亮色主题](docs/images/main-light.webp)
-![Pail 暗色主题](docs/images/main-dark.webp)
+<picture>
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-dark.webp">
+  <img src="docs/images/main-light.webp" alt="Pail 主窗口：存储桶列表、对象表格和检查器">
+</picture>
 
 ## 功能
 
-**浏览**
-- 账户数量不限，支持 AWS 与 S3 兼容服务（自定义端点、区域、路径样式、访问密钥、AWS profile、默认凭据链、匿名、AssumeRole），可测试连接。
-- 存储桶列表、面包屑、可排序的多选对象表（自动分页）、搜索、平铺（不分层）视图、检查器面板。
-- 预览 JSON、CSV、XML 等文本、图片和十六进制，大小有安全上限。
-- 复制 key、URI、URL 和预签名 URL。
-
-**传输**
-- 上传和下载文件、文件夹、指定版本与整个存储桶，支持拖放。
-- 上传、下载、其他三类独立队列，并发数可调，显示进度、速度，可取消和重试。
-- 冲突策略：跳过、覆盖、重命名、较新则覆盖、大小不同则覆盖。
-- 分片传输；按账户设置校验和模式（自动、仅在需要时、尽量发送）；仅创建（create-only）写入，不会覆盖并发写入的对象。
-- 下载先写入临时文件，校验通过后才发布。
-
-**对象属性**
-- 编辑 headers、元数据、标签、ACL、存储类别和服务端加密（SSE-S3、SSE-KMS、SSE-C）；MIME 类型表。
-- 编辑时保留所有未修改的属性，并在完成后复核结果。多选时会先确认范围。
-
-**版本**
-- 列出版本和删除标记，一次下载多个版本，恢复旧版本或已删除的 key，永久删除选中的版本。
-
-**存储桶**
-- 创建（区域、对象锁）、删除、清空，复制或移动整个存储桶的内容，对整个存储桶应用存储类别或加密。
-- 14 项存储桶设置（版本控制、加密、策略、CORS、生命周期、日志、标签、静态网站、公共访问阻止、所有权、对象锁、请求者付费、传输加速、复制），可用表单或 JSON 编辑。服务不支持某项时显示"不支持"，而不是"未配置"。
-- 未完成的分片上传：列出与中止。
-
-**同步作业**
-- 可保存的作业：上传、下载或镜像；按大小和时间、大小或校验和比较；排除规则；先预览。执行时只做预览过的动作，并逐项复核前提条件。本地删除进入系统回收站。
-
-**上传规则与压缩**
-- 按存储桶和 key 模式设置 headers、存储类别、加密和压缩：GZIP、ZIP 或 AES-256 ZIP，可调压缩级别。下载时可以解码压缩过的对象。
-
-**CDN、预签名 URL 与 CloudFront**
-- 每个账户可设置 CDN 域名（基础 URL 或含 `{bucket}`、`{key}` 的模板）：复制或打开对象的 CDN 链接，上传完成后也会提示。
-- GET 或 PUT 的预签名 URL，可设置有效期、指定版本，一次处理多个对象。
-- CloudFront（仅 AWS 账户）：列出 distribution、失效指定路径、失效整个存储桶对应的 distribution、查看失效记录。
-
-**安全**
-- 私有密钥和密码保存在系统钥匙串中，也可以选择加密保险库（Argon2id 派生密钥，XChaCha20-Poly1305 加密），绝不写入配置文件。
-- 破坏性操作先显示范围，删除存储桶需要输入桶名。可选的诊断日志会脱敏。
-
-**界面**
-- 命令面板（`Ctrl+K`，macOS 为 `⌘K`）、键盘快捷键；Windows/Linux 使用窗口内菜单，macOS 使用系统菜单。
-- 统一的对话框与弹出层、带动效的指示条与面板过渡，遵循系统的减少动态效果偏好。
-- 英文与简体中文，亮色与暗色主题，默认跟随系统。
+- **账户**：支持访问密钥、AWS 配置文件、默认凭据链、AssumeRole 和匿名访问。AWS 以外的服务填写端点、区域和路径风格寻址，保存前可以先测试连接。
+- **浏览**：可排序、可多选的对象表格，自动分页；有面包屑、筛选、平铺视图和检查器。可以预览文本文件（JSON、CSV、XML 等）、图片和十六进制内容，复制对象键、URI、URL 和预签名链接。
+- **传输**：上传、下载文件、文件夹、指定版本或整个存储桶，也可以把文件直接拖进窗口。上传和下载分开排队，并发数可调，显示进度和速度，可以取消或重试。目标已存在时可选跳过、覆盖、两者都保留、较新时覆盖或大小不同时覆盖。大文件分段上传并带校验和；下载先写入临时文件，校验通过后才放到目标位置。
+- **对象属性**：为单个或多个对象修改请求头、元数据、标签、ACL、存储类别和服务端加密（SSE-S3、SSE-KMS、SSE-C），没改动的属性保持原样。
+- **版本**：列出版本和删除标记，一次下载多个版本，恢复旧版本或已删除的对象键，只永久删除你选中的版本。
+- **存储桶**：创建存储桶（可设区域和对象锁定）、清空、删除，复制或移动整个存储桶的内容。用表单或 JSON 编辑 14 项设置：版本控制、加密、策略、CORS、生命周期、日志、标签、静态网站、公共访问阻止、对象所有权、对象锁定、请求者付费、传输加速和复制。列出并中止未完成的分段上传。
+- **同步任务**：保存上传、下载或镜像文件夹的任务。可按大小和时间、仅大小或校验和比较，按通配符排除文件，执行前先查看计划。
+- **上传规则**：按存储桶和对象键匹配，自动设置请求头、存储类别和加密，或用 GZIP、ZIP、AES-256 ZIP 压缩。下载时可以解码压缩过的对象。
+- **链接**：生成带有效期的 GET 或 PUT 预签名链接，可指定版本，也可以一次处理多个对象。每个账户可以设置 CDN 域名，上传完成后可直接复制 CDN 链接。AWS 账户可以提交 CloudFront 失效请求。
+- **界面**：命令面板（`Ctrl+K`，macOS 上是 `⌘K`）和键盘快捷键；英文与简体中文，浅色与深色主题。
 
 ## 安装
 
-发布包由 `tools/release` 生成在 `build/release/<version>/` 中，并附带 `SHA256SUMS` 文件。每个包内含桌面和 CLI 两个可执行文件、`LICENSE`；使用文档见 [pail.download](https://pail.download/zh/docs/)。
+从 [最新版本](https://github.com/DejavuMoe/Pail/releases/latest) 下载对应系统的压缩包。镜像 [pan.zsh.moe/Pail](https://pan.zsh.moe/Pail/) 上有相同的文件。
 
-| 系统 | 压缩包 |
-| --- | --- |
-| Windows | `Pail-v<version>-windows-amd64.zip`、`Pail-v<version>-windows-arm64.zip` |
-| Linux | `Pail-v<version>-linux-amd64.tar.gz`、`Pail-v<version>-linux-arm64.tar.gz`（含 `pail.desktop` 和 `pail.png`） |
-| macOS | `Pail-v<version>-darwin-amd64.zip`、`Pail-v<version>-darwin-arm64.zip`（内含 `Pail.app`） |
+- **Windows**：`Pail-v<version>-windows-amd64.zip`（x64）或 `Pail-v<version>-windows-arm64.zip`（Arm）
+- **macOS 11 及以上**：`Pail-v<version>-darwin-arm64.zip`（Apple 芯片）或 `Pail-v<version>-darwin-amd64.zip`（Intel）
+- **Linux**：`Pail-v<version>-linux-amd64.tar.gz`（x64）或 `Pail-v<version>-linux-arm64.tar.gz`（Arm）
 
-从 [Pail v0.2.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.2.0) 下载，并用同一 Release 的 `SHA256SUMS` 校验压缩包。可执行文件名包含版本与目标平台，例如 `pail-desktop-v0.2.0-windows-amd64.exe` 和 `pail-v0.2.0-windows-amd64.exe`。macOS 保留 `Pail.app`，内部程序名同样包含版本。下文使用安装后的短名称 `pail-desktop` 和 `pail`；安装时可重命名或创建别名。Linux 的 `.desktop` 文件要求带版本的桌面程序位于 `PATH` 中。不提供 32 位桌面包。
+每个压缩包都含桌面应用和命令行工具 `pail`。macOS 压缩包里是 `Pail.app`；Linux 压缩包还带 `.desktop` 文件和图标。不提供 32 位版本。
 
-可执行文件没有开发者代码签名，macOS 应用也没有公证，可能被 Gatekeeper 阻止。CI 要求原生自动化测试和版本冒烟通过，但这不等于 macOS 或 ARM64 的人工 GUI 验收。
+可执行文件名包含版本和平台，例如 `pail-v0.2.0-windows-amd64.exe`。本文的示例使用短名称 `pail-desktop` 和 `pail`，安装时可以重命名或创建别名。Linux 的 `.desktop` 文件从 `PATH` 中启动带版本号的桌面程序。
+
+### 校验下载
+
+计算压缩包的 SHA-256，与同一版本 `SHA256SUMS` 中对应的那一行比较：
+
+```sh
+sha256sum Pail-v0.2.0-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.2.0-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.2.0-windows-amd64.zip         # Windows PowerShell
+```
+
+### 在 macOS 上首次打开
+
+应用没有签名和公证，macOS 会拒绝打开下载的副本。解压后把 `Pail.app` 移到"应用程序"，然后清除一次隔离标记：
+
+```sh
+xattr -dr com.apple.quarantine /Applications/Pail.app
+```
+
+### 在 Windows 上首次打开
+
+可执行文件没有签名。如果 SmartScreen 提示"Windows 已保护你的电脑"，点击**更多信息**，再点击**仍要运行**。
 
 ## 快速开始
 
-1. 启动 `pail-desktop`，在侧栏打开账户切换器并添加账户。以自建或第三方服务为例：
-   - 端点 `https://s3.example.com`，区域 `us-east-1`，填入访问密钥 ID 和私有密钥；
-   - 打开**路径样式**（MinIO 和大多数自建网关需要开启，AWS 保持关闭）；
-   - 可选：设置 **CDN URL**，例如 `https://cdn.example.com`。
+1. 启动 `pail-desktop`，打开侧栏顶部的账户菜单，添加账户。自建或第三方服务需要填写：
+   - 端点，例如 `https://s3.example.com`，以及区域，例如 `us-east-1`；
+   - 访问密钥 ID 和私有访问密钥；
+   - **路径风格寻址**：MinIO 和大多数自建网关需要打开，AWS 保持关闭；
+   - 可选的 **CDN URL**，例如 `https://cdn.example.com`。
 
-   点击"测试连接"，然后保存。私有密钥会存入系统钥匙串。
-2. 在侧栏选择存储桶并浏览。把文件拖进窗口即可上传；选中对象后点击下载。
-3. 没有凭据时可以先体验：运行 `pail-desktop --demo`，它连接的是进程内的内存 S3 服务，数据不会离开本机，也不会保存任何内容。
+   点击**测试连接**，然后保存。私有访问密钥会存进系统钥匙串。
+2. 在侧栏选择存储桶。把文件拖进窗口即可上传；选中对象后点击**下载**保存到本地。
+3. 没有账户也可以先试用：运行 `pail-desktop --demo`。它在应用内启动一个内存 S3 服务，不发送任何数据，也不保存任何内容。
 
-其他参数：`--config-dir DIR`、`--theme system|light|dark`、`--size WxH`、`--tool sync|cloudfront|rules|mime|multipart|settings`、`--version`。
+`pail-desktop` 还支持这些参数：
+
+| 参数 | 作用 |
+| --- | --- |
+| `--config-dir` | 使用其他配置目录。 |
+| `--theme` | `system`、`light` 或 `dark`。 |
+| `--size` | 初始窗口大小，例如 `1280x800`。 |
+| `--tool` | 启动时打开工具：`sync`、`cloudfront`、`rules`、`mime`、`multipart` 或 `settings`。 |
+| `--version` | 输出版本号后退出。 |
 
 ## 命令行
 
-`pail` 与桌面程序共用账户和同步作业：
+`pail` 使用桌面应用的账户和已保存的同步任务，账户需要先在桌面应用里添加。
 
-```powershell
+```sh
 pail accounts
 pail ls s3://my-bucket/photos/ -r
 pail cp ./dist s3://my-bucket/site/ -r --conflict newer
-pail sync ./photos s3://my-bucket/photos/ --mode new_changed --dry-run
+pail sync ./photos s3://my-bucket/photos/ --dry-run
 pail presign s3://my-bucket/report.pdf --expires 1h
 ```
 
-命令：`accounts`、`buckets`、`ls`、`cp`、`mv`、`rm`、`mb`、`rb`、`presign`、`url`、`versions`、`restore`、`sync`、`vault status`。JSON 输出、退出码和加密保险库的用法见 [docs/cli.zh-CN.md](docs/cli.zh-CN.md)。
-
-## 从源码构建
-
-`mise.toml` 锁定 Go 1.27.2 与 Node.js 24.19.0（仅 CI 脚本使用）。先运行 `mise trust` 和 `mise install go node`；未启用 shell 集成时，使用 `mise exec -- <命令>`。Go 依赖仍由 `go.mod` 和 `go.sum` 锁定。原生构建、测试和跨平台发行打包只需要 Go。仅在选择可选的兼容包装脚本时才需要 PowerShell 7.3+，CI 不使用这些包装脚本。除 race 测试外不需要 cgo。
-
-```powershell
-go build -o build/ ./cmd/pail-desktop ./cmd/pail
-go run ./tools/release -version 0.2.0  # 构建并校验全部六个目标
-go run ./tools/genicons                # 由 assets/brand/pail-icon.svg 重新生成图标
-```
-
-`tools/release` 需要 `assets/brand/generated` 中已生成的图标。任何目标构建或验包失败都会让工具失败。工具自动验包；重新检查下载的产物时可运行 `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0`，检查六个压缩包、校验和、二进制目标平台与执行权限。
-
-## 测试
-
-```powershell
-go vet ./...
-go test ./...
-```
-
-这些测试使用内存 S3 服务（`internal/s3test`）和 `httptest`，覆盖协议行为，但不涉及真实的服务商。
-
-在 Linux 上使用 Docker 中的真实 MinIO 测试：
-
-```sh
-bash scripts/integration-minio.sh
-```
-
-Windows 上安装了可选的 `linux-task.ps1` WSL 构建运行器时，PowerShell 包装脚本会执行同一套测试：
-
-```powershell
-./scripts/test-integration.ps1                      # 固定版本的 MinIO
-./scripts/test-integration.ps1 -MinioImage latest   # 最新的上游版本，从源码构建
-```
-
-对你自己的任意 S3 兼容端点测试，凭据只通过 `PAIL_EXT_*` 环境变量传入（`PAIL_EXT_ENDPOINT`、`PAIL_EXT_ACCESS_KEY`、`PAIL_EXT_SECRET_KEY`，可选 `PAIL_EXT_BUCKET`、`PAIL_EXT_REGION`、`PAIL_EXT_PATH_STYLE`、`PAIL_EXT_CDN`）：
-
-```powershell
-./scripts/test-external.ps1
-```
-
-测试只写入唯一的 `pail-e2e/<run>/` 前缀，结束后清理；不创建或删除存储桶，也不修改存储桶设置。详情见 [integration/README.md](integration/README.md)（英文）。
+全部命令、参数、JSON 输出和退出码见 [命令行参考](docs/cli.zh-CN.md)。
 
 ## 数据与隐私
 
-- **配置**：系统用户配置目录下的 `Pail` 文件夹（Windows 为 `%AppData%\Pail`，Linux 为 `~/.config/Pail`，macOS 为 `~/Library/Application Support/Pail`），或 `--config-dir` 指定的路径。里面有设置、账户文件、同步作业、上传规则和机密引用的名称。如果存在旧名称留下的 `openS3` 文件夹，会在首次启动时自动迁移一次。
-- **机密**：私有访问密钥、会话令牌和被引用的密码保存在系统钥匙串（Windows 凭据管理器、macOS 钥匙串、Linux 的 Secret Service），服务名为 `Pail`；也可以选择加密保险库 `vault.json`（设置 > 安全，适合没有钥匙串的环境）。访问密钥 ID 不是机密，保存在账户文件中。
-- **日志**：默认关闭。开启后，脱敏后的日志写入配置目录下的 `logs/pail.log`。URL 查询串、Authorization 头、签名和已知的机密值都会被移除；手动输入的密码只能按标签识别，分享日志前请先检查。
-- **网络**：Pail 只访问你配置的账户所对应的端点，没有遥测，也不检查更新。
+- **配置**保存在用户配置目录下的 `Pail` 文件夹：Windows 是 `%AppData%\Pail`，macOS 是 `~/Library/Application Support/Pail`，Linux 是 `~/.config/Pail`；也可以用 `--config-dir` 指定。里面有设置、账户、同步任务、上传规则和已保存机密的名称。Pail 旧名称 `openS3` 留下的文件夹会在首次启动时迁移一次。
+- **机密**（私有访问密钥、会话令牌和保存的密码）存进系统钥匙串，服务名为 `Pail`：Windows 凭据管理器、macOS 钥匙串或 Linux 的 Secret Service。没有钥匙串时，可以在**设置 › 安全**里改用加密保险库 `vault.json`。访问密钥 ID 不是机密，和账户保存在一起。
+- **日志**默认关闭。开启后，Pail 在配置目录写入 `logs/pail.log`，并去掉 URL 查询参数、Authorization 请求头、签名和已知的机密值。手动输入的密码只能按标签识别，分享日志前请先检查一遍。
+- **网络**：Pail 只连接你添加的账户所对应的端点，没有遥测，也不检查更新。
 
-## 平台状态
+## 已测试的平台与服务
 
-人工桌面检查覆盖 Windows 和 Linux（WSLg）。[CI 工作流](https://github.com/DejavuMoe/Pail/actions/workflows/ci.yml) 要求 Windows、Linux、macOS 的 amd64 和 arm64 原生测试及程序版本冒烟通过；结果以发布提交对应的运行记录为准。macOS 与 ARM64 的人工 GUI 验收仍待完成。目前用过的真实服务端：MinIO（两个版本）和 Cloudflare 后面的自建 VersityGW。AWS 本身，包括 STS 和 CloudFront，尚未测试。各功能的验证结果见 [docs/status.md](docs/status.md)，与 CS Browser Pro 的对照见 [docs/feature-matrix.md](docs/feature-matrix.md)。
+- 桌面应用已在 Windows（x64）、Linux（x64）和 macOS（Apple 芯片与 Intel）上手动运行过。Windows 和 Linux 的 Arm 版本还没有手动试过。
+- 已测试的服务：Amazon S3、Cloudflare R2、Wasabi、MinIO 和 VersityGW。
+- 还没有在真实 AWS 账户上测试：AssumeRole 凭据和 CloudFront。
 
-## 文档
+已知限制见 [更新日志](CHANGELOG.zh-CN.md)。
 
-[docs/cli.zh-CN.md](docs/cli.zh-CN.md) · [docs/architecture.md](docs/architecture.md) · [docs/app-api.md](docs/app-api.md) · [docs/design.md](docs/design.md) · [docs/status.md](docs/status.md) · [docs/ci.md](docs/ci.md) · [docs/site.md](docs/site.md) · [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)
+## 从源码构建
+
+需要 Go 1.27.2，不需要 C 编译器。
+
+```sh
+go build -o build/ ./cmd/pail-desktop ./cmd/pail
+```
+
+测试、发布打包和项目结构见 [CONTRIBUTING.md](CONTRIBUTING.md)（英文）。
 
 ## 许可证
 
-Pail 以 [MIT 许可证](LICENSE)发布，© 2026 Dejavu Moe。随附的第三方资源：[Lucide](https://lucide.dev) 图标（ISC）和 Inter 字体（SIL Open Font License 1.1，见 `cmd/pail-desktop/fonts/OFL.txt`）。
+Pail 以 [MIT 许可证](LICENSE) 发布，随附 [Lucide](https://lucide.dev) 图标（ISC 许可证）和 Inter 字体（SIL Open Font License 1.1）。
 
-作者 [Dejavu Moe](https://dejavu.moe) · https://github.com/DejavuMoe/Pail
+Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有关联，也未获其认可或赞助。

@@ -5,9 +5,9 @@
 - **API**：`internal/app`（或 `internal/storage` 等）里有对应的导出函数。
 - **界面**：`cmd/pail-desktop` 里有入口（命令、菜单、对话框或工具页）。界面按钮存在不代表它对着真实服务端点过。
 - **协议测试**：针对 `internal/s3test`（内存 S3，经真实 SDK 驱动）或 `httptest` 的命名测试。
-- **真实端到端**：针对真实服务端的测试，分 MinIO（`integration/app_*_test.go`）与 VersityGW（`integration/ext_*_test.go`，经 Cloudflare，只写唯一前缀并清理）。
+- **真实端到端**：针对真实服务端或真机的测试，分三类：MinIO（`integration/app_*_test.go`）、VersityGW（`integration/ext_*_test.go`，经 Cloudflare，只写唯一前缀并清理），以及所有者手动完成的真机与真实云服务验证（见“验证环境”表中的 macOS、Amazon S3、Cloudflare R2、Wasabi）。
 
-标记：✅ 有证据，⚠️ 部分覆盖，❌ 没有，n/a 不适用。与 CS Browser Pro 的逐项对照见 [feature-matrix.md](feature-matrix.md)。
+标记：✅ 有证据，⚠️ 部分覆盖，❌ 没有，n/a 不适用。
 
 ## 验证环境
 
@@ -17,25 +17,15 @@
 | Linux（WSL，含 WSLg） | `go vet ./...`、`go test -race ./...`（全部包）；WSLg 原生窗口冒烟；Linux tar.gz 在 WSL 解压后 `--version` 与冒烟通过；中文经 fontconfig 回退到 Noto Sans CJK SC 正常显示 |
 | MinIO | `scripts/test-integration.ps1`：固定版本 RELEASE.2025-04-22（本地从源码构建）与最新上游 RELEASE.2025-10-15（从源码构建），存储层与应用层套件全部通过 |
 | VersityGW | 自托管，前面是 Cloudflare，path-style，桶 `test`，另有 CDN 域名。外部套件通过，每次运行结束后前缀为空、桶内原有对象不变、日志中无密钥 |
-| macOS / arm64 | v0.2.0 发布提交 `b12f8a0` 的 GitHub Actions CI 通过：六个目标（Windows、Linux、macOS 的 amd64 与 arm64）原生 `go vet`、`go test` 与版本冒烟，另有 Race、MinIO、govulncheck 与 CodeQL。人工 GUI 验收未完成，`.app` 没有开发者签名、未公证 |
-| GitHub Release | v0.2.0 于 2026-10-20 发布，六个安装包与 `SHA256SUMS` 由 Release 工作流打包、校验后发布；下载公开产物再次验包通过，全部不含 README |
-| 网站 | https://pail.download 由 Woodpecker 部署到 netcup-vps500，2026-10-20 发布后实测：十个中英文页面返回 200，下载入口为 v0.2.0；SEO、分享图、robots、sitemap、404 与七个下载链接均通过检查 |
-| AWS | 没有测试 |
+| macOS（arm64 与 amd64，真机） | 所有者在 Apple silicon（arm64）与 Intel（amd64）两台真实 Mac 上手动运行了应用（2026-10-20 确认）。下载得到的应用首次启动时，需要先执行 `xattr -dr com.apple.quarantine` 清除隔离属性，macOS 才会打开。`.app` 没有开发者签名、未公证。CI 另有六个目标（Windows、Linux、macOS 的 amd64 与 arm64）的原生 `go vet`、`go test` 与版本冒烟 |
+| GitHub Release | 六个安装包与 `SHA256SUMS` 由 Release 工作流打包、校验后发布；下载公开产物再次验包通过，全部不含 README |
+| 网站 | https://pail.download 由 Woodpecker 部署；发布后检查过中英文页面、下载链接、404、robots、sitemap 与分享元信息 |
+| Amazon S3、Cloudflare R2、Wasabi | 所有者手动测试，可用（2026-10-20 确认）。这是手动的真实端到端验证，没有对应的自动化套件，具体覆盖的功能没有逐项记录 |
+| AWS 的 STS AssumeRole 与 CloudFront | 没有测试 |
 
 更名为 Pail 之后（2026-10-20）重跑了：Windows `gofmt`/`go vet`/`go test`、Linux `go vet` 与 `go test -race`（全部包）、六个目标的发布构建与包内容检查、MinIO 固定版本套件、`--demo` 冒烟与 README 截图重新生成。VersityGW 外部套件和 MinIO 最新上游套件在更名后尚未重跑，上表这两行的结果来自更名前的同一份功能代码。
 
 VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-None-Match` / `If-Match`，CopyObject 忽略 `If-None-Match`；五种 checksum 与对象标签可用；读取对象 ACL 返回 NotImplemented（应用报 Unsupported）；存储类别与 SSE 被静默忽略（应用把这些项报为 failed）；未开启版本控制；Cloudflare 会解压 gzip 对象，HEAD 与 GET 的大小不一致（应用拒绝发布这类下载）。
-
-## v0.2.0 发布验收（2026-10-20）
-
-- **本地源码**：在包含浮层、菜单、动效及本次发版准备的源码上，Windows 与 Debian WSL2 均通过 `go vet ./...`、`go test ./...`、`go build ./...`；修改的 Go 文件已经 `gofmt`。Linux 经 `linux-task.ps1 -Mode build` 串行执行。
-- **桌面与文档图**：Windows 原生 `--demo` 亮暗窗口启动、`--smoke-exit` 与 `--smoke-screenshot` 成功。文档中的 1440×900 截图来自当前源码的 `TestShellRendersKeyTexts` / `TestDarkModeRenders` 受控 UI 渲染，使用 PicForge 的 WebP 默认参数（质量 75、不缩放），不是原生窗口截图。静态截图不证明动画观感或完整交互验收。
-- **本地发行包**：改为 Go 入口后，Windows 与 Debian WSL2 分别通过 `go run ./tools/release -version 0.2.0` 构建全部六目标并自动验包，校验文件清单、SHA256、架构和执行权限。包中不再含 README；Windows 与 Linux amd64 解压后的 CLI `version` 与桌面 `--version` 均输出 0.2.0。旧 PowerShell 兼容入口已在 Windows 验证子目录调用、相对输出目录、双目标参数与 CLI-only 模式；CI 不再使用它。交叉编译不代表 macOS / ARM64 真机验证。
-- **网站**：本地构建和 Chrome 检查覆盖英文、中文、明暗主题与 WebP 加载；所有十个可索引页面的分享元信息、绝对图片 URL、真实图片尺寸及 404 的 `noindex` 由回归测试验证。发布门禁脚本的 15 个 Node 测试、网站部署夹具测试、生成物检查与 CI 固定版本的 actionlint 工作流检查通过。
-- **远端门禁与标签**：Forgejo 与 GitHub 镜像的发布提交均为 `b12f8a00b42897f4b657830c33c32cfc8544bbc0`。[CI](https://github.com/DejavuMoe/Pail/actions/runs/39433664571) 九项和 [CodeQL](https://github.com/DejavuMoe/Pail/actions/runs/39433664533) 五项全部通过，`scripts/check-release.mjs` 复核成功后才创建并推送签名标签 `v0.2.0`。本地与 GitHub 均确认标签签名有效。CodeQL 没有开放告警；两条 SSE-C MD5 历史误报仍按 `docs/ci.md` 的依据关闭。
-- **公开发行包**：[Release 工作流](https://github.com/DejavuMoe/Pail/actions/runs/39435625839) 首次上传遇到 GitHub 资源名冲突，保持草稿；重跑失败的发布任务后成功公开 [v0.2.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.2.0)。下载六个公开压缩包与 `SHA256SUMS` 后，`tools/verify-release` 再次校验通过；Windows 与 Debian WSL2 上的 amd64 公开产物均通过 CLI `version` 和桌面 `--version` 的 0.2.0 断言。
-- **生产网站与语言统计**：发布后手动运行 [Woodpecker #4](https://ci.via.moe/repos/10/pipeline/4)，从已公开 Release 读取 v0.2.0 并原子部署。十个页面的 canonical、hreflang、Open Graph、Twitter 大图卡片与语言信息正确；公开分享图为 1440×900 WebP，与仓库浅色截图 SHA256 一致；robots、sitemap、缺失页 404/noindex，以及六个压缩包和校验和的七个下载链接均通过 HTTP 检查。Forgejo 与 GitHub 的语言统计字节数一致，Go 为 94.26%，技能目录和网站原型已排除。HTML `no-cache` 与图片资源 `immutable` 缓存头通过检查。
-- **验收边界**：本次 CI 已重跑 Race 与 MinIO；未重跑 VersityGW 或真实 AWS，历史外部服务端结果不能当作 v0.2.0 的新验收。未完成人工 macOS / ARM64 GUI 验收，也未验证社交平台预览缓存。
 
 ## 功能
 
@@ -59,7 +49,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 新建文件夹、复制 key / URI / URL | ✅ | ✅ | ✅ | ✅ | key 含 `+`、`?`、空格、Unicode 的场景在两个服务端上验证 |
 | 命令面板、右键菜单、快捷键 | n/a | ✅ | ✅ 命令表与对话框可达性 | n/a | 菜单的验证见下方"窗口内菜单"一行 |
 | 浮层统一外观（未发布）：`overlayPanel`、`listRow`、键帽、命令面板与下拉选项、存储桶设置对话框、Toast | n/a | ⚠️ headless 测试（`overlay_test.go`、`chrome_test.go`、`theme_test.go`）：读取渲染像素确认三种面板亮暗两种边缘（亮色阴影、暗色 1px 描边、Toast 无描边）、命令面板与下拉选项的高亮（键盘与鼠标同为 `SurfaceHover`）和当前值对勾（`Accent`）、禁用行不响应悬停、键帽逐键拆分；`theme.go` 之外没有颜色字面量；新 token 的对比度下限；960×600 下全部对话框按钮可达；亮、暗、960×600、1440×900 的快照由人工逐张目视审阅（命令面板、下拉选项、对话框、存储桶设置、Toast） | n/a | n/a | 只在 headless 渲染里看过，没有在原生窗口里目视；暗色阴影与描边的取舍未在真实显示器上比较。Tooltip 只套用了主题的反色颜色，圆角（5）与阴影仍是 mygo v0.5.5 内置的，库里没有改写钩子。右键菜单与 `⋯` 菜单见下一行 |
-| 窗口内菜单（未发布，Windows / Linux）：对象表与存储桶的右键菜单，上传、账户切换器、`⋯` 按钮的菜单 | n/a | ⚠️ headless 测试（`ctxmenu_test.go` 与改写后的各菜单用例，在所有平台上驱动窗口内菜单）：`↑`/`↓` 循环并跳过分隔线与禁用项、`Home`/`End`、首字母跳转、`Enter` 执行动作一次并关闭整条菜单链；`→`/`←`/`Enter` 进出子菜单，`Esc` 先关子菜单再关菜单，关闭后焦点回到对象表；菜单外的左键、右键只关闭菜单，不触发下面的控件；鼠标停留 150ms 打开子菜单，禁用项不响应悬停与单击；窗口缩放、失去焦点时关闭；`Shift+F10` 与菜单键在当前行下方打开、高亮第一项且不改变选择；读取渲染像素确认只有勾选项有 `Accent` 对勾、禁用项文字更淡、禁用项悬停不高亮；960×600 下 en、zh-Hans、en-XA 的右键菜单（在对象表右下角打开）、`⋯` 菜单及其主题子菜单都在窗口内，宽度在 200–320 之间，子菜单在右边缘翻到左侧；比窗口高的菜单限高并在内部滚动；macOS 原生路径（`nativeMenus`）经 mygo 测试器的模拟系统菜单验证；亮、暗、中英文快照（对象右键菜单、`⋯` 菜单、主题子菜单、960×600 右键菜单与账户菜单）经人工目视 | n/a | n/a | 只在 headless 渲染里看过，没有在 Windows 原生窗口或 WSLg 里手动操作；macOS 只做了交叉编译（`GOOS=darwin go vet`、测试编译），没有在 macOS 上运行。无障碍角色（`RoleMenu`、`RoleMenuItem`、`RoleMenuItemCheckBox`、勾选、展开、禁用、`ActiveDescendant`）已设置，但 mygo 测试器读不到无障碍树，也没有用 Narrator、NVDA 或 Orca 验证。自绘菜单不能超出窗口边界；文本输入框与可选文字的编辑菜单仍是系统菜单 |
+| 窗口内菜单（未发布，Windows / Linux）：对象表与存储桶的右键菜单，上传、账户切换器、`⋯` 按钮的菜单 | n/a | ⚠️ headless 测试（`ctxmenu_test.go` 与改写后的各菜单用例，在所有平台上驱动窗口内菜单）：`↑`/`↓` 循环并跳过分隔线与禁用项、`Home`/`End`、首字母跳转、`Enter` 执行动作一次并关闭整条菜单链；`→`/`←`/`Enter` 进出子菜单，`Esc` 先关子菜单再关菜单，关闭后焦点回到对象表；菜单外的左键、右键只关闭菜单，不触发下面的控件；鼠标停留 150ms 打开子菜单，禁用项不响应悬停与单击；窗口缩放、失去焦点时关闭；`Shift+F10` 与菜单键在当前行下方打开、高亮第一项且不改变选择；读取渲染像素确认只有勾选项有 `Accent` 对勾、禁用项文字更淡、禁用项悬停不高亮；960×600 下 en、zh-Hans、en-XA 的右键菜单（在对象表右下角打开）、`⋯` 菜单及其主题子菜单都在窗口内，宽度在 200–320 之间，子菜单在右边缘翻到左侧；比窗口高的菜单限高并在内部滚动；macOS 原生路径（`nativeMenus`）经 mygo 测试器的模拟系统菜单验证；亮、暗、中英文快照（对象右键菜单、`⋯` 菜单、主题子菜单、960×600 右键菜单与账户菜单）经人工目视 | n/a | n/a | 只在 headless 渲染里看过，没有在 Windows 原生窗口或 WSLg 里手动操作；该菜单只在 Windows 与 Linux 使用，macOS 走系统菜单（`nativeMenus`）。macOS 真机运行过应用，但没有逐项记录对菜单的检查。无障碍角色（`RoleMenu`、`RoleMenuItem`、`RoleMenuItemCheckBox`、勾选、展开、禁用、`ActiveDescendant`）已设置，但 mygo 测试器读不到无障碍树，也没有用 Narrator、NVDA 或 Orca 验证。自绘菜单不能超出窗口边界；文本输入框与可选文字的编辑菜单仍是系统菜单 |
 | 界面动效（未发布）：按钮与行的颜色淡变，对话框、命令面板、下拉、菜单、子菜单、Toast 的出入场，指示线与指示条滑动，开关圆钮，传输面板折叠，检查器内容淡入，进度条，计数滚动，"已保存"淡入淡出 | n/a | ⚠️ headless 测试，用 mygo 测试器的受控时钟逐帧推进（`motion_test.go`）：对话框以弹簧入场，起始约 0.94 倍，过冲不超过 3%，静止位置与关掉动画时的位置相差不超过 0.05，静止后不再请求帧；入场中的对话框按钮与菜单的键盘、指针立即可用；关闭中的对话框与菜单残影不拿焦点、不挡指针，下面的侧栏立即响应；向上翻转的菜单从下方进入；检查器下划线在 40ms 时位于两标签之间、静止于新标签下；开关圆钮 40ms 时在两端之间；传输面板按开关时高度过渡、拖动分隔条时跟手无延迟；Toast 从下方约 8 升起；进度条 50ms 时在新旧宽度之间、静止于 128（0.8）；"已保存"与对话框退出时像素在出现与消失之间；悬停 30ms 时填充色在两色之间、静止为 `SurfaceHover`；检查器打开时内容淡入、位置不动；"减少动态效果"下对话框、菜单、Toast、传输面板、下划线、圆钮直接到位，遮罩仍淡入；窗口缩放的那一帧布局即为最终位置，不再移动；所有动画结束后窗口不再请求帧。亮、暗快照（对话框、命令面板、菜单、子菜单的入场与退出中间帧，传输面板展开、Toast 升起）经人工目视：缩放中的面板阴影未被裁切，弹簧过冲肉眼不可见 | n/a | n/a | 只在 headless 渲染与受控时钟里看过，没有在 Windows 原生窗口、WSLg 或 macOS 上实际观看动画，帧率与流畅度未知；没有在开启系统"减少动态效果"的真实桌面上验证 mygo 读取到该设置。行为测试关掉动画运行（`options.still`）。Tooltip 无入场动画（mygo v0.5.5 无钩子）；浮层内元素的位移过渡会被 mygo 在过渡后重新布局覆盖，所以浮层入场用 `AnimatePose`，多个 Toast 叠放时位置变化不过渡 |
 | 检查器标头标签与缩放布局（未发布修复） | n/a | ⚠️ headless 测试（`layout_test.go`）：检查器 320 与 280 宽下六个标头标签的布局宽度不为 0，且与宽面板中一致（修复前为 0，测试会失败）；搜索框宽度与对象表列由当前帧尺寸算出，不再读上一帧的 `Bounds()`；工具栏、路径栏、表格列的断点带 ±12 回滞；取消 1100 处的面板自动缩窄，960×600 下 `chrome_test.go`、`ux_audit_test.go`、i18n 审计仍通过；分隔条悬停 `BorderStrong`、拖动 `TextSubtle` | n/a | n/a | 只做了 headless 快照的目视确认（标签显示），没有在原生窗口里拖动缩放对比。分隔条拖动色按"最近 200 ms 内移动过"判断，因为 mygo 不报告按键状态；没有目视审阅 |
 
@@ -136,12 +126,12 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | `pail` 命令行（accounts、buckets、ls、cp、mv、rm、mb、rb、presign、url、versions、restore、sync、vault status） | ✅ | n/a | ✅ 进程内对 `internal/s3test` | ❌ 命令行外壳本身没有对真实服务端运行 | 它调用的应用层在真实服务端验证过 |
-| 发布包（Windows / Linux / macOS，amd64 与 arm64）与 SHA256SUMS | n/a | n/a | ✅ 打包工具保留 Unix 权限位（tar.gz 与 zip 各有测试） | ⚠️ Windows 与 Linux amd64 解压后运行过；v0.1.0 六平台 CI 原生测试与版本冒烟通过，不等于人工 GUI 验收 | v0.1.0 已在 GitHub Releases 发布 |
+| 发布包（Windows / Linux / macOS，amd64 与 arm64）与 SHA256SUMS | n/a | n/a | ✅ 打包工具保留 Unix 权限位（tar.gz 与 zip 各有测试） | ✅ Windows 与 Linux amd64 解压后运行过；macOS arm64 与 amd64 在真机上手动运行过，首次启动需 `xattr -dr com.apple.quarantine`；六平台 CI 原生测试与版本冒烟通过 | 已在 GitHub Releases 发布 |
 
 ## 已知限制与未验证
 
-- 真实 AWS：S3、STS AssumeRole、CloudFront 都没有测试（AssumeRole 与 CloudFront 只在 `httptest` 上验证）。
-- macOS 与 ARM64 的人工 GUI 验收未完成；原生 CI 结果单独记录。macOS `.app` 没有开发者签名、未公证。
+- AWS 的 STS AssumeRole 与 CloudFront 没有在真实环境测试，只在 `httptest` 上验证。Amazon S3、Cloudflare R2、Wasabi 已手动测试可用。
+- macOS `.app` 没有开发者签名、未公证；下载后首次启动需要执行 `xattr -dr com.apple.quarantine`。
 - VersityGW 上的版本控制：服务端未开启，相关场景被跳过。
 - 经 Cloudflare 的 gzip 对象：代理会解压，下载被拒绝（不会写出错误文件）。
 - SSE-S3、SSE-KMS、SSE-C 成功路径：MinIO 没有配置 KMS，VersityGW 忽略加密；https 端点上的 SSE-C 成功路径从未运行。
