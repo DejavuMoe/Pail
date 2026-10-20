@@ -30,7 +30,6 @@ jobs:
     env:
       CGO_ENABLED: "0"
       GOTOOLCHAIN: local
-      GOFLAGS: -mod=readonly
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
@@ -46,6 +45,10 @@ jobs:
           config-file: .github/codeql.yml
       - if: matrix.language == 'go'
         uses: github/codeql-action/autobuild@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        env:
+          GOFLAGS: -mod=readonly
       - uses: github/codeql-action/analyze@6f2ac81f5cd81fe351a197ba0b00d91d03cd2aee # v4
+        env:
+          GOFLAGS: -mod=readonly
         with:
           category: /language:${{ matrix.language }}/os:${{ matrix.platform }}
