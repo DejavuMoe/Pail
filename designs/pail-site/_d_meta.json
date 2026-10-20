@@ -1,0 +1,23 @@
+{
+  "type": "design",
+  "designSystems": [],
+  "primaryDesignSystem": null,
+  "assets": {
+    "Pail landing page": {
+      "versions": [
+        {
+          "path": "index.html",
+          "createdAt": "2026-10-20T01:42:31.335Z",
+          "status": "needs-review",
+          "subtitle": "Bilingual landing page for pail.download, light/dark",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        }
+      ]
+    }
+  },
+  "createdAt": "2026-10-20T01:42:31.338Z",
+  "updatedAt": "2026-10-20T01:42:31.338Z"
+}
