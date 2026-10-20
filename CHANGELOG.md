@@ -29,6 +29,7 @@ First release of Pail. Verification per feature is recorded in [docs/status.md](
 
 ### Security
 
+- The website's Goldmark dependency is pinned to v1.7.17, fixing [GO-2026-5320](https://pkg.go.dev/vuln/GO-2026-5320).
 - Secrets are never written to configuration files; they live in the OS keychain or the encrypted vault.
 - Logs redact URL query strings, Authorization headers, signatures and known secret values.
 - Custom endpoints default to the "when required" checksum mode; a request whose outcome is unknown is never replayed.
