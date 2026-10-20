@@ -16,7 +16,7 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 - Widths from 360px to 1920px with no horizontal page scroll; 16px minimum side gutter.
 - Keyboard, pointer and touch. `prefers-reduced-motion` stops every animation.
 - English at `/`, Simplified Chinese at `/zh/`. Long Chinese and English strings must not clip.
-- No third-party requests at runtime: fonts and images are self-hosted (Google Fonts is unreachable for many visitors in mainland China, and the product promises no telemetry).
+- No third-party requests at runtime: images are self-hosted and no webfonts are loaded (Google Fonts is unreachable for many visitors in mainland China, and the product promises no telemetry).
 
 ## Must preserve
 
@@ -47,16 +47,16 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 
 ## Visual and interaction constraints
 
-- Typography: display Bricolage Grotesque, body Instrument Sans, mono Geist Mono only for code, keys and CLI output (all SIL OFL); CJK uses system fonts. No serif or italic display accents.
+- Typography: the operating system's default sans-serif (San Francisco, Segoe UI, Roboto, Noto Sans, Ubuntu, Cantarell, then Helvetica/Arial) with CJK fallbacks (PingFang SC, Microsoft YaHei, Noto Sans CJK SC), ending in the generic `sans-serif`; the system monospace (`ui-monospace`, SF Mono, Cascadia Mono, Consolas, …) only for code, keys and CLI output. No webfonts, no serif or italic display accents. Hierarchy comes from size and weight, not from a second family.
 - Forbidden: stock photography, hand-drawn SVG illustration, emoji, gradient or blurred-blob backgrounds, grain overlays, glows, cursor spotlights, announcement pills, uppercase eyebrow labels above headings, oversized decorative wordmarks, faux window controls.
+- Standards: markup passes html-validate (W3C HTML) with native controls preferred over ARIA roles; the one ARIA widget is the palette's WAI-ARIA combobox + listbox. Follow MDN guidance for `prefers-reduced-motion`, `prefers-contrast`, `forced-colors`, `theme-color` and `inert`.
 - Accessibility: text contrast 4.5:1 (3:1 for display sizes), visible focus rings, skip link, labelled controls, `lang` on the document.
-- Motion: one load sequence, scroll-linked hero tilt, demos only while visible, all disabled under reduced motion.
+- Motion: one load sequence, scroll-linked hero tilt, demos only while visible, all disabled under reduced motion. The falling object keys are hidden below 680px.
 
 ## Privacy and multimodal evidence
 
 - Screenshots come only from `--demo` mode; no real account data.
-- Fonts must be OFL or similar; record licenses in `site/`.
 
-## Open decisions
+## Decided
 
-- Deploy target for `.woodpecker/site.yml` (see `docs/site.md`).
+- Deploy: Woodpecker builds the site and rsyncs it over SSH into a static site directory on a designated server (see `docs/site.md`).
