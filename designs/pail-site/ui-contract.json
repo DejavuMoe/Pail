@@ -25,8 +25,8 @@
           "app.js",
           "tweaks.js",
           "assets/pail-icon.svg",
-          "assets/main-light.png",
-          "assets/main-dark.png"
+          "assets/main-light.webp",
+          "assets/main-dark.webp"
         ],
         "states": [
           "theme-system",
