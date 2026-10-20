@@ -39,7 +39,7 @@ The generator:
 
 Behaviour carried over from the prototype: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, the command palette (`Ctrl/⌘ K`), and reduced-motion support. Without JavaScript every section, link and download still works.
 
-Fonts (Bricolage Grotesque, Instrument Sans, Instrument Serif, Geist Mono; all SIL OFL 1.1) are self-hosted. The prototype loads them from Google Fonts only for review; production makes no third-party requests.
+Fonts (Bricolage Grotesque, Instrument Sans, Geist Mono; all SIL OFL 1.1) are self-hosted. The prototype loads them from Google Fonts only for review; production makes no third-party requests.
 
 ## Version and download links
 
