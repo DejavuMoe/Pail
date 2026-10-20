@@ -35,6 +35,8 @@ Facts and constraints for whoever designs Pail's CI. This is not a finished pipe
 
 `go test ./...` is offline: it uses `internal/s3test` (in-memory S3) and `httptest`. The `integration` package compiles but skips every test unless `PAIL_TEST_ENDPOINT` (MinIO suite) or `PAIL_EXT_ENDPOINT` (external suite) is set. **A job that runs `go test ./...` must never see `PAIL_EXT_*`**: with them present, that plain command runs the external suite against the real endpoint.
 
+`tools/site` tests build the landing site from the repository's own files into a temporary directory; they need no network and no Node. Deploying the site stays on Woodpecker.
+
 `cmd/pail-desktop` tests are headless (no window). With `PAIL_UI_SNAPSHOT_DIR=<dir>` they additionally write light/dark, English/Chinese PNGs for human review; without it those tests skip. Verified so far on native Windows and on WSL Debian (with WSLg); not yet on a GitHub-hosted runner without a display server.
 
 The native smoke flags `pail-desktop --smoke-exit 5s [--smoke-screenshot out.png]` open a real window and need a desktop session. They have only been run by hand.

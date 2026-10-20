@@ -1,0 +1,497 @@
+<!DOCTYPE html>
+<html lang="{{.HTMLLang}}" data-lang="{{.Lang}}" data-theme="light" data-theme-pref="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>{{t "docTitle"}}</title>
+  <meta name="description" content="{{t "docDescription"}}">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
+  <link rel="canonical" href="{{.Canonical}}">
+  <link rel="alternate" hreflang="en" href="{{.URLEn}}">
+  <link rel="alternate" hreflang="zh-Hans" href="{{.URLZh}}">
+  <link rel="alternate" hreflang="x-default" href="{{.URLEn}}">
+  <link rel="icon" href="{{asset "pail-icon.svg"}}" type="image/svg+xml">
+  <script>
+    (function () {
+      var d = document.documentElement, pref = 'system', lang = null;
+      try { pref = localStorage.getItem('pail-theme') || 'system'; lang = localStorage.getItem('pail-lang'); } catch (e) {}
+      {{- if eq .Lang "en"}}
+      if (lang === 'zh' || (lang === null && /^zh\b/i.test(navigator.language || ''))) { location.replace({{.PathZh}} + location.hash); return; }
+      {{- end}}
+      if (pref !== 'light' && pref !== 'dark') pref = 'system';
+      var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      d.setAttribute('data-theme-pref', pref);
+      d.setAttribute('data-theme', dark ? 'dark' : 'light');
+      d.classList.add('js');
+    })();
+  </script>
+  <link rel="stylesheet" href="{{asset "styles.css"}}">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></symbol>
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></symbol>
+    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path><path d="M12 15V3"></path></symbol>
+    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m17 8-5-5-5 5"></path><path d="M12 3v12"></path></symbol>
+    <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></symbol>
+    <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></symbol>
+    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></symbol>
+    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></symbol>
+    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></symbol>
+    <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></symbol>
+    <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></symbol>
+    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></symbol>
+    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></symbol>
+    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></symbol>
+    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></symbol>
+    <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></symbol>
+    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></symbol>
+    <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m4 17 6-6-6-6"></path><path d="M12 19h8"></path></symbol>
+    <symbol id="i-command" viewBox="0 0 24 24"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"></path></symbol>
+    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14a9 3 0 0 0 18 0V5"></path><path d="M3 12a9 3 0 0 0 18 0"></path></symbol>
+    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></symbol>
+    <symbol id="i-key" viewBox="0 0 24 24"><path d="M2.59 17.41A2 2 0 0 0 2 18.83V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.17a2 2 0 0 0 1.41-.59l.82-.81a6.5 6.5 0 1 0-4-4z"></path><circle cx="16.5" cy="7.5" r=".5"></circle></symbol>
+    <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M15 12h-5"></path><path d="M15 8h-5"></path><path d="M19 17V5a2 2 0 0 0-2-2H4"></path><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"></path></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M4 6h16"></path><path d="M4 18h16"></path></symbol>
+    <symbol id="i-package" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">{{t "skip"}}</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="#top">
+        <img src="{{asset "pail-icon.svg"}}" alt="" width="28" height="28">
+        <span>Pail</span>
+      </a>
+      <nav class="nav" aria-label="{{t "navLabel"}}">
+        <a href="#features">{{t "navFeatures"}}</a>
+        <a href="#cli">{{t "navCli"}}</a>
+        <a href="#privacy">{{t "navPrivacy"}}</a>
+        <a href="#download">{{t "navDownload"}}</a>
+        <a href="{{.GitHub}}#readme">{{t "navDocs"}}</a>
+      </nav>
+      <div class="header-actions">
+        <button class="search-btn" type="button" data-action="palette" aria-label="{{t "paletteOpen"}}">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+          <span class="search-btn-label">{{t "search"}}</span>
+          <span class="kbd-group"><kbd data-mod>Ctrl</kbd><kbd>K</kbd></span>
+        </button>
+        <a class="icon-btn lang-btn" href="{{.OtherPath}}" hreflang="{{.OtherHTMLLang}}" lang="{{.OtherHTMLLang}}" data-action="lang" data-lang-target="{{.OtherLang}}" aria-label="{{t "langSwitch"}}">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
+          <span class="lang-btn-label">{{t "langShort"}}</span>
+        </a>
+        <fieldset class="theme-seg">
+          <legend class="visually-hidden">{{t "themeLabel"}}</legend>
+          <label title="{{t "themeSystem"}}"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">{{t "themeSystem"}}</span></label>
+          <label title="{{t "themeLight"}}"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">{{t "themeLight"}}</span></label>
+          <label title="{{t "themeDark"}}"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">{{t "themeDark"}}</span></label>
+        </fieldset>
+        <a class="icon-btn gh-btn" href="{{.GitHub}}" aria-label="GitHub">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+        </a>
+        <button class="icon-btn menu-btn" type="button" data-action="palette" aria-label="{{t "menu"}}">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-menu"></use></svg>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main id="main">
+    <section class="hero" id="top">
+      <canvas class="hero-keys" aria-hidden="true"></canvas>
+      <div class="wrap hero-grid">
+        <div class="hero-copy">
+          <h1 class="hero-title">
+            <span class="hero-line">{{t "heroTitle1"}}</span>
+            <span class="hero-line">{{t "heroTitle2"}}</span>
+          </h1>
+          <p class="hero-sub">{{t "heroSub"}}</p>
+          <div class="hero-cta">
+            <a class="btn btn-primary" href="#download" data-os-cta>
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg>
+              <span data-os-cta-label>{{t "heroDownload"}}</span>
+            </a>
+            <a class="btn btn-secondary" href="{{.GitHub}}">
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+              <span>{{t "heroGithub"}}</span>
+            </a>
+          </div>
+          <ul class="hero-meta">
+            <li><a href="{{.GitHub}}/blob/main/CHANGELOG.md">v{{.Version}}</a></li>
+            <li>{{t "metaLicense"}}</li>
+            <li>{{t "metaArch"}}</li>
+            <li>{{t "metaTelemetry"}}</li>
+          </ul>
+        </div>
+        <div class="hero-stage">
+          <figure class="window" data-tilt>
+            <img class="shot shot-light" src="{{asset "main-light.png"}}" width="1440" height="900" alt="{{t "shotAlt"}}">
+            <img class="shot shot-dark" src="{{asset "main-dark.png"}}" width="1440" height="900" alt="{{t "shotAlt"}}">
+          </figure>
+        </div>
+      </div>
+    </section>
+
+    <section class="providers" aria-labelledby="providers-label">
+      <div class="wrap providers-inner">
+        <p class="providers-label" id="providers-label">{{t "providersLabel"}}</p>
+        <ul class="providers-list">
+          <li>Amazon S3</li>
+          <li>MinIO</li>
+          <li>Cloudflare R2</li>
+          <li>VersityGW</li>
+          <li>Wasabi</li>
+          <li class="providers-any">{{t "providersAny"}}</li>
+        </ul>
+      </div>
+    </section>
+
+    <section class="section features" id="features" aria-labelledby="features-title">
+      <div class="wrap">
+        <header class="section-head reveal">
+          <h2 class="section-title" id="features-title">{{t "featuresTitle"}}</h2>
+        </header>
+
+        <div class="bento">
+          <article class="tile tile-transfers reveal" data-demo="transfers">
+            <div class="tile-copy">
+              <h3>{{t "fTransfersTitle"}}</h3>
+              <p>{{t "fTransfersBody"}}</p>
+            </div>
+            <div class="mini mini-transfers" aria-hidden="true">
+              <div class="tq-head">
+                <span class="tq-title">{{t "miniTransfers"}}</span>
+                <span class="tq-filter is-on"><span>{{t "miniActive"}}</span> 2</span>
+                <span class="tq-filter"><span>{{t "miniCompleted"}}</span> 1</span>
+              </div>
+              <div class="tq-row" data-total="2306867">
+                <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-up"></use></svg>
+                <span class="tq-name">site/assets/hero.webp</span>
+                <span class="tq-bar"><i></i></span>
+                <span class="tq-bytes">1.4 MB / 2.2 MB</span>
+              </div>
+              <div class="tq-row" data-total="2576980378">
+                <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-down"></use></svg>
+                <span class="tq-name">backups/2026-10-19.tar.gz</span>
+                <span class="tq-bar"><i></i></span>
+                <span class="tq-bytes">1.6 GB / 2.4 GB</span>
+              </div>
+              <div class="tq-row is-done">
+                <svg class="i" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>
+                <span class="tq-name">reports/q3.csv</span>
+                <span class="tq-bar"><i></i></span>
+                <span class="tq-bytes">18.3 KB</span>
+              </div>
+              <div class="conflict">
+                <span class="conflict-label">{{t "miniConflictRow"}}</span>
+                <div class="chips" data-cycle>
+                  <span class="chip is-on">{{t "conflictRename"}}</span>
+                  <span class="chip">{{t "conflictSkip"}}</span>
+                  <span class="chip">{{t "conflictOverwrite"}}</span>
+                  <span class="chip">{{t "conflictNewer"}}</span>
+                  <span class="chip">{{t "conflictSize"}}</span>
+                </div>
+              </div>
+            </div>
+          </article>
+
+          <article class="tile tile-palette reveal" data-demo="palette">
+            <div class="tile-copy">
+              <h3>{{t "fPaletteTitle"}}</h3>
+              <p>{{t "fPaletteBody"}}</p>
+            </div>
+            <div class="mini mini-palette" aria-hidden="true">
+              <div class="mp-input">
+                <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+                <span class="mp-query"></span><span class="mp-caret"></span>
+                <span class="mp-placeholder">{{t "paletteSearchApp"}}</span>
+              </div>
+              <ul class="mp-list">
+                <li data-k="upload-files"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-upload"></use></svg><span>{{t "cmdUploadFiles"}}</span></li>
+                <li data-k="upload-folder"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-upload"></use></svg><span>{{t "cmdUploadFolder"}}</span></li>
+                <li data-k="bucket-settings"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sliders"></use></svg><span>{{t "cmdBucketSettings"}}</span></li>
+                <li data-k="copy-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-copy"></use></svg><span>{{t "cmdCopyKey"}}</span></li>
+                <li data-k="new-folder"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-folder"></use></svg><span>{{t "cmdNewFolder"}}</span></li>
+                <li data-k="refresh"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-refresh"></use></svg><span>{{t "cmdRefresh"}}</span></li>
+              </ul>
+            </div>
+            <button class="tile-action" type="button" data-action="palette">
+              <span>{{t "tryPalette"}}</span>
+              <span class="kbd-group"><kbd data-mod>Ctrl</kbd><kbd>K</kbd></span>
+            </button>
+          </article>
+
+          <article class="tile tile-settings reveal">
+            <div class="tile-copy">
+              <h3>{{t "fSettingsTitle"}}</h3>
+              <p>{{t "fSettingsBody"}}</p>
+            </div>
+            <div class="mini mini-settings" aria-hidden="true">
+              <ul class="setting-chips">
+                <li>{{t "bsVersioning"}}</li>
+                <li>{{t "bsEncryption"}}</li>
+                <li>{{t "bsPolicy"}}</li>
+                <li>CORS</li>
+                <li>{{t "bsLifecycle"}}</li>
+                <li>{{t "bsLogging"}}</li>
+                <li>{{t "bsTags"}}</li>
+                <li>{{t "bsWebsite"}}</li>
+                <li>{{t "bsPublic"}}</li>
+                <li>{{t "bsOwnership"}}</li>
+                <li>{{t "bsLock"}}</li>
+                <li>{{t "bsRequester"}}</li>
+                <li class="is-unsupported"><span>{{t "bsAccelerate"}}</span><em>{{t "bsUnsupported"}}</em></li>
+                <li>{{t "bsReplication"}}</li>
+              </ul>
+            </div>
+          </article>
+
+          <article class="tile tile-versions reveal" data-demo="versions">
+            <div class="tile-copy">
+              <h3>{{t "fVersionsTitle"}}</h3>
+              <p>{{t "fVersionsBody"}}</p>
+            </div>
+            <div class="mini mini-versions" aria-hidden="true">
+              <div class="mv-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file"></use></svg><span>reports/q3.csv</span></div>
+              <ol class="mv-list">
+                <li class="mv-marker"><span class="mv-dot"></span><span class="mv-label">{{t "miniDeleteMarker"}}</span><span class="mv-badge">{{t "miniLatest"}}</span><span class="mv-time">2026-10-19 22:51</span></li>
+                <li class="mv-target"><span class="mv-dot"></span><span class="mv-id">3HL4kqtJlcpX</span><span class="mv-size">18.3 KB</span><span class="mv-restore"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span>{{t "miniRestore"}}</span></span></li>
+                <li><span class="mv-dot"></span><span class="mv-id">Xd3dIbrHYrmS</span><span class="mv-size">17.9 KB</span><span class="mv-time">2026-10-12 09:04</span></li>
+              </ol>
+            </div>
+          </article>
+
+          <article class="tile tile-sync reveal">
+            <div class="tile-copy">
+              <h3>{{t "fSyncTitle"}}</h3>
+              <p>{{t "fSyncBody"}}</p>
+            </div>
+            <div class="mini mini-sync" aria-hidden="true">
+              <div class="ms-row ms-up"><span class="ms-op">upload</span><span class="ms-path">2026/04/IMG_2231.heic</span><span class="ms-why">new</span></div>
+              <div class="ms-row ms-up"><span class="ms-op">upload</span><span class="ms-path">2026/04/cover.jpg</span><span class="ms-why">size differs</span></div>
+              <div class="ms-row ms-del"><span class="ms-op">delete</span><span class="ms-path">tmp/draft.png</span><span class="ms-why">not in the source</span></div>
+              <div class="ms-sum">plan: 2 uploads, 0 downloads, 1 deletes, 340 skipped, 6.1 MB to transfer</div>
+            </div>
+          </article>
+
+          <article class="tile tile-links reveal" data-demo="links">
+            <div class="tile-copy">
+              <h3>{{t "fLinksTitle"}}</h3>
+              <p>{{t "fLinksBody"}}</p>
+            </div>
+            <div class="mini mini-links" aria-hidden="true">
+              <div class="ml-seg">
+                <span>15 min</span><span class="is-on">1 h</span><span>1 d</span><span>7 d</span>
+              </div>
+              <div class="ml-url"><span class="ml-text">https://acme-assets.s3.us-east-1.amazonaws.com/reports/q3.csv?X-Amz-Expires=3600&amp;X-Amz-Signature=…</span><span class="ml-copy"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-copy"></use></svg><span>{{t "miniCopy"}}</span></span></div>
+              <div class="ml-url ml-cdn"><span class="ml-text">https://cdn.example.com/acme-assets/reports/q3.csv</span><span class="ml-tag">CDN</span></div>
+            </div>
+          </article>
+
+          <article class="tile tile-rules reveal">
+            <div class="tile-copy">
+              <h3>{{t "fRulesTitle"}}</h3>
+              <p>{{t "fRulesBody"}}</p>
+            </div>
+            <div class="mini mini-rules" aria-hidden="true">
+              <dl class="mr-grid">
+                <dt>{{t "miniBucket"}}</dt><dd>acme-logs</dd>
+                <dt>{{t "miniKeys"}}</dt><dd>*.log</dd>
+                <dt>{{t "miniCompression"}}</dt><dd>GZIP · 6</dd>
+                <dt>{{t "miniStorageClass"}}</dt><dd>STANDARD_IA</dd>
+                <dt>{{t "miniEncryption"}}</dt><dd>SSE-S3</dd>
+              </dl>
+            </div>
+          </article>
+        </div>
+      </div>
+    </section>
+
+    <section class="section cli" id="cli" aria-labelledby="cli-title">
+      <div class="wrap cli-grid">
+        <header class="section-head reveal">
+          <h2 class="section-title" id="cli-title">{{t "cliTitle"}}</h2>
+          <p class="section-lede">{{t "cliBody"}}</p>
+          <ul class="cli-cmds">
+            <li>accounts</li><li>buckets</li><li>ls</li><li>cp</li><li>mv</li><li>rm</li><li>mb</li><li>rb</li><li>presign</li><li>url</li><li>versions</li><li>restore</li><li>sync</li><li>vault status</li>
+          </ul>
+          <a class="text-link" href="{{.GitHub}}/blob/main/docs/cli.md"><span>{{t "cliDocs"}}</span><svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-up-right"></use></svg></a>
+        </header>
+        <div class="terminal reveal" data-demo="terminal">
+          <div class="term-bar">
+            <div class="term-tabs" role="tablist" aria-label="{{t "cliExamples"}}">
+              <button type="button" role="tab" aria-selected="true" data-term="ls" id="term-tab-ls" aria-controls="term-panel">ls</button>
+              <button type="button" role="tab" aria-selected="false" data-term="sync" id="term-tab-sync" aria-controls="term-panel">sync</button>
+              <button type="button" role="tab" aria-selected="false" data-term="presign" id="term-tab-presign" aria-controls="term-panel">presign</button>
+              <button type="button" role="tab" aria-selected="false" data-term="json" id="term-tab-json" aria-controls="term-panel">--json</button>
+            </div>
+          </div>
+          <pre class="term-body" id="term-panel" role="tabpanel" aria-labelledby="term-tab-ls" tabindex="0"><code><span class="t-prompt">$</span> <span class="t-cmd">pail ls s3://acme-assets/</span>
+<span class="t-out">                                PRE assets/</span>
+<span class="t-out">                                PRE backups/</span>
+<span class="t-out">                                PRE logs/</span>
+<span class="t-out">                                PRE reports/</span>
+<span class="t-out">                                PRE website/</span>
+<span class="t-out">2026-10-19 14:51:08        303 B  manifest.json</span>
+<span class="t-out">2026-10-19 14:51:08        445 B  README.txt</span></code></pre>
+        </div>
+      </div>
+    </section>
+
+    <section class="section privacy" id="privacy" aria-labelledby="privacy-title">
+      <div class="wrap">
+        <header class="section-head reveal">
+          <h2 class="privacy-title" id="privacy-title">
+            <span>{{t "privacyLine1"}}</span>
+            <span>{{t "privacyLine2"}}</span>
+            <span class="privacy-dim">{{t "privacyLine3"}}</span>
+          </h2>
+        </header>
+        <div class="privacy-grid">
+          <ul class="facts reveal">
+            <li>
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-key"></use></svg>
+              <div><h3>{{t "pKeysTitle"}}</h3><p>{{t "pKeysBody"}}</p></div>
+            </li>
+            <li>
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
+              <div><h3>{{t "pNetTitle"}}</h3><p>{{t "pNetBody"}}</p></div>
+            </li>
+            <li>
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-scroll"></use></svg>
+              <div><h3>{{t "pLogTitle"}}</h3><p>{{t "pLogBody"}}</p></div>
+            </li>
+            <li>
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg>
+              <div><h3>{{t "pScopeTitle"}}</h3><p>{{t "pScopeBody"}}</p></div>
+            </li>
+          </ul>
+          <div class="dialog-demo reveal" data-demo="dialog" aria-hidden="true">
+            <div class="dlg">
+              <p class="dlg-title"><span>{{t "dlgTitle"}}</span> acme-logs</p>
+              <dl class="dlg-scope">
+                <dt>{{t "dlgAccount"}}</dt><dd>Demo · in-memory S3</dd>
+                <dt>{{t "dlgObjects"}}</dt><dd>1,284</dd>
+                <dt>{{t "dlgSize"}}</dt><dd>3.6 GB</dd>
+              </dl>
+              <div class="dlg-field">
+                <span>{{t "dlgConfirm"}}</span>
+                <span class="dlg-input"><span class="dlg-typed"></span><span class="dlg-caret"></span></span>
+              </div>
+              <div class="dlg-actions">
+                <span class="dbtn dbtn-secondary">{{t "dlgCancel"}}</span>
+                <span class="dbtn dbtn-danger">{{t "dlgDelete"}}</span>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </section>
+
+    <section class="section download" id="download" aria-labelledby="download-title">
+      <div class="wrap">
+        <header class="section-head section-head-center reveal">
+          <h2 class="section-title" id="download-title"><span>{{t "downloadTitle"}}</span> <span class="version">{{.Version}}</span></h2>
+        </header>
+        <div class="os-grid">
+          <article class="os-card reveal" data-os="windows">
+            <header class="os-head"><h3>Windows</h3><span class="os-badge">{{t "yourSystem"}}</span></header>
+            <p class="os-req">{{t "osWindowsReq"}}</p>
+            <div class="os-links">
+              <a class="os-link" href="{{download "windows-amd64.zip"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
+              <a class="os-link" href="{{download "windows-arm64.zip"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
+            </div>
+          </article>
+          <article class="os-card reveal" data-os="linux">
+            <header class="os-head"><h3>Linux</h3><span class="os-badge">{{t "yourSystem"}}</span></header>
+            <p class="os-req">{{t "osLinuxReq"}}</p>
+            <div class="os-links">
+              <a class="os-link" href="{{download "linux-amd64.tar.gz"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
+              <a class="os-link" href="{{download "linux-arm64.tar.gz"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
+            </div>
+          </article>
+          <article class="os-card reveal" data-os="macos">
+            <header class="os-head"><h3>macOS</h3><span class="os-badge">{{t "yourSystem"}}</span></header>
+            <p class="os-req">{{t "osMacReq"}}</p>
+            <div class="os-links">
+              <a class="os-link" href="{{download "darwin-arm64.zip"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>{{t "appleSilicon"}}</span><small>arm64</small></a>
+              <a class="os-link" href="{{download "darwin-amd64.zip"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Intel</span><small>amd64</small></a>
+            </div>
+          </article>
+        </div>
+        <div class="download-foot reveal">
+          <p class="download-note">{{t "downloadNote"}}</p>
+          <ul class="download-links">
+            <li><a href="{{.ReleaseBase}}/SHA256SUMS">SHA256SUMS</a></li>
+            <li><a href="{{.GitHub}}/releases">{{t "allReleases"}}</a></li>
+            <li><a href="{{.GitHub}}/blob/main/CHANGELOG.md">{{t "changelog"}}</a></li>
+            <li><a href="{{.GitHub}}#build-from-source">{{t "buildFromSource"}}</a></li>
+          </ul>
+          <div class="demo-hint">
+            <svg class="i" aria-hidden="true" focusable="false"><use href="#i-terminal"></use></svg>
+            <p><span>{{t "demoHint1"}}</span> <code>pail-desktop --demo</code> <span>{{t "demoHint2"}}</span></p>
+          </div>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="#top"><img src="{{asset "pail-icon.svg"}}" alt="" width="28" height="28"><span>Pail</span></a>
+        <p class="footer-made"><span>{{t "madeBy"}}</span> <a href="https://dejavu.moe">Dejavu Moe</a></p>
+      </div>
+      <nav class="footer-col" aria-labelledby="fc-product">
+        <h2 id="fc-product">{{t "footProduct"}}</h2>
+        <a href="#features">{{t "navFeatures"}}</a>
+        <a href="#cli">{{t "navCli"}}</a>
+        <a href="#download">{{t "navDownload"}}</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-res">
+        <h2 id="fc-res">{{t "footResources"}}</h2>
+        <a href="{{.GitHub}}#readme">{{t "navDocs"}}</a>
+        <a href="{{.GitHub}}/blob/main/CHANGELOG.md">{{t "changelog"}}</a>
+        <a href="{{.GitHub}}/issues">{{t "issues"}}</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-proj">
+        <h2 id="fc-proj">{{t "footProject"}}</h2>
+        <a href="{{.GitHub}}">GitHub</a>
+        <a href="{{.GitHub}}/blob/main/LICENSE">{{t "license"}}</a>
+      </nav>
+    </div>
+    <div class="wrap footer-legal">
+      <p>© {{.Year}} Dejavu Moe</p>
+      <p>{{t "trademark"}}</p>
+    </div>
+  </footer>
+
+  <div class="palette" data-palette hidden>
+    <div class="palette-scrim" data-action="palette-close"></div>
+    <div class="palette-card" role="dialog" aria-modal="true" aria-label="{{t "paletteTitle"}}">
+      <div class="palette-input">
+        <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
+        <input type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list" placeholder="{{t "palettePlaceholder"}}" aria-label="{{t "palettePlaceholder"}}">
+        <kbd>Esc</kbd>
+      </div>
+      <ul class="palette-list" id="palette-list" role="listbox"></ul>
+      <p class="palette-empty" hidden>{{t "paletteEmpty"}}</p>
+      <div class="palette-foot">
+        <span><kbd>↑</kbd><kbd>↓</kbd> <span>{{t "paletteMove"}}</span></span>
+        <span><kbd>Enter</kbd> <span>{{t "paletteRun"}}</span></span>
+        <span><kbd>Esc</kbd> <span>{{t "paletteClose"}}</span></span>
+      </div>
+    </div>
+  </div>
+
+  <script type="application/json" id="pail-strings">{{.Runtime}}</script>
+  <script src="{{asset "app.js"}}"></script>
+</body>
+</html>

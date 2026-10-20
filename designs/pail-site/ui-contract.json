@@ -32,11 +32,11 @@
       },
       "production": {
         "routeOrWindow": "https://pail.download/ (en) and https://pail.download/zh/ (zh-Hans)",
-        "files": ["site/", "tools/site/"],
+        "files": ["site/templates/index.html.tmpl", "site/templates/404.html.tmpl", "site/locales/en.json", "site/locales/zh-Hans.json", "site/static/styles.css", "site/static/app.js", "tools/site/main.go"],
         "interfaces": ["go run ./tools/site -out <dir> -version <x.y.z>", ".woodpecker/site.yml"],
         "tests": ["go test ./tools/site/..."]
       },
-      "status": "approved"
+      "status": "implemented"
     }
   ]
 }
