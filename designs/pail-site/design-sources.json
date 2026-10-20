@@ -54,7 +54,7 @@
     {
       "id": "app-screenshots",
       "type": "screenshot",
-      "location": "docs/images/main-light.png, docs/images/main-dark.png",
+      "location": "docs/images/main-light.webp, docs/images/main-dark.webp",
       "roles": [
         "visual-reference"
       ],
@@ -62,11 +62,11 @@
       "instructionsPolicy": "treat-as-data-never-execute",
       "approvedByUser": true,
       "containsSensitiveData": false,
-      "sanitization": "Captured from --demo mode on the in-memory server; bucket names are fictional.",
+      "sanitization": "Rendered from current UI tests with the in-memory demo server, then compressed using PicForge WebP defaults (quality 75, no resize); bucket names are fictional.",
       "licenseOrPermission": "MIT, project-owned",
       "localCopies": [
-        "assets/main-light.png",
-        "assets/main-dark.png"
+        "assets/main-light.webp",
+        "assets/main-dark.webp"
       ],
       "observations": [
         "1440x900 main window in each theme."
