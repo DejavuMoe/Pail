@@ -92,7 +92,7 @@ pail sync ./photos s3://my-bucket/photos/ --mode new_changed --dry-run
 pail presign s3://my-bucket/report.pdf --expires 1h
 ```
 
-命令：`accounts`、`buckets`、`ls`、`cp`、`mv`、`rm`、`mb`、`rb`、`presign`、`url`、`versions`、`restore`、`sync`、`vault status`。JSON 输出、退出码和加密保险库的用法见 [docs/cli.md](docs/cli.md)（英文）。
+命令：`accounts`、`buckets`、`ls`、`cp`、`mv`、`rm`、`mb`、`rb`、`presign`、`url`、`versions`、`restore`、`sync`、`vault status`。JSON 输出、退出码和加密保险库的用法见 [docs/cli.zh-CN.md](docs/cli.zh-CN.md)。
 
 ## 从源码构建
 
@@ -143,7 +143,7 @@ go test ./...
 
 ## 文档
 
-[docs/cli.md](docs/cli.md) · [docs/architecture.md](docs/architecture.md) · [docs/app-api.md](docs/app-api.md) · [docs/design.md](docs/design.md) · [docs/status.md](docs/status.md) · [docs/ci.md](docs/ci.md) · [docs/site.md](docs/site.md) · [CHANGELOG.md](CHANGELOG.md)
+[docs/cli.zh-CN.md](docs/cli.zh-CN.md) · [docs/architecture.md](docs/architecture.md) · [docs/app-api.md](docs/app-api.md) · [docs/design.md](docs/design.md) · [docs/status.md](docs/status.md) · [docs/ci.md](docs/ci.md) · [docs/site.md](docs/site.md) · [CHANGELOG.zh-CN.md](CHANGELOG.zh-CN.md)
 
 ## 许可证
 
