@@ -1,0 +1,173 @@
+<!DOCTYPE html>
+<html lang="zh-Hans" data-lang="zh" data-theme="light" data-theme-pref="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>更新日志 · Pail</title>
+  <meta name="description" content="Pail 各版本的变更记录（英文）：新增功能、安全说明与已知限制。">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/pail-icon.svg" type="image/svg+xml">
+  <link rel="alternate" hreflang="en" href="https://pail.download/changelog/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://pail.download/zh/changelog/">
+  <link rel="alternate" hreflang="x-default" href="https://pail.download/changelog/">
+  <script>
+    (function () {
+      var d = document.documentElement, pref = 'system';
+      try { pref = localStorage.getItem('pail-theme') || 'system'; } catch (e) {}
+      var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      d.setAttribute('data-theme-pref', pref);
+      d.setAttribute('data-theme', dark ? 'dark' : 'light');
+      d.classList.add('js');
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M4 6h16"></path><path d="M4 18h16"></path></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">跳到正文</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/pail-icon.svg" alt="" width="28" height="28">
+        <span>Pail</span>
+      </a>
+      <nav class="nav" aria-label="主导航">
+        <a href="index.html#features">功能</a>
+        <a href="index.html#cli">命令行</a>
+        <a href="index.html#privacy">隐私</a>
+        <a href="index.html#download">下载</a>
+        <a class="is-current" href="docs.zh.html" aria-current="page">文档</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn lang-btn" href="changelog.html" hreflang="en" lang="en" data-action="lang" data-lang-target="en" aria-label="Switch to English">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
+          <span class="lang-btn-label">EN</span>
+        </a>
+        <fieldset class="theme-seg">
+          <legend class="visually-hidden">主题</legend>
+          <label title="跟随系统"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">跟随系统</span></label>
+          <label title="浅色"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">浅色</span></label>
+          <label title="深色"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">深色</span></label>
+        </fieldset>
+        <a class="icon-btn gh-btn" href="https://github.com/DejavuMoe/Pail" aria-label="GitHub">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+        </a>
+        <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="菜单">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-menu"></use></svg>
+        </button>
+      </div>
+    </div>
+    <nav id="mobile-nav" class="mobile-nav" hidden aria-label="菜单">
+      <a href="index.html#features">功能</a>
+      <a href="index.html#cli">命令行</a>
+      <a href="index.html#privacy">隐私</a>
+      <a href="index.html#download">下载</a>
+      <a class="is-current" href="docs.zh.html" aria-current="page">文档</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="wrap docs-layout">
+      <nav class="docs-nav" aria-label="文档">
+        <ul>
+        <li><a href="docs.zh.html"><span data-label="快速上手">快速上手</span></a></li>
+        <li><a href="docs-cli.zh.html"><span data-label="命令行">命令行</span></a></li>
+        <li><a href="changelog.zh.html" aria-current="page"><span data-label="更新日志">更新日志</span></a></li>
+        <li><a href="license.zh.html"><span data-label="许可证">许可证</span></a></li>
+        </ul>
+      </nav>
+      <div class="docs-main">
+        <header class="doc-head">
+          <h1>更新日志</h1>
+          <p class="doc-lede">本页仅提供英文版。</p>
+        </header>
+        <div class="prose" lang="en">
+<p>All notable changes to this project are documented in this file. The format follows <a href="https://keepachangelog.com/en/1.1.0/">Keep a Changelog</a>.</p>
+<h2 id="unreleased">Unreleased <a class="heading-anchor" href="#unreleased" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>First release of Pail. Verification per feature is recorded in <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/status.md">docs/status.md</a>.</p>
+<h3 id="added">Added <a class="heading-anchor" href="#added" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h3>
+<ul>
+<li><strong>Desktop app</strong> (<code>pail-desktop</code>, Go + mygo, Windows, Linux and macOS): sidebar with account switcher and bucket list, breadcrumbs, virtualised sortable multi-select object table with automatic paging, search, flat view, inspector, transfer panel, status bar, command palette (<code>Ctrl/⌘+K</code>), context menus and shortcuts, light and dark themes, English and 简体中文, <code>--demo</code> mode on an in-memory S3 server.</li>
+<li><strong>Accounts</strong>: any number of AWS and S3-compatible accounts (custom endpoint, region, path-style, access keys, AWS profile, default chain, anonymous, AssumeRole); connection test; per-account checksum mode.</li>
+<li><strong>Browsing and preview</strong>: bucket and folder navigation, JSON, CSV, XML, text, image and hex preview, copy key, URI, URL and presigned URL.</li>
+<li><strong>Transfers</strong>: upload and download of files, folders, versions and whole buckets with drag and drop; separate upload, download and other queues with configurable limits, cancel and retry; five conflict policies; multipart transfers; create-only conditional writes with a fallback for providers that lack them; downloads published atomically after verification.</li>
+<li><strong>Object management</strong>: copy, move and rename (same and cross bucket); bulk delete with per-item results; edit headers, metadata, tags, ACL, storage class and server-side encryption (SSE-S3, SSE-KMS, SSE-C), verified afterwards; MIME type table.</li>
+<li><strong>Versions</strong>: list versions and delete markers, restore a version or deleted keys, download and permanently delete several versions.</li>
+<li><strong>Buckets</strong>: create, delete and empty; copy, move or download a whole bucket; 14 bucket settings as forms or JSON; list and abort incomplete multipart uploads.</li>
+<li><strong>Sync jobs</strong>: upload, download and mirror with preview, three compare modes and exclude globs; execution re-checks each previewed action; local deletions go to the OS trash.</li>
+<li><strong>Upload rules</strong>: headers, storage class, encryption and compression (GZIP, ZIP, AES-256 ZIP with levels); decoding on download.</li>
+<li><strong>CDN domain per account</strong> (base URL or <code>{bucket}</code>/<code>{key}</code> template, optional bucket list), presigned URL dialog, CloudFront distributions and invalidations (AWS accounts).</li>
+<li><strong>Command line</strong> (<code>pail</code>): <code>accounts</code>, <code>buckets</code>, <code>ls</code>, <code>cp</code>, <code>mv</code>, <code>rm</code>, <code>mb</code>, <code>rb</code>, <code>presign</code>, <code>url</code>, <code>versions</code>, <code>restore</code>, <code>sync</code>, <code>vault status</code>; JSON output and stable exit codes; shares accounts and sync jobs with the app. See <a href="docs-cli.zh.html">命令行参考</a>.</li>
+<li><strong>Security</strong>: secrets in the OS keychain or an optional encrypted vault (Argon2id, XChaCha20-Poly1305) with idle auto-lock; opt-in redacted diagnostic log; every destructive or bulk action shows its scope and asks for confirmation.</li>
+<li><strong>Compatibility with openS3</strong>: an existing <code>openS3</code> configuration folder and keychain entries are migrated automatically; older vaults and <code>opens3-*</code> object metadata are still read.</li>
+<li><strong>Tooling</strong>: <code>internal/s3test</code> in-memory S3 server; MinIO integration suite (<code>scripts/test-integration.ps1</code>); prefix-scoped external-endpoint suite (<code>scripts/test-external.ps1</code>, <code>PAIL_EXT_*</code>); release script with archives for Windows, Linux and macOS (amd64, arm64) and <code>SHA256SUMS</code>; icon generator (<code>go run ./tools/genicons</code>).</li>
+</ul>
+<h3 id="security">Security <a class="heading-anchor" href="#security" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h3>
+<ul>
+<li>Secrets are never written to configuration files; they live in the OS keychain or the encrypted vault.</li>
+<li>Logs redact URL query strings, Authorization headers, signatures and known secret values.</li>
+<li>Custom endpoints default to the &quot;when required&quot; checksum mode; a request whose outcome is unknown is never replayed.</li>
+</ul>
+<h3 id="known-limitations">Known limitations <a class="heading-anchor" href="#known-limitations" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h3>
+<ul>
+<li>Not tested against real AWS (STS AssumeRole and CloudFront only on <code>httptest</code>). Real servers tested: MinIO (two releases) and a self-hosted VersityGW behind Cloudflare.</li>
+<li>macOS and arm64 builds are cross-compiled only and have never run on real hardware; the macOS app is unsigned and not notarized.</li>
+<li>Behind Cloudflare, gzip-encoded objects are decompressed by the proxy, so their downloads are refused (sizes do not match); nothing wrong is written.</li>
+<li>Not verified: versioning on VersityGW (disabled there); SSE-S3, SSE-KMS and SSE-C success paths; objects larger than 5 GiB through in-place rewrites; local mirror deletion into the real OS trash.</li>
+<li><code>size_time</code> sync can miss same-size edits; checksum sync repeats transfers for objects without <code>pail-sha256</code> metadata.</li>
+<li>A write-only account under the rename conflict policy cannot detect a replay-induced 412; case-colliding key numbering is not remembered across scans.</li>
+<li>Hand-typed ZIP passwords and SSE-C keys are redacted from logs only by label or field name.</li>
+<li>Task titles from the application layer and the command line are not localized.</li>
+<li>Right-click popups were not visually reviewed; the object list header cannot match the design spec exactly (mygo limitation).</li>
+</ul>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html"><img src="assets/pail-icon.svg" alt="" width="28" height="28"><span>Pail</span></a>
+        <p class="footer-made">作者 <a href="https://dejavu.moe">Dejavu Moe</a></p>
+      </div>
+      <nav class="footer-col" aria-labelledby="fc-product">
+        <h2 id="fc-product">产品</h2>
+        <a href="index.html#features">功能</a>
+        <a href="index.html#cli">命令行</a>
+        <a href="index.html#download">下载</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-res">
+        <h2 id="fc-res">资源</h2>
+        <a href="docs.zh.html">文档</a>
+        <a href="changelog.zh.html">更新日志</a>
+        <a href="https://github.com/DejavuMoe/Pail/issues">反馈问题</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-proj">
+        <h2 id="fc-proj">项目</h2>
+        <a href="https://github.com/DejavuMoe/Pail">GitHub</a>
+        <a href="license.zh.html">MIT 许可证</a>
+      </nav>
+    </div>
+    <div class="wrap footer-legal">
+      <p>© 2026 Dejavu Moe</p>
+      <p>Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 无关联，未获其认可或赞助。</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="docs.js"></script>
+</body>
+</html>

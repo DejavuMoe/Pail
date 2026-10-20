@@ -1,0 +1,209 @@
+<!DOCTYPE html>
+<html lang="en" data-lang="en" data-theme="light" data-theme-pref="system">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Get started · Pail</title>
+  <meta name="description" content="How to install Pail, add an account, use the command line, build from source, where Pail keeps its data, and which platforms have been tested.">
+  <meta name="color-scheme" content="light dark">
+  <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
+  <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
+  <link rel="icon" href="assets/pail-icon.svg" type="image/svg+xml">
+  <link rel="alternate" hreflang="en" href="https://pail.download/docs/">
+  <link rel="alternate" hreflang="zh-Hans" href="https://pail.download/zh/docs/">
+  <link rel="alternate" hreflang="x-default" href="https://pail.download/docs/">
+  <script>
+    (function () {
+      var d = document.documentElement, pref = 'system';
+      try { pref = localStorage.getItem('pail-theme') || 'system'; } catch (e) {}
+      var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      d.setAttribute('data-theme-pref', pref);
+      d.setAttribute('data-theme', dark ? 'dark' : 'light');
+      d.classList.add('js');
+    })();
+  </script>
+  <link rel="stylesheet" href="styles.css">
+  <link rel="stylesheet" href="docs.css">
+</head>
+<body>
+  <svg class="sprite" aria-hidden="true" focusable="false">
+    <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></symbol>
+    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></symbol>
+    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></symbol>
+    <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></symbol>
+    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
+    <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M4 6h16"></path><path d="M4 18h16"></path></symbol>
+  </svg>
+
+  <a class="skip-link" href="#main">Skip to content</a>
+
+  <header class="site-header">
+    <div class="wrap header-inner">
+      <a class="brand" href="index.html">
+        <img src="assets/pail-icon.svg" alt="" width="28" height="28">
+        <span>Pail</span>
+      </a>
+      <nav class="nav" aria-label="Main">
+        <a href="index.html#features">Features</a>
+        <a href="index.html#cli">Command line</a>
+        <a href="index.html#privacy">Privacy</a>
+        <a href="index.html#download">Download</a>
+        <a class="is-current" href="docs.html" aria-current="page">Docs</a>
+      </nav>
+      <div class="header-actions">
+        <a class="icon-btn lang-btn" href="docs.zh.html" hreflang="zh-Hans" lang="zh-Hans" data-action="lang" data-lang-target="zh" aria-label="切换到中文">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
+          <span class="lang-btn-label">中文</span>
+        </a>
+        <fieldset class="theme-seg">
+          <legend class="visually-hidden">Theme</legend>
+          <label title="System"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">System</span></label>
+          <label title="Light"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">Light</span></label>
+          <label title="Dark"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">Dark</span></label>
+        </fieldset>
+        <a class="icon-btn gh-btn" href="https://github.com/DejavuMoe/Pail" aria-label="GitHub">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+        </a>
+        <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="Menu">
+          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-menu"></use></svg>
+        </button>
+      </div>
+    </div>
+    <nav id="mobile-nav" class="mobile-nav" hidden aria-label="Menu">
+      <a href="index.html#features">Features</a>
+      <a href="index.html#cli">Command line</a>
+      <a href="index.html#privacy">Privacy</a>
+      <a href="index.html#download">Download</a>
+      <a class="is-current" href="docs.html" aria-current="page">Docs</a>
+    </nav>
+  </header>
+
+  <main id="main">
+    <div class="wrap docs-layout">
+      <nav class="docs-nav" aria-label="Documentation">
+        <ul>
+        <li><a href="docs.html" aria-current="page"><span data-label="Get started">Get started</span></a></li>
+        <li><a href="docs-cli.html"><span data-label="Command line">Command line</span></a></li>
+        <li><a href="changelog.html"><span data-label="Changelog">Changelog</span></a></li>
+        <li><a href="license.html"><span data-label="License">License</span></a></li>
+        </ul>
+      </nav>
+      <div class="docs-main">
+        <header class="doc-head">
+          <h1>Get started</h1>
+        </header>
+        <div class="prose">
+<h2 id="install">Install <a class="heading-anchor" href="#install" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>Release archives are built by <code>scripts/release.ps1</code> into <code>build/release/&lt;version&gt;/</code> together with a <code>SHA256SUMS</code> file. Each holds the <code>pail-desktop</code> and <code>pail</code> executables, <code>LICENSE</code> and the README.</p>
+<div class="table-wrap" role="group" aria-label="Table: Install" tabindex="0"><table>
+<thead>
+<tr>
+<th scope="col">OS</th>
+<th scope="col">Archive</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows</td>
+<td><code>Pail-&lt;version&gt;-windows-amd64.zip</code>, <code>Pail-&lt;version&gt;-windows-arm64.zip</code></td>
+</tr>
+<tr>
+<td>Linux</td>
+<td><code>Pail-&lt;version&gt;-linux-amd64.tar.gz</code>, <code>Pail-&lt;version&gt;-linux-arm64.tar.gz</code> (with <code>pail.desktop</code> and <code>pail.png</code>)</td>
+</tr>
+<tr>
+<td>macOS</td>
+<td><code>Pail-&lt;version&gt;-darwin-amd64.zip</code>, <code>Pail-&lt;version&gt;-darwin-arm64.zip</code> (contains <code>Pail.app</code>)</td>
+</tr>
+</tbody>
+</table></div>
+<p>Binaries are not code-signed. The macOS app is also not notarized, so Gatekeeper blocks it until you override it manually. <strong>Pail has never been run on real macOS hardware</strong>; the macOS archives are cross-compiled only.</p>
+<h2 id="quick-start">Quick start <a class="heading-anchor" href="#quick-start" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<ol>
+<li><p>Start <code>pail-desktop</code>, open the account switcher in the sidebar and add an account. For a self-hosted or third-party service, for example:</p>
+<ul>
+<li>Endpoint <code>https://s3.example.com</code>, region <code>us-east-1</code>, access key ID and secret key;</li>
+<li>turn on <strong>Path-style addressing</strong> (MinIO and most self-hosted gateways need it; keep it off for AWS);</li>
+<li>optionally set a <strong>CDN URL</strong> such as <code>https://cdn.example.com</code>.</li>
+</ul>
+<p>Press &quot;Test connection&quot;, then save. The secret key goes to the OS keychain.</p>
+</li>
+<li><p>Pick a bucket in the sidebar and browse. Drag files in to upload; select objects and press Download.</p>
+</li>
+<li><p>To try it without credentials, run <code>pail-desktop --demo</code>: it talks to an in-memory S3 server inside the process, nothing leaves your machine and nothing is saved.</p>
+</li>
+</ol>
+<p>Other flags: <code>--config-dir DIR</code>, <code>--theme system|light|dark</code>, <code>--size WxH</code>, <code>--tool sync|cloudfront|rules|mime|multipart|settings</code>, <code>--version</code>.</p>
+<h2 id="command-line">Command line <a class="heading-anchor" href="#command-line" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p><code>pail</code> shares accounts and sync jobs with the desktop app:</p>
+<pre tabindex="0"><code class="language-powershell">pail accounts
+pail ls s3://my-bucket/photos/ -r
+pail cp ./dist s3://my-bucket/site/ -r --conflict newer
+pail sync ./photos s3://my-bucket/photos/ --mode new_changed --dry-run
+pail presign s3://my-bucket/report.pdf --expires 1h</code></pre>
+<p>Commands: <code>accounts</code>, <code>buckets</code>, <code>ls</code>, <code>cp</code>, <code>mv</code>, <code>rm</code>, <code>mb</code>, <code>rb</code>, <code>presign</code>, <code>url</code>, <code>versions</code>, <code>restore</code>, <code>sync</code>, <code>vault status</code>. JSON output, exit codes and the encrypted vault are described in <a href="docs-cli.html">Command line reference</a>.</p>
+<h2 id="build-from-source">Build from source <a class="heading-anchor" href="#build-from-source" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>Requires Go 1.27.1 (see <code>go.mod</code>). No cgo is needed.</p>
+<pre tabindex="0"><code class="language-powershell">go build ./cmd/pail-desktop ./cmd/pail
+./scripts/release.ps1 -Version 0.1.0   # PowerShell 7.3+, cross-compiles every target
+go run ./tools/genicons                # regenerate icons from assets/brand/pail-icon.svg</code></pre>
+<p><code>scripts/release.ps1</code> expects the generated icons in <code>assets/brand/generated</code>. A target that fails to build is skipped and listed in <code>NOT-BUILT.txt</code>.</p>
+<h2 id="data-and-privacy">Data and privacy <a class="heading-anchor" href="#data-and-privacy" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<ul>
+<li><strong>Configuration</strong>: the <code>Pail</code> folder in the OS user config directory (Windows <code>%AppData%\Pail</code>, Linux <code>~/.config/Pail</code>, macOS <code>~/Library/Application Support/Pail</code>), or the path given with <code>--config-dir</code>. It holds the settings, the accounts file, sync jobs, upload rules and the names of secret references. An existing <code>openS3</code> folder from an earlier name is migrated automatically once.</li>
+<li><strong>Secrets</strong>: secret access keys, session tokens and referenced passwords go to the OS keychain (Windows Credential Manager, macOS Keychain, Secret Service on Linux) under the service name <code>Pail</code>, or into the encrypted vault <code>vault.json</code> if you choose one (Settings &gt; Security; useful where no keychain exists). The access key ID is not secret and is stored in the accounts file.</li>
+<li><strong>Logs</strong>: off by default. When enabled, a redacted log is written to <code>logs/pail.log</code> in the configuration directory. URL query strings, Authorization headers, signatures and known secret values are removed; hand-typed passwords can be recognised only by label, so review a log before sharing it.</li>
+<li><strong>Network</strong>: Pail talks only to the endpoints of the accounts you configure. There is no telemetry and no update check.</li>
+</ul>
+<h2 id="platform-status">Platform status <a class="heading-anchor" href="#platform-status" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>Tested on Windows and on Linux under WSLg. macOS builds are cross-compiled only and have never run on real hardware. Real-server tests so far: MinIO (two releases) and a self-hosted VersityGW behind Cloudflare. AWS itself, including STS and CloudFront, has not been tested. Per-feature results are in <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/status.md">docs/status.md</a>; the comparison with CS Browser Pro is in <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/feature-matrix.md">docs/feature-matrix.md</a>.</p>
+        </div>
+      </div>
+      <nav class="docs-toc" aria-labelledby="toc-title">
+        <p class="docs-toc-title" id="toc-title">On this page</p>
+        <ul>
+          <li><a href="#install">Install</a></li>
+          <li><a href="#quick-start">Quick start</a></li>
+          <li><a href="#command-line">Command line</a></li>
+          <li><a href="#build-from-source">Build from source</a></li>
+          <li><a href="#data-and-privacy">Data and privacy</a></li>
+          <li><a href="#platform-status">Platform status</a></li>
+        </ul>
+      </nav>
+    </div>
+  </main>
+
+  <footer class="site-footer">
+    <div class="wrap footer-grid">
+      <div class="footer-brand">
+        <a class="brand" href="index.html"><img src="assets/pail-icon.svg" alt="" width="28" height="28"><span>Pail</span></a>
+        <p class="footer-made">Made by <a href="https://dejavu.moe">Dejavu Moe</a></p>
+      </div>
+      <nav class="footer-col" aria-labelledby="fc-product">
+        <h2 id="fc-product">Product</h2>
+        <a href="index.html#features">Features</a>
+        <a href="index.html#cli">Command line</a>
+        <a href="index.html#download">Download</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-res">
+        <h2 id="fc-res">Resources</h2>
+        <a href="docs.html">Docs</a>
+        <a href="changelog.html">Changelog</a>
+        <a href="https://github.com/DejavuMoe/Pail/issues">Report an issue</a>
+      </nav>
+      <nav class="footer-col" aria-labelledby="fc-proj">
+        <h2 id="fc-proj">Project</h2>
+        <a href="https://github.com/DejavuMoe/Pail">GitHub</a>
+        <a href="license.html">MIT License</a>
+      </nav>
+    </div>
+    <div class="wrap footer-legal">
+      <p>© 2026 Dejavu Moe</p>
+      <p>Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endorsed by or sponsored by AWS.</p>
+    </div>
+  </footer>
+
+  <script src="app.js"></script>
+  <script src="docs.js"></script>
+</body>
+</html>

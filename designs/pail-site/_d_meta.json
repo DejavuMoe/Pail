@@ -8,8 +8,21 @@
         {
           "path": "index.html",
           "createdAt": "2026-10-20T01:42:31.335Z",
-          "status": "approved",
+          "status": "needs-review",
           "subtitle": "Bilingual landing page for pail.download, light/dark",
+          "viewport": {
+            "width": 1440,
+            "height": 900
+          }
+        }
+      ]
+    },
+    "Pail docs pages": {
+      "versions": [
+        {
+          "path": "docs.html",
+          "createdAt": "2026-10-20T05:12:36.839Z",
+          "status": "needs-review",
           "viewport": {
             "width": 1440,
             "height": 900
@@ -19,5 +32,5 @@
     }
   },
   "createdAt": "2026-10-20T01:42:31.338Z",
-  "updatedAt": "2026-10-20T04:22:29.307Z"
+  "updatedAt": "2026-10-20T05:12:36.840Z"
 }
