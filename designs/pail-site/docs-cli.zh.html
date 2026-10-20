@@ -93,7 +93,7 @@
           <h1>命令行参考</h1>
         </header>
         <div class="prose">
-<p><code>pail</code> 是 <code>internal/app</code> 之上的一层轻量前端。它与桌面应用共用配置目录和秘密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。</p>
+<p><code>pail</code> 是 <code>internal/app</code> 之上的一层轻量前端。它与桌面应用共用配置目录和机密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。</p>
 <pre tabindex="0"><code class="language-powershell">go build -o bin/pail.exe ./cmd/pail
 pail accounts
 pail ls s3://my-bucket/photos/ -r</code></pre>
@@ -153,7 +153,7 @@ pail ls s3://my-bucket/photos/ -r</code></pre>
 </tr>
 <tr>
 <td><code>vault status [--vault-password-stdin]</code></td>
-<td>秘密后端（<code>keyring</code> 或 <code>vault</code>）、<code>vault.json</code> 是否存在，以及桌面应用的自动锁定设置。带 <code>--vault-password-stdin</code> 时还会校验主密码。<code>--json</code> 输出 <code>{&quot;type&quot;:&quot;vault&quot;,&quot;backend&quot;:...,&quot;vaultExists&quot;:...,&quot;autoLockMinutes&quot;:...}</code>。绝不输出秘密。</td>
+<td>机密后端（<code>keyring</code> 或 <code>vault</code>）、<code>vault.json</code> 是否存在，以及桌面应用的自动锁定设置。带 <code>--vault-password-stdin</code> 时还会校验主密码。<code>--json</code> 输出 <code>{&quot;type&quot;:&quot;vault&quot;,&quot;backend&quot;:...,&quot;vaultExists&quot;:...,&quot;autoLockMinutes&quot;:...}</code>。绝不输出机密。</td>
 </tr>
 <tr>
 <td><code>buckets</code></td>
@@ -214,7 +214,7 @@ pail ls s3://my-bucket/photos/ -r</code></pre>
 <h2 id="cdn-urls">CDN URL <a class="heading-anchor" href="#cdn-urls" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
 <p>账户可以设置一个 CDN 基础 URL，例如 <code>https://s3-cdn.example.com</code>，还可以选择性地给出它所服务的存储桶列表（默认：全部）。不含占位符时，链接为 <code>&lt;base&gt;/&lt;bucket&gt;/&lt;key&gt;</code>，因此 <code>s3://assets/logo.svg</code> 会变成 <code>https://s3-cdn.example.com/assets/logo.svg</code>。如果使用含 <code>{key}</code>（也可含 <code>{bucket}</code>）的模板，例如 <code>https://{bucket}.cdn.example.com/{key}</code>，则按模板填充。对象键与公开 URL 一样做百分号编码，保留 <code>/</code>。该设置存储在 <code>accounts.json</code> 中，字段为 <code>cdnUrl</code> / <code>cdnBuckets</code>，在桌面应用里编辑；命令行只读取它。</p>
 <h2 id="encrypted-vault">加密保险库 <a class="heading-anchor" href="#encrypted-vault" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
-<p>当桌面应用把秘密存放在加密保险库（<code>vault.json</code>，由主密码保护）而不是系统钥匙串中时，每次运行命令行时保险库都处于锁定状态。需要凭据的命令（使用静态密钥的账户；存在 ZIP 密码等秘密引用时的 <code>cp</code> 和 <code>sync</code>）会先将其解锁：</p>
+<p>当桌面应用把机密存放在加密保险库（<code>vault.json</code>，由主密码保护）而不是系统钥匙串中时，每次运行命令行时保险库都处于锁定状态。需要凭据的命令（使用静态密钥的账户；存在 ZIP 密码等机密引用时的 <code>cp</code> 和 <code>sync</code>）会先将其解锁：</p>
 <ul>
 <li><code>--vault-password-stdin</code>：密码取自 stdin 的第一行，例如 <code>$pw | pail --vault-password-stdin buckets</code>。此时 stdin 不能再用于 <code>Proceed? [y/N]</code> 提示，因此破坏性命令还需要 <code>--yes</code>。</li>
 <li>在终端中，会出现不回显的提示 <code>Vault master password:</code>（最多三次尝试）。</li>

@@ -109,14 +109,14 @@
 <li><strong>上传规则</strong>：headers、存储类别、加密和压缩（GZIP、ZIP、带压缩级别的 AES-256 ZIP）；下载时解码。</li>
 <li><strong>每个账户的 CDN 域名</strong>（基础 URL 或 <code>{bucket}</code>/<code>{key}</code> 模板，可选存储桶列表）、预签名 URL 对话框、CloudFront distribution 与失效（AWS 账户）。</li>
 <li><strong>命令行</strong>（<code>pail</code>）：<code>accounts</code>、<code>buckets</code>、<code>ls</code>、<code>cp</code>、<code>mv</code>、<code>rm</code>、<code>mb</code>、<code>rb</code>、<code>presign</code>、<code>url</code>、<code>versions</code>、<code>restore</code>、<code>sync</code>、<code>vault status</code>；JSON 输出和稳定的退出码；与应用共用账户和同步作业。见 <a href="docs-cli.zh.html">命令行参考</a>。</li>
-<li><strong>安全</strong>：秘密保存在系统钥匙串或可选的加密保险库（Argon2id、XChaCha20-Poly1305）中，支持空闲自动锁定；需主动开启的脱敏诊断日志；每个破坏性或批量操作都会显示范围并要求确认。</li>
+<li><strong>安全</strong>：机密保存在系统钥匙串或可选的加密保险库（Argon2id、XChaCha20-Poly1305）中，支持空闲自动锁定；需主动开启的脱敏诊断日志；每个破坏性或批量操作都会显示范围并要求确认。</li>
 <li><strong>与 openS3 的兼容</strong>：已有的 <code>openS3</code> 配置文件夹和钥匙串条目会自动迁移；仍可读取旧版保险库和 <code>opens3-*</code> 对象元数据。</li>
 <li><strong>工具链</strong>：<code>internal/s3test</code> 内存 S3 服务；MinIO 集成测试套件（<code>scripts/test-integration.ps1</code>）；限定前缀的外部端点测试套件（<code>scripts/test-external.ps1</code>，<code>PAIL_EXT_*</code>）；发布脚本，生成 Windows、Linux 和 macOS（amd64、arm64）压缩包及 <code>SHA256SUMS</code>；图标生成器（<code>go run ./tools/genicons</code>）。</li>
 </ul>
 <h3 id="security">安全 <a class="heading-anchor" href="#security" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h3>
 <ul>
-<li>秘密绝不写入配置文件；它们保存在系统钥匙串或加密保险库中。</li>
-<li>日志会对 URL 查询串、Authorization 头、签名和已知的秘密值脱敏。</li>
+<li>机密绝不写入配置文件；它们保存在系统钥匙串或加密保险库中。</li>
+<li>日志会对 URL 查询串、Authorization 头、签名和已知的机密值脱敏。</li>
 <li>自定义端点默认使用&quot;仅在需要时&quot;校验和模式；结果未知的请求绝不重放。</li>
 </ul>
 <h3 id="known-limitations">已知限制 <a class="heading-anchor" href="#known-limitations" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h3>
