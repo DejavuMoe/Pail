@@ -7,7 +7,7 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 - Product type: static marketing site for an open-source desktop app and CLI.
 - Primary users: people who manage S3-compatible storage and are deciding whether to install Pail.
 - Primary jobs: understand what Pail does, download the right archive, read how to install and use it, find the source.
-- Pages: the landing page, plus on-site docs rendered from the repository (Get started from the README sections Install, Quick start, Command line, Build from source, Data and privacy and Platform status; the CLI reference from `docs/cli.md`; the changelog; the license). Only the open-source project itself — repository, source files, issues, releases and download assets — links to GitHub.
+- Pages: the landing page, plus on-site docs rendered from the repository (Get started from the README sections Install, Quick start, Command line, Build from source, Data and privacy and Platform status; the CLI reference from `docs/cli.md` / `docs/cli.zh-CN.md`; the changelog from `CHANGELOG.md` / `CHANGELOG.zh-CN.md`; the license, in English only because the English text is the binding one). Only the open-source project itself — repository, source files, issues, releases and download assets — links to GitHub.
 - UI surface classification: marketing.
 - Content profile: `marketing-approved`.
 

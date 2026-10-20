@@ -4,7 +4,7 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>命令行参考 · Pail</title>
-  <meta name="description" content="pail 命令行参考（英文）：全局参数、命令、CDN URL、加密保险库、输出、退出码与限制。">
+  <meta name="description" content="pail 命令行参考：全局参数、命令、CDN URL、加密保险库、输出、退出码与限制。">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
@@ -91,192 +91,191 @@
       <div class="docs-main">
         <header class="doc-head">
           <h1>命令行参考</h1>
-          <p class="doc-lede">本页仅提供英文版。</p>
         </header>
-        <div class="prose" lang="en">
-<p><code>pail</code> is a thin front end over <code>internal/app</code>. It shares the configuration directory and the secret store (OS keyring or the encrypted vault) with the desktop app, so accounts and saved sync jobs created there are available here. Accounts cannot be added or changed from the CLI, and no command ever prints credentials.</p>
+        <div class="prose">
+<p><code>pail</code> 是 <code>internal/app</code> 之上的一层轻量前端。它与桌面应用共用配置目录和秘密存储（系统钥匙串或加密保险库），因此在桌面应用中创建的账户和保存的同步作业，在这里同样可用。不能通过命令行添加或修改账户，任何命令都不会输出凭据。</p>
 <pre tabindex="0"><code class="language-powershell">go build -o bin/pail.exe ./cmd/pail
 pail accounts
 pail ls s3://my-bucket/photos/ -r</code></pre>
-<p>S3 paths are written <code>s3://bucket/key-or-prefix/</code>; any other argument is a local path.</p>
-<h2 id="global-flags">Global flags <a class="heading-anchor" href="#global-flags" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
-<p>Accepted before or after the command name.</p>
-<div class="table-wrap" role="group" aria-label="Table: Global flags" tabindex="0"><table>
+<p>S3 路径写作 <code>s3://bucket/key-or-prefix/</code>；其他参数一律视为本地路径。</p>
+<h2 id="global-flags">全局参数 <a class="heading-anchor" href="#global-flags" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p>可放在命令名之前或之后。</p>
+<div class="table-wrap" role="group" aria-label="表格: 全局参数" tabindex="0"><table>
 <thead>
 <tr>
-<th scope="col">Flag</th>
-<th scope="col">Meaning</th>
+<th scope="col">参数</th>
+<th scope="col">含义</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>--account NAME|ID</code></td>
-<td>Account to use. Default: the only configured account; with several, the command fails (exit 2) and lists them.</td>
+<td>要使用的账户。默认：唯一已配置的账户；有多个账户时命令失败（退出码 2）并列出这些账户。</td>
 </tr>
 <tr>
 <td><code>--config-dir DIR</code></td>
-<td>Configuration directory (default: the desktop app&#39;s, <code>&lt;user config dir&gt;/Pail</code>).</td>
+<td>配置目录（默认：桌面应用所用的目录，<code>&lt;user config dir&gt;/Pail</code>）。</td>
 </tr>
 <tr>
 <td><code>--json</code></td>
-<td>Newline-delimited JSON on stdout: one object per listing row or item result and a final <code>{&quot;type&quot;:&quot;summary&quot;,...}</code> object. Failures end with <code>{&quot;type&quot;:&quot;error&quot;,...}</code>.</td>
+<td>在 stdout 输出按行分隔的 JSON：每个列表行或每个项目结果一个对象，最后是一个 <code>{&quot;type&quot;:&quot;summary&quot;,...}</code> 对象。失败时以 <code>{&quot;type&quot;:&quot;error&quot;,...}</code> 结束。</td>
 </tr>
 <tr>
 <td><code>--quiet</code></td>
-<td>No per-item lines or progress on stderr.</td>
+<td>stderr 上不输出逐项行和进度。</td>
 </tr>
 <tr>
 <td><code>--yes</code></td>
-<td>Assume yes for confirmations.</td>
+<td>所有确认一律视为同意。</td>
 </tr>
 <tr>
 <td><code>--timeout D</code></td>
-<td>Abort after D (for example <code>10m</code>); running tasks are cancelled. 0 = no limit.</td>
+<td>D 时间后中止（例如 <code>10m</code>）；运行中的任务会被取消。0 表示不限时。</td>
 </tr>
 <tr>
 <td><code>--vault-password-stdin</code></td>
-<td>Read the encrypted vault&#39;s master password from the first line of stdin (see below).</td>
+<td>从 stdin 的第一行读取加密保险库的主密码（见下文）。</td>
 </tr>
 </tbody>
 </table></div>
-<h2 id="commands">Commands <a class="heading-anchor" href="#commands" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
-<div class="table-wrap" role="group" aria-label="Table: Commands" tabindex="0"><table>
+<h2 id="commands">命令 <a class="heading-anchor" href="#commands" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<div class="table-wrap" role="group" aria-label="表格: 命令" tabindex="0"><table>
 <thead>
 <tr>
-<th scope="col">Command</th>
-<th scope="col">Notes</th>
+<th scope="col">命令</th>
+<th scope="col">说明</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td><code>accounts</code></td>
-<td>Name, ID, provider, endpoint, region.</td>
+<td>名称、ID、服务商、端点、区域。</td>
 </tr>
 <tr>
 <td><code>vault status [--vault-password-stdin]</code></td>
-<td>Secret backend (<code>keyring</code> or <code>vault</code>), whether <code>vault.json</code> exists and the desktop auto-lock setting. With <code>--vault-password-stdin</code> it also checks the master password. <code>--json</code> emits <code>{&quot;type&quot;:&quot;vault&quot;,&quot;backend&quot;:...,&quot;vaultExists&quot;:...,&quot;autoLockMinutes&quot;:...}</code>. Never prints secrets.</td>
+<td>秘密后端（<code>keyring</code> 或 <code>vault</code>）、<code>vault.json</code> 是否存在，以及桌面应用的自动锁定设置。带 <code>--vault-password-stdin</code> 时还会校验主密码。<code>--json</code> 输出 <code>{&quot;type&quot;:&quot;vault&quot;,&quot;backend&quot;:...,&quot;vaultExists&quot;:...,&quot;autoLockMinutes&quot;:...}</code>。绝不输出秘密。</td>
 </tr>
 <tr>
 <td><code>buckets</code></td>
-<td>Buckets with region.</td>
+<td>存储桶及其区域。</td>
 </tr>
 <tr>
 <td><code>ls [s3://b/prefix/] [-r]</code></td>
-<td>Folders as <code>PRE name/</code>; sizes human-readable (raw bytes with <code>--json</code>). Without a path: buckets. A key without trailing <code>/</code> that is not a folder lists that single object.</td>
+<td>文件夹显示为 <code>PRE name/</code>；大小以易读格式显示（<code>--json</code> 时为原始字节数）。不带路径时：列出存储桶。末尾没有 <code>/</code> 且不是文件夹的对象键，只列出该单个对象。</td>
 </tr>
 <tr>
 <td><code>cp SRC DST [-r] [--conflict P] [--decode gzip|zip|auto]</code></td>
-<td>local to S3 (Upload), S3 to local (Download), S3 to S3 (Copy within the account).</td>
+<td>本地到 S3（上传），S3 到本地（下载），S3 到 S3（在账户内复制）。</td>
 </tr>
 <tr>
 <td><code>mv SRC DST [-r] [--conflict P]</code></td>
-<td>S3 to S3 only. Copy, verify, then delete the source.</td>
+<td>仅限 S3 到 S3。先复制，校验后再删除源。</td>
 </tr>
 <tr>
 <td><code>rm s3://b/key [-r] [--versions]</code></td>
-<td>Delete. <code>-r</code> treats the key as a folder (<code>s3://b</code> with <code>-r</code> = whole bucket). <code>--versions</code> permanently deletes every version and delete marker of one key.</td>
+<td>删除。<code>-r</code> 把该键当作文件夹处理（<code>s3://b</code> 加 <code>-r</code> 表示整个存储桶）。<code>--versions</code> 永久删除某个键的所有版本和删除标记。</td>
 </tr>
 <tr>
 <td><code>mb s3://b [--region R] [--object-lock]</code>, <code>rb s3://b</code></td>
-<td>Create / delete (empty) bucket.</td>
+<td>创建 / 删除（空的）存储桶。</td>
 </tr>
 <tr>
 <td><code>presign s3://b/key [--expires 1h] [--method GET|PUT] [--version-id V]</code></td>
-<td>Prints the URL.</td>
+<td>输出 URL。</td>
 </tr>
 <tr>
 <td><code>url s3://b/key [--kind cdn|public]</code></td>
-<td>Prints the object&#39;s address without any request. Default: the CDN link when the account has a CDN URL for that bucket (set in the desktop app&#39;s account dialog; see below), else the public S3 address. <code>--kind cdn</code> exits 1 when none is configured; <code>--kind public</code> always prints the S3 address. <code>--json</code> emits <code>{&quot;type&quot;:&quot;url&quot;,&quot;kind&quot;:&quot;cdn&quot;|&quot;public&quot;,&quot;url&quot;:...}</code> and the summary. A prefix is a usage error (exit 2).</td>
+<td>不发出任何请求，直接输出对象的地址。默认：账户为该存储桶设置了 CDN URL 时（在桌面应用的账户对话框中设置；见下文）输出 CDN 链接，否则输出公开的 S3 地址。<code>--kind cdn</code> 在未配置时以 1 退出；<code>--kind public</code> 始终输出 S3 地址。<code>--json</code> 输出 <code>{&quot;type&quot;:&quot;url&quot;,&quot;kind&quot;:&quot;cdn&quot;|&quot;public&quot;,&quot;url&quot;:...}</code> 和汇总。给出前缀属于用法错误（退出码 2）。</td>
 </tr>
 <tr>
 <td><code>versions s3://b/prefix/</code></td>
-<td>One folder level; includes delete markers.</td>
+<td>列出一层文件夹；包含删除标记。</td>
 </tr>
 <tr>
 <td><code>restore s3://b/key --version-id V</code> / <code>restore s3://b/prefix/ --deleted [-r]</code></td>
-<td>Make an old version current / undelete keys whose latest entry is a delete marker. History is never deleted.</td>
+<td>把旧版本恢复为当前版本 / 恢复最新记录为删除标记的键。历史记录绝不会被删除。</td>
 </tr>
 <tr>
 <td><code>sync LOCAL s3://b/prefix/</code> / <code>sync s3://b/prefix/ LOCAL</code></td>
-<td><code>--mode new|new_changed|mirror</code>, <code>--compare size_time|size|checksum</code>, repeatable <code>--exclude GLOB</code>, <code>--no-rules</code>, <code>--dry-run</code>.</td>
+<td><code>--mode new|new_changed|mirror</code>、<code>--compare size_time|size|checksum</code>、可重复的 <code>--exclude GLOB</code>、<code>--no-rules</code>、<code>--dry-run</code>。</td>
 </tr>
 <tr>
 <td><code>sync --job NAME [--dry-run]</code></td>
-<td>Run a job saved in the desktop app (uses that job&#39;s account unless <code>--account</code> is given).</td>
+<td>运行在桌面应用中保存的作业（除非给出 <code>--account</code>，否则使用该作业的账户）。</td>
 </tr>
 <tr>
 <td><code>version</code></td>
-<td>Prints <code>pail &lt;version&gt;</code>.</td>
+<td>输出 <code>pail &lt;version&gt;</code>。</td>
 </tr>
 </tbody>
 </table></div>
-<p><code>--conflict</code> is <code>skip</code>, <code>overwrite</code>, <code>rename</code>, <code>newer</code> or <code>different_size</code>. When omitted, <code>cp</code> and <code>mv</code> both use the default saved in the desktop settings (initially <code>rename</code>).</p>
-<p>Destination rules: the destination of an upload or S3 copy is always a folder (a missing trailing <code>/</code> is added), and the source name is kept below it, like <code>cp -r src dst/</code>. The destination of a download is always a local directory (created if missing).</p>
-<h2 id="cdn-urls">CDN URLs <a class="heading-anchor" href="#cdn-urls" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
-<p>An account can have a CDN base URL, for example <code>https://s3-cdn.example.com</code>, and optionally a list of buckets it serves (default: all). Without placeholders the link is <code>&lt;base&gt;/&lt;bucket&gt;/&lt;key&gt;</code>, so <code>s3://assets/logo.svg</code> becomes <code>https://s3-cdn.example.com/assets/logo.svg</code>. A template with <code>{key}</code> (and optionally <code>{bucket}</code>), such as <code>https://{bucket}.cdn.example.com/{key}</code>, is filled in instead. The key is percent-encoded like the public URL, keeping <code>/</code>. The setting is stored in <code>accounts.json</code> as <code>cdnUrl</code> / <code>cdnBuckets</code> and is edited in the desktop app; the CLI only reads it.</p>
-<h2 id="encrypted-vault">Encrypted vault <a class="heading-anchor" href="#encrypted-vault" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
-<p>When the desktop app stores secrets in its encrypted vault (<code>vault.json</code>, protected by a master password) instead of the OS keychain, every CLI run starts with the vault locked. A command that needs credentials (an account with static keys; <code>cp</code> and <code>sync</code> when secret references such as ZIP passwords exist) unlocks it first:</p>
+<p><code>--conflict</code> 取值为 <code>skip</code>、<code>overwrite</code>、<code>rename</code>、<code>newer</code> 或 <code>different_size</code>。省略时，<code>cp</code> 和 <code>mv</code> 都使用桌面应用设置中保存的默认值（初始为 <code>rename</code>）。</p>
+<p>目标路径规则：上传或 S3 复制的目标始终是文件夹（缺少末尾的 <code>/</code> 会自动补上），源名称保留在其下，与 <code>cp -r src dst/</code> 相同。下载的目标始终是本地目录（不存在则创建）。</p>
+<h2 id="cdn-urls">CDN URL <a class="heading-anchor" href="#cdn-urls" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p>账户可以设置一个 CDN 基础 URL，例如 <code>https://s3-cdn.example.com</code>，还可以选择性地给出它所服务的存储桶列表（默认：全部）。不含占位符时，链接为 <code>&lt;base&gt;/&lt;bucket&gt;/&lt;key&gt;</code>，因此 <code>s3://assets/logo.svg</code> 会变成 <code>https://s3-cdn.example.com/assets/logo.svg</code>。如果使用含 <code>{key}</code>（也可含 <code>{bucket}</code>）的模板，例如 <code>https://{bucket}.cdn.example.com/{key}</code>，则按模板填充。对象键与公开 URL 一样做百分号编码，保留 <code>/</code>。该设置存储在 <code>accounts.json</code> 中，字段为 <code>cdnUrl</code> / <code>cdnBuckets</code>，在桌面应用里编辑；命令行只读取它。</p>
+<h2 id="encrypted-vault">加密保险库 <a class="heading-anchor" href="#encrypted-vault" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p>当桌面应用把秘密存放在加密保险库（<code>vault.json</code>，由主密码保护）而不是系统钥匙串中时，每次运行命令行时保险库都处于锁定状态。需要凭据的命令（使用静态密钥的账户；存在 ZIP 密码等秘密引用时的 <code>cp</code> 和 <code>sync</code>）会先将其解锁：</p>
 <ul>
-<li><code>--vault-password-stdin</code>: the password is the first line of stdin, for example <code>$pw | pail --vault-password-stdin buckets</code>. stdin is then not available for the <code>Proceed? [y/N]</code> prompt, so destructive commands also need <code>--yes</code>.</li>
-<li>On a terminal, a no-echo prompt <code>Vault master password:</code> (three attempts).</li>
-<li>Without either, the command exits 2 with a message saying so. Nothing is asked for accounts that use profiles, default credentials or anonymous access, nor for <code>accounts</code>.</li>
+<li><code>--vault-password-stdin</code>：密码取自 stdin 的第一行，例如 <code>$pw | pail --vault-password-stdin buckets</code>。此时 stdin 不能再用于 <code>Proceed? [y/N]</code> 提示，因此破坏性命令还需要 <code>--yes</code>。</li>
+<li>在终端中，会出现不回显的提示 <code>Vault master password:</code>（最多三次尝试）。</li>
+<li>两者都没有时，命令以 2 退出并给出相应说明。使用 profile、默认凭据或匿名访问的账户不会询问，<code>accounts</code> 也不会。</li>
 </ul>
-<p>The password is never accepted as a flag value or environment variable (both are visible to other processes), is not logged and is not echoed. The unlock lasts for one run; the CLI never writes to the vault, creates it, changes its password or resets it: use the desktop app.</p>
-<h2 id="progress-and-output">Progress and output <a class="heading-anchor" href="#progress-and-output" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
-<p>One line per finished item goes to stderr (<code>done</code>, <code>skipped</code>, <code>FAILED</code>, <code>UNKNOWN</code>, <code>unprocessed</code>), then a summary line. On a terminal a live line shows items, bytes and speed. Machine-readable results use <code>--json</code>; stdout otherwise carries only listings, URLs and the sync plan.</p>
-<h2 id="confirmation">Confirmation <a class="heading-anchor" href="#confirmation" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
-<p><code>rm</code>, <code>rb</code>, <code>mv</code> and <code>sync</code> with deletes print the scope first: account, bucket/prefix, objects and bytes (counted with <code>Estimate</code>), and for sync the number of deletes (local deletes of a download-direction mirror go to the OS trash). With a terminal on stdin they ask <code>Proceed? [y/N]</code>; without one they exit 2 unless <code>--yes</code> is given. <code>cp</code> is never confirmed, including <code>--conflict overwrite</code>. <code>sync --dry-run</code> prints the plan and exits 0 without changing anything and without asking.</p>
-<h2 id="exit-codes">Exit codes <a class="heading-anchor" href="#exit-codes" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
-<div class="table-wrap" role="group" aria-label="Table: Exit codes" tabindex="0"><table>
+<p>密码绝不作为参数值或环境变量接受（两者都能被其他进程看到），不会写入日志，也不会回显。解锁只在本次运行内有效；命令行绝不写入保险库、创建保险库、更改其密码或重置它：请使用桌面应用。</p>
+<h2 id="progress-and-output">进度与输出 <a class="heading-anchor" href="#progress-and-output" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p>每完成一个项目，stderr 上输出一行（<code>done</code>、<code>skipped</code>、<code>FAILED</code>、<code>UNKNOWN</code>、<code>unprocessed</code>），最后是一行汇总。在终端中，会有一行实时显示项目数、字节数和速度。机器可读的结果请用 <code>--json</code>；否则 stdout 只输出列表、URL 和同步计划。</p>
+<h2 id="confirmation">确认 <a class="heading-anchor" href="#confirmation" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<p><code>rm</code>、<code>rb</code>、<code>mv</code>，以及会删除内容的 <code>sync</code>，会先输出范围：账户、存储桶/前缀、对象数和字节数（用 <code>Estimate</code> 统计），对于 sync 还有删除数量（下载方向镜像的本地删除会进入系统回收站）。stdin 是终端时，它们会询问 <code>Proceed? [y/N]</code>；不是终端时，除非给出 <code>--yes</code>，否则以 2 退出。<code>cp</code> 从不需要确认，包括 <code>--conflict overwrite</code>。<code>sync --dry-run</code> 输出计划后以 0 退出，不做任何修改，也不询问。</p>
+<h2 id="exit-codes">退出码 <a class="heading-anchor" href="#exit-codes" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
+<div class="table-wrap" role="group" aria-label="表格: 退出码" tabindex="0"><table>
 <thead>
 <tr>
-<th scope="col">Code</th>
-<th scope="col">Meaning</th>
+<th scope="col">退出码</th>
+<th scope="col">含义</th>
 </tr>
 </thead>
 <tbody>
 <tr>
 <td>0</td>
-<td>Success (skipped items count as success).</td>
+<td>成功（跳过的项目算作成功）。</td>
 </tr>
 <tr>
 <td>1</td>
-<td>Failure: error, failed task, every item failed, or confirmation declined.</td>
+<td>失败：出错、任务失败、所有项目都失败，或确认被拒绝。</td>
 </tr>
 <tr>
 <td>2</td>
-<td>Usage or invalid input, confirmation required but no terminal and no <code>--yes</code>, or the encrypted vault is locked and there is no way to ask for the password (no terminal, no <code>--vault-password-stdin</code>).</td>
+<td>用法错误或输入无效、需要确认但没有终端且没有 <code>--yes</code>，或加密保险库已锁定而无法询问密码（没有终端，也没有 <code>--vault-password-stdin</code>）。</td>
 </tr>
 <tr>
 <td>3</td>
-<td>Partial failure: some items succeeded, some failed, were unknown (outcome uncertain, never replayed) or unprocessed.</td>
+<td>部分失败：部分项目成功，部分失败、结果未知（结果不确定，绝不重放）或未处理。</td>
 </tr>
 <tr>
 <td>130</td>
-<td>Interrupted (Ctrl+C): running tasks are cancelled and given up to 10 s to stop. Downloads are written to temporary files that are removed, so no partial file is left.</td>
+<td>被中断（Ctrl+C）：运行中的任务被取消，并有最多 10 秒的时间停止。下载写入的是会被删除的临时文件，因此不会留下残缺的文件。</td>
 </tr>
 </tbody>
 </table></div>
-<p>Errors print the kind in words: not found, access denied, not supported by this provider, conflict, network error, canceled, invalid input, locked. A wrong vault password is &quot;access denied&quot; (exit 1).</p>
-<h2 id="limits">Limits <a class="heading-anchor" href="#limits" aria-label="Link to this section"><span aria-hidden="true">#</span></a></h2>
+<p>错误会用文字（英文原文）说明类别：not found、access denied、not supported by this provider、conflict、network error、canceled、invalid input、locked。保险库密码错误属于 &quot;access denied&quot;（退出码 1）。</p>
+<h2 id="limits">限制 <a class="heading-anchor" href="#limits" aria-label="链接到本节"><span aria-hidden="true">#</span></a></h2>
 <ul>
-<li>Destinations cannot be renamed on the fly; there is no glob expansion of S3 paths; <code>versions</code> lists one folder level; <code>rm --versions</code> takes a single key.</li>
-<li>Copy and move work inside one account.</li>
-<li>Verification: the commands are covered by in-process tests against <code>internal/s3test</code> (protocol level). The application layer underneath is also tested against MinIO and a self-hosted VersityGW (see <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/status.md">status.md</a>); the CLI front end itself has not been run against a real server.</li>
+<li>不能即时重命名目标；S3 路径不做通配符展开；<code>versions</code> 只列一层文件夹；<code>rm --versions</code> 只接受单个键。</li>
+<li>复制和移动只能在同一个账户内进行。</li>
+<li>验证：这些命令由针对 <code>internal/s3test</code> 的进程内测试覆盖（协议层）。其下的应用层也针对 MinIO 和自建 VersityGW 测试过（见 <a href="https://github.com/DejavuMoe/Pail/blob/main/docs/status.md">status.md</a>）；命令行前端本身尚未对真实服务端运行过。</li>
 </ul>
         </div>
       </div>
       <nav class="docs-toc" aria-labelledby="toc-title">
         <p class="docs-toc-title" id="toc-title">本页内容</p>
-        <ul lang="en">
-          <li><a href="#global-flags">Global flags</a></li>
-          <li><a href="#commands">Commands</a></li>
-          <li><a href="#cdn-urls">CDN URLs</a></li>
-          <li><a href="#encrypted-vault">Encrypted vault</a></li>
-          <li><a href="#progress-and-output">Progress and output</a></li>
-          <li><a href="#confirmation">Confirmation</a></li>
-          <li><a href="#exit-codes">Exit codes</a></li>
-          <li><a href="#limits">Limits</a></li>
+        <ul>
+          <li><a href="#global-flags">全局参数</a></li>
+          <li><a href="#commands">命令</a></li>
+          <li><a href="#cdn-urls">CDN URL</a></li>
+          <li><a href="#encrypted-vault">加密保险库</a></li>
+          <li><a href="#progress-and-output">进度与输出</a></li>
+          <li><a href="#confirmation">确认</a></li>
+          <li><a href="#exit-codes">退出码</a></li>
+          <li><a href="#limits">限制</a></li>
         </ul>
       </nav>
     </div>
