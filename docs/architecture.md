@@ -16,7 +16,8 @@ internal/trash     本地删除进系统回收站（Windows、Linux 按 freedesk
 internal/s3test    内存版 S3 测试服务，`--demo` 也用它
 integration/       真实服务端验收：MinIO 夹具与外部 S3 兼容端点套件
 tools/genicons     从 SVG 生成图标、.ico、.icns、Windows 资源对象
-tools/pack         发布打包，保证可执行文件权限为 0755
+tools/release      本地与 CI 共用的 Go 发布入口，跨平台构建并自动验包
+tools/pack         归档写入，保证可执行文件权限为 0755
 ```
 
 依赖方向只能向下：`cmd/*` → `internal/app` → `internal/storage` / `internal/cloud` / `internal/rules` / `internal/safepath` / `internal/trash`。界面和命令行不直接访问 S3 SDK。

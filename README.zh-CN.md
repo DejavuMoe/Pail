@@ -58,7 +58,7 @@ Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有任何隶属、认
 
 ## 安装
 
-发布包由 `scripts/release.ps1` 生成在 `build/release/<version>/` 中，并附带 `SHA256SUMS` 文件。每个包内含桌面和 CLI 两个可执行文件、`LICENSE`；使用文档见 [pail.download](https://pail.download/zh/docs/)。
+发布包由 `tools/release` 生成在 `build/release/<version>/` 中，并附带 `SHA256SUMS` 文件。每个包内含桌面和 CLI 两个可执行文件、`LICENSE`；使用文档见 [pail.download](https://pail.download/zh/docs/)。
 
 | 系统 | 压缩包 |
 | --- | --- |
@@ -99,15 +99,15 @@ pail presign s3://my-bucket/report.pdf --expires 1h
 
 ## 从源码构建
 
-`mise.toml` 锁定 Go 1.27.2 与 Node.js 24.19.0（仅 CI 脚本使用）。先运行 `mise trust` 和 `mise install go node`；未启用 shell 集成时，使用 `mise exec -- <命令>`。Go 依赖仍由 `go.mod` 和 `go.sum` 锁定。构建应用只需要 Go；可选的发布与集成测试 PowerShell 包装脚本需要在 Windows、Linux 或 macOS 上另行安装 PowerShell 7.3+。除 race 测试外不需要 cgo。
+`mise.toml` 锁定 Go 1.27.2 与 Node.js 24.19.0（仅 CI 脚本使用）。先运行 `mise trust` 和 `mise install go node`；未启用 shell 集成时，使用 `mise exec -- <命令>`。Go 依赖仍由 `go.mod` 和 `go.sum` 锁定。原生构建、测试和跨平台发行打包只需要 Go。仅在选择可选的兼容包装脚本时才需要 PowerShell 7.3+，CI 不使用这些包装脚本。除 race 测试外不需要 cgo。
 
 ```powershell
-go build ./cmd/pail-desktop ./cmd/pail
-./scripts/release.ps1 -Version 0.2.0   # PowerShell 7.3+，交叉编译所有目标
+go build -o build/ ./cmd/pail-desktop ./cmd/pail
+go run ./tools/release -version 0.2.0  # 构建并校验全部六个目标
 go run ./tools/genicons                # 由 assets/brand/pail-icon.svg 重新生成图标
 ```
 
-`scripts/release.ps1` 需要 `assets/brand/generated` 中已生成的图标。任何目标构建失败都会让脚本失败。发布前运行 `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0`，检查六个压缩包、校验和、二进制目标平台与执行权限。
+`tools/release` 需要 `assets/brand/generated` 中已生成的图标。任何目标构建或验包失败都会让工具失败。工具自动验包；重新检查下载的产物时可运行 `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0`，检查六个压缩包、校验和、二进制目标平台与执行权限。
 
 ## 测试
 
@@ -118,7 +118,13 @@ go test ./...
 
 这些测试使用内存 S3 服务（`internal/s3test`）和 `httptest`，覆盖协议行为，但不涉及真实的服务商。
 
-在 Docker 中对真实的 MinIO 测试（通过 WSL）：
+在 Linux 上使用 Docker 中的真实 MinIO 测试：
+
+```sh
+bash scripts/integration-minio.sh
+```
+
+Windows 上安装了可选的 `linux-task.ps1` WSL 构建运行器时，PowerShell 包装脚本会执行同一套测试：
 
 ```powershell
 ./scripts/test-integration.ps1                      # 固定版本的 MinIO

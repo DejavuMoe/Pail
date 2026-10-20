@@ -19,7 +19,7 @@ All notable changes to this project are documented in this file. The format foll
 ### Changed
 
 - Release archives contain executables, platform launch assets and the license; READMEs remain in the repository and online documentation.
-- Mise pins Go and Node only. PowerShell 7.3+ is a separate prerequisite for the optional packaging/integration wrappers; CI packaging uses the runner's installed PowerShell.
+- Mise pins Go and Node only. Native builds/tests and release packaging require no PowerShell. `go run ./tools/release` is the shared local/CI entry point, builds all six targets and verifies the archives automatically; the old PowerShell entry point is a compatibility wrapper.
 - Exclude `.agents/skills` and `designs/pail-site` from repository language statistics. Refresh documentation screenshots from the current UI code and compress them using PicForge's default WebP settings.
 - Overlays now share one look: dialogs, the bucket settings dialog, the command palette, select popups and toasts take their radius (6 controls, 8 popups, 10 dialogs), shadow and dark-theme outline from the design tokens instead of per-view values, and no colour is written outside `theme.go` any more.
 - Command palette and select popups use one list row: 28 px high, with the command icon, shortcuts drawn as key caps (also `Esc`), and a neutral highlight that follows both the keyboard and the pointer. The current value is marked by a check and a heavier weight instead of the blue selection fill. The "Unavailable here" group and the command groups are section labels.

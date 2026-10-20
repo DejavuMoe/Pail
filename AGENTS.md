@@ -7,7 +7,7 @@
 ## 结构
 - `cmd/pail-desktop` 桌面界面（mygo）；`cmd/pail` 命令行；`internal/app` 应用编排；`internal/storage` S3 协议层；`internal/cloud` AWS 专有服务（CloudFront）。
 - `internal/rules` 上传规则与压缩；`internal/safepath` 下载路径安全；`internal/trash` 本地回收站；`internal/s3test` 内存 S3 测试服务（`--demo` 也用它）。
-- `tools/genicons` 图标生成；`tools/pack` 发布打包；`integration/` MinIO 与外部端点验收。架构与不变量见 `docs/architecture.md`。
+- `tools/genicons` 图标生成；`tools/release` 跨平台发布构建与验包入口，复用 `tools/pack` 和 `tools/verify-release`；`integration/` MinIO 与外部端点验收。架构与不变量见 `docs/architecture.md`。
 - `site/` 与 `tools/site` 是 https://pail.download 的静态网站（Landing Page）；原型在 `designs/pail-site/`，部署流水线在 `.woodpecker/site.yml`，说明见 `docs/site.md`。
 
 ## 规则
@@ -37,4 +37,4 @@
 
 ## 品牌与发布
 - 图标由 `go run ./tools/genicons` 从 `assets/brand/pail-icon.svg` 生成，不手改生成物。
-- 发布用 `scripts/release.ps1 -Version X`；真实服务端验收用 `scripts/test-integration.ps1` 与 `scripts/test-external.ps1`。
+- 本地与 CI 发布构建统一用 `go run ./tools/release -version X`，不依赖 PowerShell；`scripts/release.ps1` 只保留兼容入口。真实服务端验收用 `scripts/test-integration.ps1` 与 `scripts/test-external.ps1`。
