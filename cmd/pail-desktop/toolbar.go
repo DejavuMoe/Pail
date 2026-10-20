@@ -6,11 +6,6 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
-// tbLabelsNeed is the toolbar width, without the room of the window buttons,
-// that the labelled Upload, Download and New folder buttons need; narrower
-// toolbars drop the labels.
-const tbLabelsNeed = 680
-
 // topBar is the 44px row across the top of the main area: the command row of
 // the object browser, or the header of a tool view. Empty space in it drags
 // the window and a double click maximizes it; it keeps clear of the system
@@ -58,7 +53,7 @@ func toolbarGap(c *ui.Context) { vline(c, 16).Margin(0, 6) }
 func (a *app) uploadMenu(c *ui.Context) {
 	files, folder := a.cmd("upload.files"), a.cmd("upload.folder")
 	text := locales.ToolbarUpload()
-	if a.tbCompact {
+	if a.lay.tbCompact {
 		text = ""
 	}
 	b := ghostButton(c, icons.Get(files.Icon), text, files.tooltip(), !a.enabled(files)).Label(locales.ToolbarUpload())
@@ -77,7 +72,7 @@ func (a *app) uploadMenu(c *ui.Context) {
 func (a *app) cmdButton(c *ui.Context, id string, label bool) {
 	cmd := a.cmd(id)
 	text := ""
-	if label && !a.tbCompact {
+	if label && !a.lay.tbCompact {
 		text = cmd.text()
 	}
 	b := ghostButton(c, icons.Get(cmd.Icon), text, cmd.tooltip(), !a.enabled(cmd))

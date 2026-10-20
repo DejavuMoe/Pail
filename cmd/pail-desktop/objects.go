@@ -19,13 +19,14 @@ func objectColumns() []ui.TableColumn {
 
 // visibleColumns drops the least important columns when the table is too
 // narrow for all of them, so nothing runs off the right edge: Storage class
-// first, then Type (the inspector still shows both).
-func visibleColumns(width float32) []ui.TableColumn {
+// first, then Type (the inspector still shows both). tier is
+// layoutMetrics.colTier: 0 all, 1 four columns, anything more three.
+func visibleColumns(tier int) []ui.TableColumn {
 	all := objectColumns()
 	switch {
-	case width <= 0 || width >= 720:
+	case tier <= 0:
 		return all
-	case width >= 560:
+	case tier == 1:
 		return all[:4]
 	default:
 		return []ui.TableColumn{all[0], all[1], all[3]}
@@ -94,7 +95,7 @@ func (a *app) table(c *ui.Context) {
 	rowTheme.FontSize = sizeSecondary
 	c.SetTheme(&rowTheme)
 	defer c.SetTheme(full)
-	cols := visibleColumns(a.tableW)
+	cols := visibleColumns(a.lay.colTier)
 	tbl := ui.Table(c, &a.list, cols, len(rows), func(row, col int) {
 		e := &rows[row]
 		switch cols[col].ID {
@@ -141,7 +142,6 @@ func (a *app) table(c *ui.Context) {
 			a.dataCell(c, e, "class", storageLabel(e.StorageClass), !e.Folder, ui.Start)
 		}
 	}).Grow(1).MinHeight(0).Label(locales.ObjectsTable())
-	a.tableW = tbl.Bounds().W
 	a.hoverKey = a.rowUnderPointer(tbl)
 	tbl.ContextMenu(a.buildMenu)
 	if tbl.Submitted() {

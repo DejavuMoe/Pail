@@ -46,7 +46,7 @@ func (a *app) flatToggle(c *ui.Context) {
 	if a.mg.del.on {
 		tip = locales.FlatListUnavailable()
 	}
-	if ghostToggle(c, icons.Get("layers"), locales.FlatListLabel(), tip, a.objOps.flat, a.mg.del.on, a.compact).Clicked() {
+	if ghostToggle(c, icons.Get("layers"), locales.FlatListLabel(), tip, a.objOps.flat, a.mg.del.on, a.lay.compact).Clicked() {
 		a.toggleFlat()
 	}
 }
