@@ -300,7 +300,7 @@ type navItem struct {
 
 // renderDocs writes every docs page in every language.
 func renderDocs(c config, locales map[string]map[string]string, funcs template.FuncMap, year string) error {
-	base, err := template.New("docs.html.tmpl").Funcs(funcs).ParseFiles(filepath.Join(c.root, "site", "templates", "docs.html.tmpl"))
+	base, err := template.New("docs.html.tmpl").Funcs(funcs).ParseFiles(filepath.Join(c.root, "site", "templates", "docs.html.tmpl"), filepath.Join(c.root, "site", "templates", "social.html.tmpl"))
 	if err != nil {
 		return err
 	}
@@ -335,6 +335,7 @@ func renderDocs(c config, locales map[string]map[string]string, funcs template.F
 				"URLEn":         c.baseURL + docURL(p, languages[0]),
 				"URLZh":         c.baseURL + docURL(p, languages[1]),
 				"Title":         tr(p.TitleKey),
+				"SocialTitle":   tr(p.TitleKey) + " · Pail",
 				"Description":   tr(p.DescKey),
 				"Links":         linksFor(lang),
 				"Nav":           nav,

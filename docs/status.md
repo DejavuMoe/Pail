@@ -26,6 +26,15 @@
 
 VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-None-Match` / `If-Match`，CopyObject 忽略 `If-None-Match`；五种 checksum 与对象标签可用；读取对象 ACL 返回 NotImplemented（应用报 Unsupported）；存储类别与 SSE 被静默忽略（应用把这些项报为 failed）；未开启版本控制；Cloudflare 会解压 gzip 对象，HEAD 与 GET 的大小不一致（应用拒绝发布这类下载）。
 
+## v0.2.0 发版准备（2026-10-20）
+
+- **本地源码**：在包含浮层、菜单、动效及本次发版准备的源码上，Windows 与 Debian WSL2 均通过 `go vet ./...`、`go test ./...`、`go build ./...`；修改的 Go 文件已经 `gofmt`。Linux 经 `linux-task.ps1 -Mode build` 串行执行。
+- **桌面与文档图**：Windows 原生 `--demo` 亮暗窗口启动、`--smoke-exit` 与 `--smoke-screenshot` 成功。文档中的 1440×900 截图来自当前源码的 `TestShellRendersKeyTexts` / `TestDarkModeRenders` 受控 UI 渲染，使用 PicForge 的 WebP 默认参数（质量 75、不缩放），不是原生窗口截图。静态截图不证明动画观感或完整交互验收。
+- **本地发行包**：`scripts/release.ps1 -Version 0.2.0` 构建全部六目标；`tools/verify-release` 校验文件清单、SHA256、架构和执行权限通过。包中不再含 README；Windows amd64 解压后的 CLI `version` 与桌面 `--version` 均输出 0.2.0。交叉编译不代表 macOS / ARM64 真机验证。
+- **网站**：本地构建和 Chrome 检查覆盖英文、中文、明暗主题与 WebP 加载；所有十个可索引页面的分享元信息、绝对图片 URL、真实图片尺寸及 404 的 `noindex` 由回归测试验证。发布门禁脚本的 15 个 Node 测试、网站部署夹具测试、生成物检查与 CI 固定版本的 actionlint 工作流检查通过。
+- **未完成的发布门禁**：本次尚未推送、建立 v0.2.0 标签、运行对应提交的远端 CI / CodeQL、发布 Release 或部署网站。仓库语言统计的排除规则已由 `git check-attr` 检查，远端统计须推送后等待重算。社交平台预览缓存尚未验证。
+- **沿用的历史证据**：本次未重跑 race、MinIO、VersityGW 或真实 AWS；上节真实服务端与已发布 v0.1.0 的结果不能当作 v0.2.0 的新验收。
+
 ## 功能
 
 ### 账户与凭据

@@ -36,6 +36,25 @@ func TestRequiresChecksums(t *testing.T) {
 	}
 }
 
+func TestRejectsBundledReadmes(t *testing.T) {
+	for _, name := range []string{"README.md", "README.zh-CN.md"} {
+		var b bytes.Buffer
+		zw := zip.NewWriter(&b)
+		w, err := zw.Create("Pail-v1.2.3-windows-amd64/" + name)
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, _ = w.Write([]byte("documentation belongs on the website"))
+		if err := zw.Close(); err != nil {
+			t.Fatal(err)
+		}
+		err = verifyArchive(b.Bytes(), "Pail-v1.2.3-windows-amd64", "1.2.3", "windows", "amd64")
+		if err == nil || !strings.Contains(err.Error(), "unexpected file") {
+			t.Fatalf("bundled %s not rejected: %v", name, err)
+		}
+	}
+}
+
 func TestWindowsAndUnixChecksumLines(t *testing.T) {
 	for _, newline := range []string{"\n", "\r\n"} {
 		dir := t.TempDir()

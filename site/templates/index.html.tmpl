@@ -1,10 +1,11 @@
 <!DOCTYPE html>
 <html lang="{{.HTMLLang}}" data-lang="{{.Lang}}" data-theme="light" data-theme-pref="system">
-<head>
+<head prefix="og: https://ogp.me/ns#">
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{t "docTitle"}}</title>
   <meta name="description" content="{{t "docDescription"}}">
+  {{template "social" .}}
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
@@ -134,8 +135,8 @@
         </div>
         <div class="hero-stage">
           <figure class="window" data-tilt>
-            <img class="shot shot-light" src="{{asset "main-light.png"}}" width="1440" height="900" alt="{{t "shotAlt"}}">
-            <img class="shot shot-dark" src="{{asset "main-dark.png"}}" width="1440" height="900" alt="{{t "shotAlt"}}">
+            <img class="shot shot-light" src="{{asset "main-light.webp"}}" width="1440" height="900" alt="{{t "shotAlt"}}">
+            <img class="shot shot-dark" src="{{asset "main-dark.webp"}}" width="1440" height="900" alt="{{t "shotAlt"}}">
           </figure>
         </div>
       </div>

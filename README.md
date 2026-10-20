@@ -6,8 +6,8 @@ Pail is a cross-platform desktop manager for S3-compatible object storage: Amazo
 
 Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endorsed by or sponsored by AWS.
 
-![Pail, light theme](docs/images/main-light.png)
-![Pail, dark theme](docs/images/main-dark.png)
+![Pail, light theme](docs/images/main-light.webp)
+![Pail, dark theme](docs/images/main-dark.webp)
 
 ## Features
 
@@ -52,12 +52,13 @@ Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endors
 - Destructive actions show their scope first; deleting a bucket requires typing its name. Optional diagnostic log with secrets redacted.
 
 **Interface**
-- Command palette (`Ctrl+K`, `⌘K` on macOS), context menus, keyboard shortcuts.
+- Command palette (`Ctrl+K`, `⌘K` on macOS), keyboard shortcuts, and in-window menus on Windows/Linux; macOS uses system menus.
+- Consistent dialogs and popups, animated indicators and panel transitions, with the system reduce-motion preference respected.
 - English and 简体中文, light and dark themes, following the system by default.
 
 ## Install
 
-Download [Pail v0.1.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.1.0) and verify the archive against its `SHA256SUMS`. Archives are built by `scripts/release.ps1` into `build/release/<version>/`. Each contains the desktop and CLI executables, `LICENSE` and both READMEs.
+Download [Pail v0.2.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.2.0) and verify the archive against its `SHA256SUMS`. Archives are built by `scripts/release.ps1` into `build/release/<version>/`. Each contains the desktop and CLI executables, `LICENSE`; documentation is available on [pail.download](https://pail.download/docs/).
 
 | OS | Archive |
 | --- | --- |
@@ -65,7 +66,7 @@ Download [Pail v0.1.0](https://github.com/DejavuMoe/Pail/releases/tag/v0.1.0) an
 | Linux | `Pail-v<version>-linux-amd64.tar.gz`, `Pail-v<version>-linux-arm64.tar.gz` (with `pail.desktop` and `pail.png`) |
 | macOS | `Pail-v<version>-darwin-amd64.zip`, `Pail-v<version>-darwin-arm64.zip` (contains `Pail.app`) |
 
-Executable filenames include the version and target, for example `pail-desktop-v0.1.0-windows-amd64.exe` and `pail-v0.1.0-windows-amd64.exe`. macOS keeps `Pail.app`, with a versioned executable inside. The examples below use the short installed names `pail-desktop` and `pail`: rename the binaries or create aliases when installing. The Linux `.desktop` entry expects the versioned desktop executable on `PATH`. No 32-bit desktop package is provided.
+Executable filenames include the version and target, for example `pail-desktop-v0.2.0-windows-amd64.exe` and `pail-v0.2.0-windows-amd64.exe`. macOS keeps `Pail.app`, with a versioned executable inside. The examples below use the short installed names `pail-desktop` and `pail`: rename the binaries or create aliases when installing. The Linux `.desktop` entry expects the versioned desktop executable on `PATH`. No 32-bit desktop package is provided.
 
 Binaries have no developer code signature; the macOS app is not notarized and may be blocked by Gatekeeper. Native automated tests and version smoke checks are required by CI; they do not replace manual GUI acceptance on macOS or ARM64.
 
@@ -98,15 +99,15 @@ Commands: `accounts`, `buckets`, `ls`, `cp`, `mv`, `rm`, `mb`, `rb`, `presign`, 
 
 ## Build from source
 
-Tool versions are pinned in `mise.toml`: Go 1.27.2, Node.js 24.19.0 (CI scripts only) and PowerShell 7.6.7. Run `mise trust` and `mise install go node powershell`, then use `mise exec -- <command>` if shell activation is unavailable. Go dependencies remain pinned by `go.mod` and `go.sum`. No cgo is needed except for race tests.
+Tool versions are pinned in `mise.toml`: Go 1.27.2 and Node.js 24.19.0 (CI scripts only). Run `mise trust` and `mise install go node`, then use `mise exec -- <command>` if shell activation is unavailable. Go dependencies remain pinned by `go.mod` and `go.sum`. Building the application requires Go; the optional release and integration PowerShell wrappers require a separately installed PowerShell 7.3+ on Windows, Linux or macOS. No cgo is needed except for race tests.
 
 ```powershell
 go build ./cmd/pail-desktop ./cmd/pail
-./scripts/release.ps1 -Version 0.1.0   # PowerShell 7.3+, cross-compiles every target
+./scripts/release.ps1 -Version 0.2.0   # PowerShell 7.3+, cross-compiles every target
 go run ./tools/genicons                # regenerate icons from assets/brand/pail-icon.svg
 ```
 
-`scripts/release.ps1` expects the generated icons in `assets/brand/generated`. Any failed target fails the build. Before publishing, `go run ./tools/verify-release -dir build/release/0.1.0 -version 0.1.0` checks all six archives, checksums, binary targets and executable permissions.
+`scripts/release.ps1` expects the generated icons in `assets/brand/generated`. Any failed target fails the build. Before publishing, `go run ./tools/verify-release -dir build/release/0.2.0 -version 0.2.0` checks all six archives, checksums, binary targets and executable permissions.
 
 ## Testing
 

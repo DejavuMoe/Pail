@@ -6,8 +6,11 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.2.0] - 2026-10-20
+
 ### Added
 
+- Bilingual Open Graph and Twitter large-image metadata on the website and documentation pages, using the actual light-theme application screenshot.
 - Motion: dialogs, the command palette, select popups, menus, submenus and toasts come in on a light spring from where they are anchored and leave with a short fade, without bounce. A dialog or menu that is leaving no longer takes clicks or the keyboard, and a dialog or menu that is still coming in already responds to them.
 - Buttons, sidebar items and list rows fade their hover and pressed fill instead of switching it. The underline of the inspector tabs and transfer filters, the selection bar of the sidebar and the bucket settings list, and the knob of switches slide to their new place.
 - The transfers panel eases open and closed when you toggle it (dragging its divider still follows the pointer at once), the inspector's content fades in when you open it, progress bars ease to each new value, counts in the status bar and the transfers panel roll their digits, and the "Saved" mark fades in and out.
@@ -15,6 +18,9 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Changed
 
+- Release archives contain executables, platform launch assets and the license; READMEs remain in the repository and online documentation.
+- Mise pins Go and Node only. PowerShell 7.3+ is a separate prerequisite for the optional packaging/integration wrappers; CI packaging uses the runner's installed PowerShell.
+- Exclude `.agents/skills` and `designs/pail-site` from repository language statistics. Refresh documentation screenshots from the current UI code and compress them using PicForge's default WebP settings.
 - Overlays now share one look: dialogs, the bucket settings dialog, the command palette, select popups and toasts take their radius (6 controls, 8 popups, 10 dialogs), shadow and dark-theme outline from the design tokens instead of per-view values, and no colour is written outside `theme.go` any more.
 - Command palette and select popups use one list row: 28 px high, with the command icon, shortcuts drawn as key caps (also `Esc`), and a neutral highlight that follows both the keyboard and the pointer. The current value is marked by a check and a heavier weight instead of the blue selection fill. The "Unavailable here" group and the command groups are section labels.
 - The bucket settings dialog reuses the standard dialog frame; its dividers show only while the list or the form scrolls.
