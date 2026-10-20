@@ -6,14 +6,12 @@
 
   var reduced = window.matchMedia('(prefers-reduced-motion: reduce)');
   var darkMQ = window.matchMedia('(prefers-color-scheme: dark)');
-  var GH = 'https://github.com/DejavuMoe/Pail';
 
   function $(sel, ctx) { return (ctx || document).querySelector(sel); }
   function $$(sel, ctx) { return Array.prototype.slice.call((ctx || document).querySelectorAll(sel)); }
   function store(key, value) { try { localStorage.setItem(key, value); } catch (e) {} }
-
-  // Page text is rendered per language; only strings the script builds at
-  // runtime are embedded, for this page's language.
+  // Page text is rendered per language on the server; only the strings the
+  // script builds at runtime are embedded, for this page's language.
   var dict = {};
   try { dict = JSON.parse($('#pail-strings').textContent); } catch (e) {}
   function lang() { return root.getAttribute('data-lang') === 'zh' ? 'zh' : 'en'; }
@@ -32,7 +30,6 @@
   /* ---------- Platform ---------- */
   var platform = (navigator.userAgentData && navigator.userAgentData.platform) || navigator.platform || '';
   var ua = navigator.userAgent || '';
-  var isMac = /Mac|iPhone|iPad/i.test(platform);
   var OS = (function () {
     if (/Android|iPhone|iPad|iPod/i.test(ua)) return null;
     if (/Win/i.test(platform)) return 'windows';
@@ -48,19 +45,8 @@
   }
 
   /* ---------- Language ---------- */
-  $$('[data-mod]').forEach(function (k) { k.textContent = isMac ? '⌘' : 'Ctrl'; });
   var ctaLabel = $('[data-os-cta-label]');
   if (ctaLabel && OS) ctaLabel.textContent = t('heroDownloadFor', { os: OS_NAMES[OS] });
-
-  // The language control is a plain link to the other page; remember the
-  // choice so the English page does not redirect a Chinese browser back.
-  var langLink = $('[data-lang-target]');
-  function rememberLang() { if (langLink) store('pail-lang', langLink.getAttribute('data-lang-target')); }
-  function switchLang() {
-    if (!langLink) return;
-    rememberLang();
-    location.href = langLink.getAttribute('href') + location.hash;
-  }
 
   /* ---------- Theme ---------- */
   var themeRadios = $$('.theme-seg input[name="theme"]');
@@ -125,7 +111,7 @@
     tilt.raf = tilt.cur === tilt.target ? 0 : requestAnimationFrame(tiltFrame);
   }
   function onScroll() {
-    header.classList.toggle('is-scrolled', window.scrollY > 8);
+    if (header) header.classList.toggle('is-scrolled', window.scrollY > 8);
     if (!win || reduced.matches) return;
     tilt.target = tiltTarget();
     if (tilt.cur === null) tilt.cur = tilt.target;
@@ -135,7 +121,7 @@
   window.addEventListener('resize', onScroll);
   onScroll();
 
-  var navLinks = $$('.nav a[href^="#"]');
+  var navLinks = $$('.nav a[href^="#"], .mobile-nav a[href^="#"]');
   var sectionObserver = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
       if (!en.isIntersecting) return;
@@ -146,7 +132,7 @@
       });
     });
   }, { rootMargin: '-45% 0px -50% 0px' });
-  $$('main section[id]').forEach(function (s) { sectionObserver.observe(s); });
+  if (navLinks.length) $$('main section[id]').forEach(function (s) { sectionObserver.observe(s); });
 
   var revealObserver = new IntersectionObserver(function (entries) {
     entries.forEach(function (en) {
@@ -175,22 +161,60 @@
   (function () {
     var tile = $('.mini-transfers');
     if (!tile) return;
-    var rows = $$('.tq-row[data-total]', tile).map(function (row, i) {
-      return { row: row, total: +row.getAttribute('data-total'), p: i ? 0.66 : 0.64, v: i ? 0.006 : 0.011, bytes: $('.tq-bytes', row) };
+    // Time-based: progress = elapsed / duration, with a slow sine ripple on the
+    // speed (integral kept monotonic). The fill is scaled, never resized.
+    var DURATIONS = [9000, 16000]; // upload row, download row: ms to cover 0 -> 1
+    var rows = $$('.tq-row[data-total]', tile).filter(function (row) {
+      return !row.classList.contains('is-done');
+    }).map(function (row, i) {
+      return {
+        row: row, total: +row.getAttribute('data-total'), p: i ? 0.66 : 0.64,
+        dur: DURATIONS[i] || DURATIONS[DURATIONS.length - 1], phase: i * 1.7,
+        state: 'run', until: 0, lastText: -1e9,
+        fill: $('.tq-bar i', row), bytes: $('.tq-bytes', row)
+      };
     });
-    function paint(r) {
-      r.row.style.setProperty('--p', r.p.toFixed(3));
+    function paintFill(r) { r.fill.style.transform = 'scaleX(' + r.p.toFixed(4) + ')'; }
+    function paintText(r, now, force) {
+      if (!force && now - r.lastText < 160) return;
+      r.lastText = now;
       r.bytes.textContent = humanSize(Math.round(r.total * r.p)) + ' / ' + humanSize(r.total);
     }
-    rows.forEach(paint);
-    loop(tile, function () {
+    rows.forEach(function (r) { paintFill(r); paintText(r, 0); });
+    var tRaf = 0, tLast = 0, tVisible = false;
+    function tFrame(now) {
+      var dt = tLast ? Math.min(100, now - tLast) : 0;
+      tLast = now;
       rows.forEach(function (r) {
-        r.p += r.v * (0.6 + Math.random() * 0.8);
-        if (r.p >= 1) r.p = 0.04;
-        paint(r);
+        if (r.state === 'run') {
+          // speed factor 1 +/- 20 %, smooth in time
+          var k = 1 + 0.2 * Math.sin(now / 1900 + r.phase);
+          r.p = Math.min(1, r.p + (dt / r.dur) * k);
+          paintFill(r);
+          paintText(r, now);
+          if (r.p >= 1) { r.state = 'hold'; r.until = now + 1200; paintText(r, now, true); }
+        } else if (r.state === 'hold' && now >= r.until) {
+          r.state = 'fadeout'; r.until = now + 320;
+          r.fill.classList.add('is-fading');
+        } else if (r.state === 'fadeout' && now >= r.until) {
+          r.p = 0; paintFill(r); paintText(r, now, true);
+          r.state = 'fadein'; r.until = now + 60;
+        } else if (r.state === 'fadein' && now >= r.until) {
+          r.fill.classList.remove('is-fading');
+          r.state = 'run';
+        }
       });
-    }, 120);
+      tRaf = tVisible && !document.hidden ? requestAnimationFrame(tFrame) : 0;
+      if (!tRaf) tLast = 0;
+    }
+    function tStart() { if (!tRaf && tVisible && !reduced.matches && !document.hidden) tRaf = requestAnimationFrame(tFrame); }
+    new IntersectionObserver(function (entries) {
+      tVisible = entries[entries.length - 1].isIntersecting;
+      if (tVisible) tStart();
+    }).observe(tile);
+    document.addEventListener('visibilitychange', tStart);
     var chips = $$('[data-cycle] .chip', tile), k = 0;
+    if (!chips.length) return;
     loop(tile, function () {
       chips[k].classList.remove('is-on');
       k = (k + 1) % chips.length;
@@ -243,16 +267,18 @@
   (function () {
     var chips = $$('.setting-chips li:not(.is-unsupported)');
     var k = 0;
+    if (!chips.length) return;
     loop($('.mini-settings'), function () {
       chips.forEach(function (c) { c.classList.remove('is-lit'); });
       chips[k % chips.length].classList.add('is-lit');
       k += 5;
-    }, 1100);
+    }, 2400);
   })();
 
   // Versions
   (function () {
     var box = $('.mini-versions');
+    if (!box) return;
     loop(box, function () { box.classList.toggle('is-restored'); }, 2600);
   })();
 
@@ -372,7 +398,7 @@
   /* ---------- Falling keys ---------- */
   var keys = (function () {
     var canvas = $('.hero-keys');
-    var api = { recolor: function () {} };
+    var api = { recolor: function () {}, relayout: function () {} };
     if (!canvas) return api;
     var ctx = canvas.getContext('2d');
     var KEYS = [
@@ -484,130 +510,35 @@
     return api;
   })();
 
-  /* ---------- Command palette ---------- */
-  var palette = (function () {
-    var el = $('[data-palette]');
-    var input = $('input', el), list = $('.palette-list', el), empty = $('.palette-empty', el);
-    var state = { open: false, items: [], active: 0, opener: null };
-    function go(id) { return function () { var target = document.getElementById(id); if (target) target.scrollIntoView({ behavior: reduced.matches ? 'auto' : 'smooth' }); }; }
-    function link(url) { return function () { window.open(url, '_blank', 'noopener'); }; }
-    function catalog() {
-      var pref = root.getAttribute('data-theme-pref');
-      var items = [
-        { g: 'pgGo', icon: 'i-arrow-right', label: t('navFeatures'), k: 'features 功能', run: go('features') },
-        { g: 'pgGo', icon: 'i-terminal', label: t('navCli'), k: 'command line cli terminal 命令行 终端', run: go('cli') },
-        { g: 'pgGo', icon: 'i-lock', label: t('navPrivacy'), k: 'privacy safety security 隐私 安全', run: go('privacy') },
-        { g: 'pgGo', icon: 'i-download', label: t('navDownload'), k: 'download install 下载 安装', run: go('download') },
-        { g: 'pgGo', icon: 'i-arrow-up', label: t('pcTop'), k: 'top home 顶部 首页', run: go('top') }
-      ];
-      if (OS) items.push({ g: 'pgActions', icon: 'i-download', label: t('pcDownload', { os: OS_NAMES[OS] }), k: 'download 下载 ' + OS, run: go('download') });
-      items.push(
-        { g: 'pgActions', icon: 'i-monitor', label: t('pcThemeSystem'), k: 'theme system auto 主题 系统 自动', hint: pref === 'system', run: function () { setTheme('system'); } },
-        { g: 'pgActions', icon: 'i-sun', label: t('pcThemeLight'), k: 'theme light 主题 浅色 亮色', hint: pref === 'light', run: function () { setTheme('light'); } },
-        { g: 'pgActions', icon: 'i-moon', label: t('pcThemeDark'), k: 'theme dark 主题 深色 暗色', hint: pref === 'dark', run: function () { setTheme('dark'); } },
-        { g: 'pgActions', icon: 'i-globe', label: t('pcLang'), k: 'language english chinese 语言 中文 英文', run: switchLang },
-        { g: 'pgLinks', icon: 'i-github', label: t('pcGithub'), k: 'github source repository 源码 仓库', run: link(GH) },
-        { g: 'pgLinks', icon: 'i-package', label: t('pcReleases'), k: 'releases versions 版本 发布', run: link(GH + '/releases') },
-        { g: 'pgLinks', icon: 'i-scroll', label: t('pcDocs'), k: 'docs documentation readme 文档', run: link(GH + '#readme') }
-      );
-      return items;
-    }
-    function renderPalette() {
-      var q = input.value.trim().toLowerCase();
-      state.items = catalog().filter(function (it) { return !q || (it.label + ' ' + it.k).toLowerCase().indexOf(q) !== -1; });
-      if (state.active >= state.items.length) state.active = 0;
-      // listbox > group (labelled) > option, per the WAI-ARIA listbox pattern.
-      var html = '', lastGroup = null;
-      state.items.forEach(function (it, i) {
-        if (it.g !== lastGroup) {
-          if (lastGroup) html += '</ul></li>';
-          html += '<li role="group" aria-labelledby="pg-' + it.g + '"><div class="palette-group" id="pg-' + it.g + '">' + t(it.g) + '</div><ul role="presentation">';
-          lastGroup = it.g;
-        }
-        html += '<li class="palette-item" role="option" id="pi-' + i + '" data-index="' + i + '" aria-selected="' + (i === state.active) + '">' +
-          '<svg class="i" aria-hidden="true" focusable="false"><use href="#' + it.icon + '"></use></svg><span>' + it.label + '</span>' +
-          (it.hint ? '<svg class="i pi-hint" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>' : '') + '</li>';
-      });
-      if (lastGroup) html += '</ul></li>';
-      list.innerHTML = html;
-      empty.hidden = state.items.length > 0;
-      input.setAttribute('aria-activedescendant', state.items.length ? 'pi-' + state.active : '');
-    }
-    function move(d) {
-      if (!state.items.length) return;
-      state.active = (state.active + d + state.items.length) % state.items.length;
-      $$('.palette-item', list).forEach(function (li) { li.setAttribute('aria-selected', String(+li.getAttribute('data-index') === state.active)); });
-      input.setAttribute('aria-activedescendant', 'pi-' + state.active);
-      var cur = $('#pi-' + state.active, list);
-      if (cur) cur.scrollIntoView({ block: 'nearest' });
-    }
-    function runActive() {
-      var it = state.items[state.active];
-      if (!it) return;
-      close();
-      it.run();
-    }
-    function open() {
-      if (state.open) return;
-      state.opener = document.activeElement;
-      state.open = true;
-      el.hidden = false;
-      input.value = '';
-      state.active = 0;
-      renderPalette();
-      setInert(true);
-      input.focus();
-      document.body.style.overflow = 'hidden';
-    }
-    function setInert(on) {
-      $$('body > :not([data-palette]):not(script):not(.sprite)').forEach(function (n) { n.inert = on; });
-    }
-    function close() {
-      if (!state.open) return;
-      state.open = false;
-      el.hidden = true;
-      setInert(false);
-      document.body.style.overflow = '';
-      if (state.opener && state.opener.focus) state.opener.focus();
-    }
-    input.addEventListener('input', function () { state.active = 0; renderPalette(); });
-    input.addEventListener('keydown', function (e) {
-      if (e.key === 'ArrowDown') { e.preventDefault(); move(1); }
-      else if (e.key === 'ArrowUp') { e.preventDefault(); move(-1); }
-      else if (e.key === 'Enter') { e.preventDefault(); runActive(); }
-      else if (e.key === 'Escape') { e.preventDefault(); close(); }
-      else if (e.key === 'Tab') { e.preventDefault(); }
-    });
-    list.addEventListener('mousemove', function (e) {
-      var li = e.target.closest('.palette-item');
-      if (li && +li.getAttribute('data-index') !== state.active) move(+li.getAttribute('data-index') - state.active);
-    });
-    list.addEventListener('click', function (e) {
-      var li = e.target.closest('.palette-item');
-      if (!li) return;
-      state.active = +li.getAttribute('data-index');
-      runActive();
-    });
+  /* ---------- Mobile navigation ---------- */
+  var menuBtn = $('.menu-btn');
+  var mobileNav = $('#mobile-nav');
+  function setMenu(open, restoreFocus) {
+    if (!menuBtn || !mobileNav) return;
+    mobileNav.hidden = !open;
+    menuBtn.setAttribute('aria-expanded', String(open));
+    if (!open && restoreFocus) menuBtn.focus();
+  }
+  if (menuBtn && mobileNav) {
+    menuBtn.addEventListener('click', function () { setMenu(mobileNav.hidden, false); });
+    mobileNav.addEventListener('click', function (e) { if (e.target.closest('a')) setMenu(false, false); });
     document.addEventListener('keydown', function (e) {
-      if ((e.ctrlKey || e.metaKey) && !e.altKey && e.key.toLowerCase() === 'k') {
-        e.preventDefault();
-        if (state.open) close(); else open();
-      }
+      if (e.key === 'Escape' && !mobileNav.hidden) { e.preventDefault(); setMenu(false, true); }
     });
-    state.show = open;
-    state.hide = close;
-    state.render = renderPalette;
-    return state;
-  })();
+    var wideMQ = window.matchMedia('(min-width: 961px)');
+    var onWide = function () { if (wideMQ.matches) setMenu(false, false); };
+    if (wideMQ.addEventListener) wideMQ.addEventListener('change', onWide); else wideMQ.addListener(onWide);
+  }
 
   /* ---------- Actions ---------- */
+  // The language control is a plain link to the same page in the other
+  // language. Remember the choice so the English page does not send a Chinese
+  // browser back, keep the section hash, and let the link navigate.
   document.addEventListener('click', function (e) {
-    var trigger = e.target.closest('[data-action]');
+    var trigger = e.target.closest('[data-action="lang"]');
     if (!trigger) return;
-    var action = trigger.getAttribute('data-action');
-    if (action === 'palette') palette.show();
-    else if (action === 'palette-close') palette.hide();
-    else if (action === 'lang') rememberLang();
+    store('pail-lang', trigger.getAttribute('data-lang-target') === 'zh' ? 'zh' : 'en');
+    if (location.hash) trigger.setAttribute('href', trigger.getAttribute('href').split('#')[0] + location.hash);
   });
 
   applyTheme(root.getAttribute('data-theme-pref') || 'system');

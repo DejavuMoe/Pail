@@ -75,14 +75,9 @@
         <a href="#cli">{{t "navCli"}}</a>
         <a href="#privacy">{{t "navPrivacy"}}</a>
         <a href="#download">{{t "navDownload"}}</a>
-        <a href="{{.GitHub}}#readme">{{t "navDocs"}}</a>
+        <a href="{{.Links.Docs}}">{{t "navDocs"}}</a>
       </nav>
       <div class="header-actions">
-        <button class="search-btn" type="button" data-action="palette" aria-label="{{t "paletteOpen"}}">
-          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-          <span class="search-btn-label">{{t "search"}}</span>
-          <span class="kbd-group"><kbd data-mod>Ctrl</kbd><kbd>K</kbd></span>
-        </button>
         <a class="icon-btn lang-btn" href="{{.OtherPath}}" hreflang="{{.OtherHTMLLang}}" lang="{{.OtherHTMLLang}}" data-action="lang" data-lang-target="{{.OtherLang}}" aria-label="{{t "langSwitch"}}">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
           <span class="lang-btn-label">{{t "langShort"}}</span>
@@ -96,11 +91,18 @@
         <a class="icon-btn gh-btn" href="{{.GitHub}}" aria-label="GitHub">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
         </a>
-        <button class="icon-btn menu-btn" type="button" data-action="palette" aria-label="{{t "menu"}}">
+        <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="{{t "menu"}}">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-menu"></use></svg>
         </button>
       </div>
     </div>
+    <nav id="mobile-nav" class="mobile-nav" hidden aria-label="{{t "menu"}}">
+      <a href="#features">{{t "navFeatures"}}</a>
+      <a href="#cli">{{t "navCli"}}</a>
+      <a href="#privacy">{{t "navPrivacy"}}</a>
+      <a href="#download">{{t "navDownload"}}</a>
+      <a href="{{.Links.Docs}}">{{t "navDocs"}}</a>
+    </nav>
   </header>
 
   <main id="main">
@@ -124,7 +126,7 @@
             </a>
           </div>
           <ul class="hero-meta">
-            <li><a href="{{.GitHub}}/blob/main/CHANGELOG.md">v{{.Version}}</a></li>
+            <li><a href="{{.Links.Changelog}}">v{{.Version}}</a></li>
             <li>{{t "metaLicense"}}</li>
             <li>{{t "metaArch"}}</li>
             <li>{{t "metaTelemetry"}}</li>
@@ -171,13 +173,13 @@
                 <span class="tq-filter is-on"><span>{{t "miniActive"}}</span> 2</span>
                 <span class="tq-filter"><span>{{t "miniCompleted"}}</span> 1</span>
               </div>
-              <div class="tq-row" data-total="2306867">
+              <div class="tq-row" data-total="2306867" data-unit="MB">
                 <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-up"></use></svg>
                 <span class="tq-name">site/assets/hero.webp</span>
                 <span class="tq-bar"><i></i></span>
                 <span class="tq-bytes">1.4 MB / 2.2 MB</span>
               </div>
-              <div class="tq-row" data-total="2576980378">
+              <div class="tq-row" data-total="2576980378" data-unit="GB">
                 <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-down"></use></svg>
                 <span class="tq-name">backups/2026-10-19.tar.gz</span>
                 <span class="tq-bar"><i></i></span>
@@ -222,10 +224,6 @@
                 <li data-k="refresh"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-refresh"></use></svg><span>{{t "cmdRefresh"}}</span></li>
               </ul>
             </div>
-            <button class="tile-action" type="button" data-action="palette">
-              <span>{{t "tryPalette"}}</span>
-              <span class="kbd-group"><kbd data-mod>Ctrl</kbd><kbd>K</kbd></span>
-            </button>
           </article>
 
           <article class="tile tile-settings reveal">
@@ -322,7 +320,7 @@
           <ul class="cli-cmds">
             <li>accounts</li><li>buckets</li><li>ls</li><li>cp</li><li>mv</li><li>rm</li><li>mb</li><li>rb</li><li>presign</li><li>url</li><li>versions</li><li>restore</li><li>sync</li><li>vault status</li>
           </ul>
-          <a class="text-link" href="{{.GitHub}}/blob/main/docs/cli.md"><span>{{t "cliDocs"}}</span><svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-up-right"></use></svg></a>
+          <a class="text-link" href="{{.Links.Cli}}"><span>{{t "cliDocs"}}</span><svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
         </header>
         <div class="terminal reveal" data-demo="terminal">
           <div class="term-bar">
@@ -431,8 +429,8 @@
           <ul class="download-links">
             <li><a href="{{.ReleaseBase}}/SHA256SUMS">SHA256SUMS</a></li>
             <li><a href="{{.GitHub}}/releases">{{t "allReleases"}}</a></li>
-            <li><a href="{{.GitHub}}/blob/main/CHANGELOG.md">{{t "changelog"}}</a></li>
-            <li><a href="{{.GitHub}}#build-from-source">{{t "buildFromSource"}}</a></li>
+            <li><a href="{{.Links.Changelog}}">{{t "changelog"}}</a></li>
+            <li><a href="{{.Links.Build}}">{{t "buildFromSource"}}</a></li>
           </ul>
           <div class="demo-hint">
             <svg class="i" aria-hidden="true" focusable="false"><use href="#i-terminal"></use></svg>
@@ -457,14 +455,14 @@
       </nav>
       <nav class="footer-col" aria-labelledby="fc-res">
         <h2 id="fc-res">{{t "footResources"}}</h2>
-        <a href="{{.GitHub}}#readme">{{t "navDocs"}}</a>
-        <a href="{{.GitHub}}/blob/main/CHANGELOG.md">{{t "changelog"}}</a>
+        <a href="{{.Links.Docs}}">{{t "navDocs"}}</a>
+        <a href="{{.Links.Changelog}}">{{t "changelog"}}</a>
         <a href="{{.GitHub}}/issues">{{t "issues"}}</a>
       </nav>
       <nav class="footer-col" aria-labelledby="fc-proj">
         <h2 id="fc-proj">{{t "footProject"}}</h2>
         <a href="{{.GitHub}}">GitHub</a>
-        <a href="{{.GitHub}}/blob/main/LICENSE">{{t "license"}}</a>
+        <a href="{{.Links.License}}">{{t "license"}}</a>
       </nav>
     </div>
     <div class="wrap footer-legal">
@@ -472,24 +470,6 @@
       <p>{{t "trademark"}}</p>
     </div>
   </footer>
-
-  <div class="palette" data-palette hidden>
-    <div class="palette-scrim" data-action="palette-close"></div>
-    <div class="palette-card" role="dialog" aria-modal="true" aria-label="{{t "paletteTitle"}}">
-      <div class="palette-input">
-        <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-        <input type="text" autocomplete="off" spellcheck="false" role="combobox" aria-expanded="true" aria-controls="palette-list" placeholder="{{t "palettePlaceholder"}}" aria-label="{{t "palettePlaceholder"}}">
-        <kbd>Esc</kbd>
-      </div>
-      <ul class="palette-list" id="palette-list" role="listbox"></ul>
-      <p class="palette-empty" hidden>{{t "paletteEmpty"}}</p>
-      <div class="palette-foot">
-        <span><kbd>↑</kbd><kbd>↓</kbd> <span>{{t "paletteMove"}}</span></span>
-        <span><kbd>Enter</kbd> <span>{{t "paletteRun"}}</span></span>
-        <span><kbd>Esc</kbd> <span>{{t "paletteClose"}}</span></span>
-      </div>
-    </div>
-  </div>
 
   <script type="application/json" id="pail-strings">{{.Runtime}}</script>
   <script src="{{asset "app.js"}}"></script>

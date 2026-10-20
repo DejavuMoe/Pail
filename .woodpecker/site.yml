@@ -10,6 +10,15 @@ when:
         - "tools/site/**"
         - "docs/images/**"
         - "assets/brand/pail-icon.svg"
+        - "README.md"
+        - "README.zh-CN.md"
+        - "docs/cli.md"
+        - "docs/cli.zh-CN.md"
+        - "CHANGELOG.md"
+        - "CHANGELOG.zh-CN.md"
+        - "LICENSE"
+        - "go.mod"
+        - "go.sum"
         - ".woodpecker/site.yml"
   - event: tag
     ref: refs/tags/v*

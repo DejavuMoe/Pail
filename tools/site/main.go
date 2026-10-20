@@ -41,15 +41,9 @@ var languages = []language{
 	{Code: "zh", HTMLLang: "zh-Hans", File: "zh-Hans.json", Path: "/zh/"},
 }
 
-// runtimeKeys are the strings app.js builds at runtime (command palette,
-// download button, demo labels). They are embedded in each page as JSON.
-var runtimeKeys = []string{
-	"heroDownloadFor", "miniCopy", "miniCopied",
-	"navFeatures", "navCli", "navPrivacy", "navDownload",
-	"pgGo", "pgActions", "pgLinks",
-	"pcTop", "pcDownload", "pcThemeSystem", "pcThemeLight", "pcThemeDark",
-	"pcLang", "pcGithub", "pcReleases", "pcDocs",
-}
+// runtimeKeys are the strings app.js builds at runtime (download button, demo
+// labels). They are embedded in the landing pages as JSON.
+var runtimeKeys = []string{"heroDownloadFor", "miniCopy", "miniCopied"}
 
 // asset is a file served from /assets/ under a content-hashed name.
 type asset struct {
@@ -60,7 +54,9 @@ type asset struct {
 
 var assets = []asset{
 	{name: "styles.css", src: "site/static/styles.css"},
+	{name: "docs.css", src: "site/static/docs.css"},
 	{name: "app.js", src: "site/static/app.js"},
+	{name: "docs.js", src: "site/static/docs.js"},
 	{name: "pail-icon.svg", src: "assets/brand/pail-icon.svg", svg: true},
 	{name: "main-light.png", src: "docs/images/main-light.png"},
 	{name: "main-dark.png", src: "docs/images/main-dark.png"},
@@ -68,7 +64,7 @@ var assets = []asset{
 
 // outputs are the top-level entries a build writes. An existing -out
 // directory is replaced only when it holds nothing else.
-var outputs = []string{"index.html", "zh", "404.html", "assets", "robots.txt", "sitemap.xml"}
+var outputs = append([]string{"index.html", "zh", "404.html", "assets", "robots.txt", "sitemap.xml"}, docOutputs...)
 
 type config struct {
 	root    string // repository root
@@ -189,6 +185,7 @@ func build(c config) error {
 			"OtherHTMLLang": other.HTMLLang,
 			"OtherPath":     other.Path,
 			"PathZh":        languages[1].Path,
+			"Links":         linksFor(lang),
 			"Canonical":     c.baseURL + lang.Path,
 			"URLEn":         c.baseURL + languages[0].Path,
 			"URLZh":         c.baseURL + languages[1].Path,
@@ -207,6 +204,10 @@ func build(c config) error {
 		if err := render(t, data, filepath.Join(c.out, filepath.FromSlash(strings.TrimPrefix(lang.Path, "/")), "index.html")); err != nil {
 			return fmt.Errorf("%s page: %w", lang.Code, err)
 		}
+	}
+
+	if err := renderDocs(c, locales, funcs, year); err != nil {
+		return err
 	}
 
 	notFound, err := template.New("404.html.tmpl").Funcs(funcs).ParseFiles(filepath.Join(c.root, "site", "templates", "404.html.tmpl"))
@@ -352,12 +353,18 @@ func sitemap(base string) []byte {
 	var b strings.Builder
 	b.WriteString(`<?xml version="1.0" encoding="UTF-8"?>` + "\n")
 	b.WriteString(`<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9" xmlns:xhtml="http://www.w3.org/1999/xhtml">` + "\n")
-	for _, lang := range languages {
-		fmt.Fprintf(&b, "  <url>\n    <loc>%s</loc>\n", html.EscapeString(base+lang.Path))
-		for _, alt := range languages {
-			fmt.Fprintf(&b, "    <xhtml:link rel=\"alternate\" hreflang=\"%s\" href=\"%s\"/>\n", alt.HTMLLang, html.EscapeString(base+alt.Path))
+	entry := func(path func(language) string) {
+		for _, lang := range languages {
+			fmt.Fprintf(&b, "  <url>\n    <loc>%s</loc>\n", html.EscapeString(base+path(lang)))
+			for _, alt := range languages {
+				fmt.Fprintf(&b, "    <xhtml:link rel=\"alternate\" hreflang=\"%s\" href=\"%s\"/>\n", alt.HTMLLang, html.EscapeString(base+path(alt)))
+			}
+			b.WriteString("  </url>\n")
 		}
-		b.WriteString("  </url>\n")
+	}
+	entry(func(l language) string { return l.Path })
+	for _, p := range docPages {
+		entry(func(l language) string { return docURL(p, l) })
 	}
 	b.WriteString("</urlset>\n")
 	return []byte(b.String())

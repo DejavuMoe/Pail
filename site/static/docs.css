@@ -1,0 +1,311 @@
+/* Documentation pages. Tokens come from styles.css; nothing here defines a colour. */
+:root {
+  --header-h: 64px;
+  --docs-offset: calc(var(--header-h) + 24px);
+}
+
+/* ---------- Layout ---------- */
+.docs-layout {
+  display: block;
+  padding-top: 24px;
+}
+
+.docs-toc { display: none; }
+
+/* Doc navigation: a horizontal row below 1080px */
+.docs-nav {
+  max-width: 720px;
+  margin-bottom: 32px;
+}
+.docs-nav ul {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0 24px;
+  border-bottom: 1px solid var(--border);
+}
+/* The current item's 2px bar overlaps the row's hairline. */
+.docs-nav li { margin-bottom: -1px; }
+.docs-nav a {
+  display: block;
+  padding: 10px 2px;
+  border-bottom: 2px solid transparent;
+  color: var(--muted);
+  font-size: 14px;
+  font-weight: 500;
+  line-height: 1.4;
+  text-decoration: none;
+  white-space: nowrap;
+  transition: color .2s;
+}
+.docs-nav a:hover { color: var(--text); }
+.docs-nav a:focus-visible { outline-offset: -2px; }
+.docs-nav a[aria-current="page"] {
+  border-bottom-color: var(--accent);
+  color: var(--text);
+  font-weight: 600;
+}
+/* Reserve the bold width so the item does not change size when it becomes current. */
+.docs-nav a span::after {
+  content: attr(data-label);
+  content: attr(data-label) / "";
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
+}
+
+.docs-main { min-width: 0; max-width: 720px; }
+
+@media (min-width: 1080px) {
+  .docs-layout {
+    display: grid;
+    grid-template-columns: 200px minmax(0, 720px) 200px;
+    justify-content: space-between;
+    align-items: start;
+    column-gap: clamp(48px, 4vw, 64px);
+    padding-top: 48px;
+  }
+
+  .docs-nav,
+  .docs-toc {
+    position: sticky;
+    top: var(--docs-offset);
+    align-self: start;
+  }
+
+  .docs-nav {
+    max-width: none;
+    margin-bottom: 0;
+  }
+  .docs-nav ul { display: grid; gap: 2px; border-bottom: 0; }
+  .docs-nav li { margin-bottom: 0; }
+  .docs-nav a {
+    padding: 6px 12px;
+    border-bottom: 0;
+    border-left: 2px solid transparent;
+    white-space: normal;
+  }
+  .docs-nav a[aria-current="page"] {
+    border-bottom-color: transparent;
+    border-left-color: var(--accent);
+  }
+
+  .docs-toc {
+    display: block;
+    max-height: calc(100vh - var(--docs-offset) - 24px);
+    overflow-y: auto;
+    font-size: 13px;
+    scrollbar-width: thin;
+  }
+  .docs-toc-title {
+    margin-bottom: 10px;
+    padding-left: 12px;
+    color: var(--text);
+    font-size: 13px;
+    font-weight: 600;
+  }
+  .docs-toc ul { border-left: 1px solid var(--border); }
+  .docs-toc a {
+    display: block;
+    margin-left: -1px;
+    padding: 5px 12px;
+    border-left: 2px solid transparent;
+    color: var(--muted);
+    line-height: 1.4;
+    text-decoration: none;
+    transition: color .2s;
+  }
+  .docs-toc a:hover { color: var(--text); }
+  .docs-toc a:focus-visible { outline-offset: -2px; }
+  .docs-toc a.is-active {
+    border-left-color: var(--accent);
+    color: var(--text);
+  }
+}
+
+/* ---------- Page head ---------- */
+.doc-head {
+  padding-bottom: 32px;
+  margin-bottom: 32px;
+  border-bottom: 1px solid var(--border);
+}
+.doc-head h1 {
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 4.4vw, 2.75rem);
+  font-weight: 600;
+  line-height: 1.1;
+  letter-spacing: -.022em;
+  text-wrap: balance;
+}
+:root[data-lang="zh"] .doc-head h1 { line-height: 1.2; letter-spacing: -.01em; }
+.doc-lede {
+  max-width: 60ch;
+  margin-top: 14px;
+  color: var(--muted);
+  font-size: 17px;
+  text-wrap: pretty;
+}
+
+/* ---------- Prose ---------- */
+.prose {
+  color: var(--text);
+  font-size: 16px;
+  line-height: 1.7;
+}
+.prose:lang(zh) { line-height: 1.8; }
+
+.prose > :first-child { margin-top: 0; }
+.prose > * + * { margin-top: 16px; }
+
+.prose p,
+.prose ul,
+.prose ol { max-width: 70ch; }
+.prose p { text-wrap: pretty; }
+
+.prose ul,
+.prose ol { padding-left: 1.5em; }
+.prose ul { list-style: disc; }
+.prose ol { list-style: decimal; }
+.prose li::marker { color: var(--subtle); }
+.prose li + li { margin-top: 8px; }
+.prose li > * + * { margin-top: 8px; }
+
+.prose h2,
+.prose h3 {
+  font-family: var(--font-display);
+  /* Anchored headings stop at header + 24px: styles.css already sets html { scroll-padding-top: 88px },
+     so adding a scroll-margin here would double the offset. */
+  scroll-margin-top: 0;
+  text-wrap: balance;
+}
+.prose h2 {
+  margin-top: 56px;
+  font-size: 1.5rem;
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -.015em;
+}
+.prose h3 {
+  margin-top: 32px;
+  font-size: 1.125rem;
+  font-weight: 600;
+  line-height: 1.35;
+}
+.prose h2 + *,
+.prose h3 + * { margin-top: 14px; }
+.prose > h2:first-child { margin-top: 0; }
+
+.prose strong { font-weight: 600; }
+
+.prose a {
+  color: var(--accent);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 3px;
+}
+.prose a:hover { color: var(--accent-hover); }
+
+.prose .heading-anchor {
+  margin-left: .25em;
+  color: var(--subtle);
+  font-weight: 400;
+  text-decoration: none;
+  opacity: 0;
+  transition: opacity .15s, color .15s;
+}
+.prose :is(h2, h3):hover .heading-anchor,
+.prose .heading-anchor:focus-visible { opacity: 1; }
+.prose .heading-anchor:hover { color: var(--accent); }
+
+.prose code {
+  font-family: var(--font-mono);
+  overflow-wrap: break-word;
+}
+.prose :not(pre) > code {
+  padding: .08em .3em;
+  border-radius: 4px;
+  background: var(--hover);
+  font-size: .88em;
+}
+
+.prose pre {
+  padding: 16px 20px;
+  border: 1px solid var(--term-border);
+  border-radius: 12px;
+  background: var(--term-bg);
+  color: var(--term-text);
+  font-size: 13.5px;
+  line-height: 1.65;
+  overflow-x: auto;
+  scrollbar-gutter: stable;
+  scrollbar-width: thin;
+  scrollbar-color: var(--term-subtle) transparent;
+  tab-size: 4;
+}
+.prose pre:focus-visible { border-radius: 12px; }
+.prose pre code {
+  padding: 0;
+  border: 0;
+  background: none;
+  color: inherit;
+  font-size: inherit;
+  overflow-wrap: normal;
+  white-space: pre;
+}
+
+.table-wrap {
+  overflow-x: auto;
+  border: 1px solid var(--border);
+  border-radius: 12px;
+  scrollbar-width: thin;
+}
+.table-wrap:focus-visible { border-radius: 12px; }
+.prose table {
+  width: 100%;
+  border-collapse: collapse;
+  font-size: 14.5px;
+  font-variant-numeric: tabular-nums;
+  line-height: 1.5;
+}
+.prose th,
+.prose td {
+  padding: 10px 14px;
+  border-bottom: 1px solid var(--border);
+  text-align: left;
+  vertical-align: top;
+}
+.prose th {
+  background: var(--bg-sunk);
+  font-weight: 600;
+}
+.prose tbody tr:last-child td { border-bottom: 0; }
+
+.prose hr {
+  margin: 40px 0;
+  border: 0;
+  border-top: 1px solid var(--border);
+}
+
+.prose blockquote {
+  margin-left: 0;
+  padding-left: 16px;
+  border-left: 2px solid var(--border-strong);
+  color: var(--muted);
+}
+
+/* ---------- License text ---------- */
+/* Same words as LICENSE, reflowed into paragraphs so it reads well at any width. */
+.license-copyright { font-weight: 600; }
+
+/* ---------- Narrow screens ---------- */
+@media (max-width: 480px) {
+  .prose pre { padding: 14px 16px; }
+}
+
+/* ---------- Forced colours ---------- */
+@media (forced-colors: active) {
+  .docs-nav a[aria-current="page"],
+  .docs-toc a.is-active { outline: 2px solid Highlight; outline-offset: -2px; }
+  .prose pre, .table-wrap { border: 1px solid CanvasText; }
+}

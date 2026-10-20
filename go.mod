@@ -13,6 +13,7 @@ require (
 	github.com/aws/smithy-go v1.28.5
 	github.com/egoist/mygo v0.5.5
 	github.com/tc-hib/winres v0.3.1
+	github.com/yuin/goldmark v1.7.8
 	github.com/zalando/go-keyring v0.2.8
 	golang.org/x/crypto v0.58.0
 	golang.org/x/sys v0.49.0
