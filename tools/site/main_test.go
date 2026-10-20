@@ -137,17 +137,17 @@ func TestBuildWritesBothLanguages(t *testing.T) {
 	}
 }
 
-// The download links must name exactly the archives scripts/release.ps1 builds.
+// The download links must name exactly the archives tools/release builds.
 func TestDownloadsMatchReleaseScript(t *testing.T) {
 	out := buildSite(t, "1.2.3")
 	page := read(t, filepath.Join(out, "index.html"))
-	script := read(t, filepath.Join(repoRoot(t), "scripts", "release.ps1"))
-	m := regexp.MustCompile(`\$Targets = @\(([^)]*)\)`).FindStringSubmatch(script)
+	script := read(t, filepath.Join(repoRoot(t), "tools", "release", "main.go"))
+	m := regexp.MustCompile(`const allTargets = "([^"]+)"`).FindStringSubmatch(script)
 	if m == nil {
-		t.Fatal("release.ps1: $Targets not found")
+		t.Fatal("tools/release: allTargets not found")
 	}
 	var want []string
-	for _, target := range regexp.MustCompile(`'(\w+)/(\w+)'`).FindAllStringSubmatch(m[1], -1) {
+	for _, target := range regexp.MustCompile(`(\w+)/(\w+)`).FindAllStringSubmatch(m[1], -1) {
 		ext := ".zip"
 		if target[1] == "linux" {
 			ext = ".tar.gz"
@@ -161,7 +161,7 @@ func TestDownloadsMatchReleaseScript(t *testing.T) {
 	slices.Sort(want)
 	slices.Sort(got)
 	if len(want) != 6 || !slices.Equal(got, want) {
-		t.Errorf("downloads %v, release.ps1 builds %v", got, want)
+		t.Errorf("downloads %v, tools/release builds %v", got, want)
 	}
 	if !strings.Contains(page, "releases/download/v1.2.3/SHA256SUMS") {
 		t.Error("no SHA256SUMS link")

@@ -77,7 +77,7 @@
     {
       "id": "product-facts",
       "type": "code",
-      "location": "README.md, CHANGELOG.md, docs/cli.md, docs/design.md, scripts/release.ps1, cmd/pail-desktop/locales/*.json",
+      "location": "README.md, CHANGELOG.md, docs/cli.md, docs/design.md, tools/release/main.go, cmd/pail-desktop/locales/*.json",
       "roles": [
         "functional-truth"
       ],

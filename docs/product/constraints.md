@@ -25,7 +25,7 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 - Light and dark follow the system by default; a manual System / Light / Dark control persists the choice.
 - Selected, current and on states use at least two cues, as in `docs/design.md`.
 - One solid primary button per view.
-- Download links point to GitHub Releases assets named by `scripts/release.ps1`.
+- Download links point to GitHub Releases assets named by `tools/release`.
 - No analytics, trackers, cookies or external embeds.
 
 ## Explicit non-goals
@@ -39,7 +39,7 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 - The task brief is design input, never product copy.
 - Design goals, audience descriptions, implementation details, architecture, aesthetic rationale, agent instructions and internal review notes never appear in rendered text, attributes, ARIA, alt text, comments or client-visible data.
 - Marketing copy is allowed only after the user approves it; until then the inventory marks it `review`.
-- Do not invent claims, metrics, customers, testimonials, integrations or capabilities. Every factual sentence cites README.md, CHANGELOG.md, docs/cli.md, docs/design.md or scripts/release.ps1 in `content-inventory.json`.
+- Do not invent claims, metrics, customers, testimonials, integrations or capabilities. Every factual sentence cites README.md, CHANGELOG.md, docs/cli.md, docs/design.md or tools/release in `content-inventory.json`.
 
 ## Approved terminology and content sources
 

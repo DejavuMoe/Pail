@@ -30,7 +30,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 
 - **本地源码**：在包含浮层、菜单、动效及本次发版准备的源码上，Windows 与 Debian WSL2 均通过 `go vet ./...`、`go test ./...`、`go build ./...`；修改的 Go 文件已经 `gofmt`。Linux 经 `linux-task.ps1 -Mode build` 串行执行。
 - **桌面与文档图**：Windows 原生 `--demo` 亮暗窗口启动、`--smoke-exit` 与 `--smoke-screenshot` 成功。文档中的 1440×900 截图来自当前源码的 `TestShellRendersKeyTexts` / `TestDarkModeRenders` 受控 UI 渲染，使用 PicForge 的 WebP 默认参数（质量 75、不缩放），不是原生窗口截图。静态截图不证明动画观感或完整交互验收。
-- **本地发行包**：`scripts/release.ps1 -Version 0.2.0` 构建全部六目标；`tools/verify-release` 校验文件清单、SHA256、架构和执行权限通过。包中不再含 README；Windows amd64 解压后的 CLI `version` 与桌面 `--version` 均输出 0.2.0。交叉编译不代表 macOS / ARM64 真机验证。
+- **本地发行包**：改为 Go 入口后，Windows 与 Debian WSL2 分别通过 `go run ./tools/release -version 0.2.0` 构建全部六目标并自动验包，校验文件清单、SHA256、架构和执行权限。包中不再含 README；Windows 与 Linux amd64 解压后的 CLI `version` 与桌面 `--version` 均输出 0.2.0。旧 PowerShell 兼容入口已在 Windows 验证子目录调用、相对输出目录、双目标参数与 CLI-only 模式；CI 不再使用它。交叉编译不代表 macOS / ARM64 真机验证。
 - **网站**：本地构建和 Chrome 检查覆盖英文、中文、明暗主题与 WebP 加载；所有十个可索引页面的分享元信息、绝对图片 URL、真实图片尺寸及 404 的 `noindex` 由回归测试验证。发布门禁脚本的 15 个 Node 测试、网站部署夹具测试、生成物检查与 CI 固定版本的 actionlint 工作流检查通过。
 - **未完成的发布门禁**：本次尚未推送、建立 v0.2.0 标签、运行对应提交的远端 CI / CodeQL、发布 Release 或部署网站。仓库语言统计的排除规则已由 `git check-attr` 检查，远端统计须推送后等待重算。社交平台预览缓存尚未验证。
 - **沿用的历史证据**：本次未重跑 race、MinIO、VersityGW 或真实 AWS；上节真实服务端与已发布 v0.1.0 的结果不能当作 v0.2.0 的新验收。
