@@ -57,14 +57,9 @@ func (a *app) uploadMenu(c *ui.Context) {
 		text = ""
 	}
 	b := ghostButton(c, icons.Get(files.Icon), text, files.tooltip(), !a.enabled(files)).Label(locales.ToolbarUpload())
-	b.Menu(func(m *ui.Menu) {
-		for _, cmd := range []*command{files, folder} {
-			item := m.Item(cmd.text()).Disabled(!a.enabled(cmd))
-			item.Shortcut(cmd.Chords[0].Mods, cmd.Chords[0].Key)
-			if item.Chosen() {
-				a.run(cmd.ID, "toolbar")
-			}
-		}
+	a.buttonMenu(c, b, "upload", locales.ToolbarUpload(), func(m *menuBuilder) {
+		m.Command(a, files.ID, "toolbar")
+		m.Command(a, folder.ID, "toolbar")
 	})
 }
 

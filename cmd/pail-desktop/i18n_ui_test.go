@@ -28,7 +28,7 @@ func TestLanguageFromTheMoreMenu(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick("More")
 	h.tt.Frame()
-	if err := h.tt.ChooseMenuItem("Language", "简体中文"); err != nil {
+	if err := h.chooseMenu("Language", "简体中文"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()
@@ -40,7 +40,7 @@ func TestLanguageFromTheMoreMenu(t *testing.T) {
 	// and each language in itself.
 	h.mustClick("更多")
 	h.tt.Frame()
-	if err := h.tt.ChooseMenuItem("语言", "跟随系统"); err != nil {
+	if err := h.chooseMenu("语言", "跟随系统"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()

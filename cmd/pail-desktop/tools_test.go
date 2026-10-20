@@ -711,20 +711,20 @@ func TestInvalidateOnlyForAWSAccounts(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if contains(h.tt.Menu(), "Invalidate…") {
-		t.Fatalf("Invalidate offered for a non-AWS account: %q", h.tt.Menu())
+	if contains(h.menu(), "Invalidate…") {
+		t.Fatalf("Invalidate offered for a non-AWS account: %q", h.menu())
 	}
-	h.tt.CloseMenu()
+	h.closeMenu()
 	h.settle()
 	h.a.accounts = []Account{{ID: h.a.accountID, Name: "Production AWS", Provider: core.ProviderAWS}}
 	if err := h.tt.RightClick("manifest.json"); err != nil {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if !contains(h.tt.Menu(), "Invalidate…") {
-		t.Fatalf("Invalidate missing for an AWS account: %q", h.tt.Menu())
+	if !contains(h.menu(), "Invalidate…") {
+		t.Fatalf("Invalidate missing for an AWS account: %q", h.menu())
 	}
-	h.tt.CloseMenu()
+	h.closeMenu()
 	h.a.run("invalidate", "test")
 	if h.a.tool != "cloudfront" {
 		t.Fatalf("tool = %q", h.a.tool)

@@ -131,13 +131,13 @@ func TestAccountSaveAddsAndSwitches(t *testing.T) {
 func TestAccountSwitcherMenuListsAccounts(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick(demoAccountName)
-	menu := h.tt.Menu()
+	menu := h.menu()
 	for _, want := range []string{demoAccountName, "Add account…", "Edit account…", "Remove account…"} {
 		if !contains(menu, want) {
 			t.Errorf("account menu %q missing %q", menu, want)
 		}
 	}
-	if err := h.tt.ChooseMenuItem("Add account…"); err != nil {
+	if err := h.chooseMenu("Add account…"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()

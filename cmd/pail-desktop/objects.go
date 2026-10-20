@@ -143,7 +143,8 @@ func (a *app) table(c *ui.Context) {
 		}
 	}).Grow(1).MinHeight(0).Label(locales.ObjectsTable())
 	a.hoverKey = a.rowUnderPointer(tbl)
-	tbl.ContextMenu(a.buildMenu)
+	// While a row is renamed, Shift+F10 is the name input's own editing menu.
+	a.contextMenu(tbl, menuSpec{name: locales.MenuObjectActions(), keyAt: a.cursorCorner, noKeys: a.mg.ren.key != ""}, a.buildMenu)
 	if tbl.Submitted() {
 		a.openSelected()
 	}

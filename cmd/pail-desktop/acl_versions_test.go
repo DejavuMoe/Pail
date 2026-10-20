@@ -255,10 +255,10 @@ func TestShowDeletedAndRestore(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if menu := h.tt.Menu(); !contains(menu, "Restore") || !contains(menu, "Restore all in this folder") {
+	if menu := h.menu(); !contains(menu, "Restore") || !contains(menu, "Restore all in this folder") {
 		t.Fatalf("context menu %q has no restore entries", menu)
 	}
-	if err := h.tt.ChooseMenuItem("Restore"); err != nil {
+	if err := h.chooseMenu("Restore"); err != nil {
 		t.Fatal(err)
 	}
 	h.waitToast("Restored 1 item")

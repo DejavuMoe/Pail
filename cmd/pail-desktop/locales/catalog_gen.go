@@ -5692,6 +5692,16 @@ func (msgs Messages) MenuBucket() string {
 	return Catalog.Format(msgs.locale, "menuBucket", nil)
 }
 
+// MenuBucketActions says "Actions for bucket {name}"
+// in the language the app shows.
+func MenuBucketActions(name string) string { return In(i18n.Locale()).MenuBucketActions(name) }
+
+// MenuBucketActions says "Actions for bucket {name}"
+// in the language of msgs.
+func (msgs Messages) MenuBucketActions(name string) string {
+	return Catalog.Format(msgs.locale, "menuBucketActions", map[string]any{"name": name})
+}
+
 // MenuEdit says "Edit"
 // in the language the app shows.
 func MenuEdit() string { return In(i18n.Locale()).MenuEdit() }
@@ -5730,6 +5740,16 @@ func MenuLanguage() string { return In(i18n.Locale()).MenuLanguage() }
 // in the language of msgs.
 func (msgs Messages) MenuLanguage() string {
 	return Catalog.Format(msgs.locale, "menuLanguage", nil)
+}
+
+// MenuObjectActions says "Object actions"
+// in the language the app shows.
+func MenuObjectActions() string { return In(i18n.Locale()).MenuObjectActions() }
+
+// MenuObjectActions says "Object actions"
+// in the language of msgs.
+func (msgs Messages) MenuObjectActions() string {
+	return Catalog.Format(msgs.locale, "menuObjectActions", nil)
 }
 
 // MenuTools says "Tools"

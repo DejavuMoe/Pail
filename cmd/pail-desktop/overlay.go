@@ -12,7 +12,7 @@ import (
 // Overlays (docs/design.md "Overlays"): everything that floats above the
 // window shares one surface style (overlayPanel) and, when it lists choices,
 // one row (listRow). The dialogs, the command palette, the select popup, the
-// toasts and the coming context menu all go through here, so a radius, a
+// toasts and the in-window menus (ctxmenu.go) all go through here, so a radius, a
 // shadow or a highlight is decided in one place.
 
 // overlayKind is the kind of surface overlayPanel draws.
