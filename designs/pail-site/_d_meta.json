@@ -7,11 +7,11 @@
       "versions": [
         {
           "path": "index.html",
-          "createdAt": "2026-10-20T01:42:31.335Z",
+          "createdAt": "2026-10-20T18:00:00.000Z",
           "status": "approved",
-          "subtitle": "Bilingual landing page for pail.download, light/dark",
+          "subtitle": "Revision 2: plain copy, native macOS screenshots, download list with mirror source, single-row footer, mobile transfer bars",
           "viewport": {
-            "width": 1440,
+            "width": 1280,
             "height": 900
           }
         }
@@ -21,10 +21,11 @@
       "versions": [
         {
           "path": "docs.html",
-          "createdAt": "2026-10-20T05:12:36.839Z",
+          "createdAt": "2026-10-20T18:00:00.000Z",
           "status": "approved",
+          "subtitle": "Revision 2: shared header control and single-row footer from the landing page",
           "viewport": {
-            "width": 1440,
+            "width": 1280,
             "height": 900
           }
         }
@@ -34,9 +35,9 @@
       "versions": [
         {
           "path": "social-preview.html",
-          "createdAt": "2026-10-20T13:20:07.969Z",
+          "createdAt": "2026-10-21T00:10:00.000Z",
           "status": "approved",
-          "subtitle": "Approved 2026-10-20: actual light screenshot; bilingual Open Graph and Twitter metadata; no new page design",
+          "subtitle": "1200x630 card: the native light screenshot on the page background; bilingual Open Graph and Twitter metadata",
           "viewport": {
             "width": 1440,
             "height": 900
@@ -46,5 +47,5 @@
     }
   },
   "createdAt": "2026-10-20T01:42:31.338Z",
-  "updatedAt": "2026-10-20T13:20:07.972Z"
+  "updatedAt": "2026-10-21T00:00:00.000Z"
 }

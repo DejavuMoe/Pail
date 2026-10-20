@@ -55,11 +55,11 @@
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
           <span class="lang-btn-label">EN</span>
         </a>
-        <fieldset class="theme-seg">
+        <fieldset class="seg theme-seg">
           <legend class="visually-hidden">主题</legend>
-          <label title="跟随系统"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden">跟随系统</span></label>
-          <label title="浅色"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden">浅色</span></label>
-          <label title="深色"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden">深色</span></label>
+          <label title="跟随系统"><input type="radio" name="theme" value="system" checked><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg></span><span class="visually-hidden">跟随系统</span></label>
+          <label title="浅色"><input type="radio" name="theme" value="light"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg></span><span class="visually-hidden">浅色</span></label>
+          <label title="深色"><input type="radio" name="theme" value="dark"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg></span><span class="visually-hidden">深色</span></label>
         </fieldset>
         <a class="icon-btn gh-btn" href="https://github.com/DejavuMoe/Pail" aria-label="GitHub">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
@@ -104,31 +104,19 @@
   </main>
 
   <footer class="site-footer">
-    <div class="wrap footer-grid">
-      <div class="footer-brand">
-        <a class="brand" href="index.html"><img src="assets/pail-icon.svg" alt="" width="28" height="28"><span>Pail</span></a>
-        <p class="footer-made">作者 <a href="https://dejavu.moe">Dejavu Moe</a></p>
-      </div>
-      <nav class="footer-col" aria-labelledby="fc-product">
-        <h2 id="fc-product">产品</h2>
-        <a href="index.html#features">功能</a>
-        <a href="index.html#cli">命令行</a>
-        <a href="index.html#download">下载</a>
-      </nav>
-      <nav class="footer-col" aria-labelledby="fc-res">
-        <h2 id="fc-res">资源</h2>
+    <div class="wrap footer-inner">
+      <a class="brand" href="index.html"><img src="assets/pail-icon.svg" alt="" width="24" height="24"><span>Pail</span></a>
+      <nav class="footer-nav" aria-label="页脚">
         <a href="docs.zh.html">文档</a>
+        <a href="docs-cli.zh.html">命令行</a>
         <a href="changelog.zh.html">更新日志</a>
+        <a href="https://github.com/DejavuMoe/Pail/releases">发布页</a>
         <a href="https://github.com/DejavuMoe/Pail/issues">反馈问题</a>
-      </nav>
-      <nav class="footer-col" aria-labelledby="fc-proj">
-        <h2 id="fc-proj">项目</h2>
         <a href="https://github.com/DejavuMoe/Pail">GitHub</a>
         <a href="license.zh.html">MIT 许可证</a>
       </nav>
     </div>
     <div class="wrap footer-legal">
-      <p>© 2026 Dejavu Moe</p>
       <p>Amazon S3 是 Amazon.com, Inc. 的商标。Pail 与 AWS 没有关联，也未获其认可或赞助。</p>
     </div>
   </footer>

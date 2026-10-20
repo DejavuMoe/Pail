@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title data-i18n="docTitle">Pail · Desktop app for S3-compatible storage</title>
-  <meta name="description" data-i18n-content="docDescription" content="Pail is a free, open-source desktop app for managing Amazon S3, MinIO, Cloudflare R2 and other S3-compatible storage on Windows, Linux and macOS.">
+  <title data-i18n="docTitle">Pail · Desktop client for S3-compatible storage</title>
+  <meta name="description" data-i18n-content="docDescription" content="Pail is a free, open-source desktop app for Amazon S3, Cloudflare R2, MinIO and other S3-compatible storage, for Windows, macOS and Linux.">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
@@ -19,6 +19,7 @@
       var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
       d.setAttribute('data-theme-pref', pref);
       d.setAttribute('data-theme', dark ? 'dark' : 'light');
+      d.classList.add('js');
       if (lang !== 'en' && lang !== 'zh') lang = /^zh/i.test(navigator.language || '') ? 'zh' : 'en';
       d.setAttribute('data-lang', lang);
       d.lang = lang === 'zh' ? 'zh-Hans' : 'en';
@@ -28,40 +29,24 @@
 </head>
 <body>
   <svg class="sprite" aria-hidden="true" focusable="false">
-    <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"></circle><path d="m21 21-4.3-4.3"></path></symbol>
     <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></symbol>
     <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></symbol>
     <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></symbol>
     <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></symbol>
     <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path><path d="M12 15V3"></path></symbol>
-    <symbol id="i-upload" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m17 8-5-5-5 5"></path><path d="M12 3v12"></path></symbol>
     <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></symbol>
     <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></symbol>
     <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></symbol>
-    <symbol id="i-arrow-up-right" viewBox="0 0 24 24"><path d="M7 7h10v10"></path><path d="M7 17 17 7"></path></symbol>
     <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></symbol>
-    <symbol id="i-copy" viewBox="0 0 24 24"><rect width="14" height="14" x="8" y="8" rx="2"></rect><path d="M4 16c-1.1 0-2-.9-2-2V4c0-1.1.9-2 2-2h10c1.1 0 2 .9 2 2"></path></symbol>
     <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></symbol>
-    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></symbol>
     <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></symbol>
-    <symbol id="i-refresh" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></symbol>
-    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></symbol>
-    <symbol id="i-lock" viewBox="0 0 24 24"><rect width="18" height="11" x="3" y="11" rx="2"></rect><path d="M7 11V7a5 5 0 0 1 10 0v4"></path></symbol>
-    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M20 7h-9"></path><path d="M14 17H5"></path><circle cx="17" cy="17" r="3"></circle><circle cx="7" cy="7" r="3"></circle></symbol>
-    <symbol id="i-terminal" viewBox="0 0 24 24"><path d="m4 17 6-6-6-6"></path><path d="M12 19h8"></path></symbol>
-    <symbol id="i-command" viewBox="0 0 24 24"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"></path></symbol>
-    <symbol id="i-database" viewBox="0 0 24 24"><ellipse cx="12" cy="5" rx="9" ry="3"></ellipse><path d="M3 5v14a9 3 0 0 0 18 0V5"></path><path d="M3 12a9 3 0 0 0 18 0"></path></symbol>
-    <symbol id="i-alert" viewBox="0 0 24 24"><path d="m21.73 18-8-14a2 2 0 0 0-3.48 0l-8 14A2 2 0 0 0 4 21h16a2 2 0 0 0 1.73-3"></path><path d="M12 9v4"></path><path d="M12 17h.01"></path></symbol>
-    <symbol id="i-key" viewBox="0 0 24 24"><path d="M2.59 17.41A2 2 0 0 0 2 18.83V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.17a2 2 0 0 0 1.41-.59l.82-.81a6.5 6.5 0 1 0-4-4z"></path><circle cx="16.5" cy="7.5" r=".5"></circle></symbol>
-    <symbol id="i-scroll" viewBox="0 0 24 24"><path d="M15 12h-5"></path><path d="M15 8h-5"></path><path d="M19 17V5a2 2 0 0 0-2-2H4"></path><path d="M8 21h12a2 2 0 0 0 2-2v-1a1 1 0 0 0-1-1H11a1 1 0 0 0-1 1v1a2 2 0 1 1-4 0V5a2 2 0 1 0-4 0v2a1 1 0 0 0 1 1h3"></path></symbol>
     <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
     <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 12h16"></path><path d="M4 6h16"></path><path d="M4 18h16"></path></symbol>
-    <symbol id="i-package" viewBox="0 0 24 24"><path d="m7.5 4.27 9 5.15"></path><path d="M21 8a2 2 0 0 0-1-1.73l-7-4a2 2 0 0 0-2 0l-7 4A2 2 0 0 0 3 8v8a2 2 0 0 0 1 1.73l7 4a2 2 0 0 0 2 0l7-4A2 2 0 0 0 21 16Z"></path><path d="m3.3 7 8.7 5 8.7-5"></path><path d="M12 22V12"></path></symbol>
   </svg>
 
   <a class="skip-link" href="#main" data-i18n="skip">Skip to content</a>
 
-  <header class="site-header" data-screen-label="Header">
+  <header class="site-header">
     <div class="wrap header-inner">
       <a class="brand" href="#top">
         <img src="assets/pail-icon.svg" alt="" width="28" height="28">
@@ -77,13 +62,13 @@
       <div class="header-actions">
         <button class="icon-btn lang-btn" type="button" data-action="lang" data-i18n-aria-label="langSwitch" aria-label="切换到中文">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
-          <span class="lang-btn-label" data-i18n="langShort">中文</span>
+          <span data-i18n="langShort">中文</span>
         </button>
-        <fieldset class="theme-seg">
+        <fieldset class="seg theme-seg">
           <legend class="visually-hidden" data-i18n="themeLabel">Theme</legend>
-          <label data-i18n-title="themeSystem" title="System"><input type="radio" name="theme" value="system" checked><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span class="visually-hidden" data-i18n="themeSystem">System</span></label>
-          <label data-i18n-title="themeLight" title="Light"><input type="radio" name="theme" value="light"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg><span class="visually-hidden" data-i18n="themeLight">Light</span></label>
-          <label data-i18n-title="themeDark" title="Dark"><input type="radio" name="theme" value="dark"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg><span class="visually-hidden" data-i18n="themeDark">Dark</span></label>
+          <label data-i18n-title="themeSystem" title="System"><input type="radio" name="theme" value="system" checked><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg></span><span class="visually-hidden" data-i18n="themeSystem">System</span></label>
+          <label data-i18n-title="themeLight" title="Light"><input type="radio" name="theme" value="light"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg></span><span class="visually-hidden" data-i18n="themeLight">Light</span></label>
+          <label data-i18n-title="themeDark" title="Dark"><input type="radio" name="theme" value="dark"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg></span><span class="visually-hidden" data-i18n="themeDark">Dark</span></label>
         </fieldset>
         <a class="icon-btn gh-btn" href="https://github.com/DejavuMoe/Pail" aria-label="GitHub">
           <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
@@ -103,222 +88,124 @@
   </header>
 
   <main id="main">
-    <section class="hero" id="top" data-screen-label="Hero">
-      <canvas class="hero-keys" aria-hidden="true"></canvas>
-      <div class="wrap hero-grid">
-        <div class="hero-copy">
-          <h1 class="hero-title">
-            <span class="hero-line" data-i18n="heroTitle1">Every bucket.</span>
-            <span class="hero-line" data-i18n="heroTitle2">One Pail.</span>
-          </h1>
-          <p class="hero-sub" data-i18n="heroSub">Browse and manage Amazon S3, MinIO, Cloudflare R2 and any other S3-compatible storage from one desktop app. Free and open source, for Windows, Linux and macOS.</p>
-          <div class="hero-cta">
-            <a class="btn btn-primary" href="#download" data-os-cta>
-              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg>
-              <span data-os-cta-label>Download</span>
-            </a>
-            <a class="btn btn-secondary" href="https://github.com/DejavuMoe/Pail">
-              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
-              <span data-i18n="heroGithub">View on GitHub</span>
-            </a>
-          </div>
-          <ul class="hero-meta">
-            <li><a href="changelog.html" data-i18n-href="hrefChangelog">v0.1.0</a></li>
-            <li data-i18n="metaLicense">MIT license</li>
-            <li data-i18n="metaArch">x64 and Arm</li>
-            <li data-i18n="metaTelemetry">No telemetry</li>
-          </ul>
+    <section class="hero" id="top">
+      <div class="wrap hero-copy">
+        <h1 class="hero-title" data-i18n="heroTitle">A desktop client for S3‑compatible storage</h1>
+        <p class="hero-sub" data-i18n="heroSub">Browse buckets, transfer files, and manage object versions, bucket settings and share links. Free and open source, for Windows, macOS and Linux.</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#download" data-os-cta>
+            <svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg>
+            <span data-os-cta-label>Download</span>
+          </a>
+          <a class="btn btn-secondary" href="https://github.com/DejavuMoe/Pail">
+            <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
+            <span data-i18n="heroGithub">View on GitHub</span>
+          </a>
         </div>
-        <div class="hero-stage">
-          <figure class="window" data-tilt>
-            <img class="shot shot-light" src="assets/main-light.webp" width="1440" height="900" data-i18n-alt="shotAlt" alt="The Pail main window: bucket list, object table and inspector">
-            <img class="shot shot-dark" src="assets/main-dark.webp" width="1440" height="900" data-i18n-alt="shotAlt" alt="The Pail main window: bucket list, object table and inspector">
-          </figure>
-        </div>
+        <p class="hero-meta">
+          <a href="changelog.html" data-i18n-href="hrefChangelog"><span data-i18n="metaVersion">Version</span> 0.2.0</a>
+          <span aria-hidden="true">·</span>
+          <a href="license.html" data-i18n-href="hrefLicense" data-i18n="metaLicense">MIT License</a>
+        </p>
+      </div>
+      <figure class="wrap hero-shot">
+        <picture>
+          <source srcset="assets/main-dark.webp" media="(prefers-color-scheme: dark)" type="image/webp" data-shot-dark>
+          <img src="assets/main-light.webp" width="2742" height="1822" fetchpriority="high" decoding="async" data-i18n-alt="shotAlt" alt="The Pail main window: bucket list, object table and inspector">
+        </picture>
+        <script>
+          (function () {
+            var p = document.documentElement.getAttribute('data-theme-pref');
+            var s = document.querySelector('[data-shot-dark]');
+            if (s && p !== 'system') s.media = p === 'dark' ? 'all' : 'not all';
+          })();
+        </script>
+      </figure>
+      <div class="wrap providers">
+        <p><span data-i18n="providersTested">Tested with</span> <span class="providers-list"><b>Amazon S3</b><b>Cloudflare R2</b><b>MinIO</b><b>Wasabi</b><b>VersityGW</b></span></p>
+        <p data-i18n="providersOther">Other S3-compatible services can be added with a custom endpoint.</p>
       </div>
     </section>
 
-    <section class="providers" aria-labelledby="providers-label" data-screen-label="Providers">
-      <div class="wrap providers-inner">
-        <p class="providers-label" id="providers-label" data-i18n="providersLabel">Works with</p>
-        <ul class="providers-list">
-          <li>Amazon S3</li>
-          <li>MinIO</li>
-          <li>Cloudflare R2</li>
-          <li>VersityGW</li>
-          <li>Wasabi</li>
-          <li class="providers-any" data-i18n="providersAny">and any S3-compatible service</li>
+    <section class="section" id="features" aria-labelledby="features-title">
+      <div class="wrap">
+        <h2 class="section-title reveal" id="features-title" data-i18n="featuresTitle">Features</h2>
+
+        <article class="showcase reveal">
+          <div class="showcase-copy">
+            <h3 data-i18n="fTransfersTitle">Uploads and downloads</h3>
+            <p data-i18n="fTransfersBody">Transfer files, folders or whole buckets, or drag files into the window. Uploads and downloads have separate queues with progress, speed, cancel and retry. Large files are uploaded in parts with checksums, and a download is moved into place only after it has been verified.</p>
+          </div>
+          <div class="mini mini-transfers" aria-hidden="true">
+            <div class="tq-head">
+              <span class="tq-title" data-i18n="miniTransfers">Transfers</span>
+              <span class="tq-filter is-on"><span data-i18n="miniActive">Active</span> 2</span>
+              <span class="tq-filter"><span data-i18n="miniCompleted">Completed</span> 1</span>
+            </div>
+            <div class="tq-row" data-total="2306867">
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-up"></use></svg>
+              <span class="tq-name">site/assets/hero.webp</span>
+              <span class="tq-bar"><i></i></span>
+              <span class="tq-bytes">1.4 MB / 2.2 MB</span>
+            </div>
+            <div class="tq-row" data-total="2576980378">
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-down"></use></svg>
+              <span class="tq-name">backups/2026-10-19.tar.gz</span>
+              <span class="tq-bar"><i></i></span>
+              <span class="tq-bytes">1.6 GB / 2.4 GB</span>
+            </div>
+            <div class="tq-row is-done">
+              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>
+              <span class="tq-name">reports/q3.csv</span>
+              <span class="tq-bar"><i></i></span>
+              <span class="tq-bytes">18.3 KB</span>
+            </div>
+            <div class="conflict">
+              <span class="conflict-label" data-i18n="miniConflictRow">If the file already exists</span>
+              <div class="chips" data-cycle>
+                <span class="chip is-on" data-i18n="conflictRename">Keep both (rename)</span>
+                <span class="chip" data-i18n="conflictSkip">Skip existing</span>
+                <span class="chip" data-i18n="conflictOverwrite">Overwrite</span>
+                <span class="chip" data-i18n="conflictNewer">Overwrite if newer</span>
+                <span class="chip" data-i18n="conflictSize">Overwrite if size differs</span>
+              </div>
+            </div>
+          </div>
+        </article>
+
+        <article class="showcase showcase-flip reveal">
+          <div class="showcase-copy">
+            <h3 data-i18n="fVersionsTitle">Versions and delete markers</h3>
+            <p data-i18n="fVersionsBody">List every version of an object, download older versions, restore one or undo a delete, and permanently remove only the versions you select.</p>
+          </div>
+          <div class="mini mini-versions" aria-hidden="true">
+            <div class="mv-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file"></use></svg><span>reports/q3.csv</span></div>
+            <ol class="mv-list">
+              <li class="mv-marker"><span class="mv-dot"></span><span class="mv-label" data-i18n="miniDeleteMarker">Delete marker</span><span class="mv-badge" data-i18n="miniLatest">Latest</span><span class="mv-time">2026-10-19 22:51</span></li>
+              <li class="mv-target"><span class="mv-dot"></span><span class="mv-id">3HL4kqtJlcpX</span><span class="mv-size">18.3 KB</span><span class="mv-restore"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span data-i18n="miniRestore">Restore</span></span></li>
+              <li><span class="mv-dot"></span><span class="mv-id">Xd3dIbrHYrmS</span><span class="mv-size">17.9 KB</span><span class="mv-time">2026-10-12 09:04</span></li>
+            </ol>
+          </div>
+        </article>
+
+        <ul class="facts facts-3">
+          <li class="reveal"><h3 data-i18n="fAccountsTitle">Accounts</h3><p data-i18n="fAccountsBody">Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. For other services, set the endpoint, region and path-style addressing, and test the connection before saving.</p></li>
+          <li class="reveal"><h3 data-i18n="fSettingsTitle">Bucket settings</h3><p data-i18n="fSettingsBody">Edit 14 bucket settings, among them versioning, encryption, policy, CORS, lifecycle and replication, as a form or as JSON.</p></li>
+          <li class="reveal"><h3 data-i18n="fPropsTitle">Object properties</h3><p data-i18n="fPropsBody">Change headers, metadata, tags, ACL, storage class and server-side encryption for one object or a selection. Properties you leave alone are kept.</p></li>
+          <li class="reveal"><h3 data-i18n="fSyncTitle">Sync jobs</h3><p data-i18n="fSyncBody">Save jobs that upload, download or mirror a folder. Compare by size and time, size or checksum, exclude files by pattern, and review the plan before it runs.</p></li>
+          <li class="reveal"><h3 data-i18n="fLinksTitle">Presigned and CDN links</h3><p data-i18n="fLinksBody">Create presigned GET or PUT links with an expiry, for one object or many. With a CDN domain set on the account, copy the CDN link as soon as an upload finishes.</p></li>
+          <li class="reveal"><h3 data-i18n="fRulesTitle">Upload rules</h3><p data-i18n="fRulesBody">Match by bucket and key pattern to set headers, storage class and encryption on upload, or compress files with GZIP, ZIP or AES-256 ZIP.</p></li>
         </ul>
       </div>
     </section>
 
-    <section class="section features" id="features" aria-labelledby="features-title" data-screen-label="Features">
-      <div class="wrap">
-        <header class="section-head reveal">
-          <h2 class="section-title" id="features-title" data-i18n="featuresTitle">Everything a bucket needs, in one window.</h2>
-        </header>
-
-        <div class="bento">
-          <article class="tile tile-transfers reveal" data-demo="transfers">
-            <div class="tile-copy">
-              <h3 data-i18n="fTransfersTitle">Transfers with checks built in</h3>
-              <p data-i18n="fTransfersBody">Uploads and downloads run in separate queues, with progress, speed, cancel and retry. Large files go up in parts with checksums, and a download reaches its destination only after it has been verified.</p>
-            </div>
-            <div class="mini mini-transfers" aria-hidden="true">
-              <div class="tq-head">
-                <span class="tq-title" data-i18n="miniTransfers">Transfers</span>
-                <span class="tq-filter is-on"><span data-i18n="miniActive">Active</span> 2</span>
-                <span class="tq-filter"><span data-i18n="miniCompleted">Completed</span> 1</span>
-              </div>
-              <div class="tq-row" data-total="2306867" data-unit="MB">
-                <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-up"></use></svg>
-                <span class="tq-name">site/assets/hero.webp</span>
-                <span class="tq-bar"><i></i></span>
-                <span class="tq-bytes">1.4 MB / 2.2 MB</span>
-              </div>
-              <div class="tq-row" data-total="2576980378" data-unit="GB">
-                <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-down"></use></svg>
-                <span class="tq-name">backups/2026-10-19.tar.gz</span>
-                <span class="tq-bar"><i></i></span>
-                <span class="tq-bytes">1.6 GB / 2.4 GB</span>
-              </div>
-              <div class="tq-row is-done">
-                <svg class="i" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>
-                <span class="tq-name">reports/q3.csv</span>
-                <span class="tq-bar"><i></i></span>
-                <span class="tq-bytes">18.3 KB</span>
-              </div>
-              <div class="conflict">
-                <span class="conflict-label" data-i18n="miniConflictRow">If the file already exists</span>
-                <div class="chips" data-cycle>
-                  <span class="chip is-on" data-i18n="conflictRename">Keep both (rename)</span>
-                  <span class="chip" data-i18n="conflictSkip">Skip existing</span>
-                  <span class="chip" data-i18n="conflictOverwrite">Overwrite</span>
-                  <span class="chip" data-i18n="conflictNewer">Overwrite if newer</span>
-                  <span class="chip" data-i18n="conflictSize">Overwrite if size differs</span>
-                </div>
-              </div>
-            </div>
-          </article>
-
-          <article class="tile tile-palette reveal" data-demo="palette">
-            <div class="tile-copy">
-              <h3 data-i18n="fPaletteTitle">Every command, one shortcut</h3>
-              <p data-i18n="fPaletteBody">Press Ctrl+K (⌘K on macOS) to find any command, bucket or tool. English and Chinese keywords both work.</p>
-            </div>
-            <div class="mini mini-palette" aria-hidden="true">
-              <div class="mp-input">
-                <svg class="i" aria-hidden="true" focusable="false"><use href="#i-search"></use></svg>
-                <span class="mp-query"></span><span class="mp-caret"></span>
-                <span class="mp-placeholder" data-i18n="paletteSearchApp">Search commands, buckets and tools</span>
-              </div>
-              <ul class="mp-list">
-                <li data-k="upload-files"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-upload"></use></svg><span data-i18n="cmdUploadFiles">Upload files…</span></li>
-                <li data-k="upload-folder"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-upload"></use></svg><span data-i18n="cmdUploadFolder">Upload folder…</span></li>
-                <li data-k="bucket-settings"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sliders"></use></svg><span data-i18n="cmdBucketSettings">Bucket settings…</span></li>
-                <li data-k="copy-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-copy"></use></svg><span data-i18n="cmdCopyKey">Copy key</span></li>
-                <li data-k="new-folder"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-folder"></use></svg><span data-i18n="cmdNewFolder">New folder</span></li>
-                <li data-k="refresh"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-refresh"></use></svg><span data-i18n="cmdRefresh">Refresh</span></li>
-              </ul>
-            </div>
-          </article>
-
-          <article class="tile tile-settings reveal">
-            <div class="tile-copy">
-              <h3 data-i18n="fSettingsTitle">14 bucket settings, as forms or JSON</h3>
-              <p data-i18n="fSettingsBody">Versioning, encryption, policy, CORS, lifecycle, replication and more. If your provider does not support a setting, Pail says so instead of showing it as empty.</p>
-            </div>
-            <div class="mini mini-settings" aria-hidden="true">
-              <ul class="setting-chips">
-                <li data-i18n="bsVersioning">Versioning</li>
-                <li data-i18n="bsEncryption">Encryption</li>
-                <li data-i18n="bsPolicy">Policy</li>
-                <li>CORS</li>
-                <li data-i18n="bsLifecycle">Lifecycle</li>
-                <li data-i18n="bsLogging">Server access logging</li>
-                <li data-i18n="bsTags">Tags</li>
-                <li data-i18n="bsWebsite">Static website hosting</li>
-                <li data-i18n="bsPublic">Public access</li>
-                <li data-i18n="bsOwnership">Object ownership</li>
-                <li data-i18n="bsLock">Object lock</li>
-                <li data-i18n="bsRequester">Requester pays</li>
-                <li class="is-unsupported"><span data-i18n="bsAccelerate">Transfer acceleration</span><em data-i18n="bsUnsupported">Unsupported by this provider</em></li>
-                <li data-i18n="bsReplication">Replication</li>
-              </ul>
-            </div>
-          </article>
-
-          <article class="tile tile-versions reveal" data-demo="versions">
-            <div class="tile-copy">
-              <h3 data-i18n="fVersionsTitle">Versions and delete markers</h3>
-              <p data-i18n="fVersionsBody">See every version of an object, restore an older one or undo a delete, and permanently remove only the versions you choose.</p>
-            </div>
-            <div class="mini mini-versions" aria-hidden="true">
-              <div class="mv-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file"></use></svg><span>reports/q3.csv</span></div>
-              <ol class="mv-list">
-                <li class="mv-marker"><span class="mv-dot"></span><span class="mv-label" data-i18n="miniDeleteMarker">Delete marker</span><span class="mv-badge" data-i18n="miniLatest">Latest</span><span class="mv-time">2026-10-19 22:51</span></li>
-                <li class="mv-target"><span class="mv-dot"></span><span class="mv-id">3HL4kqtJlcpX</span><span class="mv-size">18.3 KB</span><span class="mv-restore"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span data-i18n="miniRestore">Restore</span></span></li>
-                <li><span class="mv-dot"></span><span class="mv-id">Xd3dIbrHYrmS</span><span class="mv-size">17.9 KB</span><span class="mv-time">2026-10-12 09:04</span></li>
-              </ol>
-            </div>
-          </article>
-
-          <article class="tile tile-sync reveal">
-            <div class="tile-copy">
-              <h3 data-i18n="fSyncTitle">Sync that shows its plan first</h3>
-              <p data-i18n="fSyncBody">Upload, download or mirror a folder. Compare by size and time, size only, or checksum, and exclude files by pattern. Only the actions you previewed run, and local files Pail deletes go to the system trash.</p>
-            </div>
-            <div class="mini mini-sync" aria-hidden="true">
-              <div class="ms-row ms-up"><span class="ms-op">upload</span><span class="ms-path">2026/04/IMG_2231.heic</span><span class="ms-why">new</span></div>
-              <div class="ms-row ms-up"><span class="ms-op">upload</span><span class="ms-path">2026/04/cover.jpg</span><span class="ms-why">size differs</span></div>
-              <div class="ms-row ms-del"><span class="ms-op">delete</span><span class="ms-path">tmp/draft.png</span><span class="ms-why">not in the source</span></div>
-              <div class="ms-sum">plan: 2 uploads, 0 downloads, 1 deletes, 340 skipped, 6.1 MB to transfer</div>
-            </div>
-          </article>
-
-          <article class="tile tile-links reveal" data-demo="links">
-            <div class="tile-copy">
-              <h3 data-i18n="fLinksTitle">Presigned and CDN links</h3>
-              <p data-i18n="fLinksBody">Create presigned GET or PUT links with an expiry, for one object or many. Set a CDN domain on an account and copy the CDN link as soon as an upload finishes.</p>
-            </div>
-            <div class="mini mini-links" aria-hidden="true">
-              <div class="ml-seg">
-                <span>15 min</span><span class="is-on">1 h</span><span>1 d</span><span>7 d</span>
-              </div>
-              <div class="ml-url"><span class="ml-text">https://acme-assets.s3.us-east-1.amazonaws.com/reports/q3.csv?X-Amz-Expires=3600&amp;X-Amz-Signature=…</span><span class="ml-copy"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-copy"></use></svg><span data-i18n="miniCopy">Copy</span></span></div>
-              <div class="ml-url ml-cdn"><span class="ml-text">https://cdn.example.com/acme-assets/reports/q3.csv</span><span class="ml-tag">CDN</span></div>
-            </div>
-          </article>
-
-          <article class="tile tile-rules reveal">
-            <div class="tile-copy">
-              <h3 data-i18n="fRulesTitle">Upload rules and compression</h3>
-              <p data-i18n="fRulesBody">Rules matched by bucket and key pattern set headers, storage class and encryption on upload, and can compress files with GZIP, ZIP or AES-256 ZIP.</p>
-            </div>
-            <div class="mini mini-rules" aria-hidden="true">
-              <dl class="mr-grid">
-                <dt data-i18n="miniBucket">Bucket</dt><dd>acme-logs</dd>
-                <dt data-i18n="miniKeys">Keys</dt><dd>*.log</dd>
-                <dt data-i18n="miniCompression">Compression</dt><dd>GZIP · 6</dd>
-                <dt data-i18n="miniStorageClass">Storage class</dt><dd>STANDARD_IA</dd>
-                <dt data-i18n="miniEncryption">Encryption</dt><dd>SSE-S3</dd>
-              </dl>
-            </div>
-          </article>
+    <section class="section" id="cli" aria-labelledby="cli-title">
+      <div class="wrap split">
+        <div class="split-copy reveal">
+          <h2 class="section-title" id="cli-title" data-i18n="cliTitle">Command line</h2>
+          <p class="section-lede" data-i18n="cliBody">pail uses the same accounts and saved sync jobs as the desktop app. Add --json for machine-readable output.</p>
+          <a class="text-link" href="docs-cli.html" data-i18n-href="hrefCli"><span data-i18n="cliDocs">Command-line reference</span><svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
         </div>
-      </div>
-    </section>
-
-    <section class="section cli" id="cli" aria-labelledby="cli-title" data-screen-label="Command line">
-      <div class="wrap cli-grid">
-        <header class="section-head reveal">
-          <h2 class="section-title" id="cli-title" data-i18n="cliTitle">The same accounts, in your terminal.</h2>
-          <p class="section-lede" data-i18n="cliBody">pail uses the same accounts and saved sync jobs as the desktop app. Add --json for machine-readable output. Exit codes are stable, and credentials are never printed.</p>
-          <ul class="cli-cmds">
-            <li>accounts</li><li>buckets</li><li>ls</li><li>cp</li><li>mv</li><li>rm</li><li>mb</li><li>rb</li><li>presign</li><li>url</li><li>versions</li><li>restore</li><li>sync</li><li>vault status</li>
-          </ul>
-          <a class="text-link" href="docs-cli.html" data-i18n-href="hrefCli"><span data-i18n="cliDocs">Command line reference</span><svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
-        </header>
         <div class="terminal reveal" data-demo="terminal">
           <div class="term-bar">
             <div class="term-tabs" role="tablist" data-i18n-aria-label="cliExamples" aria-label="Examples">
@@ -328,141 +215,106 @@
               <button type="button" role="tab" aria-selected="false" data-term="json" id="term-tab-json" aria-controls="term-panel">--json</button>
             </div>
           </div>
-          <pre class="term-body" id="term-panel" role="tabpanel" aria-labelledby="term-tab-ls" tabindex="0"><code></code></pre>
+          <pre class="term-body" id="term-panel" role="tabpanel" aria-labelledby="term-tab-ls" tabindex="0"><code><span class="t-prompt">$</span> <span class="t-cmd">pail ls s3://acme-assets/</span>
+<span class="t-out">                                PRE assets/</span>
+<span class="t-out">                                PRE backups/</span>
+<span class="t-out">                                PRE logs/</span>
+<span class="t-out">                                PRE reports/</span>
+<span class="t-out">                                PRE website/</span>
+<span class="t-out">2026-10-19 14:51:08        303 B  manifest.json</span>
+<span class="t-out">2026-10-19 14:51:08        445 B  README.txt</span></code></pre>
         </div>
       </div>
     </section>
 
-    <section class="section privacy" id="privacy" aria-labelledby="privacy-title" data-screen-label="Privacy">
+    <section class="section" id="privacy" aria-labelledby="privacy-title">
       <div class="wrap">
-        <header class="section-head reveal">
-          <h2 class="privacy-title" id="privacy-title">
-            <span data-i18n="privacyLine1">No telemetry.</span>
-            <span data-i18n="privacyLine2">No update checks.</span>
-            <span class="privacy-dim" data-i18n="privacyLine3">No secrets in plain-text files.</span>
-          </h2>
-        </header>
-        <div class="privacy-grid">
-          <ul class="facts reveal">
-            <li>
-              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-key"></use></svg>
-              <div><h3 data-i18n="pKeysTitle">Keychain or encrypted vault</h3><p data-i18n="pKeysBody">Secret keys are stored in Windows Credential Manager, macOS Keychain or the Linux Secret Service. Where there is no keychain, use the optional vault, encrypted with Argon2id and XChaCha20-Poly1305.</p></div>
-            </li>
-            <li>
-              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
-              <div><h3 data-i18n="pNetTitle">Only your endpoints</h3><p data-i18n="pNetBody">Pail talks only to the storage endpoints of the accounts you add, and to nothing else.</p></div>
-            </li>
-            <li>
-              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-scroll"></use></svg>
-              <div><h3 data-i18n="pLogTitle">Logs off by default</h3><p data-i18n="pLogBody">The diagnostic log stays off until you turn it on, and it strips signatures, Authorization headers, URL query strings and known secrets.</p></div>
-            </li>
-            <li>
-              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-alert"></use></svg>
-              <div><h3 data-i18n="pScopeTitle">See the scope before you confirm</h3><p data-i18n="pScopeBody">Destructive actions list what they will affect before they run. To delete a bucket, you type its name.</p></div>
-            </li>
-          </ul>
-          <div class="dialog-demo reveal" data-demo="dialog" aria-hidden="true">
-            <div class="dlg">
-              <p class="dlg-title"><span data-i18n="dlgTitle">Delete bucket</span> acme-logs</p>
-              <dl class="dlg-scope">
-                <dt data-i18n="dlgAccount">Account</dt><dd>Demo · in-memory S3</dd>
-                <dt data-i18n="dlgObjects">Objects</dt><dd>1,284</dd>
-                <dt data-i18n="dlgSize">Size</dt><dd>3.6 GB</dd>
-              </dl>
-              <div class="dlg-field">
-                <span data-i18n="dlgConfirm">Type the bucket name to confirm</span>
-                <span class="dlg-input"><span class="dlg-typed"></span><span class="dlg-caret"></span></span>
-              </div>
-              <div class="dlg-actions">
-                <span class="dbtn dbtn-secondary" data-i18n="dlgCancel">Cancel</span>
-                <span class="dbtn dbtn-danger" data-i18n="dlgDelete">Delete bucket</span>
-              </div>
-            </div>
-          </div>
+        <div class="section-head reveal">
+          <h2 class="section-title" id="privacy-title" data-i18n="privacyTitle">Privacy</h2>
+          <p class="section-lede" data-i18n="privacyLede">Pail has no telemetry and does not check for updates.</p>
         </div>
+        <ul class="facts facts-4">
+          <li class="reveal"><h3 data-i18n="pNetTitle">Only your endpoints</h3><p data-i18n="pNetBody">Pail connects only to the storage endpoints of the accounts you add.</p></li>
+          <li class="reveal"><h3 data-i18n="pKeysTitle">Keychain or encrypted vault</h3><p data-i18n="pKeysBody">Secret keys go to Windows Credential Manager, macOS Keychain or the Linux Secret Service. Without a keychain, use the optional vault, encrypted with Argon2id and XChaCha20-Poly1305.</p></li>
+          <li class="reveal"><h3 data-i18n="pLogTitle">Logs off by default</h3><p data-i18n="pLogBody">The diagnostic log is off until you turn it on. Signatures, Authorization headers, URL query strings and known secrets are removed before anything is written.</p></li>
+          <li class="reveal"><h3 data-i18n="pScopeTitle">Scope before you confirm</h3><p data-i18n="pScopeBody">Destructive actions list what they will affect before they run. To delete a bucket, you type its name.</p></li>
+        </ul>
       </div>
     </section>
 
-    <section class="section download" id="download" aria-labelledby="download-title" data-screen-label="Download">
-      <div class="wrap">
-        <header class="section-head section-head-center reveal">
-          <h2 class="section-title" id="download-title"><span data-i18n="downloadTitle">Get Pail</span> <span class="version">0.1.0</span></h2>
-        </header>
-        <div class="os-grid">
-          <article class="os-card reveal" data-os="windows">
-            <header class="os-head"><h3>Windows</h3><span class="os-badge" data-i18n="yourSystem">Your system</span></header>
-            <p class="os-req" data-i18n="osWindowsReq">A .zip with pail-desktop and pail</p>
-            <div class="os-links">
-              <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-windows-amd64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
-              <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-windows-arm64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
-            </div>
-          </article>
-          <article class="os-card reveal" data-os="linux">
-            <header class="os-head"><h3>Linux</h3><span class="os-badge" data-i18n="yourSystem">Your system</span></header>
-            <p class="os-req" data-i18n="osLinuxReq">A .tar.gz with pail-desktop, pail, a .desktop entry and an icon</p>
-            <div class="os-links">
-              <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-linux-amd64.tar.gz"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
-              <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-linux-arm64.tar.gz"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
-            </div>
-          </article>
-          <article class="os-card reveal" data-os="macos">
-            <header class="os-head"><h3>macOS</h3><span class="os-badge" data-i18n="yourSystem">Your system</span></header>
-            <p class="os-req" data-i18n="osMacReq">A .zip with Pail.app and pail · macOS 11 or later</p>
-            <div class="os-links">
-              <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-darwin-arm64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span data-i18n="appleSilicon">Apple silicon</span><small>arm64</small></a>
-              <a class="os-link" href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/Pail-0.1.0-darwin-amd64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Intel</span><small>amd64</small></a>
-            </div>
-          </article>
-        </div>
-        <div class="download-foot reveal">
-          <p class="download-note" data-i18n="downloadNote">The archives are not code-signed. The macOS app is not notarized and has not been tested on a real Mac yet.</p>
+    <section class="section" id="download" aria-labelledby="download-title">
+      <div class="wrap split split-download">
+        <div class="split-copy reveal">
+          <h2 class="section-title" id="download-title"><span data-i18n="downloadTitle">Download Pail</span> <span class="version">0.2.0</span></h2>
+          <p class="download-meta"><span data-i18n="releasedOn" data-i18n-vars='{"date":"2026-10-20"}'>Released 2026-10-20</span> · <a href="changelog.html" data-i18n-href="hrefChangelog" data-i18n="changelog">Changelog</a></p>
+          <p class="download-note"><span data-i18n="downloadNote">The downloads are not code-signed, so macOS and Windows may warn you the first time you open Pail.</span> <a href="docs.html#install" data-i18n-href="hrefInstall" data-i18n="installNotes">Install notes</a></p>
           <ul class="download-links">
-            <li><a href="https://github.com/DejavuMoe/Pail/releases/download/v0.1.0/SHA256SUMS">SHA256SUMS</a></li>
+            <li><a href="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/SHA256SUMS">SHA256SUMS</a></li>
             <li><a href="https://github.com/DejavuMoe/Pail/releases" data-i18n="allReleases">All releases</a></li>
-            <li><a href="changelog.html" data-i18n="changelog" data-i18n-href="hrefChangelog">Changelog</a></li>
-            <li><a href="docs.html#build-from-source" data-i18n="buildFromSource" data-i18n-href="hrefBuild">Build from source</a></li>
+            <li><a href="docs.html#build-from-source" data-i18n-href="hrefBuild" data-i18n="buildFromSource">Build from source</a></li>
           </ul>
-          <div class="demo-hint">
-            <svg class="i" aria-hidden="true" focusable="false"><use href="#i-terminal"></use></svg>
-            <p><span data-i18n="demoHint1">No account yet? Run</span> <code>pail-desktop --demo</code> <span data-i18n="demoHint2">to try Pail against a built-in in-memory S3 server. Nothing leaves your computer.</span></p>
+          <p class="demo-hint"><span data-i18n="demoHint1">No account yet? Run</span> <code>pail-desktop --demo</code> <span data-i18n="demoHint2">to try Pail with a built-in in-memory S3 server. Nothing leaves your computer.</span></p>
+        </div>
+
+        <div class="dl reveal" data-github-base="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/" data-mirror-base="https://pan.zsh.moe/Pail/v0.2.0/">
+          <div class="dl-source">
+            <fieldset class="source-pick">
+              <legend data-i18n="sourceLabel">Download from</legend>
+              <div class="seg source-seg">
+                <label><input type="radio" name="source" value="github" checked><span class="seg-face">GitHub</span></label>
+                <label><input type="radio" name="source" value="mirror"><span class="seg-face" data-i18n="sourceMirror">Mirror</span></label>
+              </div>
+            </fieldset>
+            <p class="source-note" aria-live="polite" data-source-note data-i18n="sourceGithubNote">Files are served from GitHub Releases.</p>
+            <p class="source-fallback"><span data-i18n="mirrorFallback">The same files are on the mirror:</span> <a href="https://pan.zsh.moe/Pail/v0.2.0/">pan.zsh.moe/Pail/v0.2.0</a></p>
           </div>
+          <ul class="dl-list">
+            <li class="dl-row" data-os="windows">
+              <div class="dl-os"><h3>Windows</h3><span class="os-badge" data-i18n="yourSystem">Your system</span><p data-i18n="osWindowsReq">.zip with pail-desktop and pail</p></div>
+              <div class="dl-links">
+                <a class="dl-link" data-asset="Pail-v0.2.0-windows-amd64.zip" href="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/Pail-v0.2.0-windows-amd64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
+                <a class="dl-link" data-asset="Pail-v0.2.0-windows-arm64.zip" href="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/Pail-v0.2.0-windows-arm64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
+              </div>
+            </li>
+            <li class="dl-row" data-os="macos">
+              <div class="dl-os"><h3>macOS</h3><span class="os-badge" data-i18n="yourSystem">Your system</span><p data-i18n="osMacReq">macOS 11 or later · .zip with Pail.app and pail</p></div>
+              <div class="dl-links">
+                <a class="dl-link" data-asset="Pail-v0.2.0-darwin-arm64.zip" href="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/Pail-v0.2.0-darwin-arm64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span data-i18n="appleSilicon">Apple silicon</span><small>arm64</small></a>
+                <a class="dl-link" data-asset="Pail-v0.2.0-darwin-amd64.zip" href="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/Pail-v0.2.0-darwin-amd64.zip"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Intel</span><small>amd64</small></a>
+              </div>
+            </li>
+            <li class="dl-row" data-os="linux">
+              <div class="dl-os"><h3>Linux</h3><span class="os-badge" data-i18n="yourSystem">Your system</span><p data-i18n="osLinuxReq">.tar.gz with pail-desktop, pail, a .desktop file and an icon</p></div>
+              <div class="dl-links">
+                <a class="dl-link" data-asset="Pail-v0.2.0-linux-amd64.tar.gz" href="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/Pail-v0.2.0-linux-amd64.tar.gz"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
+                <a class="dl-link" data-asset="Pail-v0.2.0-linux-arm64.tar.gz" href="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/Pail-v0.2.0-linux-arm64.tar.gz"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
+              </div>
+            </li>
+          </ul>
         </div>
       </div>
     </section>
   </main>
 
-  <footer class="site-footer" data-screen-label="Footer">
-    <div class="wrap footer-grid">
-      <div class="footer-brand">
-        <a class="brand" href="#top"><img src="assets/pail-icon.svg" alt="" width="28" height="28"><span>Pail</span></a>
-        <p class="footer-made"><span data-i18n="madeBy">Made by</span> <a href="https://dejavu.moe">Dejavu Moe</a></p>
-      </div>
-      <nav class="footer-col" aria-labelledby="fc-product">
-        <h2 id="fc-product" data-i18n="footProduct">Product</h2>
-        <a href="#features" data-i18n="navFeatures">Features</a>
-        <a href="#cli" data-i18n="navCli">Command line</a>
-        <a href="#download" data-i18n="navDownload">Download</a>
-      </nav>
-      <nav class="footer-col" aria-labelledby="fc-res">
-        <h2 id="fc-res" data-i18n="footResources">Resources</h2>
+  <footer class="site-footer">
+    <div class="wrap footer-inner">
+      <a class="brand" href="#top"><img src="assets/pail-icon.svg" alt="" width="24" height="24"><span>Pail</span></a>
+      <nav class="footer-nav" data-i18n-aria-label="footNavLabel" aria-label="Footer">
         <a href="docs.html" data-i18n="navDocs" data-i18n-href="hrefDocs">Docs</a>
+        <a href="docs-cli.html" data-i18n="navCli" data-i18n-href="hrefCli">Command line</a>
         <a href="changelog.html" data-i18n="changelog" data-i18n-href="hrefChangelog">Changelog</a>
+        <a href="https://github.com/DejavuMoe/Pail/releases" data-i18n="releases">Releases</a>
         <a href="https://github.com/DejavuMoe/Pail/issues" data-i18n="issues">Report an issue</a>
-      </nav>
-      <nav class="footer-col" aria-labelledby="fc-proj">
-        <h2 id="fc-proj" data-i18n="footProject">Project</h2>
         <a href="https://github.com/DejavuMoe/Pail">GitHub</a>
         <a href="license.html" data-i18n="license" data-i18n-href="hrefLicense">MIT License</a>
       </nav>
     </div>
     <div class="wrap footer-legal">
-      <p>© 2026 Dejavu Moe</p>
       <p data-i18n="trademark">Amazon S3 is a trademark of Amazon.com, Inc. Pail is not affiliated with, endorsed by or sponsored by AWS.</p>
     </div>
   </footer>
 
   <script src="i18n.js"></script>
   <script src="app.js"></script>
-  <script src="tweaks.js"></script>
 </body>
 </html>
