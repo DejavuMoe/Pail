@@ -33,6 +33,23 @@ Run these from the repository root in PowerShell, Bash or another shell; the com
 
 CI keeps six native OS/architecture test jobs because cross-compiling a binary does not test platform-specific runtime behavior. Packaging uses three Linux jobs, one per target OS with both architectures, sharing the same Go tool. This avoids six separate packaging implementations and repeated native runner setup. Node is used for CI/release metadata checks, not application builds. Website deployment remains a Linux shell operation. Real external endpoints and native GUI interaction remain manual-only checks.
 
+## Desktop test performance
+
+The desktop tests render the real UI in memory, including animation frames, minimum-window layouts and translated dialogs. Keep these tests in the full race run. They share process-wide locale and native-menu settings, so adding `t.Parallel()` to the UI suites would break their isolation.
+
+Demo environments share only the nine immutable encoded image bodies, initialized with `sync.OnceValue`. Each environment still creates its own service, account, buckets and objects; the test server copies image bytes on insertion. `TestDemoImagesMatchAndStayIsolated` compares every seeded image with the original generator, checks image dimensions and formats, and checks that replacing an image in one environment leaves the other environment and cache unchanged. Ordinary local tests and CI use this same path.
+
+The Race job adds the workflow file to `setup-go`'s cache dependency paths, giving instrumented builds a different key from native builds. An exact cache hit is immutable: sharing the native key prevented the Race job from saving newly compiled race-instrumented packages. This changes build caching only; the job still runs `go test -race -count=1 -timeout 15m ./...`.
+
+To measure desktop execution separately from compilation and other packages, create `build/test-perf`, then run:
+
+```sh
+go test -race -count=1 -timeout 15m -json -cpuprofile build/test-perf/desktop.cpu -o build/test-perf/desktop.test ./cmd/pail-desktop > build/test-perf/desktop.json
+go tool pprof -top -cum build/test-perf/desktop.test build/test-perf/desktop.cpu
+```
+
+The JSON `pass` events contain per-test elapsed seconds. Compare top-level tests separately from their subtests to avoid double counting. Run before/after measurements on the same host, without another build or test workload in parallel. CPU profiles include race-detector overhead; their cumulative CPU times are not wall-clock durations. A local speedup does not establish the duration on a hosted CI runner.
+
 ## Workflows
 
 | Workflow | Trigger | Required jobs |
