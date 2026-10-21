@@ -12,6 +12,7 @@ import (
 	"math/rand/v2"
 	"os"
 	"strings"
+	"sync"
 	"time"
 
 	core "github.com/DejavuMoe/Pail/internal/app"
@@ -137,8 +138,8 @@ func (d *demoEnv) seed() error {
 		"build-id": "b-20261018.4", "uploaded-by": "ci-deploy", "source-sha": "9f2c1ae",
 	})
 	put(a, "tmp/", nil, clsStd)
-	for i, n := range []string{"hero.png", "logo-dark.png", "logo-light.png", "team-offsite.jpg", "product-shot-01.png", "product-shot-02.png", "banner-autumn.png", "og-card.png"} {
-		put(a, "assets/images/"+n, demoImage(n, i), clsStd)
+	for key, body := range demoImages() {
+		put(a, key, body, clsStd)
 	}
 	for _, n := range []string{"Inter-Regular.woff2", "Inter-SemiBold.woff2", "JetBrainsMono.ttf"} {
 		put(a, "assets/fonts/"+n, filler(n, 40_000+rng.IntN(60_000)), clsIA)
@@ -171,7 +172,6 @@ func (d *demoEnv) seed() error {
 	put(a, "website/css/app.3f9a1c.css", filler("css", 8_000), clsStd)
 	put(a, "website/js/app.8be201.js", filler("js", 22_000), clsStd)
 	put(a, "website/js/vendor.77a0d4.js", filler("vendor", 31_000), clsStd)
-	put(a, "website/img/hero.png", demoImage("hero", 9), clsStd)
 	put(a, "website/img/favicon.ico", filler("ico", 1_500), clsStd)
 
 	lite := func(bucket string, names ...string) {
@@ -246,6 +246,16 @@ func contentTypeFor(key string) string {
 	}
 	return "application/octet-stream"
 }
+
+// Keep only immutable image bodies; PutObject copies them into each isolated server.
+var demoImages = sync.OnceValue(func() map[string][]byte {
+	images := make(map[string][]byte, 9)
+	for i, name := range []string{"hero.png", "logo-dark.png", "logo-light.png", "team-offsite.jpg", "product-shot-01.png", "product-shot-02.png", "banner-autumn.png", "og-card.png"} {
+		images["assets/images/"+name] = demoImage(name, i)
+	}
+	images["website/img/hero.png"] = demoImage("hero", 9)
+	return images
+})
 
 // demoImage draws a small, smooth 320x200 picture; key picks the hue. A .jpg
 // name yields JPEG, everything else PNG.
