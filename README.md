@@ -44,16 +44,16 @@ Download the archive for your system from the [latest release](https://github.co
 
 Each archive holds the desktop app and the `pail` command-line tool. The macOS archive holds `Pail.app`; the Linux archive also has a `.desktop` entry and an icon. There are no 32-bit builds.
 
-Executable names include the version and platform, for example `pail-v0.2.0-windows-amd64.exe`. The examples in this document use the short names `pail-desktop` and `pail`: rename the files or create aliases when you install them. The Linux `.desktop` entry starts the versioned desktop executable from your `PATH`.
+Executable names include the version and platform, for example `pail-v0.3.0-windows-amd64.exe`. The examples in this document use the short names `pail-desktop` and `pail`: rename the files or create aliases when you install them. The Linux `.desktop` entry starts the versioned desktop executable from your `PATH`.
 
 ### Check the download
 
 Compare the archive's SHA-256 hash with its line in `SHA256SUMS` from the same release:
 
 ```sh
-sha256sum Pail-v0.2.0-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.2.0-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.2.0-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.3.0-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.3.0-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.3.0-windows-amd64.zip         # Windows PowerShell
 ```
 
 ### First launch on macOS

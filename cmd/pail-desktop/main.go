@@ -97,6 +97,7 @@ func main() {
 			log.Printf("window icon: %v", err)
 		}
 		a.pick = pickPaths(win)
+		a.progressSet = win.SetProgressBar
 		// Background work queues closures; Window.Update runs the drain on
 		// the UI thread. Work queued before the window existed goes now.
 		wake := func() { win.Update(a.drain) }

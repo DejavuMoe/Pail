@@ -139,7 +139,7 @@ python -m http.server 4311 --bind 127.0.0.1 --directory designs
 Production:
 
 ```powershell
-go run ./tools/site -out build/site -version 0.2.0
+go run ./tools/site -out build/site -version 0.3.0
 python -m http.server 4312 --bind 127.0.0.1 --directory build/site
 ```
 
