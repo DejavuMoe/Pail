@@ -91,6 +91,10 @@ jobs:
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+          # Keep race-instrumented builds out of the native jobs' immutable cache key.
+          cache-dependency-path: |
+            go.sum
+            .github/workflows/ci.yml
       - run: go test -race -count=1 -timeout 15m ./...
         env:
           CGO_ENABLED: "1"
