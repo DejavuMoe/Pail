@@ -4,7 +4,7 @@ Issues are tracked on GitHub; the GitHub repository is a read-only mirror of the
 
 ## Prerequisites
 
-- Go 1.27.2. [mise](https://mise.jdx.dev) pins it in `mise.toml`: run `mise trust` and `mise install go node`, then prefix commands with `mise exec --` if your shell does not activate mise.
+- Go 1.27.3. [mise](https://mise.jdx.dev) pins it in `mise.toml`: run `mise trust` and `mise install go node`, then prefix commands with `mise exec --` if your shell does not activate mise.
 - Node.js 24.19.0 is used only by the CI scripts. Building and testing the application needs only Go.
 - No cgo and no C compiler, except for race tests (`go test -race ./...`).
 - PowerShell 7.3+ is needed only for the optional wrappers in `scripts/*.ps1`.
