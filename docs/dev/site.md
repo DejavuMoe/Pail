@@ -102,7 +102,7 @@ https://github.com/DejavuMoe/Pail/releases/download/v<version>/SHA256SUMS
 
 The archive names are the ones `tools/release` produces; if the tool's naming changes, the generator must change with it. The tag format `v<version>` is an assumption the release CI must keep (see [ci.md](ci.md)).
 
-The pipeline reads the latest published stable GitHub Release, verifies that all six versioned archive assets and `SHA256SUMS` are present and uploaded, and checks that the checksum file is publicly downloadable. It never selects an unpublished Git tag. Before the first public release it fails without changing the deployed site. After publishing a new release, manually run the website workflow from `master` to update the download version.
+The pipeline reads the latest published stable GitHub Release, verifies that all six versioned archive assets and `SHA256SUMS` are present and uploaded, and checks that the checksum file is publicly downloadable. It never selects an unpublished Git tag. If the release or any of its assets is missing, it fails without changing the deployed site. After publishing a new release, manually run the website workflow from `master` to update the download version.
 
 ## Pipeline (`.woodpecker/site.yml`)
 
@@ -143,4 +143,4 @@ go run ./tools/site -out build/site -version 0.3.0
 python -m http.server 4312 --bind 127.0.0.1 --directory build/site
 ```
 
-`python -m http.server` does not send `404.html` for missing paths; open `/404.html` directly to check it. Download links point to the real release, so they fail until that version is published. Add `-mirror-url https://pan.zsh.moe/Pail` to preview the source switch.
+`python -m http.server` does not send `404.html` for missing paths; open `/404.html` directly to check it. Download links point to the GitHub Release of the version you pass, so they only work for a published version. Add `-mirror-url https://pan.zsh.moe/Pail` to preview the source switch.

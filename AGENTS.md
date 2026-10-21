@@ -18,6 +18,7 @@
 - 本地化：每个用户可见的界面字符串都放进 `cmd/pail-desktop/locales/` 的 `en.json` 与 `zh-Hans.json`，经生成的函数调用，视图里不写死文案；中文术语表在 `docs/dev/design.md`。
 - 双语文档：`README.md`、`docs/cli.md`、`CHANGELOG.md` 各有中文版（`README.zh-CN.md`、`docs/cli.zh-CN.md`、`CHANGELOG.zh-CN.md`），网站据此生成中英文页面。改英文版时在同一提交里同步中文版，标题层级与顺序保持一一对应。`LICENSE` 只保留英文原文。
 - 文档与网站文案按 docs/dev/writing.md 写作；可检查的部分由 go test ./tools/site/ 执行。
+- 写或改任何文档、更新日志、网站文案之前，先读并遵守 @docs/dev/documentation-rules.md（英文）：对普通用户没用的信息不写，文档状态与仓库的版本状态一致。
 - 命名与兼容：产品名 Pail。不得破坏旧版 openS3 的用户数据——配置目录、钥匙串服务名、保险库格式、`opens3-*` 对象 metadata 一律"读旧写新"，不删除用户数据。
 
 ## 脚本与 CI
