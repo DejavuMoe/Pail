@@ -18,7 +18,7 @@ User-facing files are `README*.md`, `docs/cli*.md`, `CHANGELOG*.md` and `site/lo
 
 - One entry per user-visible change. For a fix, say what went wrong and what happens now.
 - Write the English and Chinese versions in the same commit, with the same headings in the same order.
-- Keep the empty `[Unreleased]` heading; add entries under it during development and rename it when releasing.
+- Add entries under an `[Unreleased]` heading during development, and rename it to the release version when releasing.
 
 ## Keep the docs true to the repository state
 
