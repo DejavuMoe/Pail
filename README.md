@@ -121,7 +121,7 @@ Known limitations are listed in the [changelog](CHANGELOG.md).
 
 ## Build from source
 
-You need Go 1.27.2. No C compiler is required.
+You need Go 1.27.3. No C compiler is required.
 
 ```sh
 go build -o build/ ./cmd/pail-desktop ./cmd/pail

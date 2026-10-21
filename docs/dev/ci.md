@@ -10,7 +10,7 @@ Woodpecker deploys only the static website. Its live acceptance is separate from
 
 ## Locked tools and dependencies
 
-`mise.toml` pins Go 1.27.2 and Node.js 24.19.0. Run `mise trust` and `mise install go node`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
+`mise.toml` pins Go 1.27.3 and Node.js 24.19.0. Run `mise trust` and `mise install go node`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
 
 Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node install it with the pinned mise action. Application builds, tests and release packaging use Go directly on every host; no CI job installs or invokes PowerShell. `scripts/release.ps1` is an optional compatibility wrapper that forwards old parameters to the Go release tool. Third-party actions are pinned to full commit SHAs, and website containers to image digests. Changing the Go pin also requires updating the website builder image.
 
