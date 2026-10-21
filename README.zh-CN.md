@@ -44,16 +44,16 @@
 
 每个压缩包都含桌面应用和命令行工具 `pail`。macOS 压缩包里是 `Pail.app`；Linux 压缩包还带 `.desktop` 文件和图标。不提供 32 位版本。
 
-可执行文件名包含版本和平台，例如 `pail-v0.2.0-windows-amd64.exe`。本文的示例使用短名称 `pail-desktop` 和 `pail`，安装时可以重命名或创建别名。Linux 的 `.desktop` 文件从 `PATH` 中启动带版本号的桌面程序。
+可执行文件名包含版本和平台，例如 `pail-v0.3.0-windows-amd64.exe`。本文的示例使用短名称 `pail-desktop` 和 `pail`，安装时可以重命名或创建别名。Linux 的 `.desktop` 文件从 `PATH` 中启动带版本号的桌面程序。
 
 ### 校验下载
 
 计算压缩包的 SHA-256，与同一版本 `SHA256SUMS` 中对应的那一行比较：
 
 ```sh
-sha256sum Pail-v0.2.0-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.2.0-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.2.0-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.3.0-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.3.0-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.3.0-windows-amd64.zip         # Windows PowerShell
 ```
 
 ### 在 macOS 上首次打开

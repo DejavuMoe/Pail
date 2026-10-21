@@ -11,6 +11,7 @@ import (
 
 	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/DejavuMoe/Pail/internal/s3test"
+	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -185,6 +186,76 @@ func TestCancelButtonStopsRunningTransfer(t *testing.T) {
 		t.Error("the panel stayed open with no tasks")
 	}
 	h.mustHave("0 active · 0 completed · 0 failed")
+}
+
+func TestTaskbarProgressOfActiveTasks(t *testing.T) {
+	bar := func(v float64) mygo.ProgressBar { return mygo.ProgressBar{State: mygo.ProgressNormal, Value: v} }
+	for _, c := range []struct {
+		name  string
+		tasks []Task
+		want  mygo.ProgressBar
+	}{
+		{"none", nil, mygo.ProgressBar{}},
+		{"only finished", []Task{
+			{Status: core.StatusSucceeded, BytesTotal: 10, BytesDone: 10},
+			{Status: core.StatusFailed, BytesTotal: 10},
+		}, mygo.ProgressBar{}},
+		{"bytes of the active ones", []Task{
+			{Status: core.StatusRunning, BytesTotal: 300, BytesDone: 100},
+			{Status: core.StatusQueued, BytesTotal: 100},
+			{Status: core.StatusSucceeded, BytesTotal: 1000, BytesDone: 1000},
+		}, bar(0.25)},
+		{"items when no bytes", []Task{{Status: core.StatusRunning, Items: 8, ItemsDone: 3}}, bar(0.375)},
+		{"half-percent steps", []Task{{Status: core.StatusRunning, BytesTotal: 1000, BytesDone: 333}}, bar(0.335)},
+		{"nothing counted yet", []Task{{Status: core.StatusQueued}}, mygo.ProgressBar{State: mygo.ProgressIndeterminate}},
+	} {
+		if got := taskbarProgress(c.tasks); got != c.want {
+			t.Errorf("%s: %+v, want %+v", c.name, got, c.want)
+		}
+	}
+}
+
+func TestTaskbarProgressWithoutRendering(t *testing.T) {
+	h := newHarness(t, "light")
+	var shown []mygo.ProgressBar
+	h.a.progressSet = func(p mygo.ProgressBar) { shown = append(shown, p) }
+	for _, status := range []core.Status{core.StatusRunning, core.StatusSucceeded} {
+		h.a.onEvent(core.Event{Task: Task{ID: "background", Status: status, BytesTotal: 100, BytesDone: 50}})
+		h.a.drain()
+	}
+	if len(shown) != 2 || shown[0] != (mygo.ProgressBar{State: mygo.ProgressNormal, Value: 0.5}) || shown[1] != (mygo.ProgressBar{}) {
+		t.Fatalf("progress without rendering = %+v, want half then cleared", shown)
+	}
+}
+
+func TestTaskbarProgressFollowsATransfer(t *testing.T) {
+	h := newHarness(t, "light")
+	var shown []mygo.ProgressBar
+	h.a.progressSet = func(p mygo.ProgressBar) { shown = append(shown, p) }
+	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
+		if r.Method == http.MethodPut && strings.HasSuffix(r.URL.Path, "/slow.txt") {
+			return &s3test.Fault{Delay: 4 * time.Second}
+		}
+		return nil
+	})
+	h.a.uploadPaths([]string{writeTemp(t, "slow.txt", []byte("never arrives"))})
+	task := h.waitTask("Upload slow.txt", core.StatusRunning)
+	h.tt.Frame()
+	if len(shown) == 0 || shown[len(shown)-1].State == mygo.ProgressNone {
+		t.Fatalf("a running upload shows no taskbar progress: %+v", shown)
+	}
+	n := len(shown)
+	h.tt.Frame()
+	if len(shown) != n {
+		t.Errorf("an unchanged progress was set again: %+v", shown[n:])
+	}
+	h.a.cancelTask(task.ID)
+	h.waitTask("Upload slow.txt", core.StatusCanceled)
+	h.tt.Frame()
+	h.env.Srv.Inject(nil)
+	if got := shown[len(shown)-1]; got != (mygo.ProgressBar{}) {
+		t.Errorf("progress after the upload was canceled = %+v, want none", got)
+	}
 }
 
 func TestDownloadWritesFileAndOffersShowInFolder(t *testing.T) {

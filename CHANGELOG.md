@@ -6,6 +6,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+## [0.3.0] - 2026-10-21
+
+### Added
+
+- While tasks are queued or running, the taskbar button on Windows (the Dock icon on macOS) shows their combined progress.
+
+### Changed
+
+- Each notch of the mouse wheel now scrolls smoothly over a short moment instead of jumping. Touchpad scrolling is unchanged, and with the system "reduce motion" setting on, the wheel scrolls at once.
+- The website now has English and Chinese installation guides, command-line documentation and changelogs.
+
 ## [0.2.0] - 2026-10-20
 
 ### Added
