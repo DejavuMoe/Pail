@@ -2,10 +2,12 @@ package main
 
 import (
 	"fmt"
+	"math"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	core "github.com/DejavuMoe/Pail/internal/app"
+	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -53,6 +55,46 @@ func (a *app) autoTransfers() {
 		a.transfersOpen = true
 	}
 	t.seen, t.prevOpen = n, a.transfersOpen
+}
+
+// taskbarProgress is what the taskbar button shows of the active (queued and
+// running) tasks: the share of their bytes done, or of their items when none
+// of them counts bytes, at steps of half a percent so that a transfer's ten
+// reports a second do not each reach the system. A task that has not
+// started yet adds no total, so the bar can step back when it starts. With
+// active tasks and nothing counted yet it is indeterminate; with none, empty.
+func taskbarProgress(ts []Task) mygo.ProgressBar {
+	var bytes, bytesDone, items, itemsDone int64
+	active := false
+	for _, t := range ts {
+		if taskGroup(t) != 0 {
+			continue
+		}
+		active = true
+		bytes, bytesDone = bytes+t.BytesTotal, bytesDone+t.BytesDone
+		items, itemsDone = items+int64(t.Items), itemsDone+int64(t.ItemsDone)
+	}
+	step := func(done, total int64) mygo.ProgressBar {
+		v := math.Round(float64(done)/float64(total)*200) / 200
+		return mygo.ProgressBar{State: mygo.ProgressNormal, Value: max(0, min(1, v))}
+	}
+	switch {
+	case !active:
+		return mygo.ProgressBar{}
+	case bytes > 0:
+		return step(bytesDone, bytes)
+	case items > 0:
+		return step(itemsDone, items)
+	}
+	return mygo.ProgressBar{State: mygo.ProgressIndeterminate}
+}
+
+// syncProgress runs after queued updates, even while the window is not drawing.
+func (a *app) syncProgress() {
+	if p := taskbarProgress(a.tasks); p != a.progressShown {
+		a.progressShown = p
+		a.progressSet(p)
+	}
 }
 
 // transfersBar is the one-line strip shown when the panel is collapsed.

@@ -3,6 +3,7 @@ package main
 import (
 	"image/color"
 	"image/png"
+	"math"
 	"os"
 	"path/filepath"
 	"strconv"
@@ -763,5 +764,36 @@ func TestHoverFadesTheFill(t *testing.T) {
 	}
 	if near(mid, k.SurfaceHover, 1) || near(mid, k.Background, 1) {
 		t.Errorf("30ms in the fill is %v: not between %v and %v", mid, k.Background, k.SurfaceHover)
+	}
+}
+
+// A notch of the mouse wheel glides the object table (mygo eases it over a
+// moment, as browsers do) and rests exactly a notch further; with reduced
+// motion the table is there at once.
+func TestWheelGlidesTheObjectTable(t *testing.T) {
+	for _, reduce := range []bool{false, true} {
+		t.Run("reduce="+strconv.FormatBool(reduce), func(t *testing.T) {
+			h := newMotionHarness(t, "light")
+			h.tt.SetPreferences(ui.Preferences{ReduceMotion: reduce})
+			h.a.openPrefix("logs/access/")
+			h.settle()
+			const name, notch = "access-0010.log.gz", 90
+			r := h.rectOf(name)
+			h.tt.Wheel(r.X+r.W/2, r.Y+r.H/2, 0, notch)
+			h.step(30 * time.Millisecond)
+			mid := r.Y - h.rectOf(name).Y
+			h.step(time.Second)
+			end := r.Y - h.rectOf(name).Y
+			if math.Abs(float64(end-notch)) > 0.5 {
+				t.Fatalf("the table rests %v up after a %v notch", end, notch)
+			}
+			if reduce {
+				if mid != end {
+					t.Errorf("with reduced motion the table was %v up 30ms in, %v at rest", mid, end)
+				}
+			} else if mid <= 0 || mid >= end {
+				t.Errorf("30ms in the table was %v up: not between 0 and %v", mid, end)
+			}
+		})
 	}
 }

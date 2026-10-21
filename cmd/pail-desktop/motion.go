@@ -15,11 +15,13 @@ import (
 // Where it is forbidden: the window being resized (nothing here depends on the
 // window's size, and mygo does not animate layout changes made by a resize),
 // the rows and scrolling of the virtualised object table, and loops that only
-// decorate. With the system's "reduce motion" preference mygo lets values,
-// poses and transitions arrive at once and keeps only the fades of colours and
-// opacity, which is exactly what we want, so no view asks for it itself.
+// decorate. The short glide of a mouse wheel's notches is mygo's own (v0.6.0,
+// as browsers scroll), not an animation of the app. With the system's "reduce
+// motion" preference mygo lets values, poses, transitions and the wheel arrive
+// at once and keeps only the fades of colours and opacity, which is exactly
+// what we want, so no view asks for it itself.
 //
-// Two rules of mygo v0.5.5 shape the helpers below. A transition's Enter
+// Two rules of mygo (still so in v0.6.0) shape the helpers below. A transition's Enter
 // plays only for an element whose parent was there in the frame before, and
 // mygo lays the layer of overlays out again after the transitions, which puts
 // back at once what a transition moved inside it: so overlays come in by a

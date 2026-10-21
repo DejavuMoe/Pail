@@ -66,6 +66,11 @@ type app struct {
 	quit        func()
 	themeSet    func(mygo.ThemeSource)
 	themeSynced string // the mode themeSet was last called with
+	// progressSet shows the transfers' progress on the taskbar button (the
+	// Dock icon on macOS) with Window.SetProgressBar; progressShown is what
+	// it was last called with. Injected by main and replaced in tests.
+	progressSet   func(mygo.ProgressBar)
+	progressShown mygo.ProgressBar
 	// lang is the language choice ("" follows the system); localeSet shows it
 	// (App.SetLocale) and langSave keeps it (i18n.go). Replaced in tests.
 	lang      string
@@ -201,6 +206,7 @@ func newApp(svc *core.Service, opts options) *app {
 		quit:      func() {},
 		themeSet:  func(mygo.ThemeSource) {},
 		localeSet: func(string) {}, langSave: func(string) {},
+		progressSet: func(mygo.ProgressBar) {},
 	}
 	a.ctx, a.stop = context.WithCancel(context.Background())
 	a.post = a.enqueue
@@ -250,6 +256,7 @@ func (a *app) drain() {
 		case fn := <-a.pending:
 			fn()
 		default:
+			a.syncProgress()
 			return
 		}
 	}
