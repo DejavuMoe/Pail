@@ -265,11 +265,11 @@
             <fieldset class="source-pick">
               <legend>{{t "sourceLabel"}}</legend>
               <div class="seg source-seg">
-                <label><input type="radio" name="source" value="github" checked><span class="seg-face">GitHub</span></label>
-                <label><input type="radio" name="source" value="mirror"><span class="seg-face">{{t "sourceMirror"}}</span></label>
+                <label><input type="radio" name="source" value="github" checked><span class="seg-face"><span data-label="GitHub">GitHub</span></span></label>
+                <label><input type="radio" name="source" value="mirror"><span class="seg-face"><span data-label="{{t "sourceMirror"}}">{{t "sourceMirror"}}</span></span></label>
               </div>
             </fieldset>
-            <p class="source-note" aria-live="polite" data-source-note>{{t "sourceGithubNote"}}</p>
+            <p class="source-note"><span aria-live="polite" data-source-note>{{t "sourceGithubNote"}}</span><span class="source-note-sizer" aria-hidden="true">{{t "sourceGithubNote"}}</span><span class="source-note-sizer" aria-hidden="true">{{t "sourceMirrorNote"}}</span></p>
             <p class="source-fallback"><span>{{t "mirrorFallback"}}</span> <a href="{{.MirrorBase}}">{{.MirrorLabel}}</a></p>
           </div>
 {{- end}}
