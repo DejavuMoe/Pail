@@ -15,13 +15,12 @@ All notable changes to this project are documented in this file. The format foll
 ### Changed
 
 - Each notch of the mouse wheel now scrolls smoothly over a short moment instead of jumping. Touchpad scrolling is unchanged, and with the system "reduce motion" setting on, the wheel scrolls at once.
-- The website now has English and Chinese installation guides, command-line documentation and changelogs.
 
 ## [0.2.0] - 2026-10-20
 
 ### Added
 
-- Dialogs, the command palette, menus and toasts now animate in and out. Buttons and list rows fade on hover, the transfers panel opens and closes smoothly, and progress bars and counts change gradually. A dialog or menu that is leaving no longer takes clicks or keyboard input.
+- Dialogs, the command palette, menus and toasts now animate in and out. Buttons and list rows fade on hover, the transfers panel opens and closes smoothly, and progress bars and counts change gradually.
 - With the system "reduce motion" setting on, nothing moves or scales. Only colours and opacity fade.
 
 ### Changed
@@ -34,7 +33,7 @@ All notable changes to this project are documented in this file. The format foll
 ### Fixed
 
 - Inspector: the standard header labels (Content-Type, Cache-Control and so on) showed only an ellipsis next to the "?" icon. They now show the full name unless the panel is too narrow.
-- While you resize the window, the search box and the object table columns no longer lag one step behind. Toolbar labels, the compact path bar and the table columns no longer flicker when you drag across a width threshold.
+- Resizing the window no longer makes the search box, toolbar labels, path bar or object table columns lag behind or flicker.
 - The sidebar and the inspector keep the width you set when the window is narrower than 1100 px.
 
 ## [0.1.0] - 2026-10-20
