@@ -261,11 +261,11 @@
             <fieldset class="source-pick">
               <legend data-i18n="sourceLabel">Download from</legend>
               <div class="seg source-seg">
-                <label><input type="radio" name="source" value="github" checked><span class="seg-face">GitHub</span></label>
-                <label><input type="radio" name="source" value="mirror"><span class="seg-face" data-i18n="sourceMirror">Mirror</span></label>
+                <label><input type="radio" name="source" value="github" checked><span class="seg-face"><span data-label="GitHub">GitHub</span></span></label>
+                <label><input type="radio" name="source" value="mirror"><span class="seg-face"><span data-label="Mirror" data-i18n="sourceMirror">Mirror</span></span></label>
               </div>
             </fieldset>
-            <p class="source-note" aria-live="polite" data-source-note data-i18n="sourceGithubNote">Files are served from GitHub Releases.</p>
+            <p class="source-note"><span aria-live="polite" data-source-note data-i18n="sourceGithubNote">Files are served from GitHub Releases.</span><span class="source-note-sizer" aria-hidden="true" data-i18n="sourceGithubNote">Files are served from GitHub Releases.</span><span class="source-note-sizer" aria-hidden="true" data-i18n="sourceMirrorNote">Files are served from pan.zsh.moe, a copy of the same release. Check them against SHA256SUMS.</span></p>
             <p class="source-fallback"><span data-i18n="mirrorFallback">The same files are on the mirror:</span> <a href="https://pan.zsh.moe/Pail/v0.2.0/">pan.zsh.moe/Pail/v0.2.0</a></p>
           </div>
           <ul class="dl-list">
