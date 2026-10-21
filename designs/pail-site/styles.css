@@ -737,7 +737,22 @@ code, pre { font-family: var(--font-mono); }
   line-height: 34px;
 }
 .source-seg .seg-face { height: 28px; padding: 0 12px; font-size: 13px; }
+/* Reserve the bold width so the options do not change size when the choice changes. */
+.source-seg .seg-face span::after {
+  content: attr(data-label);
+  content: attr(data-label) / "";
+  display: block;
+  height: 0;
+  overflow: hidden;
+  visibility: hidden;
+  font-weight: 600;
+}
 .source-note, .source-fallback { flex: 1 1 16em; color: var(--muted); font-size: 13px; line-height: 1.5; }
+/* Both notes are laid out in the same cell, so the taller one sets the height
+   and switching the source does not move the page. */
+.source-note { display: grid; }
+.source-note > span { grid-area: 1 / 1; }
+.source-note-sizer { visibility: hidden; }
 .source-fallback a { color: var(--accent); }
 
 .dl-row {
