@@ -83,6 +83,7 @@
     $$('[data-i18n]').forEach(function (el) {
       var vars = el.getAttribute('data-i18n-vars');
       el.textContent = t(el.getAttribute('data-i18n'), vars ? JSON.parse(vars) : null);
+      if (el.hasAttribute('data-label')) el.setAttribute('data-label', el.textContent);
     });
     $$('[data-i18n-aria-label], [data-i18n-title], [data-i18n-alt], [data-i18n-content], [data-i18n-href]').forEach(function (el) {
       ['aria-label', 'title', 'alt', 'content', 'href'].forEach(function (attr) {
