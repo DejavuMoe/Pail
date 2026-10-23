@@ -185,20 +185,11 @@ func (w *watcher) collect(id string, interrupted bool) outcome {
 		case app.StatusCanceled:
 			o.CanceledTasks++
 		}
-		for _, it := range r.items {
-			switch it.Status {
-			case app.ItemSucceeded:
-				o.Succeeded++
-			case app.ItemSkipped:
-				o.Skipped++
-			case app.ItemFailed:
-				o.Failed++
-			case app.ItemUnknown:
-				o.Unknown++
-			case app.ItemUnprocessed:
-				o.Unprocessed++
-			}
-		}
+		o.Succeeded += r.task.ItemsDone - r.task.ItemsFailed - r.task.ItemsSkipped
+		o.Skipped += r.task.ItemsSkipped
+		o.Failed += r.task.ItemsFailed - r.task.ItemsUnknown
+		o.Unknown += r.task.ItemsUnknown
+		o.Unprocessed += r.task.ItemsUnprocessed
 	}
 	return o
 }

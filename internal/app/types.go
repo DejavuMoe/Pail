@@ -225,20 +225,29 @@ func (s Status) Finished() bool { return s >= StatusSucceeded }
 
 // Task is a snapshot of one queued, running or finished task.
 type Task struct {
-	ID, GroupID   string // GroupID ties the per-file tasks of one user action
-	Kind          Kind
-	Title, Detail string // e.g. "Upload report.pdf", "-> s3://bucket/prefix/"
-	Status        Status
-	BytesTotal    int64
-	BytesDone     int64
-	Items         int
-	ItemsDone     int     // items with a final result other than "unprocessed"
-	ItemsFailed   int     // "failed" and "unknown" items
-	Speed         float64 // bytes/s, smoothed
-	Created       time.Time
-	Started       time.Time
-	Finished      time.Time
-	Err           string
+	ID, GroupID      string // GroupID ties the per-file tasks of one user action
+	Kind             Kind
+	Title, Detail    string // e.g. "Upload report.pdf", "-> s3://bucket/prefix/"
+	Status           Status
+	BytesTotal       int64
+	BytesDone        int64
+	Items            int
+	ItemsDone        int // items with a final result other than "unprocessed"
+	ItemsFailed      int // "failed" and "unknown" items
+	ItemsSkipped     int
+	ItemsUnknown     int
+	ItemsUnprocessed int
+	Speed            float64 // bytes/s, smoothed
+	Created          time.Time
+	Started          time.Time
+	Finished         time.Time
+	Err              string
+}
+
+// TaskGroupResult totals a group independently of its retained task history.
+// Succeeded counts transferred upload/download items; the other fields count tasks.
+type TaskGroupResult struct {
+	Pending, Succeeded, Failed, Canceled int
 }
 
 // ItemResult.Status values.

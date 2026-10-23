@@ -312,10 +312,6 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 	if err != nil {
 		return err
 	}
-	if err := compress(); err != nil {
-		return err
-	}
-
 	// replayed reports whether key already holds exactly what this task wrote:
 	// the SDK retryer may resend a PutObject / CompleteMultipartUpload that had
 	// committed, and the replay then meets its own object with a 412.
@@ -361,6 +357,9 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 		if dec.Skip {
 			r.Item(ItemResult{Key: dec.Key, Status: ItemSkipped, Err: dec.Reason})
 			return nil
+		}
+		if err := compress(); err != nil {
+			return err
 		}
 		var out string
 		doWrite := func(ifNoneMatch, ifMatch string) (err error) {
