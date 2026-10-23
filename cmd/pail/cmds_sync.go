@@ -29,6 +29,11 @@ func setupSync(c *cli, fs *flag.FlagSet) runner {
 		if err != nil {
 			return err
 		}
+		if c.needsVault("sync") {
+			if err := c.unlockVault(); err != nil {
+				return err
+			}
+		}
 		pv, err := c.svc.PreviewSync(ctx, job)
 		if err != nil {
 			return err
@@ -77,14 +82,12 @@ func (c *cli) syncJob(pos []string, jobName, mode, compare string, excludes []st
 		}
 		for _, j := range c.svc.SyncJobs() {
 			if strings.EqualFold(j.Name, jobName) || j.ID == jobName {
-				if j.Remote.AccountID != c.acct.ID && c.g.account == "" {
+				if c.g.account == "" {
 					// The job names its own account; follow it unless --account was given.
-					for _, a := range c.svc.Accounts() {
-						if a.ID == j.Remote.AccountID {
-							a := a
-							c.acct = &a
-						}
-					}
+					c.g.account = j.Remote.AccountID
+				}
+				if err := c.resolveAccount(); err != nil {
+					return app.SyncJob{}, err
 				}
 				if j.Remote.AccountID != c.acct.ID {
 					return app.SyncJob{}, usagef("job %q belongs to another account", j.Name)
@@ -93,6 +96,9 @@ func (c *cli) syncJob(pos []string, jobName, mode, compare string, excludes []st
 			}
 		}
 		return app.SyncJob{}, usagef("no sync job named %q", jobName)
+	}
+	if err := c.resolveAccount(); err != nil {
+		return app.SyncJob{}, err
 	}
 	if len(pos) != 2 {
 		return app.SyncJob{}, usagef("sync takes LOCAL s3://bucket/prefix/ (upload) or s3://bucket/prefix/ LOCAL (download), or --job NAME")

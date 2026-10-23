@@ -364,7 +364,16 @@ func (p *syPlanner) planUpload() ([]*syItem, error) {
 	}
 	for i := range p.rem {
 		r := &p.rem[i]
-		if used[r.Rel] {
+		protected := used[r.Rel]
+		for parent := r.Rel; !protected; {
+			i := strings.LastIndexByte(parent, '/')
+			if i < 0 {
+				break
+			}
+			parent = parent[:i]
+			protected = p.local.protected[parent]
+		}
+		if protected {
 			continue
 		}
 		if path, ok := p.ex.path(r.Rel); ok {

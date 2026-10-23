@@ -109,7 +109,7 @@ func init() {
 		{"url", "url s3://bucket/key [--kind cdn|public]", "print the CDN or public URL of an object", true, setupURL},
 		{"versions", "versions s3://bucket/prefix/", "list versions and delete markers", true, setupVersions},
 		{"restore", "restore s3://bucket/key --version-id V | s3://bucket/prefix/ --deleted [-r]", "restore a version or deleted objects", true, setupRestore},
-		{"sync", "sync LOCAL s3://b/prefix/ | s3://b/prefix/ LOCAL | --job NAME", "one-way synchronisation", true, setupSync},
+		{"sync", "sync LOCAL s3://b/prefix/ | s3://b/prefix/ LOCAL | --job NAME", "one-way synchronisation", false, setupSync},
 	}
 }
 
@@ -236,19 +236,33 @@ func (c *cli) infof(format string, a ...any) {
 // positional arguments.
 func parseInterspersed(fs *flag.FlagSet, args []string) ([]string, error) {
 	var pos []string
-	for {
-		if err := fs.Parse(args); err != nil {
+	for len(args) > 0 {
+		arg := args[0]
+		if arg == "--" {
+			return append(pos, args[1:]...), nil
+		}
+		if len(arg) < 2 || arg[0] != '-' {
+			pos = append(pos, arg)
+			args = args[1:]
+			continue
+		}
+		n := 1
+		name := strings.TrimPrefix(strings.TrimPrefix(arg, "-"), "-")
+		if f := fs.Lookup(name); f != nil {
+			boolean, ok := f.Value.(interface{ IsBoolFlag() bool })
+			if !ok || !boolean.IsBoolFlag() {
+				n = min(2, len(args)) // A flag value may itself be "--".
+			}
+		}
+		if err := fs.Parse(args[:n]); err != nil {
 			if errors.Is(err, flag.ErrHelp) {
 				return nil, err
 			}
 			return nil, usagef("%v", err)
 		}
-		if fs.NArg() == 0 {
-			return pos, nil
-		}
-		pos = append(pos, fs.Arg(0))
-		args = fs.Args()[1:]
+		args = args[n:]
 	}
+	return pos, nil
 }
 
 func (c *cli) dispatch(ctx context.Context, args []string) error {
@@ -316,7 +330,8 @@ func (c *cli) dispatch(ctx context.Context, args []string) error {
 			return err
 		}
 	}
-	if cm.name != "vault" && c.needsVault(cm.name) {
+	// Sync selects its saved job's account before deciding which secrets it needs.
+	if cm.name != "vault" && cm.name != "sync" && c.needsVault(cm.name) {
 		if err := c.unlockVault(); err != nil {
 			return err
 		}
