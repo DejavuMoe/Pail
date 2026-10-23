@@ -77,9 +77,6 @@ type run struct {
 	t *task
 }
 
-// Ctx returns the task context (cancelled by Cancel, CancelGroup, Shutdown).
-func (r *run) Ctx() context.Context { return r.t.ctx }
-
 // SetTotal sets the expected totals (0 = unknown).
 func (r *run) SetTotal(bytes int64, items int) {
 	r.t.total.Store(bytes)

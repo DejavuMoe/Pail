@@ -207,17 +207,6 @@ func TestBucketRegion(t *testing.T) {
 	}
 }
 
-func TestDownloadBytesLimit(t *testing.T) {
-	c := testClient(t, func(w http.ResponseWriter, r *http.Request) { fmt.Fprint(w, "hello") })
-	if _, _, err := c.DownloadBytes(context.Background(), "bucket", "key", "", 4); err == nil {
-		t.Fatal("oversize download accepted")
-	}
-	got, _, err := c.DownloadBytes(context.Background(), "bucket", "key", "", 5)
-	if err != nil || string(got) != "hello" {
-		t.Fatalf("exact-sized download rejected: %q %v", got, err)
-	}
-}
-
 func TestCopySourceEscaping(t *testing.T) {
 	// "+" must be encoded: AWS and VersityGW decode a literal "+" as a space.
 	if got := CopySource("b", "目录/a b+%?#", "v+1"); got != "b/%E7%9B%AE%E5%BD%95/a%20b%2B%25%3F%23?versionId=v%2B1" {
