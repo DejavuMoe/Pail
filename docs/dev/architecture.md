@@ -10,7 +10,7 @@ cmd/pail           命令行。只调用 internal/app，与桌面程序共用配
 internal/app       Service：账户、浏览、任务队列、传输、批量、版本、属性、规则、同步、桶管理、CloudFront、日志、加密保险库
 internal/storage   S3 协议层：client、传输（分片）、复制、条件写入、能力探测
 internal/cloud     AWS 专有服务（类型化 CloudFront）
-internal/rules     上传规则、GZIP / ZIP / AES-256 ZIP、同步比较
+internal/rules     上传规则、GZIP / ZIP / AES-256 ZIP
 internal/safepath  下载路径安全：拒绝 `..`、绝对路径、Windows 保留名、符号链接逃逸；临时文件加发布
 internal/trash     本地删除进系统回收站（Windows、Linux 按 freedesktop 规范）
 internal/s3test    内存版 S3 测试服务，`--demo` 也用它
