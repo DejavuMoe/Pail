@@ -6566,6 +6566,26 @@ func (msgs Messages) PreviewTooLarge(limit string) string {
 	return Catalog.Format(msgs.locale, "previewTooLarge", map[string]any{"limit": limit})
 }
 
+// PreviewZoomIn says "Zoom in"
+// in the language the app shows.
+func PreviewZoomIn() string { return In(i18n.Locale()).PreviewZoomIn() }
+
+// PreviewZoomIn says "Zoom in"
+// in the language of msgs.
+func (msgs Messages) PreviewZoomIn() string {
+	return Catalog.Format(msgs.locale, "previewZoomIn", nil)
+}
+
+// PreviewZoomOut says "Zoom out"
+// in the language the app shows.
+func PreviewZoomOut() string { return In(i18n.Locale()).PreviewZoomOut() }
+
+// PreviewZoomOut says "Zoom out"
+// in the language of msgs.
+func (msgs Messages) PreviewZoomOut() string {
+	return Catalog.Format(msgs.locale, "previewZoomOut", nil)
+}
+
 // RenameControlChars says "Name has control characters"
 // in the language the app shows.
 func RenameControlChars() string { return In(i18n.Locale()).RenameControlChars() }

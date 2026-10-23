@@ -6,6 +6,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Image previews in the inspector can be zoomed up to 8 times with a touchpad pinch, Ctrl and the mouse wheel, or the zoom buttons. A zoomed image pans by dragging or scrolling; double-click it to fit the panel again.
+
 ### Changed
 
 - Sorting large object lists uses less temporary memory for names containing ASCII uppercase letters.

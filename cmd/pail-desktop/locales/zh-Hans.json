@@ -646,6 +646,8 @@
   "previewLimited": "预览仅限前 {limit}",
   "previewLoading": "正在加载预览…",
   "previewTooLarge": "文件过大，无法预览（上限 {limit}）",
+  "previewZoomIn": "放大",
+  "previewZoomOut": "缩小",
   "renameControlChars": "名称包含控制字符",
   "renameDone": "已重命名为 {name}",
   "renameEnterName": "输入名称",
