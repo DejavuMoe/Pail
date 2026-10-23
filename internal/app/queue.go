@@ -426,6 +426,7 @@ func (s *Service) completeLocked(t *task) {
 	close(t.done)
 	for len(q.finished) > q.maxFinished {
 		s.removeLocked(q.finished[0])
+		q.finished[0] = nil // the sliced-off slot must not retain the task's results
 		q.finished = q.finished[1:]
 	}
 }

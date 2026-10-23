@@ -4,10 +4,12 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"runtime"
 	"sync"
 	"sync/atomic"
 	"testing"
 	"time"
+	"weak"
 )
 
 // ---- helpers ------------------------------------------------------------------------------
@@ -599,6 +601,37 @@ func TestRetryAfterCancelGroupLiftsTheCancellation(t *testing.T) {
 }
 
 // ---- retention, clear -------------------------------------------------------------------------------------
+
+//go:noinline
+func prepareEvictedTask(s *Service) weak.Pointer[task] {
+	s.q.mu.Lock()
+	defer s.q.mu.Unlock()
+	s.q.maxFinished = 1
+	s.q.finished = make([]*task, 0, 8)
+	var oldest weak.Pointer[task]
+	for i := 0; i < 2; i++ {
+		ctx, cancel := context.WithCancel(context.Background())
+		tk := &task{ctx: ctx, cancel: cancel, done: make(chan struct{}), pub: Task{ID: fmt.Sprint(i), Status: StatusSucceeded}}
+		if i == 0 {
+			oldest = weak.Make(tk)
+		}
+		s.q.tasks[tk.pub.ID] = tk
+		s.completeLocked(tk)
+	}
+	return oldest
+}
+
+func TestRetentionReleasesEvictedTask(t *testing.T) {
+	s := newTestService(t, nil)
+	old := prepareEvictedTask(s)
+	for i := 0; i < 3; i++ {
+		runtime.GC()
+	}
+	if old.Value() != nil {
+		t.Error("evicted task is still reachable")
+	}
+	runtime.KeepAlive(s)
+}
 
 func TestRetentionEvictsOldestFinished(t *testing.T) {
 	s := newTestService(t, nil)

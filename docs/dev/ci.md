@@ -129,3 +129,5 @@ The Go tool supplies target environment variables only to child processes; it ne
 Plain `go test ./...` skips integration tests unless their endpoint variables are present. Never provide `PAIL_EXT_*` to ordinary CI: doing so enables the real external suite. `scripts/test-external.ps1` is manual only, scoped to the authorized endpoint and a unique `pail-e2e/` prefix. It must never run with fork credentials or automatically after a push.
 
 `pail-desktop --demo --smoke-exit 5s --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
+
+For memory comparisons, `--memory-profile <new-directory>` records staged runtime and process samples without forcing GC. The capture sequence and metric definitions are in [memory.md](memory.md). Normal account captures are manual; automated memory checks use isolated local fixtures.

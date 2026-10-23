@@ -225,9 +225,11 @@ func (a *app) submitUnlock() {
 	}
 	pw := d.pw
 	d.busy, d.err = true, ""
+	a.markMemory("vault-unlock-start")
 	go func() {
 		err := a.svc.UnlockVault(pw) // Argon2id: a few tenths of a second
 		a.post(func() {
+			defer a.markMemory("vault-unlock-finished")
 			d.busy = false
 			if err != nil {
 				d.setErr(err)
