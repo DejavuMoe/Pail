@@ -9,7 +9,6 @@ import (
 	"crypto/tls"
 	"errors"
 	"fmt"
-	"io"
 	"net"
 	"net/http"
 	"net/url"
@@ -268,33 +267,6 @@ func escapeCopySource(s string) string {
 		b.WriteByte(hex[c&15])
 	}
 	return b.String()
-}
-
-// DownloadBytes reads at most maxBytes of an object into memory (previews).
-func (c *Client) DownloadBytes(ctx context.Context, bucket, key, versionID string, maxBytes int64) ([]byte, *s3.GetObjectOutput, error) {
-	if maxBytes <= 0 {
-		return nil, nil, errors.New("maxBytes must be positive")
-	}
-	in := &s3.GetObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}
-	if versionID != "" {
-		in.VersionId = aws.String(versionID)
-	}
-	out, err := c.sdk.GetObject(ctx, in)
-	if err != nil {
-		return nil, nil, err
-	}
-	defer out.Body.Close()
-	if out.ContentLength != nil && *out.ContentLength > maxBytes {
-		return nil, out, fmt.Errorf("object exceeds download limit of %d bytes", maxBytes)
-	}
-	data, err := io.ReadAll(io.LimitReader(out.Body, maxBytes+1))
-	if err != nil {
-		return nil, out, err
-	}
-	if int64(len(data)) > maxBytes {
-		return nil, out, fmt.Errorf("object exceeds download limit of %d bytes", maxBytes)
-	}
-	return data, out, nil
 }
 
 // PresignedRequest is a signed URL plus the headers that must accompany it.

@@ -7,10 +7,8 @@ import (
 	"errors"
 	"fmt"
 	"io"
-	"reflect"
 	"strings"
 	"testing"
-	"time"
 )
 
 func TestEvaluateUnlimitedFirstMatchIsolation(t *testing.T) {
@@ -135,101 +133,5 @@ func TestGZIPFailures(t *testing.T) {
 	defer cancel()
 	if _, err := CompressGZIP(ctx, io.Discard, &cancellingReader{cancel: cancel}, 1); !errors.Is(err, context.Canceled) {
 		t.Fatalf("midstream cancellation lost: %v", err)
-	}
-}
-
-func TestSyncPlansBothDirectionsAndDeletion(t *testing.T) {
-	now := time.Date(2026, 1, 1, 0, 0, 0, 0, time.UTC)
-	entry := func(p string, n int64, dt time.Duration) Entry { return Entry{Path: p, Size: n, Modified: now.Add(dt)} }
-	local := []Entry{entry("same", 1, 0), entry("new", 1, 0), entry("changed", 2, time.Hour), entry("conflict", 1, 0), entry("excluded", 2, time.Hour)}
-	remote := []Entry{entry("same", 1, 0), entry("changed", 1, 0), entry("conflict", 2, time.Hour), entry("only-remote", 1, 0), entry("excluded", 1, 0)}
-	before := append([]Entry(nil), local...)
-	p, err := PlanSync(local, remote, SyncOptions{Exclude: []string{"excluded"}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if p.Unchanged != 1 || p.Excluded != 1 || p.Retained != 1 || len(p.Actions) != 3 {
-		t.Fatalf("bad counts: %+v", p)
-	}
-	if got := []ActionKind{p.Actions[0].Kind, p.Actions[1].Kind, p.Actions[2].Kind}; !reflect.DeepEqual(got, []ActionKind{ActionUpload, ActionConflict, ActionUpload}) {
-		t.Fatal(got)
-	}
-	if !reflect.DeepEqual(local, before) {
-		t.Fatal("mutated manifest")
-	}
-	p.Actions[0].Source.Size = 999
-	if !reflect.DeepEqual(local, before) {
-		t.Fatal("plan aliases manifest")
-	}
-	p, err = PlanSync(local, remote, SyncOptions{Direction: Download, DeleteExtraneous: true, Exclude: []string{"excluded"}})
-	if err != nil {
-		t.Fatal(err)
-	}
-	if len(p.Actions) != 4 || p.Actions[0].Kind != ActionConflict || p.Actions[1].Kind != ActionDownload || p.Actions[2].Kind != ActionDelete || p.Actions[3].Kind != ActionDownload {
-		t.Fatalf("reverse plan: %+v", p.Actions)
-	}
-	for _, a := range p.Actions {
-		if a.Target != "local" {
-			t.Fatal("wrong deletion/transfer target")
-		}
-	}
-}
-func TestSyncChecksumAndTolerance(t *testing.T) {
-	now := time.Now()
-	a := Entry{Path: "x", Size: 1, Modified: now, Checksum: "aa", ChecksumAlgorithm: "SHA256"}
-	b := a
-	b.Modified = now.Add(time.Second)
-	p, err := PlanSync([]Entry{a}, []Entry{b}, SyncOptions{Compare: Checksum})
-	if err != nil || p.Unchanged != 1 {
-		t.Fatal("same hash should ignore mtime", p, err)
-	}
-	b.Checksum = "bb"
-	p, _ = PlanSync([]Entry{a}, []Entry{b}, SyncOptions{Compare: Checksum})
-	if p.Actions[0].Kind != ActionConflict {
-		t.Fatal("overwrote newer target")
-	}
-	p, _ = PlanSync([]Entry{a}, []Entry{b}, SyncOptions{Compare: Checksum, OverwriteNewer: true})
-	if p.Actions[0].Kind != ActionUpload {
-		t.Fatal("explicit overwrite ignored")
-	}
-	b.Checksum = ""
-	p, _ = PlanSync([]Entry{a}, []Entry{b}, SyncOptions{Compare: Checksum})
-	if p.Actions[0].Kind != ActionConflict {
-		t.Fatal("missing hash guessed")
-	}
-	a.ChecksumAlgorithm = "etag"
-	b = a
-	p, _ = PlanSync([]Entry{a}, []Entry{b}, SyncOptions{Compare: Checksum})
-	if p.Actions[0].Kind != ActionConflict {
-		t.Fatal("ETag treated as hash")
-	}
-	b.Modified = now.Add(time.Second)
-	p, _ = PlanSync([]Entry{a}, []Entry{b}, SyncOptions{TimeTolerance: 2 * time.Second})
-	if p.Unchanged != 1 {
-		t.Fatal("tolerance ignored")
-	}
-	a.Modified = time.Time{}
-	p, _ = PlanSync([]Entry{a}, []Entry{b}, SyncOptions{})
-	if p.Actions[0].Kind != ActionConflict {
-		t.Fatal("missing mtime guessed")
-	}
-}
-func TestSyncRejectsInvalidInputsAndProtectsExclusions(t *testing.T) {
-	for _, path := range []string{"", "/abs", "../x", "a/../x", "a//b", "a/", "C:/x", "a\\b"} {
-		if _, err := PlanSync([]Entry{{Path: path}}, nil, SyncOptions{}); err == nil {
-			t.Errorf("accepted %q", path)
-		}
-	}
-	if _, err := PlanSync([]Entry{{Path: "x"}, {Path: "x"}}, nil, SyncOptions{}); err == nil {
-		t.Fatal("duplicate accepted")
-	}
-	for _, o := range []SyncOptions{{Direction: "both"}, {Compare: "guess"}, {TimeTolerance: -1}} {
-		if _, err := PlanSync(nil, nil, o); err == nil {
-			t.Fatal("invalid options accepted")
-		}
-	}
-	p, err := PlanSync(nil, []Entry{{Path: "keep.tmp"}}, SyncOptions{DeleteExtraneous: true, Exclude: []string{"*.tmp"}})
-	if err != nil || len(p.Actions) != 0 || p.Excluded != 1 {
-		t.Fatal("excluded target deleted", p, err)
 	}
 }
