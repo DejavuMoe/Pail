@@ -7,11 +7,13 @@ import (
 	"encoding/json"
 	"fmt"
 	"io"
+	"math"
 	"path"
 	"strings"
 	"time"
 	"unicode/utf8"
 
+	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	"github.com/egoist/mygo/ui"
 	"github.com/egoist/mygo/ui/editor"
@@ -41,6 +43,9 @@ const (
 	maxImagePreview = 8 << 20
 	previewCSVRows  = 200 // rows of a CSV table, header included
 	previewCSVCols  = 40
+
+	zoomStep = 1.25 // a zoom button, or a notch of the wheel with Ctrl held
+	maxZoom  = 8    // times the size that fits the panel
 )
 
 type previewState struct {
@@ -54,6 +59,8 @@ type previewState struct {
 	colW  []float32  // csv column widths
 	img   *ui.Bitmap
 	w, h  int
+	zoom  float32        // image: times the size that fits the panel; 0 and 1 fit it
+	pan   ui.ScrollState // image: the zoomed picture's scrolling inside its frame
 	msg   string
 	none  int // previewNone: why there is nothing to show (noneEmpty, noneLarge)
 	limit int64
@@ -404,7 +411,7 @@ func newPreviewEditor(text, lang, label string) *editor.State {
 	}
 }
 
-// previewTab shows the object: a picture scaled to the panel, a table, or text
+// previewTab shows the object: a picture fitted to the panel, a table, or text
 // in the read-only editor; an empty state says why there is nothing to show.
 func (a *app) previewTab(c *ui.Context, e Entry) {
 	k := tk(c)
@@ -418,8 +425,7 @@ func (a *app) previewTab(c *ui.Context, e Entry) {
 	case previewReady:
 		switch p.kind {
 		case "image":
-			ui.Image(c, p.img).FillWidth().AspectRatio(float32(p.w) / float32(max(p.h, 1))).Fit(ui.Contain).Radius(6).Label(locales.PreviewLabelOf(e.Name))
-			subtleText(c, fmt.Sprintf("%d × %d", p.w, p.h))
+			a.previewImage(c, e)
 		case "csv":
 			ui.Column(c).Gap(6).Children(func() {
 				a.previewTable(c)
@@ -455,6 +461,101 @@ func (a *app) previewTab(c *ui.Context, e Entry) {
 		}
 		emptyBlock(c, "eye", msg, "", 200)
 	}
+}
+
+// previewImageW is the width the image preview fits: the inspector less its
+// left border and padding.
+func (a *app) previewImageW() float32 { return max(a.lay.inspW-1-2*16, 1) }
+
+// previewImage shows the picture fitted to the panel's width. Pinching, the
+// wheel with Ctrl held and the zoom buttons enlarge it inside a frame of the
+// fitted size, where it pans with the wheel, the touchpad or a drag; a double
+// click fits it again.
+func (a *app) previewImage(c *ui.Context, e Entry) {
+	p := &a.prev
+	fw := a.previewImageW()
+	fh := fw * float32(p.h) / float32(max(p.w, 1))
+	z := p.zoomed()
+	frame := ui.Box(c.Key("imgframe")).Width(fw).Height(fh).Radius(RadiusControl).Clip().
+		HandleInput(func(ev ui.InputEvent) bool { return p.zoomInput(ev, fw, fh) })
+	if z > 1 {
+		if dx, dy, ok := frame.Dragged(); ok {
+			p.pan.X = clampF(p.pan.X-dx, 0, fw*z-fw)
+			p.pan.Y = clampF(p.pan.Y-dy, 0, fh*z-fh)
+		}
+		if frame.DoubleClicked() {
+			p.zoomAt(1/z, 0, 0, fw, fh)
+		}
+		if frame.Pressed() {
+			frame.Cursor(ui.CursorGrabbing)
+		} else {
+			frame.Cursor(ui.CursorGrab)
+		}
+	}
+	label := locales.PreviewLabelOf(e.Name)
+	frame.Children(func() {
+		if z <= 1 {
+			ui.Image(c, p.img).Size(fw, fh).Fit(ui.Contain).Label(label)
+			return
+		}
+		// The bars float over the picture: no text or control is under them.
+		ui.ScrollBoth(c).TrackScroll(&p.pan).Size(fw, fh).ScrollbarInsets(2, 2, 2, 2).Children(func() {
+			ui.Image(c, p.img).Size(fw*z, fh*z).Shrink(0).Fit(ui.Contain).Label(label)
+		})
+	})
+	ui.Row(c).Gap(4).AlignItems(ui.Center).Children(func() {
+		percent := math.Round(float64(fw * z / float32(max(p.w, 1)) * 100))
+		ui.Row(c).Grow(1).MinWidth(0).Children(func() {
+			subtleText(c, fmt.Sprintf("%d × %d · %.0f%%", p.w, p.h, percent)).SingleLine().Shrink(1).MinWidth(0)
+		})
+		if iconButtonOff(c, icons.Get("zoom-out"), locales.PreviewZoomOut(), z <= 1).Clicked() {
+			p.zoomAt(1/zoomStep, fw/2, fh/2, fw, fh)
+		}
+		if iconButtonOff(c, icons.Get("zoom-in"), locales.PreviewZoomIn(), z >= maxZoom).Clicked() {
+			p.zoomAt(zoomStep, fw/2, fh/2, fw, fh)
+		}
+	})
+}
+
+// zoomed is how far the image preview is zoomed in, 1 when it fits the panel.
+func (p *previewState) zoomed() float32 { return max(p.zoom, 1) }
+
+// zoomAt zooms the image preview by f, within 1 and maxZoom, keeping what is
+// at (x, y) of its frame of fw×fh there.
+func (p *previewState) zoomAt(f, x, y, fw, fh float32) {
+	z := p.zoomed()
+	nz := clampF(z*f, 1, maxZoom)
+	if nz < 1.01 { // the steps back out land on 1 give or take rounding
+		nz = 1
+	}
+	r := nz / z
+	p.zoom = nz
+	p.pan.X = clampF((p.pan.X+x)*r-x, 0, fw*nz-fw)
+	p.pan.Y = clampF((p.pan.Y+y)*r-y, 0, fh*nz-fh)
+}
+
+// zoomInput takes a pinch, and the wheel or touchpad scrolling with Ctrl (or
+// Cmd) held, over the image preview's frame of fw×fh as zooming at the
+// pointer. Other scrolling is left to the frame, which pans, and the
+// inspector around it.
+func (p *previewState) zoomInput(ev ui.InputEvent, fw, fh float32) bool {
+	switch {
+	case ev.Kind == ui.InputZoom:
+		p.zoomAt(ev.Scale, ev.X, ev.Y, fw, fh)
+	case ev.Kind == ui.InputScroll && ev.Mods&(ui.Ctrl|ui.Cmd) != 0 && ev.DY != 0:
+		// A notch is a step; a touchpad's pixels zoom as far as they move.
+		f := float32(math.Exp(float64(-ev.DY) / 200))
+		if !ev.Precise {
+			f = zoomStep
+			if ev.DY > 0 {
+				f = 1 / zoomStep
+			}
+		}
+		p.zoomAt(f, ev.X, ev.Y, fw, fh)
+	default:
+		return false
+	}
+	return true
 }
 
 // previewTable is the CSV table: the header row in weight 600 over a hairline,

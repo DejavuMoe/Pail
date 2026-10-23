@@ -646,6 +646,8 @@
   "previewLimited": "Preview limited to the first {limit}",
   "previewLoading": "Loading preview…",
   "previewTooLarge": "Too large to preview ({limit} limit)",
+  "previewZoomIn": "Zoom in",
+  "previewZoomOut": "Zoom out",
   "renameControlChars": "Name has control characters",
   "renameDone": "Renamed to {name}",
   "renameEnterName": "Enter a name",

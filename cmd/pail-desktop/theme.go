@@ -168,9 +168,16 @@ func mono(e ui.Element) ui.Element { return e.Font("monospace") }
 // iconButton is a 24x24 borderless icon button with hover and pressed
 // states, for places outside a ui.Toolbar (rows, headers).
 func iconButton(c *ui.Context, icon *ui.SVG, label string) ui.Element {
+	return iconButtonOff(c, icon, label, false)
+}
+
+// iconButtonOff is iconButton that can be disabled: 0.4 opacity and no hover.
+func iconButtonOff(c *ui.Context, icon *ui.SVG, label string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(6).Center().Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(6).Center().Disabled(disabled).Transition(hoverFade())
 	switch {
+	case disabled:
+		b.Opacity(0.4)
 	case b.Pressed():
 		b.Background(k.SurfacePressed)
 	case b.Hovered():
