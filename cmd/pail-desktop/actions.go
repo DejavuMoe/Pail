@@ -59,7 +59,11 @@ func (a *app) checkWatch(key string) {
 		return
 	}
 	var group []Task
-	for _, t := range a.tasks {
+	result, grouped := a.svc.TaskGroup(key)
+	if grouped && result.Pending > 0 {
+		return
+	}
+	for _, t := range a.svc.Tasks() {
 		if t.GroupID == key || t.ID == key {
 			group = append(group, t)
 		}
@@ -73,19 +77,19 @@ func (a *app) checkWatch(key string) {
 		}
 	}
 	delete(a.watches, key)
-	a.finishWatch(w, group)
+	a.finishWatch(w, group, result, grouped)
 }
 
-func (a *app) finishWatch(w *watch, ts []Task) {
+func (a *app) finishWatch(w *watch, ts []Task, result core.TaskGroupResult, grouped bool) {
 	var done, failed, canceled, items, itemsFailed int
 	firstErr := ""
 	for _, t := range ts {
 		switch t.Status {
 		case core.StatusSucceeded:
 			if t.Kind != core.KindOther {
-				done++
+				done += t.ItemsDone - t.ItemsFailed - t.ItemsSkipped
 			}
-			items += t.ItemsDone - t.ItemsFailed
+			items += t.ItemsDone - t.ItemsFailed - t.ItemsSkipped
 		case core.StatusCanceled:
 			canceled++
 		default:
@@ -95,9 +99,12 @@ func (a *app) finishWatch(w *watch, ts []Task) {
 				firstErr = t.Err
 			}
 			if t.Status == core.StatusPartiallyFailed {
-				items += t.ItemsDone - t.ItemsFailed
+				items += t.ItemsDone - t.ItemsFailed - t.ItemsSkipped
 			}
 		}
+	}
+	if grouped {
+		done, failed, canceled = result.Succeeded, result.Failed, result.Canceled
 	}
 	if w.loc.AccountID == a.scope.AccountID && w.loc.Bucket == a.scope.Bucket && a.scope.Bucket != "" {
 		a.reload()

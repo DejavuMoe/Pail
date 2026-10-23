@@ -69,6 +69,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | --- | --- | --- | --- | --- | --- |
 | 文件、文件夹、整桶上传与下载，拖放 | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | 含 11 MiB 分片往返与 SHA-256 校验 |
 | 三类队列并发、取消、重试 | ✅ | ✅ 传输面板（事件驱动） | ✅ | ⚠️ 队列跑了全部端到端传输，上限数值没有断言 | |
+| 批次完成通知与历史上限 | ✅ `TaskGroup` | ✅ headless 通知断言 | ✅ `TestUploadOutcomeSurvivesHistoryEviction`：1002 个文件首项失败，通知为 1001 成功、1 失败，历史仍为 1000 条；`TestSkippedTransfersAreNotAnnouncedAsCompleted`：上传与下载的全部跳过、混合结果 | ❌ 这些边界未对真实服务端验证 | `TestGroupResultSurvivesEvictionAndActiveClear` 验证活动批次清空历史后保留汇总，最后一个成员移除后释放 |
 | 五种冲突策略 | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | |
 | create-only 条件写入与降级 | ✅ | ✅ | ✅ 412 不会被当成"不支持"，501 会降级 | ✅ 并发写竞态（MinIO、VersityGW） | 降级到 HEAD 时存在竞态，只写权限账户在 rename 策略下无法识别重放产生的 412 |
 | 分片上传与下载、四种 checksum 模式 | ✅ | ✅ 设置 | ✅ | ✅ 含 VersityGW 的服务端 checksum | 自定义 endpoint 默认 `WhenRequired` |
@@ -107,6 +108,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | 同步作业增删改、预览、执行（上传 / 下载 / 镜像，三种比较模式，排除规则） | ✅ | ✅ 预览筛选、执行确认（删除项用危险色） | ✅ 执行前逐项复核前提 | ✅ MinIO、VersityGW | `size_time` 会漏检同尺寸改动；checksum 模式下，其他工具写入、缺少 `pail-sha256` 的对象会被反复判为需要传输 |
+| 镜像跳过目录链接的远程子树 | ✅ `PreviewSync`、`RunSync` | ✅ 复用同步预览 | ✅ `TestMirrorProtectsSkippedDirectoryDescendants`：子树保留，名称仅有相同前缀的其他目录仍按镜像规则删除 | ❌ 该边界未对真实服务端验证 | 系统无法创建目录链接时测试明确跳过 |
 | 本地删除进系统回收站 | ✅ | ✅ | ✅ Windows 与 Linux 回收站各有测试 | ⚠️ 只验证了预览，没有真的移入回收站 | Windows 拒绝长路径与网络盘 |
 
 ### 上传规则与压缩
@@ -115,6 +117,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | --- | --- | --- | --- | --- | --- |
 | 规则（headers、存储类别、SSE、压缩），草稿测试条 | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | |
 | GZIP、ZIP、AES-256 ZIP 与压缩级别；下载时解码 | ✅ | ✅ | ✅ 编解码级别验证了各级别，并与 7z 互通 | ⚠️ 各格式往返 ✅，级别未在端到端变化 | 经 Cloudflare 的 gzip 对象下载会被拒绝（代理解压导致大小不符），不会写出错误文件 |
+| 跳过已有加密 ZIP 目标 | ✅ `Upload` | ✅ 复用跳过策略 | ✅ `TestSkippedEncryptedUploadDoesNotNeedPassword`：跳过不读取缺失密码，真正上传时仍失败，原对象不变 | ❌ 该边界未对真实服务端验证 | 尺寸比较仍先计算压缩产物 |
 | MIME 类型表 | ✅ | ✅ | ✅ | ⚠️ 经上传间接覆盖 | |
 
 ### 预签名 URL 与 CloudFront
@@ -137,6 +140,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | `pail` 命令行（accounts、buckets、ls、cp、mv、rm、mb、rb、presign、url、versions、restore、sync、vault status） | ✅ | n/a | ✅ 进程内对 `internal/s3test` | ❌ 命令行外壳本身没有对真实服务端运行 | 它调用的应用层在真实服务端验证过 |
+| CLI 结果与参数边界 | ✅ | n/a | ✅ `TestBulkSummaryBeyondItemRetention` 删除 10001 项并核对汇总；`TestSavedSyncJobSelectsItsAccount` 覆盖多账户、显式账户冲突和保险库；`TestDoubleDashDownloadDestination`、`TestInterspersedEndOfOptions` 验证 `--` 与选项值 | ❌ 这些边界未对真实服务端验证 | 不从截断的逐项明细推导总数 |
 | 发布包（Windows / Linux / macOS，amd64 与 arm64）与 SHA256SUMS | n/a | n/a | ✅ 打包工具保留 Unix 权限位（tar.gz 与 zip 各有测试） | ✅ Windows 与 Linux amd64 解压后运行过；macOS arm64 与 amd64 在真机上手动运行过，首次启动需 `xattr -dr com.apple.quarantine`；六平台 CI 原生测试与版本冒烟通过 | 已在 GitHub Releases 发布 |
 
 ## 已知限制与未验证

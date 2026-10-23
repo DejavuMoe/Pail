@@ -4,6 +4,18 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Large upload and download batches now report their full result even after older tasks leave the history, so an early failure is no longer hidden.
+- Skipped files no longer count as uploaded or downloaded in completion notifications.
+- Command-line summaries no longer undercount bulk operations with more than 10,000 results.
+- Saved sync jobs select their own account when several accounts are configured.
+- Upload mirrors preserve remote objects below skipped local directory links, allowing the remaining sync actions to run.
+- Skipping an existing compressed upload no longer compresses the source or asks for its ZIP password.
+- The command line respects `--` before paths beginning with a dash.
+
 ## [0.3.1] - 2026-10-23
 
 ### Added

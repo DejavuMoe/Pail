@@ -142,12 +142,17 @@ func (r *run) Item(it ItemResult) {
 	t := r.t
 	t.reported++
 	switch it.Status {
-	case ItemSucceeded, ItemSkipped:
+	case ItemSucceeded:
 		t.pub.ItemsDone++
+	case ItemSkipped:
+		t.pub.ItemsDone++
+		t.pub.ItemsSkipped++
 	case ItemUnprocessed:
+		t.pub.ItemsUnprocessed++
 	case ItemUnknown:
 		t.pub.ItemsDone++
 		t.pub.ItemsFailed++
+		t.pub.ItemsUnknown++
 	default:
 		it.Status = ItemFailed
 		t.pub.ItemsDone++
@@ -199,6 +204,7 @@ type task struct {
 type queueState struct {
 	mu          sync.Mutex
 	tasks       map[string]*task
+	groups      map[string]*taskGroup
 	seq         uint64
 	groupSeq    uint64
 	queued      [3][]*task
@@ -217,6 +223,11 @@ type queueState struct {
 	stateCh chan struct{}
 
 	bus *eventBus
+}
+
+type taskGroup struct {
+	result   TaskGroupResult
+	retained int
 }
 
 // notifyStateLocked wakes the callers parked in waitGroupBacklog. Caller holds q.mu.
@@ -278,6 +289,7 @@ func (s *Service) waitGroupBacklog(ctx context.Context, group string, max int) e
 
 func (s *Service) initQueue(l Limits) {
 	s.q.tasks = map[string]*task{}
+	s.q.groups = map[string]*taskGroup{}
 	s.q.limits = [3]int{l.Upload, l.Download, l.Other}
 	s.q.maxFinished = maxFinishedTasks
 	s.q.canceledGroups = map[string]struct{}{}
@@ -324,6 +336,15 @@ func (s *Service) submit(spec taskSpec) string {
 			Detail: spec.Detail, Status: StatusQueued, Created: s.now()},
 	}
 	q.tasks[t.pub.ID] = t
+	if spec.Group != "" {
+		g := q.groups[spec.Group]
+		if g == nil {
+			g = &taskGroup{}
+			q.groups[spec.Group] = g
+		}
+		g.retained++
+		g.result.Pending++
+	}
 	_, groupCanceled := q.canceledGroups[spec.Group]
 	if q.closed || (spec.Group != "" && groupCanceled) {
 		msg := "canceled"
@@ -416,6 +437,19 @@ func (s *Service) finishQueuedLocked(t *task, msg string) {
 // completeLocked performs the bookkeeping common to every final state.
 func (s *Service) completeLocked(t *task) {
 	q := &s.q
+	if g := q.groups[t.pub.GroupID]; g != nil {
+		g.result.Pending--
+		switch t.pub.Status {
+		case StatusSucceeded:
+			if t.pub.Kind != KindOther {
+				g.result.Succeeded += t.pub.ItemsDone - t.pub.ItemsFailed - t.pub.ItemsSkipped
+			}
+		case StatusCanceled:
+			g.result.Canceled++
+		default:
+			g.result.Failed++
+		}
+	}
 	t.cancel()
 	t.pub.Speed = 0
 	t.speed.stop()
@@ -458,6 +492,12 @@ func (s *Service) removeLocked(t *task) {
 	}
 	t.removed = true
 	delete(s.q.tasks, t.pub.ID)
+	if g := s.q.groups[t.pub.GroupID]; g != nil {
+		g.retained--
+		if g.retained == 0 {
+			delete(s.q.groups, t.pub.GroupID)
+		}
+	}
 	s.q.bus.send(Event{Task: t.snapshot(), Removed: true}, true)
 }
 
@@ -521,6 +561,17 @@ func (s *Service) emitLocked(t *task, final bool) {
 }
 
 // ---- public API ---------------------------------------------------------------------------
+
+// TaskGroup returns the full result while any member is running or retained.
+// Group bookkeeping is released with the last member; task retention is unchanged.
+func (s *Service) TaskGroup(id string) (TaskGroupResult, bool) {
+	s.q.mu.Lock()
+	defer s.q.mu.Unlock()
+	if g := s.q.groups[id]; g != nil {
+		return g.result, true
+	}
+	return TaskGroupResult{}, false
+}
 
 // Subscribe registers fn for task events and returns the unsubscribe function.
 // fn is called from a dedicated goroutine, never while the Service holds a

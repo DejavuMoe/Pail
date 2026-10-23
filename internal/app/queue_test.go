@@ -179,6 +179,7 @@ func TestTaskCountersAndItems(t *testing.T) {
 	}})
 	tk := wait(t, s, id)
 	if tk.BytesTotal != 1000 || tk.BytesDone != 300 || tk.Items != 5 || tk.ItemsDone != 4 || tk.ItemsFailed != 2 ||
+		tk.ItemsSkipped != 1 || tk.ItemsUnknown != 1 || tk.ItemsUnprocessed != 1 ||
 		tk.Detail != "working" || tk.GroupID != "grp" || tk.Kind != KindOther || tk.Title != "bulk" {
 		t.Fatalf("%+v", tk)
 	}
@@ -214,16 +215,60 @@ func TestSucceededItemsAreBoundedButCountersExact(t *testing.T) {
 		for i := 0; i < n; i++ {
 			r.Item(ItemResult{Key: fmt.Sprint(i), Status: ItemSucceeded})
 		}
+		for i := 0; i < n; i++ {
+			r.Item(ItemResult{Key: fmt.Sprint(i), Status: ItemSkipped})
+		}
 		r.Item(ItemResult{Key: "bad", Status: ItemFailed})
 		return nil
 	}})
 	tk := wait(t, s, id)
-	if tk.ItemsDone != n+1 || tk.ItemsFailed != 1 {
+	if tk.ItemsDone != 2*n+1 || tk.ItemsFailed != 1 || tk.ItemsSkipped != n {
 		t.Fatalf("%+v", tk)
 	}
 	items := s.TaskItems(id)
 	if len(items) != maxSucceededItemsKept+1 || items[len(items)-1].Key != "bad" {
 		t.Fatalf("kept %d items", len(items))
+	}
+}
+
+func TestGroupResultSurvivesEvictionAndActiveClear(t *testing.T) {
+	s := newTestService(t, nil)
+	s.q.mu.Lock()
+	s.q.maxFinished = 2
+	s.q.mu.Unlock()
+	group := s.newGroupID()
+	gate, started := make(chan struct{}), make(chan string, 1)
+	scan := s.submit(taskSpec{Kind: KindOther, Group: group, Work: gated("scan", started, gate)})
+	<-started
+	failed := s.submit(taskSpec{Kind: KindUpload, Group: group, Work: func(context.Context, *run) error { return errors.New("failed") }})
+	wait(t, s, failed)
+	for _, status := range []string{ItemSucceeded, ItemSkipped, ItemSucceeded} {
+		id := s.submit(taskSpec{Kind: KindUpload, Group: group, Work: func(_ context.Context, r *run) error {
+			r.Item(ItemResult{Status: status})
+			return nil
+		}})
+		wait(t, s, id)
+	}
+	if _, ok := taskByID(s, failed); ok {
+		t.Fatal("failed task was not evicted")
+	}
+	check := func(pending int) {
+		t.Helper()
+		got, ok := s.TaskGroup(group)
+		want := TaskGroupResult{Pending: pending, Succeeded: 2, Failed: 1}
+		if !ok || got != want {
+			t.Fatalf("group=%+v exists=%v want=%+v", got, ok, want)
+		}
+	}
+	check(1)
+	s.ClearFinished()
+	check(1)
+	close(gate)
+	wait(t, s, scan)
+	check(0)
+	s.ClearFinished()
+	if _, ok := s.TaskGroup(group); ok {
+		t.Fatal("group outlived its last retained member")
 	}
 }
 
