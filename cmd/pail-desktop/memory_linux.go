@@ -19,12 +19,14 @@ func readProcessMemory() processMemory {
 			if len(f) < 2 {
 				continue
 			}
-			n, _ := strconv.ParseUint(f[1], 10, 64)
 			switch f[0] {
 			case "VmRSS:":
+				n, _ := strconv.ParseUint(f[1], 10, 64)
 				p.ResidentBytes = n * 1024
 			case "Threads:":
-				p.Threads = uint32(n)
+				if n, err := strconv.ParseUint(f[1], 10, 32); err == nil {
+					p.Threads = uint32(n)
+				}
 			}
 		}
 	}
