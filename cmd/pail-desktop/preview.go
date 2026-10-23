@@ -186,6 +186,7 @@ func (a *app) ensurePreview() {
 		return
 	}
 	a.prev.state, a.prev.kind = previewLoading, kind
+	a.markMemory("preview-start")
 	gen, loc := a.prev.gen, a.scope
 	tsv := isTSV(key, ct)
 	ctx, cancel := a.timeout(60 * time.Second)
@@ -197,6 +198,7 @@ func (a *app) ensurePreview() {
 			if gen != a.prev.gen || a.prev.key != key {
 				return
 			}
+			defer a.markMemory("preview-finished")
 			if err != nil {
 				a.prev.state, a.prev.msg = previewFailed, humanError(err)
 				return

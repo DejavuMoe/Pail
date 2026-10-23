@@ -20,6 +20,7 @@ type options struct {
 	width, height int
 	tool          string
 	demo          bool
+	memory        *memorySampler // nil unless --memory-profile is supplied
 	// still turns every animation off (c.DisableAnimations in each frame): the
 	// tests of layout and behaviour run so, since the tester's clock does not
 	// move and a frame of an entrance would be what they saw. The tests of the
@@ -228,6 +229,7 @@ func newApp(svc *core.Service, opts options) *app {
 		a.openTool(opts.tool)
 	}
 	a.vaultAtStart()
+	a.markMemory("app-ready")
 	a.loadBuckets(true)
 	go a.vaultPoll()
 	return a
@@ -360,9 +362,11 @@ func (a *app) loadBuckets(openFirst bool) {
 	a.bucketsGen++
 	gen := a.bucketsGen
 	a.bucketsLoad, a.bucketsErr, a.bucketsFix = true, "", ""
+	a.markMemory("buckets-start")
 	if a.account().SecretMissing { // nothing to connect with until the secret is entered
 		a.bucketsLoad = false
 		a.bucketsErr, a.bucketsFix = locales.StateBucketsSecretMissing(), "secret"
+		a.markMemory("buckets-failed")
 		return
 	}
 	ctx, cancel := context.WithTimeout(a.ctx, 30*time.Second)
@@ -375,6 +379,7 @@ func (a *app) loadBuckets(openFirst bool) {
 			}
 			a.bucketsLoad = false
 			if err != nil {
+				a.markMemory("buckets-failed")
 				a.bucketsErr = a.noteErr(err, "buckets", func() {
 					if a.accountID == id {
 						a.loadBuckets(openFirst)
@@ -386,6 +391,7 @@ func (a *app) loadBuckets(openFirst bool) {
 				return
 			}
 			a.buckets = bs
+			a.markMemory("buckets-ready")
 			if openFirst && len(bs) > 0 && a.scope.Bucket == "" && a.tool == "" {
 				a.openBucket(bs[0].Name)
 			}
@@ -404,6 +410,7 @@ func (a *app) clearListing() {
 	a.sel.Clear()
 	a.cursor = -1
 	a.resetHead()
+	a.markMemory("listing-cleared")
 }
 
 func (a *app) openBucket(name string) {
@@ -458,6 +465,7 @@ func (a *app) reload() {
 	a.listGen++
 	gen, scope, flat := a.listGen, a.scope, a.objOps.flat
 	a.loading, a.listErr = true, ""
+	a.markMemory("listing-start")
 	go func() {
 		token := ""
 		for first := true; ; first = false {
@@ -479,6 +487,7 @@ func (a *app) reload() {
 							a.reload()
 						}
 					}), false
+					a.markMemory("listing-failed")
 					return
 				}
 				if isFirst {
@@ -487,10 +496,14 @@ func (a *app) reload() {
 					a.raw = append(a.raw, page.Entries...)
 				}
 				a.rowsDirty = true
+				if isFirst {
+					a.markMemory("listing-first-page")
+				}
 				if page.NextToken == "" {
 					a.loading = false
 					a.pruneSelection()
 					a.applySelectAfter()
+					a.markMemory("listing-ready")
 				}
 			})
 			if err != nil || page.NextToken == "" {
@@ -563,7 +576,7 @@ func (a *app) rebuildRows() {
 		if cmp == 0 {
 			// Ties (and folders) fall back to the name; only the name
 			// column itself reverses with the sort direction.
-			cmp = strings.Compare(strings.ToLower(x.Name), strings.ToLower(y.Name))
+			cmp = compareNames(x.Name, y.Name)
 			if col == "name" && desc {
 				cmp = -cmp
 			}
@@ -730,6 +743,7 @@ func (a *app) applyInbox() {
 		return
 	}
 	touched := map[string]bool{}
+	stateChanged := false
 	for _, e := range evs {
 		t := e.Task
 		touched[t.ID] = true
@@ -737,6 +751,7 @@ func (a *app) applyInbox() {
 			touched[t.GroupID] = true
 		}
 		i, ok := a.taskIdx[t.ID]
+		stateChanged = stateChanged || e.Removed || !ok || a.tasks[i].Status != t.Status
 		switch {
 		case e.Removed:
 			if ok {
@@ -754,6 +769,9 @@ func (a *app) applyInbox() {
 		if a.watches[k] != nil {
 			a.checkWatch(k)
 		}
+	}
+	if stateChanged {
+		a.markMemory("tasks-changed")
 	}
 }
 

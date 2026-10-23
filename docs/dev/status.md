@@ -29,6 +29,14 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 
 ## 功能
 
+### 内存诊断与回收
+
+| 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
+| --- | --- | --- | --- | --- | --- |
+| 分阶段内存采样 | n/a 桌面诊断参数 | n/a `--memory-profile` | ✅ `TestMemorySampler`、`TestMemoryMarksNeverBlock`、`TestMemoryListingStages`：本地输出、不覆盖、周期采样、队列满时不阻塞、目录阶段和敏感名称不落记录 | ⚠️ Windows 原生窗口连接独立的本地测试服务，空桶与一万对象往返两轮，空桶静置至少 120 秒；macOS 仅交叉编译 | 采样不强制 GC。JSON、堆文件的口径与使用步骤见 [memory.md](memory.md)。未复现用户报告的 170–200 MB，也没有长期运行数据 |
+| 完成任务淘汰后的回收 | ✅ 保留数量不变 | n/a | ✅ `TestRetentionReleasesEvictedTask`：旧实现强制 GC 后仍可达，清空被淘汰槽位后可回收；原有淘汰与清空测试通过 | n/a | 修复底层切片残留引用 |
+| 对象名称排序分配 | n/a | ✅ 排序与过滤入口不变 | ✅ `TestRebuildRowsPreservesNamesAndStableTies`：目录优先、稳定顺序、Unicode、过滤和索引；`FuzzCompareNames` 对照原比较规则，Windows 20 秒约 10.8 万次通过 | ⚠️ Windows 本地服务一万对象浏览通过 | 一万条随机混合大小写 ASCII 名称的重复排序，基准分配约 12.2 MB → 1.48 MB，约 20 ms → 7 ms；不代表常驻内存等比例下降 |
+
 ### 账户与凭据
 
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
