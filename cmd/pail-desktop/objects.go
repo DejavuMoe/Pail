@@ -89,6 +89,7 @@ func (a *app) table(c *ui.Context) {
 	k := tk(c)
 	rows := a.rows
 	clear(a.rowRects)
+	clear(a.rowTops)
 	a.list.Key = func(i int) any { return rows[i].Key }
 	a.list.Label = func(i int) string { return rows[i].Name }
 	a.list.Selection = &a.sel
@@ -113,13 +114,12 @@ func (a *app) table(c *ui.Context) {
 	cols := visibleColumns(a.lay.colTier)
 	chosen := a.selectedCount()
 	everyBox := chosen >= 2 // the selection bar is up: every row shows its box
-	extendTo := -1          // a Shift-click on a row's box, for after the build
 	cell := func(row, col int) {
 		e := &rows[row]
 		switch cols[col].ID {
 		case "check":
 			if a.rowCheck(c, row, e, everyBox) {
-				extendTo = row
+				a.extendKey = e.Key
 			}
 		case "name":
 			deleted, cut := a.isDeletedRow(e.Key), a.isCutRow(e.Key)
@@ -171,11 +171,28 @@ func (a *app) table(c *ui.Context) {
 		tbl = ui.Table(c, &a.list, cols, len(rows), cell).Grow(1).MinHeight(0).Label(locales.ObjectsTable())
 		a.selectAllBox(c, chosen)
 	})
-	if extendTo >= 0 {
-		a.list.ExtendTo(extendTo)
+	a.tblRect = tbl.Bounds()
+	tbl.HandleInput(a.dragSelInput)
+	a.dragSelFrame(c)
+	tbl.DrawOver(func(p *ui.Painter, r ui.Rect) {
+		if box, ok := a.dragSelRect(r); ok {
+			p.Fill(box, k.Selection.Alpha(0.5), 2)
+			p.Stroke(box, k.Accent, 2, 1)
+		}
+	})
+	if key := a.extendKey; key != "" {
+		a.extendKey = ""
+		if i, ok := a.byKey[key]; ok {
+			a.list.ExtendTo(i)
+		}
 	}
-	if a.sel.Len() > 0 && a.mg.ren.key == "" && tbl.Shortcut(0, ui.KeyEscape) {
-		a.clearSelection()
+	// Esc gives up a drag selecting rows, or clears the choice.
+	if (a.drag.on || a.sel.Len() > 0 && a.mg.ren.key == "") && tbl.Shortcut(0, ui.KeyEscape) {
+		if a.drag.on {
+			a.dragSelCancel()
+		} else {
+			a.clearSelection()
+		}
 	}
 	a.hoverKey = a.rowUnderPointer(tbl)
 	// While a row is renamed, Shift+F10 is the name input's own editing menu.
@@ -196,6 +213,11 @@ func (a *app) rowCheck(c *ui.Context, i int, e *Entry, every bool) (extend bool)
 	on := a.sel.Has(e.Key)
 	hit := ui.Row(c.Key("check")).Width(checkColW).Height(tableRowH).Margin(-cellPadY, -cellPadX).Center().
 		Role(ui.RoleCheckBox).Checked(on).Label(locales.ObjectsSelectRow(e.Name))
+	if b := hit.Bounds(); b.H > 0 {
+		a.rowTops[e.Key] = b.Y
+	}
+	// The table takes the pointer's presses on the box (dragSelInput); a
+	// click comes from assistive technology.
 	if hit.Clicked() {
 		if hit.ClickModifiers()&ui.Shift != 0 {
 			extend = true

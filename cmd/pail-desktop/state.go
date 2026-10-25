@@ -125,7 +125,11 @@ type app struct {
 	cursor      int // row last chosen, -1 for none
 	hoverKey    string
 	rowRects    map[string]ui.Rect
-	selBar      selBarSummary // what the selection bar last showed, kept while it folds away
+	selBar      selBarSummary      // what the selection bar last showed, kept while it folds away
+	rowTops     map[string]float32 // top of each row built, in the window, by key (marquee.go)
+	tblRect     ui.Rect            // the object table, in the window, as last laid out
+	drag        dragSel            // a drag selecting rows (marquee.go)
+	extendKey   string             // a Shift-click on a row's box: the choice extends to it once the table is built
 
 	inspectorOpen bool
 	inspTab       int
@@ -199,6 +203,7 @@ func newApp(svc *core.Service, opts options) *app {
 		sort:      ui.SortOrder{Column: "name"},
 		cursor:    -1,
 		rowRects:  map[string]ui.Rect{},
+		rowTops:   map[string]float32{},
 		taskIdx:   map[string]int{},
 		watches:   map[string]*watch{},
 		pick:      func(bool) []string { return nil },

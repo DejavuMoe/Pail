@@ -3,6 +3,7 @@ package main
 import (
 	"slices"
 	"testing"
+	"time"
 
 	"github.com/egoist/mygo/ui"
 )
@@ -189,4 +190,149 @@ func TestSelectionBarAtMinSize(t *testing.T) {
 		}
 	}
 	h.snapAudit(sz, "selection-bar")
+}
+
+// The middle of the row showing name, and the middle of its check box.
+func (h *harness) rowMid(name string) (checkX, y float32) {
+	h.t.Helper()
+	h.tt.Frame()
+	r, ok := h.tt.Find(name)
+	if !ok {
+		h.t.Fatalf("no row %q; have %q", name, h.tt.Texts())
+	}
+	return h.a.tblRect.X + checkColW/2, r.Y + r.H/2
+}
+
+// dragTo presses at (x0, y0), moves to (x1, y1) in a few steps and releases.
+func (h *harness) dragTo(x0, y0, x1, y1 float32) {
+	h.t.Helper()
+	h.tt.Move(x0, y0)
+	h.tt.Press(x0, y0)
+	for i := 1; i <= 4; i++ {
+		f := float32(i) / 4
+		h.tt.Move(x0+(x1-x0)*f, y0+(y1-y0)*f)
+		h.tt.Frame()
+	}
+	h.tt.Release(x1, y1)
+	h.settle()
+}
+
+// A drag down the check box column adds the rows it passes to the choice.
+func TestCheckColumnDragAdds(t *testing.T) {
+	h := newHarness(t, "light")
+	h.mustClick("README.txt")
+	x, y0 := h.rowMid("assets")
+	_, y1 := h.rowMid("logs")
+	h.dragTo(x, y0, x, y1)
+	h.expectChosen("README.txt", "assets/", "backups/", "logs/")
+	// Over rows already chosen it takes none out.
+	_, y2 := h.rowMid("backups")
+	h.dragTo(x, y2, x, y1)
+	h.expectChosen("README.txt", "assets/", "backups/", "logs/")
+}
+
+// A drag from the blank space below the rows draws a rectangle and chooses
+// the rows it reaches, in place of the choice; with Ctrl/Cmd, besides it.
+func TestBlankSpaceDragSelects(t *testing.T) {
+	h := newHarness(t, "light")
+	h.mustClick("assets")
+	_, last := h.rowMid("README.txt")
+	_, tmp := h.rowMid("tmp")
+	x := h.a.tblRect.X + h.a.tblRect.W/2
+	blank := last + tableRowH*2
+	h.tt.Move(x, blank)
+	h.tt.Press(x, blank)
+	h.tt.Move(x-40, (blank+tmp)/2)
+	h.tt.Frame()
+	h.tt.Move(x-60, tmp)
+	h.tt.Frame()
+	h.tt.Frame()
+	if _, ok := h.a.dragSelRect(h.a.tblRect); !ok {
+		t.Error("no selection rectangle while dragging from blank space")
+	}
+	h.snapBoth("drag-select-rectangle")
+	h.tt.Release(x-60, tmp)
+	h.settle()
+	if _, ok := h.a.dragSelRect(h.a.tblRect); ok {
+		t.Error("the rectangle stayed after the release")
+	}
+	h.expectChosen("tmp/", "website/", "manifest.json", "README.txt")
+
+	// Tester.Press carries no modifiers: the Ctrl/Cmd drag goes to the
+	// table's input handler as the window would give it.
+	h.mustClick("assets")
+	at := func(kind ui.InputKind, wy float32) {
+		h.a.dragSelInput(ui.InputEvent{Kind: kind, X: x - h.a.tblRect.X, Y: wy - h.a.tblRect.Y, Mods: ui.Cmd})
+	}
+	at(ui.InputPointerDown, blank)
+	at(ui.InputPointerMove, last)
+	at(ui.InputPointerUp, last)
+	h.expectChosen("assets/", "README.txt")
+}
+
+// A press below the rows that does not move clears the choice, unless with
+// Ctrl/Cmd; one that moves less than the slop is still a click.
+func TestBlankSpaceClick(t *testing.T) {
+	h := newHarness(t, "light")
+	h.mustClick("README.txt")
+	h.mustClick("Select manifest.json")
+	_, last := h.rowMid("README.txt")
+	x, blank := h.a.tblRect.X+h.a.tblRect.W/2, last+tableRowH*2
+	h.tt.ClickAtWith(ui.Cmd, x, blank)
+	h.settle()
+	h.expectChosen("README.txt", "manifest.json")
+	h.dragTo(x, blank, x+2, blank+1)
+	h.expectChosen()
+}
+
+// Esc gives up a drag: the choice goes back to what it was before the press.
+func TestEscGivesUpADrag(t *testing.T) {
+	h := newHarness(t, "light")
+	h.mustClick("README.txt")
+	x, y0 := h.rowMid("assets")
+	_, y1 := h.rowMid("logs")
+	h.tt.Move(x, y0)
+	h.tt.Press(x, y0)
+	h.tt.Move(x, y1)
+	h.tt.Frame()
+	h.expectChosen("README.txt", "assets/", "backups/", "logs/")
+	h.tt.Key(0, ui.KeyEscape)
+	h.settle()
+	h.expectChosen("README.txt")
+	h.tt.Move(x, y1+tableRowH)
+	h.tt.Release(x, y1+tableRowH)
+	h.settle()
+	h.expectChosen("README.txt")
+}
+
+// Held below the list, a drag scrolls it and goes on choosing the rows that
+// come into view.
+func TestDragSelectScrolls(t *testing.T) {
+	h := newHarness(t, "light")
+	h.a.openPrefix("logs/access/")
+	h.settle()
+	if len(h.a.rows) < 1000 {
+		t.Fatalf("logs/access/ lists %d rows", len(h.a.rows))
+	}
+	first := h.a.rows[0].Name
+	x, y0 := h.rowMid(first)
+	_, shown := h.a.list.Visible()
+	below := h.a.tblRect.Y + h.a.tblRect.H + 20
+	h.tt.Move(x, y0)
+	h.tt.Press(x, y0)
+	h.tt.Move(x, below)
+	h.tt.Frame()
+	for range 40 {
+		h.tt.Advance(50 * time.Millisecond)
+		h.tt.Frame()
+	}
+	h.tt.Release(x, below)
+	h.settle()
+	n := len(h.chosenKeys())
+	if n <= shown+1 {
+		t.Fatalf("the drag chose %d rows; %d were in view: it did not scroll", n, shown+1)
+	}
+	if !h.a.sel.Has(h.a.rows[0].Key) || !h.a.sel.Has(h.a.rows[n-1].Key) {
+		t.Fatalf("the drag did not choose rows 0 to %d in a run", n-1)
+	}
 }
