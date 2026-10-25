@@ -9,6 +9,7 @@ All notable changes to this project are documented in this file. The format foll
 ### Added
 
 - The object table has a check box on each row and a select-all box in its header. With two or more items selected, a bar under the table shows their count and size and offers Download, Copy, Cut, Delete and Clear selection. Esc clears the selection.
+- Drag down the check boxes to add the rows you pass to the selection, or drag from the blank space below the rows to select them with a rectangle. Hold Ctrl (⌘ on macOS) while drawing the rectangle to keep the current selection. A click in the blank space clears the selection.
 
 ### Fixed
 
