@@ -6,6 +6,10 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- The object table has a check box on each row and a select-all box in its header. With two or more items selected, a bar under the table shows their count and size and offers Download, Copy, Cut, Delete and Clear selection. Esc clears the selection.
+
 ### Fixed
 
 - Large upload and download batches now report their full result even after older tasks leave the history, so an early failure is no longer hidden.

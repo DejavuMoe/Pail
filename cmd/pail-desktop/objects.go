@@ -6,10 +6,25 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
-// objectColumns are the table columns, titled in the language shown now.
+// The object table's metrics. Its rows are built under a theme whose Spacing
+// is tableSpacing (table), which makes mygo's rows and header 8 units high and
+// pads its cells by 1.5 units vertically and 2.5 horizontally.
+const (
+	tableSpacing = 3.75
+	tableRowH    = 8 * tableSpacing
+	cellPadX     = 2.5 * tableSpacing
+	cellPadY     = 1.5 * tableSpacing
+	checkColW    = 32
+)
+
+// objectColumns are the table columns, titled in the language shown now. The
+// check box column comes first and stays there: Fixed, it is neither moved
+// nor resized. Its width comes out of the name's minimum, so that the three
+// columns of the narrowest table still fit beside the inspector at 960.
 func objectColumns() []ui.TableColumn {
 	return []ui.TableColumn{
-		{Title: locales.CommonName(), ID: "name", MinWidth: 180, Sortable: true},
+		{ID: "check", Width: checkColW, Fixed: true},
+		{Title: locales.CommonName(), ID: "name", MinWidth: 180 - checkColW, Sortable: true},
 		{Title: locales.CommonSize(), ID: "size", Width: 96, MinWidth: 64, Align: ui.End, Sortable: true},
 		{Title: locales.ObjectsColType(), ID: "type", Width: 110, MinWidth: 64, Sortable: true},
 		{Title: locales.ObjectsColModified(), ID: "modified", Width: 140, MinWidth: 100, Sortable: true},
@@ -20,16 +35,16 @@ func objectColumns() []ui.TableColumn {
 // visibleColumns drops the least important columns when the table is too
 // narrow for all of them, so nothing runs off the right edge: Storage class
 // first, then Type (the inspector still shows both). tier is
-// layoutMetrics.colTier: 0 all, 1 four columns, anything more three.
+// layoutMetrics.colTier: 0 all, 1 four data columns, anything more three.
 func visibleColumns(tier int) []ui.TableColumn {
 	all := objectColumns()
 	switch {
 	case tier <= 0:
 		return all
 	case tier == 1:
-		return all[:4]
+		return all[:5]
 	default:
-		return []ui.TableColumn{all[0], all[1], all[3]}
+		return []ui.TableColumn{all[0], all[1], all[2], all[4]}
 	}
 }
 
@@ -91,14 +106,21 @@ func (a *app) table(c *ui.Context) {
 	full := c.Theme()
 	rowTheme := *full
 	rowTheme.Accent, rowTheme.AccentText = k.Selection, k.Text
-	rowTheme.Spacing = 3.75 // table rows are 8 spacing units: 30px
+	rowTheme.Spacing = tableSpacing // table rows are 8 spacing units: 30px
 	rowTheme.FontSize = sizeSecondary
 	c.SetTheme(&rowTheme)
 	defer c.SetTheme(full)
 	cols := visibleColumns(a.lay.colTier)
-	tbl := ui.Table(c, &a.list, cols, len(rows), func(row, col int) {
+	chosen := a.selectedCount()
+	everyBox := chosen >= 2 // the selection bar is up: every row shows its box
+	extendTo := -1          // a Shift-click on a row's box, for after the build
+	cell := func(row, col int) {
 		e := &rows[row]
 		switch cols[col].ID {
+		case "check":
+			if a.rowCheck(c, row, e, everyBox) {
+				extendTo = row
+			}
 		case "name":
 			deleted, cut := a.isDeletedRow(e.Key), a.isCutRow(e.Key)
 			faded := deleted || cut
@@ -141,13 +163,98 @@ func (a *app) table(c *ui.Context) {
 		case "class":
 			a.dataCell(c, e, "class", storageLabel(e.StorageClass), !e.Folder, ui.Start)
 		}
-	}).Grow(1).MinHeight(0).Label(locales.ObjectsTable())
+	}
+	// The table and, over the empty header of its check box column, the
+	// select-all box: mygo's headers show their title alone.
+	var tbl ui.Element
+	ui.Column(c).Grow(1).MinHeight(0).MinWidth(0).Children(func() {
+		tbl = ui.Table(c, &a.list, cols, len(rows), cell).Grow(1).MinHeight(0).Label(locales.ObjectsTable())
+		a.selectAllBox(c, chosen)
+	})
+	if extendTo >= 0 {
+		a.list.ExtendTo(extendTo)
+	}
+	if a.sel.Len() > 0 && a.mg.ren.key == "" && tbl.Shortcut(0, ui.KeyEscape) {
+		a.clearSelection()
+	}
 	a.hoverKey = a.rowUnderPointer(tbl)
 	// While a row is renamed, Shift+F10 is the name input's own editing menu.
 	a.contextMenu(tbl, menuSpec{name: locales.MenuObjectActions(), keyAt: a.cursorCorner, noKeys: a.mg.ren.key != ""}, a.buildMenu)
 	if tbl.Submitted() {
 		a.openSelected()
 	}
+}
+
+// rowCheck is the check box of row i, showing whether it is chosen. It shows
+// on the row under the pointer, on chosen rows and, with every, on all rows;
+// elsewhere it is transparent and keeps its place. Its target is the whole
+// cell, padding included. A click adds the row to the choice or takes it out,
+// as a Ctrl/Cmd-click does, and leaves the other rows as they are; it reports
+// a Shift-click, which the table extends the choice to once it is built. The
+// box takes no focus: the press lands on the table, which keeps the keys.
+func (a *app) rowCheck(c *ui.Context, i int, e *Entry, every bool) (extend bool) {
+	on := a.sel.Has(e.Key)
+	hit := ui.Row(c.Key("check")).Width(checkColW).Height(tableRowH).Margin(-cellPadY, -cellPadX).Center().
+		Role(ui.RoleCheckBox).Checked(on).Label(locales.ObjectsSelectRow(e.Name))
+	if hit.Clicked() {
+		if hit.ClickModifiers()&ui.Shift != 0 {
+			extend = true
+		} else {
+			if on {
+				a.sel.Remove(e.Key)
+			} else {
+				a.sel.Add(e.Key)
+			}
+			on = !on
+			a.cursor = i
+		}
+	}
+	st := checkOff
+	if on {
+		st = checkOn
+	}
+	shown := on || every || a.hoverKey == e.Key || hit.Hovered()
+	hit.Children(func() {
+		fade := float32(1)
+		if shown {
+			fade = 0
+		}
+		checkBox(c, st, hit.Hovered(), false).AnimatePose(ui.Pose{Fade: fade}, colorAnim)
+	})
+	return extend
+}
+
+// selectAllBox is the select-all check box over the header of the check box
+// column: checked when every row shown is chosen, mixed when some are. A
+// click chooses every row shown, as Ctrl/Cmd+A does, or none when all are.
+func (a *app) selectAllBox(c *ui.Context, chosen int) {
+	cmd := a.cmd("selectall")
+	st := selectAllState(chosen, len(a.rows))
+	box := ui.Row(c.Key("selectall")).Absolute().Top(0).Left(0).Width(checkColW).Height(tableRowH).Center().
+		Role(ui.RoleCheckBox).Checked(st == checkOn).Label(cmd.text()).Tooltip(cmd.tooltip())
+	if st == checkMixed {
+		box.Mixed()
+	}
+	if box.Clicked() {
+		if st == checkOn {
+			a.clearSelection()
+		} else {
+			a.selectAll()
+		}
+		a.list.Focus(c)
+	}
+	box.Children(func() { checkBox(c, st, box.Hovered(), false) })
+}
+
+// selectAllState is the select-all box with chosen of n rows shown chosen.
+func selectAllState(chosen, n int) checkState {
+	switch {
+	case chosen == 0:
+		return checkOff
+	case chosen >= n:
+		return checkOn
+	}
+	return checkMixed
 }
 
 // openSelected is double click / Enter: folders open, objects show details.

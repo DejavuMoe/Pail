@@ -259,6 +259,9 @@ func commandTable() []command {
 			Enabled: (*app).browsing, Run: func(a *app) { a.reload() }},
 		{ID: "selectall", Label: locales.Messages.CmdSelectAll, Icon: "check-check", Chords: []chord{{ui.Cmd, ui.KeyA, "Ctrl+A"}},
 			Enabled: func(a *app) bool { return a.browsing() && len(a.rows) > 0 }, Run: func(a *app) { a.selectAll() }},
+		// Esc clears the choice too, but only from the table (table).
+		{ID: "selectnone", Label: locales.Messages.CmdSelectNone, Icon: "x",
+			Enabled: func(a *app) bool { return a.browsing() && a.selectedCount() > 0 }, Run: func(a *app) { a.clearSelection() }},
 		{ID: "up", Label: locales.Messages.CmdUp, Icon: "arrow-up", Chords: []chord{{0, ui.KeyBackspace, "Backspace"}, {ui.Alt, ui.KeyUp, "Alt+Up"}},
 			Enabled: func(a *app) bool { return a.browsing() && a.scope.Prefix != "" }, Run: func(a *app) { a.up() }},
 		{ID: "copykey", Label: locales.Messages.CmdCopyKey, Icon: "key-round", Enabled: oneSelected,
@@ -403,6 +406,12 @@ func (a *app) selectAll() {
 		a.sel.Add(e.Key)
 	}
 	a.cursor = len(a.rows) - 1
+}
+
+// clearSelection chooses no row.
+func (a *app) clearSelection() {
+	a.sel.Clear()
+	a.cursor = -1
 }
 
 func (a *app) openTool(id string) {

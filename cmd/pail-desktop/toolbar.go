@@ -65,16 +65,26 @@ func (a *app) uploadMenu(c *ui.Context) {
 
 // cmdButton is a ghost toolbar button for a command; icon only unless label.
 func (a *app) cmdButton(c *ui.Context, id string, label bool) {
+	a.commandButton(c, id, label && !a.lay.tbCompact, "toolbar")
+}
+
+// commandButton is a ghost button for a command, run from from: its icon,
+// and its name unless named is false. A command hidden here (Visible) has
+// no button: the zero Element.
+func (a *app) commandButton(c *ui.Context, id string, named bool, from string) ui.Element {
 	cmd := a.cmd(id)
+	if cmd.Visible != nil && !cmd.Visible(a) {
+		return ui.Element{}
+	}
 	text := ""
-	if label && !a.lay.tbCompact {
+	if named {
 		text = cmd.text()
 	}
 	b := ghostButton(c, icons.Get(cmd.Icon), text, cmd.tooltip(), !a.enabled(cmd))
 	if text == "" {
 		b.Label(cmd.text())
 	}
-	b.OnClick(func() { a.run(id, "toolbar") })
+	return b.OnClick(func() { a.run(id, from) })
 }
 
 // toggleButton is an icon-only panel toggle.

@@ -51,33 +51,73 @@ func switchControl(c *ui.Context, on *bool, label string) ui.Element {
 	return sw
 }
 
-// checkboxControl is a 16px check box with a label: a 1.5px BorderStrong box
-// while unchecked, an Accent fill with a check mark once checked.
+// checkState is what a check box shows.
+type checkState int8
+
+const (
+	checkOff checkState = iota
+	checkOn
+	checkMixed // some of what it stands for: the select-all header
+)
+
+// markFrom is the scale the check mark or dash grows from as a box is checked.
+const markFrom = 0.85
+
+// checkBox is the 16px box of a check box in state st: a 1.5px BorderStrong
+// outline on Surface while off (TextMuted under the pointer), an Accent fill
+// with an AccentText check mark, or a dash while mixed, otherwise. The fill
+// fades in durFast; the mark grows from markFrom and fades in over
+// durStandard. ring draws the focus ring around it.
+func checkBox(c *ui.Context, st checkState, hover, ring bool) ui.Element {
+	k := tk(c)
+	box := ui.Box(c).Size(checkSize, checkSize).Radius(4).Shrink(0).Transition(hoverFade())
+	if st != checkOff {
+		box.Background(k.Accent).Border(1.5, k.Accent)
+	} else {
+		box.Background(k.Surface).Border(1.5, k.BorderStrong)
+		if hover {
+			box.Border(1.5, k.TextMuted)
+		}
+	}
+	// The value starts where it is first asked for, so a row scrolled into
+	// view shows its mark at rest; only a change of state animates.
+	shown := float32(0)
+	if st != checkOff {
+		shown = 1
+	}
+	m := box.AnimateTo("mark", shown, fadeAnim)
+	box.DrawOver(func(p *ui.Painter, r ui.Rect) {
+		if m > 0 {
+			s := markFrom + (1-markFrom)*m
+			cx, cy := r.X+r.W/2, r.Y+r.H/2
+			at := func(fx, fy float32) (float32, float32) {
+				return cx + (r.X+r.W*fx-cx)*s, cy + (r.Y+r.H*fy-cy)*s
+			}
+			var path ui.Path
+			if st == checkMixed {
+				path.MoveTo(at(0.27, 0.5)).LineTo(at(0.73, 0.5))
+			} else {
+				path.MoveTo(at(0.24, 0.52)).LineTo(at(0.43, 0.71)).LineTo(at(0.77, 0.31))
+			}
+			p.StrokePath(&path, 1.75, k.AccentText.Alpha(m))
+		}
+		if ring {
+			p.FocusRing(r, [4]float32{4, 4, 4, 4})
+		}
+	})
+	return box
+}
+
+// checkboxControl is a 16px check box with a label (checkBox).
 func checkboxControl(c *ui.Context, checked *bool, label string) ui.Element {
 	k := tk(c)
 	row := ui.CheckboxBase(c, checked).Label(label).Gap(8).AlignItems(ui.Center).FocusRing(false)
-	on := *checked
+	st := checkOff
+	if *checked {
+		st = checkOn
+	}
 	row.Children(func() {
-		box := ui.Box(c).Size(checkSize, checkSize).Radius(4).Shrink(0).Transition(hoverFade())
-		if on {
-			box.Background(k.Accent).Border(1.5, k.Accent)
-		} else {
-			box.Background(k.Surface).Border(1.5, k.BorderStrong)
-			if row.Hovered() {
-				box.Border(1.5, k.TextMuted)
-			}
-		}
-		ring := row.FocusVisible()
-		box.DrawOver(func(p *ui.Painter, r ui.Rect) {
-			if on {
-				var path ui.Path
-				path.MoveTo(r.X+r.W*0.24, r.Y+r.H*0.52).LineTo(r.X+r.W*0.43, r.Y+r.H*0.71).LineTo(r.X+r.W*0.77, r.Y+r.H*0.31)
-				p.StrokePath(&path, 1.75, k.AccentText)
-			}
-			if ring {
-				p.FocusRing(r, [4]float32{4, 4, 4, 4})
-			}
-		})
+		checkBox(c, st, row.Hovered(), row.FocusVisible())
 		ui.Text(c, label).FontSize(sizeBody).TextColor(k.Text)
 	})
 	return row

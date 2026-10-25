@@ -62,6 +62,9 @@ func TestTokenContrastFloors(t *testing.T) {
 			{"TextMuted on SurfaceHover (icon, group)", k.TextMuted, k.SurfaceHover, 4.5},
 			{"BorderStrong on SurfaceHover (keycap outline)", k.BorderStrong, k.SurfaceHover, 1.3},
 			{"Accent on SurfaceHover (check)", k.Accent, k.SurfaceHover, 4.5},
+			// The object table's check boxes: filled on chosen and hovered rows.
+			{"Accent on Selection (chosen row's box)", k.Accent, k.Selection, 3},
+			{"Accent on SurfaceHover (hovered row's box)", k.Accent, k.SurfaceHover, 3},
 			// Toasts and tooltips: the inverse chip and its text.
 			{"InverseText on Inverse", k.InverseText, k.Inverse, 7},
 			{"Inverse on Background", k.Inverse, k.Background, 7},
