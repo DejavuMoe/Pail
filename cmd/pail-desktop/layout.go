@@ -17,10 +17,11 @@ const (
 	// compactBelow is the center column width under which the path bar drops the
 	// text of its toggles.
 	compactBelow = 560
-	// colsAllNeed and colsFourNeed are the table widths that show all five and
-	// the first four columns; narrower tables show Name, Size and Modified.
-	colsAllNeed  = 720
-	colsFourNeed = 560
+	// colsAllNeed and colsFourNeed are the table widths that show all five data
+	// columns and the first four, next to the check box column; narrower
+	// tables show Name, Size and Modified.
+	colsAllNeed  = 720 + checkColW
+	colsFourNeed = 560 + checkColW
 
 	hysteresis = 12
 

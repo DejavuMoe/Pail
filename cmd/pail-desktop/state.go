@@ -125,6 +125,7 @@ type app struct {
 	cursor      int // row last chosen, -1 for none
 	hoverKey    string
 	rowRects    map[string]ui.Rect
+	selBar      selBarSummary // what the selection bar last showed, kept while it folds away
 
 	inspectorOpen bool
 	inspTab       int
@@ -612,6 +613,18 @@ func (a *app) selectedKeys() []string {
 	}
 	slices.SortFunc(out, func(x, y string) int { return a.byKey[x] - a.byKey[y] })
 	return out
+}
+
+// selectedCount is how many listed rows are chosen: len(selectedKeys()),
+// without sorting them.
+func (a *app) selectedCount() int {
+	n := 0
+	for k := range a.sel.All() {
+		if _, ok := a.byKey[k]; ok {
+			n++
+		}
+	}
+	return n
 }
 
 // selectedInfo summarises the selection: counts and total object bytes.
