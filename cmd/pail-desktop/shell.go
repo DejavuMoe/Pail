@@ -134,7 +134,8 @@ func (a *app) mainColumn(c *ui.Context) {
 	})
 }
 
-// mainArea is the path bar and object table, or a tool view.
+// mainArea is the path bar, the object table and the selection bar, or a
+// tool view.
 func (a *app) mainArea(c *ui.Context) {
 	ui.Column(c).Fill().MinWidth(0).MinHeight(0).Children(func() {
 		if a.tool != "" {
@@ -143,6 +144,7 @@ func (a *app) mainArea(c *ui.Context) {
 		}
 		a.pathBar(c)
 		a.objects(c)
+		a.selectionBar(c)
 	})
 }
 

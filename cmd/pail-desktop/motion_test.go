@@ -797,3 +797,39 @@ func TestWheelGlidesTheObjectTable(t *testing.T) {
 		})
 	}
 }
+
+// The selection bar grows to its height over durStandard as a second row is
+// chosen and folds away as the choice is cleared; the rows above stay put.
+func TestSelectionBarEasesInAndOut(t *testing.T) {
+	h := newMotionHarness(t, "light")
+	h.tt.Advance(time.Second)
+	h.tt.Frame()
+	row := h.rectOf("README.txt").Y
+	h.a.sel.Add("README.txt")
+	h.a.sel.Add("manifest.json")
+	h.tt.Frame()
+	h.step(100 * time.Millisecond)
+	mid, ok := h.tt.Find("Selection")
+	if !ok || !(mid.H > 1 && mid.H < selBarH-1) {
+		t.Fatalf("100ms in, the bar is %+v (shown %v): not eased", mid, ok)
+	}
+	h.tt.Advance(time.Second)
+	h.tt.Frame()
+	if r, _ := h.tt.Find("Selection"); !near32(r.H, selBarH, 0.5) {
+		t.Fatalf("the bar rests at height %.1f, want %d", r.H, selBarH)
+	}
+	if y := h.rectOf("README.txt").Y; !near32(y, row, 0.5) {
+		t.Errorf("the bar moved the rows: README.txt at %.1f, was %.1f", y, row)
+	}
+	h.a.clearSelection()
+	h.tt.Frame()
+	h.step(100 * time.Millisecond)
+	if r, ok := h.tt.Find("Selection"); !ok || !(r.H > 1 && r.H < selBarH-1) {
+		t.Fatalf("100ms into folding, the bar is %+v (shown %v)", r, ok)
+	}
+	h.tt.Advance(time.Second)
+	h.tt.Frame()
+	if _, ok := h.tt.Find("Selection"); ok {
+		t.Fatal("the bar is still there once folded")
+	}
+}

@@ -3336,6 +3336,16 @@ func (msgs Messages) CmdSelectAll() string {
 	return Catalog.Format(msgs.locale, "cmdSelectAll", nil)
 }
 
+// CmdSelectNone says "Clear selection"
+// in the language the app shows.
+func CmdSelectNone() string { return In(i18n.Locale()).CmdSelectNone() }
+
+// CmdSelectNone says "Clear selection"
+// in the language of msgs.
+func (msgs Messages) CmdSelectNone() string {
+	return Catalog.Format(msgs.locale, "cmdSelectNone", nil)
+}
+
 // CmdShortcuts says "Keyboard shortcuts"
 // in the language the app shows.
 func CmdShortcuts() string { return In(i18n.Locale()).CmdShortcuts() }
@@ -6346,6 +6356,16 @@ func (msgs Messages) ObjectsNoMatchesTitle() string {
 	return Catalog.Format(msgs.locale, "objectsNoMatchesTitle", nil)
 }
 
+// ObjectsSelectRow says "Select {name}"
+// in the language the app shows.
+func ObjectsSelectRow(name string) string { return In(i18n.Locale()).ObjectsSelectRow(name) }
+
+// ObjectsSelectRow says "Select {name}"
+// in the language of msgs.
+func (msgs Messages) ObjectsSelectRow(name string) string {
+	return Catalog.Format(msgs.locale, "objectsSelectRow", map[string]any{"name": name})
+}
+
 // ObjectsTable says "Objects"
 // in the language the app shows.
 func ObjectsTable() string { return In(i18n.Locale()).ObjectsTable() }
@@ -7866,6 +7886,46 @@ func SecretsValueLabel() string { return In(i18n.Locale()).SecretsValueLabel() }
 // in the language of msgs.
 func (msgs Messages) SecretsValueLabel() string {
 	return Catalog.Format(msgs.locale, "secretsValueLabel", nil)
+}
+
+// SelbarFolders says "{n, plural, one {includes # folder} other {includes # folders}}"
+// in the language the app shows.
+func SelbarFolders(n int) string { return In(i18n.Locale()).SelbarFolders(n) }
+
+// SelbarFolders says "{n, plural, one {includes # folder} other {includes # folders}}"
+// in the language of msgs.
+func (msgs Messages) SelbarFolders(n int) string {
+	return Catalog.Format(msgs.locale, "selbarFolders", map[string]any{"n": n})
+}
+
+// SelbarLabel says "Selection"
+// in the language the app shows.
+func SelbarLabel() string { return In(i18n.Locale()).SelbarLabel() }
+
+// SelbarLabel says "Selection"
+// in the language of msgs.
+func (msgs Messages) SelbarLabel() string {
+	return Catalog.Format(msgs.locale, "selbarLabel", nil)
+}
+
+// SelbarLoading says "list still loading"
+// in the language the app shows.
+func SelbarLoading() string { return In(i18n.Locale()).SelbarLoading() }
+
+// SelbarLoading says "list still loading"
+// in the language of msgs.
+func (msgs Messages) SelbarLoading() string {
+	return Catalog.Format(msgs.locale, "selbarLoading", nil)
+}
+
+// SelbarSelected says "{n, plural, one {# item selected} other {# items selected}}"
+// in the language the app shows.
+func SelbarSelected(n int) string { return In(i18n.Locale()).SelbarSelected(n) }
+
+// SelbarSelected says "{n, plural, one {# item selected} other {# items selected}}"
+// in the language of msgs.
+func (msgs Messages) SelbarSelected(n int) string {
+	return Catalog.Format(msgs.locale, "selbarSelected", map[string]any{"n": n})
 }
 
 // SettingsAbout says "About"
