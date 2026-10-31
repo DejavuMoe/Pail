@@ -98,12 +98,12 @@ func (a *app) moreMenu(c *ui.Context) {
 			for _, mode := range themeModes {
 				cmd := a.cmd("theme." + mode)
 				sm.Item(themeName(locales.In(i18n.Locale()), mode), func() { a.run(cmd.ID, "menu") }).
-					Icon(cmd.Icon).Checked(a.themeMode() == mode)
+					Icon(cmd.Icon).Radio(a.themeMode() == mode)
 			}
 		}).Icon("sun")
 		m.Submenu(locales.ChromeLanguage(), func(sm *menuBuilder) {
 			for _, ch := range languageChoices() {
-				sm.Item(ch.Label, func() { a.setLanguage(ch.Value) }).Checked(a.lang == ch.Value)
+				sm.Item(ch.Label, func() { a.setLanguage(ch.Value) }).Radio(a.lang == ch.Value)
 			}
 		}).Icon("globe")
 		m.Separator()

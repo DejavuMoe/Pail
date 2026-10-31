@@ -42,7 +42,8 @@ type menuItem struct {
 	label     string
 	icon      string // Lucide name, "" for none
 	shortcut  *chord
-	checkable bool // Checked was called: a menuitemcheckbox to assistive technology
+	checkable bool // Checked or Radio was called: it shows a check when on
+	radio     bool // Radio was called: a menuitemradio, one choice of a group
 	checked   bool
 	disabled  bool
 	separator bool
@@ -100,6 +101,15 @@ func (it *menuItem) Icon(name string) *menuItem { it.icon = name; return it }
 // Checked shows a check when on: the current value of a choice.
 func (it *menuItem) Checked(on bool) *menuItem { it.checkable, it.checked = true, on; return it }
 
+// Radio shows a check when on, as Checked does, for the item that is the
+// current one of a group of which one is chosen (a theme, a language, an
+// account): assistive technology hears a radio item, as in the native menu
+// bar's Language menu.
+func (it *menuItem) Radio(on bool) *menuItem {
+	it.checkable, it.radio, it.checked = true, true, on
+	return it
+}
+
 // Disabled dims the item: it cannot be chosen, and the keyboard skips it.
 func (it *menuItem) Disabled(d bool) *menuItem { it.disabled = d; return it }
 
@@ -134,7 +144,10 @@ func nativeItems(nm *ui.Menu, items []*menuItem) {
 			nm.Submenu(it.label, func(sm *ui.Menu) { nativeItems(sm, it.sub) }).Disabled(it.disabled)
 		default:
 			ni := nm.Item(it.label).Disabled(it.disabled)
-			if it.checkable {
+			switch {
+			case it.radio:
+				ni.Radio(it.checked)
+			case it.checkable:
 				ni.Checked(it.checked)
 			}
 			if it.shortcut != nil {
@@ -634,9 +647,12 @@ func (a *app) menuRow(c *ui.Context, li, i int, slot, moved bool) ui.Element {
 	lv := m.levels[li]
 	it := lv.items[i]
 	row := ui.Row(c.Key("menu-item:" + strconv.Itoa(i))).Label(it.label)
-	if it.checkable {
+	switch {
+	case it.radio:
+		row.Role(ui.RoleMenuItemRadio).Checked(it.checked)
+	case it.checkable:
 		row.Role(ui.RoleMenuItemCheckBox).Checked(it.checked)
-	} else {
+	default:
 		row.Role(ui.RoleMenuItem)
 	}
 	if it.submenu {

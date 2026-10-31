@@ -507,6 +507,45 @@ func TestMenusStayInsideTheSmallestWindow(t *testing.T) {
 	}
 }
 
+// The Theme and Language submenus of the "⋯" menu choose one of a group:
+// their items are radio items, the current one checked, as the native menu
+// bar's Language menu has them.
+func TestMoreMenuChoicesAreRadioItems(t *testing.T) {
+	h := newHarness(t, "light")
+	if err := h.tt.Click(locales.ChromeMore()); err != nil {
+		t.Fatal(err)
+	}
+	h.tt.Frame()
+	h.tt.Frame()
+	if !h.a.popup.open {
+		t.Fatal("the \"⋯\" menu did not open")
+	}
+	for _, name := range []string{locales.ChromeTheme(), locales.ChromeLanguage()} {
+		var sub *menuItem
+		for _, it := range h.a.popup.levels[0].items {
+			if it.label == name {
+				sub = it
+			}
+		}
+		if sub == nil || !sub.submenu || len(sub.sub) == 0 {
+			t.Fatalf("no %q submenu", name)
+		}
+		on := 0
+		for _, it := range sub.sub {
+			if !it.radio {
+				t.Errorf("%s: %q is not a radio item", name, it.label)
+			}
+			if it.checked {
+				on++
+			}
+		}
+		if on != 1 {
+			t.Errorf("%s: %d items checked, want 1", name, on)
+		}
+	}
+	h.closeMenu()
+}
+
 // A menu taller than the window scrolls inside it, with the bar in its gutter.
 func TestTallMenuScrollsInsideTheWindow(t *testing.T) {
 	h := newHarness(t, "light")
