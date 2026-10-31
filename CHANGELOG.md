@@ -4,6 +4,21 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.3.3] - 2026-10-31
+
+### Changed
+
+- Screen readers announce the Theme, Language and account choices in menus as a group of options with one selected, instead of as separate check boxes.
+
+### Fixed
+
+- Windows: while you resize the window, its content no longer shows enlarged and cut off at the right and bottom, and newly exposed edges show the background colour instead of black.
+- Windows: with "Show accent colour on title bars and window borders" on, no accent strip appears at the top of the window.
+- Windows: short Chinese labels are no longer cut off with an ellipsis.
+- macOS: ⌘C, ⌘X, ⌘V and ⌘A copy, cut, paste and select objects when no text field has the focus.
+- macOS: the window no longer shakes while you drag it by the toolbar or the sidebar header.
+- Linux: closing the window with its own close button no longer crashes the app, and a quick touchpad tap no longer leaves the pointer stuck pressed.
+
 ## [0.3.2] - 2026-10-26
 
 ### Added
