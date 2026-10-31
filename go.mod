@@ -12,7 +12,7 @@ require (
 	github.com/aws/aws-sdk-go-v2/service/sts v1.51.4
 	github.com/aws/smithy-go v1.28.5
 	github.com/ebitengine/purego v0.11.1
-	github.com/egoist/mygo v0.6.3
+	github.com/egoist/mygo v0.7.3
 	github.com/tc-hib/winres v0.3.1
 	github.com/yuin/goldmark v1.7.17
 	github.com/zalando/go-keyring v0.2.8
