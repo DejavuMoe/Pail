@@ -69,7 +69,7 @@ func (a *app) accountButton(c *ui.Context) {
 			if x.SecretMissing {
 				label = locales.SidebarAccountSecretMissing(x.Name)
 			}
-			m.Item(label, func() { a.selectAccount(x.ID) }).Icon("user").Checked(x.ID == a.accountID)
+			m.Item(label, func() { a.selectAccount(x.ID) }).Icon("user").Radio(x.ID == a.accountID)
 		}
 		m.Separator()
 		m.Item(locales.SidebarAddAccount(), func() { a.openAccountForm(false) }).Icon("plus")
