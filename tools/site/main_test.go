@@ -168,16 +168,17 @@ func TestDownloadsMatchReleaseScript(t *testing.T) {
 	}
 }
 
-// The mirror is offered only when the build is told the version is there, and
-// then for every archive under the same file name.
+// The mirror (by default defaultMirrorURL) is offered for the version built,
+// for every archive under the same file name; an empty mirror URL links to
+// GitHub only.
 func TestMirrorDownloads(t *testing.T) {
 	page := read(t, filepath.Join(buildSite(t, "1.2.3"), "index.html"))
 	if strings.Contains(page, "data-mirror-base") || strings.Contains(page, `name="source"`) {
-		t.Error("mirror offered without -mirror-url")
+		t.Error("mirror offered without a mirror URL")
 	}
 
 	out := filepath.Join(t.TempDir(), "site")
-	if err := build(config{root: repoRoot(t), out: out, version: "1.2.3", baseURL: "https://pail.download", mirrorURL: "https://pan.zsh.moe/Pail/"}); err != nil {
+	if err := build(config{root: repoRoot(t), out: out, version: "1.2.3", baseURL: "https://pail.download", mirrorURL: defaultMirrorURL + "/"}); err != nil {
 		t.Fatal(err)
 	}
 	for _, p := range []string{"index.html", "zh/index.html"} {

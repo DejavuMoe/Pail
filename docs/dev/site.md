@@ -50,11 +50,11 @@ The generator (`tools/site/main.go`):
 - fails when a locale misses a key, when the two locales' key sets differ, when a string is empty, or when `-version` is not a semantic version without the `v` prefix;
 - replaces an existing `-out` directory only when it holds nothing but a previous build.
 
-Flags: `-out`, `-version` (required); `-root` (default: found by walking up to this module's `go.mod`); `-base-url` (default `https://pail.download`, used for canonical links and the sitemap); `-mirror-url` (optional, below).
+Flags: `-out`, `-version` (required); `-root` (default: found by walking up to this module's `go.mod`); `-base-url` (default `https://pail.download`, used for canonical links and the sitemap); `-mirror-url` (default `https://pan.zsh.moe/Pail`, below).
 
 ### Download mirror
 
-`-mirror-url` takes the https root of a download mirror that holds a `v<version>/` directory with every release file. With it, the pages get `data-mirror-base=<root>/v<version>/` on the download list, a GitHub / Mirror source switch, and a plain link to the mirror directory for visitors without JavaScript. `app.js` applies the switch to every download link and stores the choice in `localStorage` under `pail-source`. Without the flag the pages offer GitHub only and show no switch.
+`-mirror-url` is the https root of the download mirror; each release is uploaded to its `v<version>/` directory under the GitHub file names. The pages always get `data-mirror-base=<root>/v<version>/` on the download list for the version they are built for, a GitHub / Mirror source switch, and a plain link to the mirror directory for visitors without JavaScript. `app.js` applies the switch to every download link and stores the choice in `localStorage` under `pail-source`. The build does not check the mirror. `-mirror-url ""` builds pages that offer GitHub only and show no switch.
 
 The tests (`go test ./tools/site/...`) build the real site and check both languages and every page, the stable heading ids, that the Chinese docs reuse the English ids in order, that the six download links match the targets in `tools/release`, the mirror links and switch, the release date, that every internal link and fragment resolves to a built file and id and that external links stay on the allowed hosts, that `app.js` only asks for embedded strings, fingerprinting, deterministic output, that a translation with different headings or a link that leaves the repository fails the build, input validation, and the writing rules in [writing.md](writing.md) (`TestCopyRules`, in `tools/site/copy_test.go`).
 
@@ -110,7 +110,7 @@ Both `master` push and manual events build and deploy the site. Tag events do no
 
 The required agent labels are `platform=linux/amd64`, `backend=docker`, `role=netcup-vps500`, `server=netcup-vps500`. The repository must be trusted for host volumes. The Go builder and Alpine publisher are pinned to image digests; Go module/build caches live under `/var/cache/woodpecker/pail/` on that agent.
 
-1. `scripts/build-site.sh` resolves the published version, checks the release assets, checks the mirror, runs the generator tests and builds `public/`. The mirror is offered only when every one of the six archives answers `HEAD` with the size of the GitHub asset and its `SHA256SUMS` is byte-identical to GitHub's; only then the script passes `-mirror-url` to the generator, otherwise the site links to GitHub only. The mirror root defaults to `https://pan.zsh.moe/Pail`; `PAIL_SITE_MIRROR` overrides it, and an empty value disables the mirror. The mirror is uploaded by hand: after uploading a release to it, run the website workflow again.
+1. `scripts/build-site.sh` resolves the published version, checks the release assets, runs the generator tests and builds `public/` with the mirror links of that version. The mirror is uploaded by hand: upload each release to `v<version>/` when it is published, before running the website workflow.
 2. `scripts/verify-site.sh` checks both languages, all page entry points and static assets, rejecting symlinks and other special files.
 3. `scripts/publish-site.sh public <commit>-<pipeline>-<rerun>` copies into a new release directory, validates it, atomically replaces `html`, verifies activation and retains only the current and immediately previous release. It takes a filesystem lock, refuses out-of-root/linked deployment paths and skips older pipelines. Workflow concurrency is also limited to one.
 
@@ -143,4 +143,4 @@ go run ./tools/site -out build/site -version 0.3.3
 python -m http.server 4312 --bind 127.0.0.1 --directory build/site
 ```
 
-`python -m http.server` does not send `404.html` for missing paths; open `/404.html` directly to check it. Download links point to the GitHub Release of the version you pass, so they only work for a published version. Add `-mirror-url https://pan.zsh.moe/Pail` to preview the source switch.
+`python -m http.server` does not send `404.html` for missing paths; open `/404.html` directly to check it. Download links point to the GitHub Release of the version you pass, so they only work for a published version. The source switch is shown by default; add `-mirror-url ""` to preview the GitHub-only page.
