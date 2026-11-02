@@ -25,7 +25,7 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 - Light and dark follow the system by default; a manual System / Light / Dark control persists the choice.
 - Selected, current and on states use at least two cues, as in `docs/dev/design.md`.
 - One solid primary button per view.
-- Download links point to GitHub Releases assets named by `tools/release`. An optional mirror at https://pan.zsh.moe/Pail/v<version>/ with the same file names is offered only when every asset is present there.
+- Download links point to GitHub Releases assets named by `tools/release`. The mirror at https://pan.zsh.moe/Pail/v<version>/, with the same file names, is always offered as a second source for the same version.
 - No analytics, trackers, cookies or external embeds.
 
 ## Explicit non-goals
