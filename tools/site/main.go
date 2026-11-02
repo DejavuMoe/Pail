@@ -3,7 +3,7 @@
 // fingerprinted static files, a 404 page, robots.txt and sitemap.xml.
 // See docs/dev/site.md.
 //
-//	go run ./tools/site -out build/site -version 0.3.3 [-mirror-url https://pan.zsh.moe/Pail]
+//	go run ./tools/site -out build/site -version 0.3.3 [-mirror-url ""]
 package main
 
 import (
@@ -26,6 +26,11 @@ import (
 )
 
 const githubURL = "https://github.com/DejavuMoe/Pail"
+
+// defaultMirrorURL is the download mirror. Each release is uploaded to its
+// v<version>/ directory with the GitHub file names, so the pages always offer
+// it next to GitHub, for the version they are built for.
+const defaultMirrorURL = "https://pan.zsh.moe/Pail"
 
 var versionRE = regexp.MustCompile(`^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`)
 
@@ -81,7 +86,7 @@ func main() {
 	flag.StringVar(&c.version, "version", "", "release version the download links point to, e.g. 0.3.3")
 	flag.StringVar(&c.root, "root", "", "repository root (default: found from the working directory)")
 	flag.StringVar(&c.baseURL, "base-url", "https://pail.download", "public origin for canonical links and the sitemap")
-	flag.StringVar(&c.mirrorURL, "mirror-url", "", "download mirror whose v<version>/ directory holds every release file (omit when it does not)")
+	flag.StringVar(&c.mirrorURL, "mirror-url", defaultMirrorURL, "download mirror root holding a v<version>/ directory of the release files; empty links to GitHub only")
 	flag.Parse()
 	if c.root == "" {
 		root, err := findRoot()
