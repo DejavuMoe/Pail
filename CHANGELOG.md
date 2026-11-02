@@ -4,6 +4,25 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.4.0] - 2026-11-02
+
+### Added
+
+- Folder sizes. S3 stores no size for a folder, so the Size column shows "–" until you calculate it. Right-click one or more folders and choose Calculate size, or use the Calculate folder sizes button in the toolbar to size every folder shown. The size counts the current objects under the folder; older versions, delete markers and incomplete multipart uploads are not counted. Very large folders take a while, and a failed calculation can be retried. The inspector shows the object count and size of a selected folder. Sorting by Size orders folders by their calculated size.
+- A tray icon: the notification area on Windows, the menu bar on macOS and the system tray on Linux. Closing the window hides it and Pail keeps running so transfers can finish; choose Quit Pail from the icon's menu to quit. The menu shows the transfer progress and offers Open Pail, Show transfers and Upload files. While the window is hidden, completion messages arrive as system notifications. Turn the icon off under Settings › Appearance to quit on close as before. On Linux the icon needs libayatana-appindicator3; without it, closing the window quits.
+- Starting Pail a second time, or clicking its Dock icon on macOS, brings the existing window back instead of opening another copy.
+
+### Changed
+
+- The window opens with its content already drawn on every platform.
+- The toolbar shows only icons when the window is narrow, including at the smallest window size.
+- macOS: lower CPU and power use while idle.
+- Windows 11: menu labels are no longer cut off at high display scaling.
+
+### Fixed
+
+- macOS: the app icon is no longer larger than other apps' icons in the Dock and Finder.
+
 ## [0.3.3] - 2026-10-31
 
 ### Changed
