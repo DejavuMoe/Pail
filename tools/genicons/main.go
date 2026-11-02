@@ -64,14 +64,41 @@ func coverage(sd, px float64) float64 {
 	return math.Min(1, math.Max(0, 0.5-sd/px))
 }
 
-// drawIcon rasterizes the icon at size x size pixels.
+// macOS app icon grid (Big Sur and later): on a 1024 canvas the tile is
+// 824x824, centred, leaving room for a soft drop shadow. Without this inset
+// the icon looks oversized next to other apps in the Dock and Finder.
+const (
+	macMargin        = 100.0 / 1024 // fraction of the canvas on each side
+	macShadowOffset  = 10.0 / 824   // fraction of the tile, downwards
+	macShadowSigma   = 9.0 / 824    // gaussian sigma, fraction of the tile
+	macShadowOpacity = 0.3
+)
+
+// drawIcon rasterizes the full-bleed icon at size x size pixels.
 func drawIcon(size int) *image.NRGBA {
+	return render(size, 0, false)
+}
+
+// drawMacIcon rasterizes the icon on the macOS icon grid.
+func drawMacIcon(size int) *image.NRGBA {
+	return render(size, macMargin, true)
+}
+
+// render draws the tile inset by margin (fraction of size) on each side,
+// optionally over a drop shadow.
+func render(size int, margin float64, shadow bool) *image.NRGBA {
 	img := image.NewNRGBA(image.Rect(0, 0, size, size))
-	scale := 256 / float64(size) // SVG units per pixel
+	off := margin * float64(size)
+	scale := 256 / (float64(size) - 2*off) // SVG units per pixel
+	tile := shapes[0]
 	for py := 0; py < size; py++ {
 		for px := 0; px < size; px++ {
-			x, y := (float64(px)+0.5)*scale, (float64(py)+0.5)*scale
+			x, y := (float64(px)+0.5-off)*scale, (float64(py)+0.5-off)*scale
 			var r, g, b, a float64 // premultiplied, 0..255 / 0..1
+			if shadow {
+				sd := sdRoundRect(x, y-macShadowOffset*256, tile)
+				a = macShadowOpacity * 0.5 * math.Erfc(sd/(macShadowSigma*256*math.Sqrt2))
+			}
 			for _, s := range shapes {
 				sd := sdRoundRect(x, y, s)
 				if s.stroke > 0 {
@@ -249,7 +276,11 @@ func main() {
 	if err := write(filepath.Join(*out, "pail.ico"), buildICO(pngs, icoSizes)); err != nil {
 		fatal(err)
 	}
-	if err := write(filepath.Join(*out, "pail.icns"), buildICNS(pngs)); err != nil {
+	macPNGs := map[int][]byte{}
+	for _, s := range []int{32, 64, 128, 256, 512, 1024} {
+		macPNGs[s] = encodePNG(drawMacIcon(s))
+	}
+	if err := write(filepath.Join(*out, "pail.icns"), buildICNS(macPNGs)); err != nil {
 		fatal(err)
 	}
 	if *sysoDir != "" {

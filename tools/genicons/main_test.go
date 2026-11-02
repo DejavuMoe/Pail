@@ -35,6 +35,27 @@ func TestDrawIconPixels(t *testing.T) {
 	}
 }
 
+func TestDrawMacIconGrid(t *testing.T) {
+	img := drawMacIcon(1024)
+	// Outside the 824px tile (100px margin) only a faint shadow may appear.
+	for _, p := range [][2]int{{50, 512}, {512, 50}, {974, 512}} {
+		if c := img.NRGBAAt(p[0], p[1]); c.A > 8 {
+			t.Errorf("margin pixel %v = %v, want (nearly) transparent", p, c)
+		}
+	}
+	if c := img.NRGBAAt(0, 0); c.A != 0 {
+		t.Errorf("canvas corner = %v, want transparent", c)
+	}
+	// Just inside the tile edge, the tile colour.
+	if c := img.NRGBAAt(120, 512); !near(c, 0x1D, 0x1C, 0x1A, 255) {
+		t.Errorf("tile body = %v, want #1D1C1A", c)
+	}
+	// The shadow sits below the tile.
+	if below, above := img.NRGBAAt(512, 930).A, img.NRGBAAt(512, 94).A; below <= above {
+		t.Errorf("shadow alpha below %d should exceed above %d", below, above)
+	}
+}
+
 func TestContainers(t *testing.T) {
 	pngs := map[int][]byte{}
 	for _, s := range pngSizes {

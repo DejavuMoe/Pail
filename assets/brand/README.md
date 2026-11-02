@@ -4,6 +4,8 @@
 
 Raster sizes (window icon PNG, Windows `.ico`, macOS `.icns`) and the Windows resource objects (`cmd/pail-desktop/rsrc_windows_{amd64,arm64}.syso`) are generated from this SVG into `generated/` and the app directory. Do not hand-edit generated files.
 
+The PNG and `.ico` files are full-bleed. The `.icns` follows the macOS icon grid: on a 1024 px canvas the tile is 824 px with a soft drop shadow, so the icon matches the size of other apps in the Dock and Finder.
+
 Regenerate everything from the repository root:
 
     go run ./tools/genicons
