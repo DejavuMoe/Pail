@@ -102,7 +102,7 @@ https://github.com/DejavuMoe/Pail/releases/download/v<version>/SHA256SUMS
 
 The archive names are the ones `tools/release` produces; if the tool's naming changes, the generator must change with it. The tag format `v<version>` is an assumption the release CI must keep (see [ci.md](ci.md)).
 
-The pipeline reads the latest published stable GitHub Release, verifies that all six versioned archive assets and `SHA256SUMS` are present and uploaded, and checks that the checksum file is publicly downloadable. It never selects an unpublished Git tag. If the release or any of its assets is missing, it fails without changing the deployed site. After publishing a new release, manually run the website workflow from `master` to update the download version.
+The pipeline reads the latest published stable GitHub Release, verifies that all six versioned archive assets and `SHA256SUMS` are present and uploaded, and checks that the checksum file is publicly downloadable. It never selects an unpublished Git tag. If the release or any of its assets is missing, it fails without changing the deployed site. The site moves to a new version with the first `master` push after the release is public, normally the commit that records its validation; run the workflow by hand only when no such push follows.
 
 ## Pipeline (`.woodpecker/site.yml`)
 
@@ -110,7 +110,7 @@ Both `master` push and manual events build and deploy the site. Tag events do no
 
 The required agent labels are `platform=linux/amd64`, `backend=docker`, `role=netcup-vps500`, `server=netcup-vps500`. The repository must be trusted for host volumes. The Go builder and Alpine publisher are pinned to image digests; Go module/build caches live under `/var/cache/woodpecker/pail/` on that agent.
 
-1. `scripts/build-site.sh` resolves the published version, checks the release assets, runs the generator tests and builds `public/` with the mirror links of that version. The mirror is uploaded by hand: upload each release to `v<version>/` when it is published, before running the website workflow.
+1. `scripts/build-site.sh` resolves the published version, checks the release assets, runs the generator tests and builds `public/` with the mirror links of that version. The pipeline does not check the mirror and the link rule never changes, so the mirror never needs another run: upload each release's archives and `SHA256SUMS` to `v<version>/` by hand once the release is published. Until they are there, the mirror links of that version fail and the GitHub links work.
 2. `scripts/verify-site.sh` checks both languages, all page entry points and static assets, rejecting symlinks and other special files.
 3. `scripts/publish-site.sh public <commit>-<pipeline>-<rerun>` copies into a new release directory, validates it, atomically replaces `html`, verifies activation and retains only the current and immediately previous release. It takes a filesystem lock, refuses out-of-root/linked deployment paths and skips older pipelines. Workflow concurrency is also limited to one.
 

@@ -95,7 +95,7 @@ Dependabot security/version update PRs and agentic autofix remain disabled: fixe
 4. On Windows, create a signed annotated tag, for example `git tag -s v0.4.0 -m "Pail v0.4.0"`, and push only that tag to Forgejo: `git push origin v0.4.0`.
 5. Use local `gh run list --repo DejavuMoe/Pail --commit <sha>` and `gh run watch <run-id> --repo DejavuMoe/Pail --exit-status` to monitor the mirrored workflow. Release verifies that the tag is a semantic version and its commit belongs to `master`, then extracts matching English and Chinese changelog sections.
 6. Package all six targets, verify the archives, upload them to a draft Release, then publish only after every upload succeeds. A published Release is not overwritten; failed draft uploads can be rerun. Do not move an existing release tag.
-7. Download the published archives and `SHA256SUMS`, verify them again, and run native version checks where available. Trigger the `master` website workflow separately after the release is public.
+7. Download the published archives and `SHA256SUMS`, verify them again, and run native version checks where available. Commit and push the validation record to `master`; that push rebuilds the website for the new version (see [site.md](site.md)). Then upload the archives and `SHA256SUMS` to the download mirror's `v<version>/` directory.
 
 The release workflow needs `actions: read` for preflight and `contents: write` only for publication. No Forgejo write token or website deployment secret is stored in GitHub. Tags originate in Forgejo; GitHub's write permission is for Release metadata/assets.
 
