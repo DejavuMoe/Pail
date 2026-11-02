@@ -24,7 +24,7 @@
 ## Features
 
 - **Accounts.** Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. For services other than AWS, set the endpoint, region and path-style addressing, and test the connection before saving.
-- **Browsing.** A sortable, multi-select object table that pages automatically, with breadcrumbs, a filter, a flat view and an inspector. Preview text files (JSON, CSV, XML and others), images and hex. Copy keys, URIs, URLs and presigned URLs.
+- **Browsing.** A sortable, multi-select object table that pages automatically, with breadcrumbs, a filter, a flat view and an inspector. Preview text files (JSON, CSV, XML and others), images and hex. Copy keys, URIs, URLs and presigned URLs. Calculate the size of folders on request.
 - **Transfers.** Upload and download files, folders, versions and whole buckets, or drag files into the window. Uploads and downloads have their own queues with adjustable concurrency, progress, speed, cancel and retry. When a file already exists: skip, overwrite, keep both, overwrite if newer, or overwrite if the size differs. Large files are uploaded in parts with checksums; downloads are written to a temporary file and moved into place after they are verified.
 - **Object properties.** Headers, metadata, tags, ACL, storage class and server-side encryption (SSE-S3, SSE-KMS, SSE-C) for one object or a selection. Properties you do not change are kept.
 - **Versions.** List versions and delete markers, download several versions at once, restore an older version or a deleted key, and permanently delete the versions you select.

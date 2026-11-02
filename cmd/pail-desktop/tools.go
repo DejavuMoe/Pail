@@ -84,10 +84,15 @@ func (a *app) toolHeader(c *ui.Context) {
 		}
 	}
 	vline(c, 16).Margin(0, 4)
-	if cmd != nil {
-		ui.Icon(c, icons.Get(cmd.Icon)).TextColor(k.TextMuted)
-	}
-	sectionTitle(c, title)
+	// The tool's name reads as the current place, as the last breadcrumb of
+	// the path bar does: 13px / 600 beside the 13px Back button and the
+	// toolbar's 14px icons, not a 15px heading.
+	ui.Row(c).Gap(6).Padding(0, 4).AlignItems(ui.Center).MinWidth(0).Children(func() {
+		if cmd != nil {
+			ui.Icon(c, icons.Get(cmd.Icon)).FontSize(14).TextColor(k.TextMuted)
+		}
+		ui.Text(c, title).FontSize(sizeBody).FontWeight(600).TextColor(k.Text).SingleLine().Shrink(1).MinWidth(0)
+	})
 }
 
 // toolView replaces the browser in the main area, below the top bar.

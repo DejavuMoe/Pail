@@ -139,6 +139,29 @@ func (a *app) folderOverview(c *ui.Context, e Entry) {
 	a.header(c, "folder", e.Name, locales.InspectorFolder())
 	kvTable(c, []KV{{locales.CommonPrefix(), e.Key}, {locales.InspectorUri(), a.objectURI(e.Key)}}, true,
 		copyField(locales.CommonPrefix()), kvCopy{locales.InspectorCopyUri(), locales.InspectorCopiedUri()})
+	a.folderSizeDetail(c, e)
+}
+
+// folderSizeDetail is a folder's size in the inspector once it is known (with
+// its object count), "Calculating…" while it is walked, and otherwise the
+// Calculate size button (foldersize.go).
+func (a *app) folderSizeDetail(c *ui.Context, e Entry) {
+	fs := a.folderSizeOf(e.Key)
+	switch {
+	case fs != nil && fs.state == sizeReady:
+		kvTable(c, []KV{{locales.CommonSize(), locales.ScopeCountSummary(locales.CommonObjects(fs.est.Objects), humanBytes(fs.est.Bytes))}}, false)
+	case fs != nil && (fs.state == sizeQueued || fs.state == sizeRunning):
+		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
+			ui.Spinner(c).Size(12, 12)
+			mutedText(c, locales.ObjectsSizeCalculating())
+		})
+	default:
+		ui.Row(c).Children(func() {
+			if b := a.commandButton(c, "foldersize", true, "inspector"); b != (ui.Element{}) {
+				b.Margin(0, 0, 0, -8) // the icon lines up with the labels above
+			}
+		})
+	}
 }
 
 // objectTabs shows the tab chosen for the single selected object.

@@ -106,6 +106,7 @@ func (a *app) finishWatch(w *watch, ts []Task, result core.TaskGroupResult, grou
 	if grouped {
 		done, failed, canceled = result.Succeeded, result.Failed, result.Canceled
 	}
+	a.dropSizes(w.loc) // where it changed things, not only where the table is
 	if w.loc.AccountID == a.scope.AccountID && w.loc.Bucket == a.scope.Bucket && a.scope.Bucket != "" {
 		a.reload()
 	}

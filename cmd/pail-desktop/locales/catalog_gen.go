@@ -1328,6 +1328,16 @@ func (msgs Messages) AliasRefresh() string {
 	return Catalog.Format(msgs.locale, "aliasRefresh", nil)
 }
 
+// AliasFolderSize says "du disk usage total bytes measure"
+// in the language the app shows.
+func AliasFolderSize() string { return In(i18n.Locale()).AliasFolderSize() }
+
+// AliasFolderSize says "du disk usage total bytes measure"
+// in the language of msgs.
+func (msgs Messages) AliasFolderSize() string {
+	return Catalog.Format(msgs.locale, "aliasFolderSize", nil)
+}
+
 // AliasRename says "move"
 // in the language the app shows.
 func AliasRename() string { return In(i18n.Locale()).AliasRename() }
@@ -3284,6 +3294,26 @@ func CmdRefresh() string { return In(i18n.Locale()).CmdRefresh() }
 // in the language of msgs.
 func (msgs Messages) CmdRefresh() string {
 	return Catalog.Format(msgs.locale, "cmdRefresh", nil)
+}
+
+// CmdFolderSize says "Calculate size"
+// in the language the app shows.
+func CmdFolderSize() string { return In(i18n.Locale()).CmdFolderSize() }
+
+// CmdFolderSize says "Calculate size"
+// in the language of msgs.
+func (msgs Messages) CmdFolderSize() string {
+	return Catalog.Format(msgs.locale, "cmdFolderSize", nil)
+}
+
+// CmdFolderSizes says "Calculate folder sizes"
+// in the language the app shows.
+func CmdFolderSizes() string { return In(i18n.Locale()).CmdFolderSizes() }
+
+// CmdFolderSizes says "Calculate folder sizes"
+// in the language of msgs.
+func (msgs Messages) CmdFolderSizes() string {
+	return Catalog.Format(msgs.locale, "cmdFolderSizes", nil)
 }
 
 // CmdRename says "Rename"
@@ -5692,6 +5722,76 @@ func (msgs Messages) MainTitleDemo() string {
 	return Catalog.Format(msgs.locale, "mainTitleDemo", nil)
 }
 
+// TrayActive says "{n, plural, one {# transfer} other {# transfers}} · {percent}%"
+// in the language the app shows.
+func TrayActive(n int, percent string) string { return In(i18n.Locale()).TrayActive(n, percent) }
+
+// TrayActive says "{n, plural, one {# transfer} other {# transfers}} · {percent}%"
+// in the language of msgs.
+func (msgs Messages) TrayActive(n int, percent string) string {
+	return Catalog.Format(msgs.locale, "trayActive", map[string]any{"n": n, "percent": percent})
+}
+
+// TrayActiveBusy says "{n, plural, one {# transfer in progress} other {# transfers in progress}}"
+// in the language the app shows.
+func TrayActiveBusy(n int) string { return In(i18n.Locale()).TrayActiveBusy(n) }
+
+// TrayActiveBusy says "{n, plural, one {# transfer in progress} other {# transfers in progress}}"
+// in the language of msgs.
+func (msgs Messages) TrayActiveBusy(n int) string {
+	return Catalog.Format(msgs.locale, "trayActiveBusy", map[string]any{"n": n})
+}
+
+// TrayIdle says "No transfers in progress"
+// in the language the app shows.
+func TrayIdle() string { return In(i18n.Locale()).TrayIdle() }
+
+// TrayIdle says "No transfers in progress"
+// in the language of msgs.
+func (msgs Messages) TrayIdle() string {
+	return Catalog.Format(msgs.locale, "trayIdle", nil)
+}
+
+// TrayOpen says "Open Pail"
+// in the language the app shows.
+func TrayOpen() string { return In(i18n.Locale()).TrayOpen() }
+
+// TrayOpen says "Open Pail"
+// in the language of msgs.
+func (msgs Messages) TrayOpen() string {
+	return Catalog.Format(msgs.locale, "trayOpen", nil)
+}
+
+// TrayQuit says "Quit Pail"
+// in the language the app shows.
+func TrayQuit() string { return In(i18n.Locale()).TrayQuit() }
+
+// TrayQuit says "Quit Pail"
+// in the language of msgs.
+func (msgs Messages) TrayQuit() string {
+	return Catalog.Format(msgs.locale, "trayQuit", nil)
+}
+
+// TrayShowTransfers says "Show transfers"
+// in the language the app shows.
+func TrayShowTransfers() string { return In(i18n.Locale()).TrayShowTransfers() }
+
+// TrayShowTransfers says "Show transfers"
+// in the language of msgs.
+func (msgs Messages) TrayShowTransfers() string {
+	return Catalog.Format(msgs.locale, "trayShowTransfers", nil)
+}
+
+// TrayTooltip says "Pail — {status}"
+// in the language the app shows.
+func TrayTooltip(status string) string { return In(i18n.Locale()).TrayTooltip(status) }
+
+// TrayTooltip says "Pail — {status}"
+// in the language of msgs.
+func (msgs Messages) TrayTooltip(status string) string {
+	return Catalog.Format(msgs.locale, "trayTooltip", map[string]any{"status": status})
+}
+
 // MenuBucket says "Bucket"
 // in the language the app shows.
 func MenuBucket() string { return In(i18n.Locale()).MenuBucket() }
@@ -6262,6 +6362,58 @@ func ObjectsDeleted() string { return In(i18n.Locale()).ObjectsDeleted() }
 // in the language of msgs.
 func (msgs Messages) ObjectsDeleted() string {
 	return Catalog.Format(msgs.locale, "objectsDeleted", nil)
+}
+
+// ObjectsSizeCalculating says "Calculating…"
+// in the language the app shows.
+func ObjectsSizeCalculating() string { return In(i18n.Locale()).ObjectsSizeCalculating() }
+
+// ObjectsSizeCalculating says "Calculating…"
+// in the language of msgs.
+func (msgs Messages) ObjectsSizeCalculating() string {
+	return Catalog.Format(msgs.locale, "objectsSizeCalculating", nil)
+}
+
+// ObjectsSizeFailed says "Failed"
+// in the language the app shows.
+func ObjectsSizeFailed() string { return In(i18n.Locale()).ObjectsSizeFailed() }
+
+// ObjectsSizeFailed says "Failed"
+// in the language of msgs.
+func (msgs Messages) ObjectsSizeFailed() string {
+	return Catalog.Format(msgs.locale, "objectsSizeFailed", nil)
+}
+
+// ObjectsSizeFailedTip says "Couldn't calculate the size: {reason}"
+// in the language the app shows.
+func ObjectsSizeFailedTip(reason string) string {
+	return In(i18n.Locale()).ObjectsSizeFailedTip(reason)
+}
+
+// ObjectsSizeFailedTip says "Couldn't calculate the size: {reason}"
+// in the language of msgs.
+func (msgs Messages) ObjectsSizeFailedTip(reason string) string {
+	return Catalog.Format(msgs.locale, "objectsSizeFailedTip", map[string]any{"reason": reason})
+}
+
+// ObjectsSizeNotCalculated says "Not calculated. Right-click the folder and choose Calculate size."
+// in the language the app shows.
+func ObjectsSizeNotCalculated() string { return In(i18n.Locale()).ObjectsSizeNotCalculated() }
+
+// ObjectsSizeNotCalculated says "Not calculated. Right-click the folder and choose Calculate size."
+// in the language of msgs.
+func (msgs Messages) ObjectsSizeNotCalculated() string {
+	return Catalog.Format(msgs.locale, "objectsSizeNotCalculated", nil)
+}
+
+// ObjectsSizeUnknown says "–"
+// in the language the app shows.
+func ObjectsSizeUnknown() string { return In(i18n.Locale()).ObjectsSizeUnknown() }
+
+// ObjectsSizeUnknown says "–"
+// in the language of msgs.
+func (msgs Messages) ObjectsSizeUnknown() string {
+	return Catalog.Format(msgs.locale, "objectsSizeUnknown", nil)
 }
 
 // ObjectsDropToUpload says "Drop to upload to {prefix}"
@@ -8168,6 +8320,36 @@ func SettingsLanguageHelp() string { return In(i18n.Locale()).SettingsLanguageHe
 // in the language of msgs.
 func (msgs Messages) SettingsLanguageHelp() string {
 	return Catalog.Format(msgs.locale, "settingsLanguageHelp", nil)
+}
+
+// SettingsTray says "Show in notification area"
+// in the language the app shows.
+func SettingsTray() string { return In(i18n.Locale()).SettingsTray() }
+
+// SettingsTray says "Show in notification area"
+// in the language of msgs.
+func (msgs Messages) SettingsTray() string {
+	return Catalog.Format(msgs.locale, "settingsTray", nil)
+}
+
+// SettingsTrayHelp says "Shows the Pail icon there. While it shows, closing the window keeps Pail running so transfers finish; choose Quit Pai…"
+// in the language the app shows.
+func SettingsTrayHelp() string { return In(i18n.Locale()).SettingsTrayHelp() }
+
+// SettingsTrayHelp says "Shows the Pail icon there. While it shows, closing the window keeps Pail running so transfers finish; choose Quit Pai…"
+// in the language of msgs.
+func (msgs Messages) SettingsTrayHelp() string {
+	return Catalog.Format(msgs.locale, "settingsTrayHelp", nil)
+}
+
+// SettingsTrayMac says "Show in menu bar"
+// in the language the app shows.
+func SettingsTrayMac() string { return In(i18n.Locale()).SettingsTrayMac() }
+
+// SettingsTrayMac says "Show in menu bar"
+// in the language of msgs.
+func (msgs Messages) SettingsTrayMac() string {
+	return Catalog.Format(msgs.locale, "settingsTrayMac", nil)
 }
 
 // SettingsLog says "Write diagnostic log"
