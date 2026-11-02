@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"image/png"
 	"net/http"
+	"runtime"
 	"slices"
 	"testing"
 
@@ -244,7 +245,11 @@ func TestTraySettingIsSavedAndApplied(t *testing.T) {
 	h.a.tray.set = func(on bool) { applied = append(applied, on) }
 	h.a.openTool("settings")
 	h.settle()
-	h.mustHave("Show in notification area")
+	label := "Show in notification area"
+	if runtime.GOOS == "darwin" {
+		label = "Show in menu bar"
+	}
+	h.mustHave(label)
 	h.a.setTrayShown(false)
 	h.settle()
 	if h.a.tray.on || !slices.Equal(applied, []bool{false}) || !h.a.svc.Settings().HideTrayIcon {
