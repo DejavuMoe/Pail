@@ -1,0 +1,21 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 32 32" width="32" height="32">
+  <title>Pail tray glyph</title>
+  <!-- The tray / menu bar glyph: the app icon's three tapering strata without
+       the tile, each with its dot cut out. Black on transparent: macOS and
+       Windows use it as a template image and tint it for the menu bar or
+       taskbar. Edges sit on even units so 16 px renders are pixel-crisp.
+       cmd/pail-desktop/tray.go (trayBars) draws it; keep the two in step. -->
+  <defs>
+    <mask id="dots">
+      <rect width="32" height="32" fill="#FFFFFF"/>
+      <circle cx="26.5" cy="7" r="1.6" fill="#000000"/>
+      <circle cx="24.5" cy="15" r="1.6" fill="#000000"/>
+      <circle cx="22.5" cy="23" r="1.6" fill="#000000"/>
+    </mask>
+  </defs>
+  <g mask="url(#dots)" fill="#000000">
+    <rect x="2" y="4" width="28" height="6" rx="3"/>
+    <rect x="4" y="12" width="24" height="6" rx="3"/>
+    <rect x="6" y="20" width="20" height="6" rx="3"/>
+  </g>
+</svg>

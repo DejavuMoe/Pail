@@ -54,6 +54,12 @@ func main() {
 		log.Fatal(err)
 	}
 	opts.demo = *demo
+	// Closing the window can leave Pail running in the tray, so a second launch
+	// shows that window instead of opening the same configuration twice. The
+	// demo and a --config-dir of its own are separate instances.
+	if !*demo && *cfgDir == "" && !mygo.App.RequestSingleInstanceLock() {
+		return
+	}
 	opts.memory, err = startMemorySampler(*memoryDir, *demo, 5*time.Second)
 	if err != nil {
 		log.Fatalf("memory profile: %v", err)
@@ -104,7 +110,13 @@ func main() {
 			}
 			return "Pail"
 		}
-		win := mygo.NewWindow(windowOptions(title(), opts.width, opts.height, ui.View(a.view)))
+		// The window is made hidden and shows once its first frame is drawn
+		// (mygo draws it while hidden): it opens with its content on every
+		// platform, without a frame of the bare background.
+		wo := windowOptions(title(), opts.width, opts.height, ui.View(a.view))
+		wo.Hidden = true
+		win := mygo.NewWindow(wo)
+		win.OnReadyToShow(win.Show)
 		if err := win.SetIcon(appIcon); err != nil {
 			log.Printf("window icon: %v", err)
 		}
@@ -117,12 +129,32 @@ func main() {
 		wake()
 		redraw := func() { win.Update(func() {}) }
 		installMenu(a, runtime.GOOS, mygo.App.SetMenu, redraw)
-		// What was set once (the window title, the labels of the macOS menu)
-		// is set again when the language changes.
+		tray := installTray(a, win, redraw, a.tray.on)
+		// What was set once (the window title, the labels of the macOS menu
+		// and of the tray menu) is set again when the language changes.
 		mygo.App.OnLocaleChanged(func(string) {
 			win.SetTitle(title())
 			installMenu(a, runtime.GOOS, mygo.App.SetMenu, redraw)
+			tray.relabel()
 		})
+		// With the tray icon, closing the window hides it: Pail keeps running
+		// and its transfers finish. A quit (the tray's Quit Pail, the app's
+		// Quit, ⌘Q, logging out) closes it for real.
+		quitting := false
+		mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { quitting = true })
+		win.OnClose(func(e *mygo.CloseEvent) {
+			if a.tray.on && !quitting {
+				e.PreventDefault()
+				win.Hide()
+			}
+		})
+		// The Dock icon (macOS) and a second launch bring the window back.
+		mygo.App.OnActivate(func(visible bool) {
+			if !visible {
+				tray.open()
+			}
+		})
+		mygo.App.OnSecondInstance(func([]string, string) { tray.open() })
 		win.OnClosed(a.stop)
 		a.markMemory("window-ready")
 		if *smokeExit > 0 {

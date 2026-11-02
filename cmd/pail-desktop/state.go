@@ -78,6 +78,7 @@ type app struct {
 	localeSet func(tag string)
 	langSave  func(tag string)
 
+	tray     trayUI       // the notification area / menu bar icon (tray.go)
 	popup    menuState    // the in-window menu (ctxmenu.go)
 	popGhost *menuGhost   // the menu that just closed, fading out (menumotion.go)
 	pal      paletteState // the command palette (palette.go)
@@ -107,6 +108,7 @@ type app struct {
 	navSel       string // sidebar choice: "b:<bucket>" or "t:<tool>"
 	tool         string // "" when the object browser shows
 	scope        Scope
+	sizes        folderSizes // the folder sizes asked for (foldersize.go)
 
 	raw         []Entry // everything loaded under the prefix
 	rows        []Entry // filtered and sorted, what the table shows
@@ -225,6 +227,7 @@ func newApp(svc *core.Service, opts options) *app {
 	if a.opts.theme == "" {
 		a.opts.theme = svc.Settings().Theme
 	}
+	a.tray.on = !svc.Settings().HideTrayIcon
 	a.unsub = svc.Subscribe(a.onEvent)
 	a.setTasks(svc.Tasks())
 	a.accounts = svc.Accounts()
@@ -265,6 +268,7 @@ func (a *app) drain() {
 			fn()
 		default:
 			a.syncProgress()
+			a.syncTray()
 			return
 		}
 	}
@@ -276,11 +280,30 @@ func (a *app) idle() bool {
 		(!a.del.open || a.del.state != delCounting) && !a.af.busy() && !a.folderDlg.busy && a.busyOps.Load() == 0 && !a.vu.busyNow()
 }
 
-// toast queues a message for the next frame.
-func (a *app) toast(msg string) { a.toasts = append(a.toasts, toastReq{msg: msg}) }
+// toast queues a message for the next frame. While the window is hidden in
+// the tray nobody would see it: it goes to the system's notifications instead
+// (without its action, which needs the window).
+func (a *app) toast(msg string) {
+	if a.notifyHidden(msg) {
+		return
+	}
+	a.toasts = append(a.toasts, toastReq{msg: msg})
+}
 
 func (a *app) toastAction(msg, label string, fn func()) {
+	if a.notifyHidden(msg) {
+		return
+	}
 	a.toasts = append(a.toasts, toastReq{msg: msg, action: label, fn: fn})
+}
+
+// notifyHidden shows msg as a system notification when the window is hidden.
+func (a *app) notifyHidden(msg string) bool {
+	if !a.windowHidden() || a.tray.notify == nil {
+		return false
+	}
+	a.tray.notify(msg)
+	return true
 }
 
 // copyText queues text for the system clipboard.
@@ -431,7 +454,7 @@ func (a *app) openScope(s Scope) {
 	a.scope = s
 	a.search = ""
 	a.clearListing()
-	a.reload()
+	a.listScope()
 }
 
 func (a *app) openPrefix(prefix string) {
@@ -456,10 +479,19 @@ func (a *app) up() bool {
 
 // ---- listing -------------------------------------------------------------------------
 
-// reload lists the current scope page by page. The old rows stay on screen
+// reload lists the current scope again: what it shows may have changed, so the
+// folder sizes it could have made wrong go (dropSizes).
+func (a *app) reload() {
+	if a.scope.Bucket != "" {
+		a.dropSizes(a.scope)
+	}
+	a.listScope()
+}
+
+// listScope lists the current scope page by page. The old rows stay on screen
 // until the first page arrives, and the table fills as pages come in; every
 // further page is requested right away until the listing ends.
-func (a *app) reload() {
+func (a *app) listScope() {
 	if a.scope.Bucket == "" || a.reloadHook() {
 		return
 	}
@@ -564,6 +596,14 @@ func (a *app) rebuildRows() {
 			return 1
 		}
 		cmp := 0
+		if x.Folder && col == "size" {
+			// Folders whose size is known sort by it; the others, as if empty.
+			xs, _ := a.knownFolderSize(x.Key)
+			ys, _ := a.knownFolderSize(y.Key)
+			if cmp = cmpInt(xs, ys); desc {
+				cmp = -cmp
+			}
+		}
 		if !x.Folder {
 			switch col {
 			case "size":

@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"path/filepath"
+	"runtime"
 	"strconv"
 	"strings"
 	"time"
@@ -336,6 +337,18 @@ func (a *app) settingsView(c *ui.Context) {
 				if selectBox(c, locales.SettingsLanguage(), &lang, languageChoices(), 160) {
 					a.setLanguage(lang)
 				}
+			})
+			trayLabel := locales.SettingsTray()
+			if runtime.GOOS == "darwin" {
+				trayLabel = locales.SettingsTrayMac()
+			}
+			settingsRowHelp(c, trayLabel, locales.SettingsTrayHelp(), f.errs["tray"], func() {
+				// The choice lives in the app (a.tray.on); the switch edits a copy.
+				on := a.tray.on
+				if switchControl(c, &on, trayLabel).Changed() {
+					a.setTrayShown(on)
+				}
+				a.savedMark(c, "tray")
 			})
 			settingsSection(c, locales.SettingsTransfers())
 			for _, ns := range numSettings[:4] {

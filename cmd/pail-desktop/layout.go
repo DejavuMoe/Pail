@@ -11,9 +11,11 @@ import (
 // not flip the layout back and forth.
 const (
 	// tbLabelsNeed is the toolbar width, without the room of the window buttons,
-	// that the labelled Upload, Download and New folder buttons need; narrower
-	// toolbars drop the labels.
-	tbLabelsNeed = 680
+	// that the labelled Upload, Download and New folder buttons need beside the
+	// icon-only ones; narrower toolbars drop the labels. It is measured with
+	// the longest labels (the en-XA pseudo-locale, Inter on Linux), so the
+	// smallest window always shows icons only.
+	tbLabelsNeed = 800
 	// compactBelow is the center column width under which the path bar drops the
 	// text of its toggles.
 	compactBelow = 560
