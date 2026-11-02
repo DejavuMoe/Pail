@@ -48,6 +48,10 @@ type Settings struct {
 	// (default 15; 0 = never). Unlike the other numeric settings 0 is a real
 	// value, so SaveSettings does not replace it by the default.
 	VaultAutoLockMinutes int `json:"vaultAutoLockMinutes"`
+	// HideTrayIcon removes the desktop app's icon from the notification area
+	// (the menu bar on macOS); closing the window then quits. The zero value
+	// shows it, so settings saved before it existed show it too.
+	HideTrayIcon bool `json:"hideTrayIcon,omitempty"`
 }
 
 // SecretBackend values.

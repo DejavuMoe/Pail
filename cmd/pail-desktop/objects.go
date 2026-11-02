@@ -155,7 +155,11 @@ func (a *app) table(c *ui.Context) {
 			}
 			a.rowRects[e.Key] = cell.Bounds()
 		case "size":
-			a.dataCell(c, e, "size", humanBytes(e.Size), !e.Folder, ui.End)
+			if e.Folder {
+				a.folderSizeCell(c, e)
+			} else {
+				a.dataCell(c, e, "size", humanBytes(e.Size), true, ui.End)
+			}
 		case "type":
 			a.dataCell(c, e, "type", typeLabel(*e), true, ui.Start)
 		case "modified":

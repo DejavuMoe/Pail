@@ -44,6 +44,7 @@ func (a *app) toolbarCommands(c *ui.Context) {
 	a.cmdButton(c, "rename", false)
 	a.cmdButton(c, "delete", false)
 	toolbarGap(c)
+	a.cmdButton(c, "foldersizes", false)
 	a.cmdButton(c, "refresh", false)
 }
 

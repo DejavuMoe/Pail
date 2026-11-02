@@ -5,9 +5,9 @@
 ## 1. 包与职责
 
 ```
-cmd/pail-desktop   桌面程序（Go + mygo）。只调用 internal/app
+cmd/pail-desktop   桌面程序（Go + mygo）。只调用 internal/app；tray.go 管托盘图标与关闭即隐藏，foldersize.go 管文件夹大小的界面状态
 cmd/pail           命令行。只调用 internal/app，与桌面程序共用配置目录和机密存储
-internal/app       Service：账户、浏览、任务队列、传输、批量、版本、属性、规则、同步、桶管理、CloudFront、日志、加密保险库
+internal/app       Service：账户、浏览、文件夹大小（FolderSize）、任务队列、传输、批量、版本、属性、规则、同步、桶管理、CloudFront、日志、加密保险库
 internal/storage   S3 协议层：client、传输（分片）、复制、条件写入、能力探测
 internal/cloud     AWS 专有服务（类型化 CloudFront）
 internal/rules     上传规则、GZIP / ZIP / AES-256 ZIP

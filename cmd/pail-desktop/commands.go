@@ -153,7 +153,7 @@ var commandGroups = map[string]string{
 	"newfolder": groupObject, "open": groupObject, "copy": groupObject, "cut": groupObject, "paste": groupObject, "rename": groupObject,
 	"delete": groupObject, "restore": groupObject, "restoreall": groupObject, "selectall": groupObject, "copykey": groupObject,
 	"copyuri": groupObject, "copyurl": groupObject, "copycdn": groupObject, "opencdn": groupObject, "copysigned": groupObject,
-	"storageclass": groupObject, "encryption": groupObject, "invalidate": groupObject,
+	"storageclass": groupObject, "encryption": groupObject, "invalidate": groupObject, "foldersize": groupObject, "foldersizes": groupObject,
 	"up": groupNavigate, "refresh": groupNavigate, "search": groupNavigate,
 	"inspector": groupView, "transfers": groupView, "theme.system": groupView, "theme.light": groupView, "theme.dark": groupView,
 	"lang.system": groupView, "lang.en": groupView, "lang.zh-Hans": groupView,
@@ -177,7 +177,7 @@ var commandAliases = map[string]func(locales.Messages) string{
 	"theme.system": locales.Messages.AliasTheme, "theme.light": locales.Messages.AliasTheme, "theme.dark": locales.Messages.AliasTheme,
 	"lang.system": locales.Messages.AliasLanguage, "lang.en": locales.Messages.AliasLanguage, "lang.zh-Hans": locales.Messages.AliasLanguage,
 	"open": locales.Messages.AliasOpen, "copy": locales.Messages.AliasCopy, "paste": locales.Messages.AliasPaste, "cut": locales.Messages.AliasCut,
-	"selectall": locales.Messages.AliasSelectAll,
+	"selectall": locales.Messages.AliasSelectAll, "foldersize": locales.Messages.AliasFolderSize, "foldersizes": locales.Messages.AliasFolderSize,
 }
 
 // themeName is a theme mode's name.
@@ -257,6 +257,10 @@ func commandTable() []command {
 			Enabled: func(a *app) bool { return deletedOn(a) && len(a.rows) > 0 }, Run: func(a *app) { a.askRestoreAll() }},
 		{ID: "refresh", Label: locales.Messages.CmdRefresh, Icon: "refresh-cw", Chords: []chord{{0, ui.KeyF5, "F5"}, {ui.Cmd, ui.KeyR, "Ctrl+R"}}, Accel: "F5",
 			Enabled: (*app).browsing, Run: func(a *app) { a.reload() }},
+		{ID: "foldersize", Label: locales.Messages.CmdFolderSize, Icon: "calculator", Visible: liveBrowsing, Enabled: canSizeSelection,
+			Run: func(a *app) { a.sizeFolders(a.selectedFolders()) }},
+		{ID: "foldersizes", Label: locales.Messages.CmdFolderSizes, Icon: "calculator", Enabled: canSizeShown,
+			Run: func(a *app) { a.sizeFolders(a.shownFolders()) }},
 		{ID: "selectall", Label: locales.Messages.CmdSelectAll, Icon: "check-check", Chords: []chord{{ui.Cmd, ui.KeyA, "Ctrl+A"}},
 			Enabled: func(a *app) bool { return a.browsing() && len(a.rows) > 0 }, Run: func(a *app) { a.selectAll() }},
 		// Esc clears the choice too, but only from the table (table).
@@ -328,7 +332,7 @@ func commandTable() []command {
 
 // contextLayout is the order of the context menu: groups of command ids.
 var contextLayout = [][]string{
-	{"open", "download"},
+	{"open", "download", "foldersize"},
 	{"copy", "cut", "paste", "rename"},
 	{"restore", "restoreall"},
 	{"storageclass", "encryption"},
