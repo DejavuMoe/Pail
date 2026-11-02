@@ -7,6 +7,7 @@ import (
 	"io"
 	"net/http"
 	"strings"
+	"sync"
 	"sync/atomic"
 	"testing"
 
@@ -116,13 +117,20 @@ func TestDeleteObjectsProtocolChunksAndOrder(t *testing.T) {
 func TestDeleteObjectsBatchBoundaries(t *testing.T) {
 	for _, n := range []int{0, 1, 1000, 1001, 2001} {
 		t.Run(fmt.Sprint(n), func(t *testing.T) {
-			var calls atomic.Int32
+			// Batches are keyed by their first version ID, so an SDK retry of
+			// the same batch after a transient transport error is not counted twice.
+			var mu sync.Mutex
+			batches := map[string]int{}
 			c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
-				calls.Add(1)
 				var body struct {
 					Objects []xmlItem `xml:"Object"`
 				}
 				_ = xml.NewDecoder(r.Body).Decode(&body)
+				if len(body.Objects) > 0 {
+					mu.Lock()
+					batches[body.Objects[0].VersionID] = len(body.Objects)
+					mu.Unlock()
+				}
 				var resp struct {
 					XMLName xml.Name  `xml:"DeleteResult"`
 					Deleted []xmlItem `xml:"Deleted"`
@@ -132,8 +140,17 @@ func TestDeleteObjectsBatchBoundaries(t *testing.T) {
 			})
 			res := c.DeleteObjects(context.Background(), "bucket", ids(n))
 			assertCounts(t, res, n, 0, 0, 0)
-			if want := (n + 999) / 1000; int(calls.Load()) != want {
-				t.Fatalf("calls=%d want %d", calls.Load(), want)
+			mu.Lock()
+			defer mu.Unlock()
+			total := 0
+			for _, size := range batches {
+				if size > 1000 {
+					t.Fatalf("batch of %d objects exceeds 1000", size)
+				}
+				total += size
+			}
+			if want := (n + 999) / 1000; len(batches) != want || total != n {
+				t.Fatalf("batches=%v want %d batches covering %d objects", batches, want, n)
 			}
 		})
 	}
