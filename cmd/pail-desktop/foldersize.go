@@ -18,7 +18,8 @@ import (
 // folder's context menu, or "Calculate folder sizes" in the toolbar for every
 // folder shown. The walks run off the UI thread, at most folderSizeWorkers at
 // a time, and the cell shows the running total under a spinner until its walk
-// ends.
+// ends. A folder that has a size can be asked for again: nothing tells when its
+// content changes outside Pail, so the user decides when to measure it anew.
 //
 // A result stays while the user browses elsewhere in the bucket and is
 // dropped when it can be out of date: a refresh of a folder (F5, or the reload
@@ -72,11 +73,12 @@ func (a *app) knownFolderSize(folderKey string) (int64, bool) {
 	return 0, false
 }
 
-// sizeWanted reports whether a folder has no size and none is on its way: a
-// new request for it would do something.
-func (a *app) sizeWanted(folderKey string) bool {
+// sizeInFlight reports whether a folder is queued or being walked: a new
+// request for it would change nothing. A folder with a size, or a failed one,
+// can be asked for again, since the folder may have changed since.
+func (a *app) sizeInFlight(folderKey string) bool {
 	fs := a.folderSizeOf(folderKey)
-	return fs == nil || fs.state == sizeFailed
+	return fs != nil && (fs.state == sizeQueued || fs.state == sizeRunning)
 }
 
 // selectedFolders are the folder keys of the selection, in table order.
@@ -101,29 +103,30 @@ func (a *app) shownFolders() []string {
 	return out
 }
 
-// anyWanted reports whether one of keys has no size on its way.
-func (a *app) anyWanted(keys []string) bool {
+// anyIdle reports whether one of keys is not being sized.
+func (a *app) anyIdle(keys []string) bool {
 	for _, k := range keys {
-		if a.sizeWanted(k) {
+		if !a.sizeInFlight(k) {
 			return true
 		}
 	}
 	return false
 }
 
-// canSizeSelection and canSizeShown enable the two commands: something to
-// size that is not sized or being sized already.
-func canSizeSelection(a *app) bool { return liveBrowsing(a) && a.anyWanted(a.selectedFolders()) }
-func canSizeShown(a *app) bool     { return liveBrowsing(a) && a.anyWanted(a.shownFolders()) }
+// canSizeSelection and canSizeShown enable the two commands: a folder that is
+// not being sized, whether or not it has a size already.
+func canSizeSelection(a *app) bool { return liveBrowsing(a) && a.anyIdle(a.selectedFolders()) }
+func canSizeShown(a *app) bool     { return liveBrowsing(a) && a.anyIdle(a.shownFolders()) }
 
-// sizeFolders queues the folders of the open folder that have no size on its
-// way, and starts as many walks as there is room for.
+// sizeFolders queues the folders of the open folder that are not being sized,
+// ones that have a size too (which is then measured again), and starts as many
+// walks as there is room for.
 func (a *app) sizeFolders(keys []string) {
 	if a.sizes.by == nil {
 		a.sizes.by = map[string]*folderSize{}
 	}
 	for _, k := range keys {
-		if !a.sizeWanted(k) {
+		if a.sizeInFlight(k) {
 			continue
 		}
 		s := a.scope
