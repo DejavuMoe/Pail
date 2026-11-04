@@ -70,10 +70,10 @@ func TestFolderSizesAreCalculatedOnRequest(t *testing.T) {
 	if h.sizeState("fs/beta/") != -1 {
 		t.Fatal("beta was sized with alpha")
 	}
-	// A folder already sized has nothing left to calculate.
+	// A folder already sized can be calculated again, a file never.
 	h.a.setSingle("fs/alpha/")
-	if h.a.enabled(h.a.cmd("foldersize")) {
-		t.Fatal("Calculate size stays enabled for a sized folder")
+	if !h.a.enabled(h.a.cmd("foldersize")) {
+		t.Fatal("Calculate size is disabled for a sized folder")
 	}
 	h.a.setSingle("fs/top.txt")
 	if h.a.enabled(h.a.cmd("foldersize")) {
@@ -87,8 +87,8 @@ func TestFolderSizesAreCalculatedOnRequest(t *testing.T) {
 		t.Fatalf("beta: state %d", h.sizeState("fs/beta/"))
 	}
 	h.mustHave("10.0 KB")
-	if h.a.enabled(h.a.cmd("foldersizes")) {
-		t.Fatal("Calculate folder sizes stays enabled with every folder sized")
+	if !h.a.enabled(h.a.cmd("foldersizes")) {
+		t.Fatal("Calculate folder sizes is disabled with every folder sized")
 	}
 
 	// Folders sort by their size among themselves, still before the files.
@@ -114,6 +114,61 @@ func TestFolderSizesAreCalculatedOnRequest(t *testing.T) {
 	h.settle()
 	if h.sizeState("fs/alpha/") != -1 || h.sizeState("fs/beta/") != -1 {
 		t.Fatal("a refresh kept sizes that may be out of date")
+	}
+}
+
+// A folder can change outside Pail, which nothing in the table shows; the
+// commands must stay available after a size is known so it can be measured
+// again.
+func TestFolderSizeCanBeCalculatedAgain(t *testing.T) {
+	h := newHarness(t, "light")
+	h.seedSizes()
+	h.a.setSingle("fs/alpha/")
+	h.runCmd("foldersize")
+	h.settle()
+	if fs := h.a.folderSizeOf("fs/alpha/"); fs.state != sizeReady || fs.est != (core.Estimate{Objects: 2, Bytes: 3072}) {
+		t.Fatalf("first: %+v", fs)
+	}
+
+	// Two folders change behind the app's back; the old sizes stay shown.
+	h.env.Srv.PutObject(sizeBkt, "fs/alpha/new.bin", make([]byte, 4096), "", nil)
+	h.env.Srv.PutObject(sizeBkt, "fs/beta/4.bin", make([]byte, 2048), "", nil)
+	if !h.a.enabled(h.a.cmd("foldersize")) {
+		t.Fatal("Calculate size is disabled for a sized folder")
+	}
+	if b, ok := h.a.knownFolderSize("fs/alpha/"); !ok || b != 3072 {
+		t.Fatalf("alpha before: %d %v", b, ok)
+	}
+
+	// The context menu measures that folder again.
+	h.rightClickChoose("alpha", "Calculate size")
+	h.waitFor("alpha measured again", func() bool {
+		fs := h.a.folderSizeOf("fs/alpha/")
+		return fs != nil && fs.state == sizeReady && fs.est.Bytes == 3072+4096
+	})
+	if fs := h.a.folderSizeOf("fs/alpha/"); fs.est.Objects != 3 {
+		t.Fatalf("alpha: %+v", fs.est)
+	}
+
+	// While a folder is being measured, asking again would change nothing.
+	fs := h.a.folderSizeOf("fs/alpha/")
+	fs.state = sizeRunning
+	h.a.setSingle("fs/alpha/")
+	if h.a.enabled(h.a.cmd("foldersize")) {
+		t.Fatal("Calculate size is enabled for a folder being measured")
+	}
+	fs.state = sizeReady
+
+	// The toolbar command measures every folder shown again, sized or not.
+	h.runCmd("foldersizes")
+	h.settle()
+	for key, want := range map[string]core.Estimate{
+		"fs/alpha/": {Objects: 3, Bytes: 3072 + 4096},
+		"fs/beta/":  {Objects: 2, Bytes: 10*1024 + 2048},
+	} {
+		if got := h.a.folderSizeOf(key); got == nil || got.state != sizeReady || got.est != want {
+			t.Fatalf("%s: %+v, want %+v", key, got, want)
+		}
 	}
 }
 
