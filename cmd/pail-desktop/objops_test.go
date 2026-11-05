@@ -982,6 +982,7 @@ func TestSettingsLogSwitchPersistsAndOpensTheLogFolder(t *testing.T) {
 	h.settle()
 	h.snapBoth("settings-log-on")
 
+	h.showSetting("Open log folder")
 	h.mustClick("Open log folder")
 	select {
 	case p := <-opened:
@@ -1005,6 +1006,7 @@ func TestOpenLogFolderFailureIsReported(t *testing.T) {
 	h.a.openPath = func(string) error { return fmt.Errorf("no file manager") }
 	h.a.openTool("settings")
 	h.settle()
+	h.showSetting("Open log folder")
 	h.mustClick("Open log folder")
 	h.waitToast("Could not open the log folder: no file manager")
 }

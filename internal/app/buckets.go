@@ -98,6 +98,7 @@ func (s *Service) DeleteBucket(ctx context.Context, accountID, name string) erro
 	s.mu.Lock()
 	delete(s.bucketRegion, accountID+"/"+name)
 	s.mu.Unlock()
+	_ = s.SetBucketAlias(accountID, name, "") // the name is gone; so is its label (best effort)
 	return nil
 }
 

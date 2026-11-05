@@ -1508,6 +1508,98 @@ func (msgs Messages) AliasVault() string {
 	return Catalog.Format(msgs.locale, "aliasVault", nil)
 }
 
+// BucketAliasHelp says "Shown instead of the bucket name in the sidebar, the path bar and the command palette. The bucket itself is not renamed."
+// in the language the app shows.
+func BucketAliasHelp() string { return In(i18n.Locale()).BucketAliasHelp() }
+
+// BucketAliasHelp says "Shown instead of the bucket name in the sidebar, the path bar and the command palette. The bucket itself is not renamed."
+// in the language of msgs.
+func (msgs Messages) BucketAliasHelp() string {
+	return Catalog.Format(msgs.locale, "bucketAliasHelp", nil)
+}
+
+// BucketAliasLabel says "Alias"
+// in the language the app shows.
+func BucketAliasLabel() string { return In(i18n.Locale()).BucketAliasLabel() }
+
+// BucketAliasLabel says "Alias"
+// in the language of msgs.
+func (msgs Messages) BucketAliasLabel() string {
+	return Catalog.Format(msgs.locale, "bucketAliasLabel", nil)
+}
+
+// BucketAliasPlaceholder says "Leave empty to show the bucket name"
+// in the language the app shows.
+func BucketAliasPlaceholder() string { return In(i18n.Locale()).BucketAliasPlaceholder() }
+
+// BucketAliasPlaceholder says "Leave empty to show the bucket name"
+// in the language of msgs.
+func (msgs Messages) BucketAliasPlaceholder() string {
+	return Catalog.Format(msgs.locale, "bucketAliasPlaceholder", nil)
+}
+
+// BucketAliasRemoved says "Removed the alias of {bucket}"
+// in the language the app shows.
+func BucketAliasRemoved(bucket string) string { return In(i18n.Locale()).BucketAliasRemoved(bucket) }
+
+// BucketAliasRemoved says "Removed the alias of {bucket}"
+// in the language of msgs.
+func (msgs Messages) BucketAliasRemoved(bucket string) string {
+	return Catalog.Format(msgs.locale, "bucketAliasRemoved", map[string]any{"bucket": bucket})
+}
+
+// BucketAliasSaveFailed says "Could not save the alias: {detail}"
+// in the language the app shows.
+func BucketAliasSaveFailed(detail string) string {
+	return In(i18n.Locale()).BucketAliasSaveFailed(detail)
+}
+
+// BucketAliasSaveFailed says "Could not save the alias: {detail}"
+// in the language of msgs.
+func (msgs Messages) BucketAliasSaveFailed(detail string) string {
+	return Catalog.Format(msgs.locale, "bucketAliasSaveFailed", map[string]any{"detail": detail})
+}
+
+// BucketAliasSaved says "Saved the alias of {bucket}"
+// in the language the app shows.
+func BucketAliasSaved(bucket string) string { return In(i18n.Locale()).BucketAliasSaved(bucket) }
+
+// BucketAliasSaved says "Saved the alias of {bucket}"
+// in the language of msgs.
+func (msgs Messages) BucketAliasSaved(bucket string) string {
+	return Catalog.Format(msgs.locale, "bucketAliasSaved", map[string]any{"bucket": bucket})
+}
+
+// BucketAliasTaken says "Already used by {bucket}"
+// in the language the app shows.
+func BucketAliasTaken(bucket string) string { return In(i18n.Locale()).BucketAliasTaken(bucket) }
+
+// BucketAliasTaken says "Already used by {bucket}"
+// in the language of msgs.
+func (msgs Messages) BucketAliasTaken(bucket string) string {
+	return Catalog.Format(msgs.locale, "bucketAliasTaken", map[string]any{"bucket": bucket})
+}
+
+// BucketAliasTitle says "Bucket alias"
+// in the language the app shows.
+func BucketAliasTitle() string { return In(i18n.Locale()).BucketAliasTitle() }
+
+// BucketAliasTitle says "Bucket alias"
+// in the language of msgs.
+func (msgs Messages) BucketAliasTitle() string {
+	return Catalog.Format(msgs.locale, "bucketAliasTitle", nil)
+}
+
+// BucketAliasTooLong says "Use at most {n} characters"
+// in the language the app shows.
+func BucketAliasTooLong(n string) string { return In(i18n.Locale()).BucketAliasTooLong(n) }
+
+// BucketAliasTooLong says "Use at most {n} characters"
+// in the language of msgs.
+func (msgs Messages) BucketAliasTooLong(n string) string {
+	return Catalog.Format(msgs.locale, "bucketAliasTooLong", map[string]any{"n": n})
+}
+
 // BucketDialogsAllVersions says "Also delete all versions and delete markers"
 // in the language the app shows.
 func BucketDialogsAllVersions() string { return In(i18n.Locale()).BucketDialogsAllVersions() }
@@ -8392,6 +8484,16 @@ func (msgs Messages) SettingsLogOpenFail(detail string) string {
 	return Catalog.Format(msgs.locale, "settingsLogOpenFail", map[string]any{"detail": detail})
 }
 
+// SettingsNetwork says "Network"
+// in the language the app shows.
+func SettingsNetwork() string { return In(i18n.Locale()).SettingsNetwork() }
+
+// SettingsNetwork says "Network"
+// in the language of msgs.
+func (msgs Messages) SettingsNetwork() string {
+	return Catalog.Format(msgs.locale, "settingsNetwork", nil)
+}
+
 // SettingsNoLogDir says "There is no log folder"
 // in the language the app shows.
 func SettingsNoLogDir() string { return In(i18n.Locale()).SettingsNoLogDir() }
@@ -8470,6 +8572,176 @@ func SettingsPartRow() string { return In(i18n.Locale()).SettingsPartRow() }
 // in the language of msgs.
 func (msgs Messages) SettingsPartRow() string {
 	return Catalog.Format(msgs.locale, "settingsPartRow", nil)
+}
+
+// SettingsProxy says "Proxy server"
+// in the language the app shows.
+func SettingsProxy() string { return In(i18n.Locale()).SettingsProxy() }
+
+// SettingsProxy says "Proxy server"
+// in the language of msgs.
+func (msgs Messages) SettingsProxy() string {
+	return Catalog.Format(msgs.locale, "settingsProxy", nil)
+}
+
+// SettingsProxyAddress says "Host and port"
+// in the language the app shows.
+func SettingsProxyAddress() string { return In(i18n.Locale()).SettingsProxyAddress() }
+
+// SettingsProxyAddress says "Host and port"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyAddress() string {
+	return Catalog.Format(msgs.locale, "settingsProxyAddress", nil)
+}
+
+// SettingsProxyApply says "Apply"
+// in the language the app shows.
+func SettingsProxyApply() string { return In(i18n.Locale()).SettingsProxyApply() }
+
+// SettingsProxyApply says "Apply"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyApply() string {
+	return Catalog.Format(msgs.locale, "settingsProxyApply", nil)
+}
+
+// SettingsProxyEnv says "From environment"
+// in the language the app shows.
+func SettingsProxyEnv() string { return In(i18n.Locale()).SettingsProxyEnv() }
+
+// SettingsProxyEnv says "From environment"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyEnv() string {
+	return Catalog.Format(msgs.locale, "settingsProxyEnv", nil)
+}
+
+// SettingsProxyErrHost says "Use only a host name or an IP address, without http:// or a port"
+// in the language the app shows.
+func SettingsProxyErrHost() string { return In(i18n.Locale()).SettingsProxyErrHost() }
+
+// SettingsProxyErrHost says "Use only a host name or an IP address, without http:// or a port"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyErrHost() string {
+	return Catalog.Format(msgs.locale, "settingsProxyErrHost", nil)
+}
+
+// SettingsProxyErrHostMissing says "Enter a host name or an IP address"
+// in the language the app shows.
+func SettingsProxyErrHostMissing() string { return In(i18n.Locale()).SettingsProxyErrHostMissing() }
+
+// SettingsProxyErrHostMissing says "Enter a host name or an IP address"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyErrHostMissing() string {
+	return Catalog.Format(msgs.locale, "settingsProxyErrHostMissing", nil)
+}
+
+// SettingsProxyErrPort says "Enter a port from 1 to 65535"
+// in the language the app shows.
+func SettingsProxyErrPort() string { return In(i18n.Locale()).SettingsProxyErrPort() }
+
+// SettingsProxyErrPort says "Enter a port from 1 to 65535"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyErrPort() string {
+	return Catalog.Format(msgs.locale, "settingsProxyErrPort", nil)
+}
+
+// SettingsProxyErrUser says "A password needs a user name"
+// in the language the app shows.
+func SettingsProxyErrUser() string { return In(i18n.Locale()).SettingsProxyErrUser() }
+
+// SettingsProxyErrUser says "A password needs a user name"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyErrUser() string {
+	return Catalog.Format(msgs.locale, "settingsProxyErrUser", nil)
+}
+
+// SettingsProxyErrUserChars says "The user name has characters that are not allowed"
+// in the language the app shows.
+func SettingsProxyErrUserChars() string { return In(i18n.Locale()).SettingsProxyErrUserChars() }
+
+// SettingsProxyErrUserChars says "The user name has characters that are not allowed"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyErrUserChars() string {
+	return Catalog.Format(msgs.locale, "settingsProxyErrUserChars", nil)
+}
+
+// SettingsProxyHelp says "Sends the requests of all accounts through a proxy server. Choose From environment to use the HTTP_PROXY, HTTPS_PROXY…"
+// in the language the app shows.
+func SettingsProxyHelp() string { return In(i18n.Locale()).SettingsProxyHelp() }
+
+// SettingsProxyHelp says "Sends the requests of all accounts through a proxy server. Choose From environment to use the HTTP_PROXY, HTTPS_PROXY…"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyHelp() string {
+	return Catalog.Format(msgs.locale, "settingsProxyHelp", nil)
+}
+
+// SettingsProxyHost says "Host name or IP address"
+// in the language the app shows.
+func SettingsProxyHost() string { return In(i18n.Locale()).SettingsProxyHost() }
+
+// SettingsProxyHost says "Host name or IP address"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyHost() string {
+	return Catalog.Format(msgs.locale, "settingsProxyHost", nil)
+}
+
+// SettingsProxyPassword says "Password (optional)"
+// in the language the app shows.
+func SettingsProxyPassword() string { return In(i18n.Locale()).SettingsProxyPassword() }
+
+// SettingsProxyPassword says "Password (optional)"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyPassword() string {
+	return Catalog.Format(msgs.locale, "settingsProxyPassword", nil)
+}
+
+// SettingsProxyPasswordName says "Proxy password"
+// in the language the app shows.
+func SettingsProxyPasswordName() string { return In(i18n.Locale()).SettingsProxyPasswordName() }
+
+// SettingsProxyPasswordName says "Proxy password"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyPasswordName() string {
+	return Catalog.Format(msgs.locale, "settingsProxyPasswordName", nil)
+}
+
+// SettingsProxyPasswordSaved says "Saved. Type to replace it"
+// in the language the app shows.
+func SettingsProxyPasswordSaved() string { return In(i18n.Locale()).SettingsProxyPasswordSaved() }
+
+// SettingsProxyPasswordSaved says "Saved. Type to replace it"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyPasswordSaved() string {
+	return Catalog.Format(msgs.locale, "settingsProxyPasswordSaved", nil)
+}
+
+// SettingsProxyPort says "Port"
+// in the language the app shows.
+func SettingsProxyPort() string { return In(i18n.Locale()).SettingsProxyPort() }
+
+// SettingsProxyPort says "Port"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyPort() string {
+	return Catalog.Format(msgs.locale, "settingsProxyPort", nil)
+}
+
+// SettingsProxyProtocol says "Proxy protocol"
+// in the language the app shows.
+func SettingsProxyProtocol() string { return In(i18n.Locale()).SettingsProxyProtocol() }
+
+// SettingsProxyProtocol says "Proxy protocol"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyProtocol() string {
+	return Catalog.Format(msgs.locale, "settingsProxyProtocol", nil)
+}
+
+// SettingsProxyUser says "User name (optional)"
+// in the language the app shows.
+func SettingsProxyUser() string { return In(i18n.Locale()).SettingsProxyUser() }
+
+// SettingsProxyUser says "User name (optional)"
+// in the language of msgs.
+func (msgs Messages) SettingsProxyUser() string {
+	return Catalog.Format(msgs.locale, "settingsProxyUser", nil)
 }
 
 // SettingsTheme says "Theme"
@@ -8862,6 +9134,16 @@ func SidebarSecretMissing() string { return In(i18n.Locale()).SidebarSecretMissi
 // in the language of msgs.
 func (msgs Messages) SidebarSecretMissing() string {
 	return Catalog.Format(msgs.locale, "sidebarSecretMissing", nil)
+}
+
+// SidebarSetAlias says "Set alias…"
+// in the language the app shows.
+func SidebarSetAlias() string { return In(i18n.Locale()).SidebarSetAlias() }
+
+// SidebarSetAlias says "Set alias…"
+// in the language of msgs.
+func (msgs Messages) SidebarSetAlias() string {
+	return Catalog.Format(msgs.locale, "sidebarSetAlias", nil)
 }
 
 // SidebarSwitchAccount says "Switch account"
@@ -9378,6 +9660,58 @@ func StatusbarSelected(n string, size string) string {
 // in the language of msgs.
 func (msgs Messages) StatusbarSelected(n string, size string) string {
 	return Catalog.Format(msgs.locale, "statusbarSelected", map[string]any{"n": n, "size": size})
+}
+
+// StatusbarTookBuckets says "Loading the buckets took {time}"
+// in the language the app shows.
+func StatusbarTookBuckets(time_ string) string { return In(i18n.Locale()).StatusbarTookBuckets(time_) }
+
+// StatusbarTookBuckets says "Loading the buckets took {time}"
+// in the language of msgs.
+func (msgs Messages) StatusbarTookBuckets(time_ string) string {
+	return Catalog.Format(msgs.locale, "statusbarTookBuckets", map[string]any{"time": time_})
+}
+
+// StatusbarTookDelete says "The delete took {time}"
+// in the language the app shows.
+func StatusbarTookDelete(time_ string) string { return In(i18n.Locale()).StatusbarTookDelete(time_) }
+
+// StatusbarTookDelete says "The delete took {time}"
+// in the language of msgs.
+func (msgs Messages) StatusbarTookDelete(time_ string) string {
+	return Catalog.Format(msgs.locale, "statusbarTookDelete", map[string]any{"time": time_})
+}
+
+// StatusbarTookDownload says "The download took {time}"
+// in the language the app shows.
+func StatusbarTookDownload(time_ string) string {
+	return In(i18n.Locale()).StatusbarTookDownload(time_)
+}
+
+// StatusbarTookDownload says "The download took {time}"
+// in the language of msgs.
+func (msgs Messages) StatusbarTookDownload(time_ string) string {
+	return Catalog.Format(msgs.locale, "statusbarTookDownload", map[string]any{"time": time_})
+}
+
+// StatusbarTookList says "Loading the list took {time}"
+// in the language the app shows.
+func StatusbarTookList(time_ string) string { return In(i18n.Locale()).StatusbarTookList(time_) }
+
+// StatusbarTookList says "Loading the list took {time}"
+// in the language of msgs.
+func (msgs Messages) StatusbarTookList(time_ string) string {
+	return Catalog.Format(msgs.locale, "statusbarTookList", map[string]any{"time": time_})
+}
+
+// StatusbarTookUpload says "The upload took {time}"
+// in the language the app shows.
+func StatusbarTookUpload(time_ string) string { return In(i18n.Locale()).StatusbarTookUpload(time_) }
+
+// StatusbarTookUpload says "The upload took {time}"
+// in the language of msgs.
+func (msgs Messages) StatusbarTookUpload(time_ string) string {
+	return Catalog.Format(msgs.locale, "statusbarTookUpload", map[string]any{"time": time_})
 }
 
 // SyncAccountLabel says "Sync account"
@@ -11148,6 +11482,16 @@ func (msgs Messages) VaultPasswordChanged() string {
 	return Catalog.Format(msgs.locale, "vaultPasswordChanged", nil)
 }
 
+// VaultProxyPasswordLost says "The proxy password is gone. Enter it again in Settings › Network."
+// in the language the app shows.
+func VaultProxyPasswordLost() string { return In(i18n.Locale()).VaultProxyPasswordLost() }
+
+// VaultProxyPasswordLost says "The proxy password is gone. Enter it again in Settings › Network."
+// in the language of msgs.
+func (msgs Messages) VaultProxyPasswordLost() string {
+	return Catalog.Format(msgs.locale, "vaultProxyPasswordLost", nil)
+}
+
 // VaultReencrypting says "Re-encrypting the vault…"
 // in the language the app shows.
 func VaultReencrypting() string { return In(i18n.Locale()).VaultReencrypting() }
@@ -11236,6 +11580,16 @@ func VaultResetRefs() string { return In(i18n.Locale()).VaultResetRefs() }
 // in the language of msgs.
 func (msgs Messages) VaultResetRefs() string {
 	return Catalog.Format(msgs.locale, "vaultResetRefs", nil)
+}
+
+// VaultResetSettings says "Settings that lose their secret"
+// in the language the app shows.
+func VaultResetSettings() string { return In(i18n.Locale()).VaultResetSettings() }
+
+// VaultResetSettings says "Settings that lose their secret"
+// in the language of msgs.
+func (msgs Messages) VaultResetSettings() string {
+	return Catalog.Format(msgs.locale, "vaultResetSettings", nil)
 }
 
 // VaultResetTitle says "Reset vault?"

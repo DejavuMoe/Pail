@@ -59,10 +59,20 @@ type Settings struct {
 	LogToFile          bool
 	SecretBackend        string // "keyring" (default) | "vault"; only SetSecretBackend changes it, SaveSettings keeps the current value
 	VaultAutoLockMinutes int    // default 15, 0 = never; 0 is a real value and is NOT replaced by the default in SaveSettings
+	Proxy                ProxySettings // zero = HTTP_PROXY / HTTPS_PROXY / NO_PROXY from the environment; only SaveProxy changes it, SaveSettings keeps the current value
 }
 type Limits struct{ Upload, Download, Other int } // each >=1, default 8
 func (s *Service) Settings() Settings
 func (s *Service) SaveSettings(Settings) error // applies Limits to the running queue
+type ProxySettings struct {
+	Scheme      string // "" | "http" | "https" | "socks5"
+	Host        string // host name or IP address, no brackets, no port
+	Port        int
+	Username    string // optional
+	HasPassword bool   // a password is in the secret store ("proxy/password"); never in settings.json
+}
+func (p ProxySettings) Problem(newPassword bool) ProxyProblem // "" | "scheme" | "host-missing" | "host-invalid" | "port" | "user" | "user-invalid"
+func (s *Service) SaveProxy(p ProxySettings, password *string) error // nil keeps the password, "" removes it
 
 func (s *Service) SetSecret(ref, value string) error
 func (s *Service) DeleteSecret(ref string) error
@@ -117,6 +127,7 @@ type Account struct {
 	ChecksumMode       string // "auto" (default) | "when_required" | "when_supported"
 	CDNURL             string   // optional base URL or template; see CDN below
 	CDNBuckets         []string // buckets served by the CDN; empty = all
+	BucketAliases      map[string]string // bucket name -> display name; only SetBucketAlias changes it
 }
 type Secrets struct{ SecretAccessKey, SessionToken string }
 
@@ -125,11 +136,18 @@ func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error)
 // sec == nil 表示保留已有机密。先写新机密，再更新账户记录，最后删除旧机密。
 func (s *Service) DeleteAccount(id string) error // also deletes its keyring entries
 func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) error // ListBuckets with a throwaway client
+func (s *Service) BucketAlias(accountID, bucket string) string                      // "" = none
+func (s *Service) SetBucketAlias(accountID, bucket, alias string) error                // "" or the bucket name removes it
+const MaxAliasRunes = 64
 ```
 
 **CDN。** `CDNURL` 是基础 URL 或模板。含 `{key}` 时替换 `{bucket}`（原桶名）与 `{key}`（按 `PublicURL` 同样的规则转义，保留 `/`）；不含占位符时为 `<base>/<bucket>/<key>`；只有 `{bucket}` 没有 `{key}` 的模板无效。只允许 http(s)，要求 host，不含用户信息、query、fragment。`CDNBuckets` 去空、去重，每项须是合法桶名。`CDNURL(loc, key)` 不发请求，账户无 CDN、桶不在 `CDNBuckets`、桶名为空、key 为空或以 `/` 结尾时返回 `""`。
 
-客户端缓存按 accountID 保存 `*storage.Client` 和 `*cloud.Client`，惰性构建，账户变更时失效。
+客户端缓存按 accountID 保存 `*storage.Client` 和 `*cloud.Client`，惰性构建，账户变更时失效。`SaveProxy` 改动代理时所有账户的缓存同样失效（连同正在构建的条目，靠 `acctEpoch` 丢弃）；已在运行的传输沿用旧连接。代理只改传输层：`Service` 把 `ProxySettings` 和密码拼成地址放进 `storage.Config.ProxyURL`，进入 `NewHTTPClient`，S3、STS 和 CloudFront 共用同一个 HTTP 客户端。`Scheme` 为空时用 `http.ProxyFromEnvironment`；非空时用 `httpproxy` 按该地址选路，本机地址（localhost 与回环地址）和 `NO_PROXY` 里的主机仍直连。地址不合法时请求直接失败，不退回直连。
+
+**代理密码。** 用户名和密码可选，密码需要用户名；`SaveProxy` 清除用户名或协议时一并删除密码。密码存在机密存储的 `proxy/password`，`settings.json` 只记 `hasPassword`。写入顺序与账户机密一致：先写新密码，再写 `settings.json`，最后删除不再需要的旧密码；`settings.json` 写失败时恢复原密码。写入持有 `refMu`，与后端迁移互斥。构建客户端和测试连接时在所有锁之外读取密码；缺失时返回 `NotFound`，保险库锁定时返回 `Locked`，错误消息不含密码。`SetSecretBackend` 把它列入迁移清单；`ResetVault` 把 `hasPassword` 清除并在 `VaultReset.Proxy` 报告。日志里的密码经 `lgAddSecret` 脱敏。
+
+**桶别名。** `BucketAliases` 是只在本机配置里的显示名，不改桶、不进任何请求。`SetBucketAlias` 去首尾空白，最长 `MaxAliasRunes` 个字符（按 rune），不含控制字符，同一账户内不能重复；空别名或与桶名相同即删除。别名只由它写入：`SaveAccount` 忽略传入的 `BucketAliases` 并保留已存的，新账户从空开始；`DeleteBucket` 成功后清除该桶的别名。界面在侧边栏、路径栏、命令面板、检查器标题和"返回"按钮用别名，在删除、清空、复制等对话框、对象 URI 和传输任务里仍用真实名称。
 
 ## 3. 浏览与对象信息（`browse.go`、`objects.go`）
 

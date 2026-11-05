@@ -238,6 +238,7 @@ func TestVaultChangeMasterPassword(t *testing.T) {
 	h := newHarness(t, "light")
 	h.toVault()
 	h.openToolView("settings")
+	h.showSetting("Change master password…")
 	h.mustClick("Change master password…")
 	h.mustHave("Change master password", "Current password", "New password", "Confirm new password", "Change password")
 
@@ -315,6 +316,7 @@ func TestVaultResetNeedsTypingResetAndMarksAccounts(t *testing.T) {
 	}
 	h.toVault()
 	h.openToolView("settings")
+	h.showSetting("Reset vault…")
 	h.mustClick("Reset vault…")
 	h.mustHave("Reset vault?", "This deletes the vault and every secret stored in it.", demoAccountName, "signing-key", "Type RESET to confirm", "Cancel", "Reset vault")
 
@@ -357,6 +359,7 @@ func TestVaultAutoLockSelectPersists(t *testing.T) {
 	h := newHarness(t, "light")
 	h.toVault()
 	h.openToolView("settings")
+	h.showSetting("15 minutes")
 	h.mustClick("15 minutes")
 	h.mustHave("Never", "5 minutes", "30 minutes", "60 minutes")
 	h.mustClick("30 minutes")

@@ -27,8 +27,14 @@ func TestStorageConfigMapping(t *testing.T) {
 		{"anonymous", Account{Credentials: CredAnonymous}, Secrets{}, storage.Config{Anonymous: true}},
 	}
 	for _, c := range cases {
-		if got := storageConfig(c.a, c.sec); got != c.want {
+		if got := storageConfig(c.a, c.sec, ""); got != c.want {
 			t.Errorf("%s: got %+v want %+v", c.name, got, c.want)
+		}
+	}
+	// The proxy is a setting of the app, not of the account: it reaches every account.
+	for _, a := range []Account{{Credentials: CredAnonymous}, {Credentials: CredDefault}} {
+		if got := storageConfig(a, Secrets{}, "socks5://127.0.0.1:7890"); got.ProxyURL != "socks5://127.0.0.1:7890" {
+			t.Errorf("%s: proxy %q", a.Credentials, got.ProxyURL)
 		}
 	}
 }

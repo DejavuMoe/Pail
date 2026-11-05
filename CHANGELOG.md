@@ -4,6 +4,14 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Bucket aliases. Right-click a bucket and choose Set alias… to show a name you recognise in the sidebar, the path bar and the command palette. The bucket is not renamed: the dialogs that act on a bucket, links and the command line keep its real name.
+- Proxy server. **Settings › Network** sends the requests of all accounts through a proxy: choose HTTP, HTTPS or SOCKS5, enter the host and port, and optionally a user name and password. The password is kept in the system keychain or the encrypted vault, with your other secrets. Addresses on your own computer connect directly. Leave it on From environment to use the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables as before. The command line uses the same setting.
+- The status bar shows how long the last operation took: loading the bucket list, opening a folder, an upload, a download or a delete.
+
 ## [0.4.1] - 2026-11-04
 
 ### Fixed

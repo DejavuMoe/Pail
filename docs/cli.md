@@ -2,7 +2,7 @@
 
 English | [简体中文](cli.zh-CN.md)
 
-`pail` works with the same accounts, saved sync jobs and secrets as the desktop app. It shares the desktop app's configuration directory and secret store (the OS keychain or the encrypted vault). Accounts cannot be added or changed from the command line; do that in the desktop app.
+`pail` works with the same accounts, saved sync jobs and secrets as the desktop app. It shares the desktop app's configuration directory and secret store (the OS keychain or the encrypted vault). Accounts cannot be added or changed from the command line; do that in the desktop app. Requests go through the proxy saved in the desktop app's **Settings › Network**; without one, \pail\ follows the \HTTP_PROXY\, \HTTPS_PROXY\ and \NO_PROXY\ environment variables.
 
 Release archives use versioned filenames, for example `pail-v<version>-windows-amd64.exe`. The examples below assume you installed the program as `pail` (`pail.exe` on Windows); you can also run the full filename.
 
