@@ -6850,6 +6850,160 @@ func (msgs Messages) PreviewZoomOut() string {
 	return Catalog.Format(msgs.locale, "previewZoomOut", nil)
 }
 
+// RecentOpsBuckets says "Load buckets"
+// in the language the app shows.
+func RecentOpsBuckets() string { return In(i18n.Locale()).RecentOpsBuckets() }
+
+// RecentOpsBuckets says "Load buckets"
+// in the language of msgs.
+func (msgs Messages) RecentOpsBuckets() string {
+	return Catalog.Format(msgs.locale, "recentOpsBuckets", nil)
+}
+
+// RecentOpsClear says "Clear"
+// in the language the app shows.
+func RecentOpsClear() string { return In(i18n.Locale()).RecentOpsClear() }
+
+// RecentOpsClear says "Clear"
+// in the language of msgs.
+func (msgs Messages) RecentOpsClear() string {
+	return Catalog.Format(msgs.locale, "recentOpsClear", nil)
+}
+
+// RecentOpsClearTip says "Clear the list"
+// in the language the app shows.
+func RecentOpsClearTip() string { return In(i18n.Locale()).RecentOpsClearTip() }
+
+// RecentOpsClearTip says "Clear the list"
+// in the language of msgs.
+func (msgs Messages) RecentOpsClearTip() string {
+	return Catalog.Format(msgs.locale, "recentOpsClearTip", nil)
+}
+
+// RecentOpsDelete says "Delete"
+// in the language the app shows.
+func RecentOpsDelete() string { return In(i18n.Locale()).RecentOpsDelete() }
+
+// RecentOpsDelete says "Delete"
+// in the language of msgs.
+func (msgs Messages) RecentOpsDelete() string {
+	return Catalog.Format(msgs.locale, "recentOpsDelete", nil)
+}
+
+// RecentOpsDownload says "Download"
+// in the language the app shows.
+func RecentOpsDownload() string { return In(i18n.Locale()).RecentOpsDownload() }
+
+// RecentOpsDownload says "Download"
+// in the language of msgs.
+func (msgs Messages) RecentOpsDownload() string {
+	return Catalog.Format(msgs.locale, "recentOpsDownload", nil)
+}
+
+// RecentOpsEmpty says "No recent operations"
+// in the language the app shows.
+func RecentOpsEmpty() string { return In(i18n.Locale()).RecentOpsEmpty() }
+
+// RecentOpsEmpty says "No recent operations"
+// in the language of msgs.
+func (msgs Messages) RecentOpsEmpty() string {
+	return Catalog.Format(msgs.locale, "recentOpsEmpty", nil)
+}
+
+// RecentOpsFailedN says "{n} failed"
+// in the language the app shows.
+func RecentOpsFailedN(n string) string { return In(i18n.Locale()).RecentOpsFailedN(n) }
+
+// RecentOpsFailedN says "{n} failed"
+// in the language of msgs.
+func (msgs Messages) RecentOpsFailedN(n string) string {
+	return Catalog.Format(msgs.locale, "recentOpsFailedN", map[string]any{"n": n})
+}
+
+// RecentOpsList says "Open folder"
+// in the language the app shows.
+func RecentOpsList() string { return In(i18n.Locale()).RecentOpsList() }
+
+// RecentOpsList says "Open folder"
+// in the language of msgs.
+func (msgs Messages) RecentOpsList() string {
+	return Catalog.Format(msgs.locale, "recentOpsList", nil)
+}
+
+// RecentOpsRow says "{name}, {state}, {took}"
+// in the language the app shows.
+func RecentOpsRow(name string, state string, took string) string {
+	return In(i18n.Locale()).RecentOpsRow(name, state, took)
+}
+
+// RecentOpsRow says "{name}, {state}, {took}"
+// in the language of msgs.
+func (msgs Messages) RecentOpsRow(name string, state string, took string) string {
+	return Catalog.Format(msgs.locale, "recentOpsRow", map[string]any{"name": name, "state": state, "took": took})
+}
+
+// RecentOpsRowNoTime says "{name}, {state}"
+// in the language the app shows.
+func RecentOpsRowNoTime(name string, state string) string {
+	return In(i18n.Locale()).RecentOpsRowNoTime(name, state)
+}
+
+// RecentOpsRowNoTime says "{name}, {state}"
+// in the language of msgs.
+func (msgs Messages) RecentOpsRowNoTime(name string, state string) string {
+	return Catalog.Format(msgs.locale, "recentOpsRowNoTime", map[string]any{"name": name, "state": state})
+}
+
+// RecentOpsStateCanceled says "Canceled"
+// in the language the app shows.
+func RecentOpsStateCanceled() string { return In(i18n.Locale()).RecentOpsStateCanceled() }
+
+// RecentOpsStateCanceled says "Canceled"
+// in the language of msgs.
+func (msgs Messages) RecentOpsStateCanceled() string {
+	return Catalog.Format(msgs.locale, "recentOpsStateCanceled", nil)
+}
+
+// RecentOpsStateDone says "Succeeded"
+// in the language the app shows.
+func RecentOpsStateDone() string { return In(i18n.Locale()).RecentOpsStateDone() }
+
+// RecentOpsStateDone says "Succeeded"
+// in the language of msgs.
+func (msgs Messages) RecentOpsStateDone() string {
+	return Catalog.Format(msgs.locale, "recentOpsStateDone", nil)
+}
+
+// RecentOpsStateFailed says "Failed"
+// in the language the app shows.
+func RecentOpsStateFailed() string { return In(i18n.Locale()).RecentOpsStateFailed() }
+
+// RecentOpsStateFailed says "Failed"
+// in the language of msgs.
+func (msgs Messages) RecentOpsStateFailed() string {
+	return Catalog.Format(msgs.locale, "recentOpsStateFailed", nil)
+}
+
+// RecentOpsTitle says "Recent operations"
+// in the language the app shows.
+func RecentOpsTitle() string { return In(i18n.Locale()).RecentOpsTitle() }
+
+// RecentOpsTitle says "Recent operations"
+// in the language of msgs.
+func (msgs Messages) RecentOpsTitle() string {
+	return Catalog.Format(msgs.locale, "recentOpsTitle", nil)
+}
+
+// RecentOpsUpload says "Upload"
+// in the language the app shows.
+func RecentOpsUpload() string { return In(i18n.Locale()).RecentOpsUpload() }
+
+// RecentOpsUpload says "Upload"
+// in the language of msgs.
+func (msgs Messages) RecentOpsUpload() string {
+	return Catalog.Format(msgs.locale, "recentOpsUpload", nil)
+}
+
 // RenameControlChars says "Name has control characters"
 // in the language the app shows.
 func RenameControlChars() string { return In(i18n.Locale()).RenameControlChars() }
@@ -8394,6 +8548,26 @@ func (msgs Messages) SettingsErrSave(detail string) string {
 	return Catalog.Format(msgs.locale, "settingsErrSave", map[string]any{"detail": detail})
 }
 
+// SettingsKeepRecentOps says "Keep on account switch"
+// in the language the app shows.
+func SettingsKeepRecentOps() string { return In(i18n.Locale()).SettingsKeepRecentOps() }
+
+// SettingsKeepRecentOps says "Keep on account switch"
+// in the language of msgs.
+func (msgs Messages) SettingsKeepRecentOps() string {
+	return Catalog.Format(msgs.locale, "settingsKeepRecentOps", nil)
+}
+
+// SettingsKeepRecentOpsHelp says "Whether the list of recent operations survives choosing another account. Off: it is cleared, so it only shows what wa…"
+// in the language the app shows.
+func SettingsKeepRecentOpsHelp() string { return In(i18n.Locale()).SettingsKeepRecentOpsHelp() }
+
+// SettingsKeepRecentOpsHelp says "Whether the list of recent operations survives choosing another account. Off: it is cleared, so it only shows what wa…"
+// in the language of msgs.
+func (msgs Messages) SettingsKeepRecentOpsHelp() string {
+	return Catalog.Format(msgs.locale, "settingsKeepRecentOpsHelp", nil)
+}
+
 // SettingsLanguage says "Language"
 // in the language the app shows.
 func SettingsLanguage() string { return In(i18n.Locale()).SettingsLanguage() }
@@ -8742,6 +8916,26 @@ func SettingsProxyUser() string { return In(i18n.Locale()).SettingsProxyUser() }
 // in the language of msgs.
 func (msgs Messages) SettingsProxyUser() string {
 	return Catalog.Format(msgs.locale, "settingsProxyUser", nil)
+}
+
+// SettingsRecentOps says "Recent operations to keep"
+// in the language the app shows.
+func SettingsRecentOps() string { return In(i18n.Locale()).SettingsRecentOps() }
+
+// SettingsRecentOps says "Recent operations to keep"
+// in the language of msgs.
+func (msgs Messages) SettingsRecentOps() string {
+	return Catalog.Format(msgs.locale, "settingsRecentOps", nil)
+}
+
+// SettingsRecentOpsHelp says "How many finished operations the list behind the status bar's timer keeps, newest first; older ones are dropped. The …"
+// in the language the app shows.
+func SettingsRecentOpsHelp() string { return In(i18n.Locale()).SettingsRecentOpsHelp() }
+
+// SettingsRecentOpsHelp says "How many finished operations the list behind the status bar's timer keeps, newest first; older ones are dropped. The …"
+// in the language of msgs.
+func (msgs Messages) SettingsRecentOpsHelp() string {
+	return Catalog.Format(msgs.locale, "settingsRecentOpsHelp", nil)
 }
 
 // SettingsTheme says "Theme"
@@ -9648,6 +9842,16 @@ func StatusbarNoAccount() string { return In(i18n.Locale()).StatusbarNoAccount()
 // in the language of msgs.
 func (msgs Messages) StatusbarNoAccount() string {
 	return Catalog.Format(msgs.locale, "statusbarNoAccount", nil)
+}
+
+// StatusbarRecentHint says "Click for recent operations"
+// in the language the app shows.
+func StatusbarRecentHint() string { return In(i18n.Locale()).StatusbarRecentHint() }
+
+// StatusbarRecentHint says "Click for recent operations"
+// in the language of msgs.
+func (msgs Messages) StatusbarRecentHint() string {
+	return Catalog.Format(msgs.locale, "statusbarRecentHint", nil)
 }
 
 // StatusbarSelected says "{n} selected, {size}"

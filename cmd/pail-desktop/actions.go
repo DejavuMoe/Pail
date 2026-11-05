@@ -107,16 +107,19 @@ func (a *app) finishWatch(w *watch, ts []Task, result core.TaskGroupResult, grou
 		done, failed, canceled = result.Succeeded, result.Failed, result.Canceled
 	}
 	a.dropSizes(w.loc) // where it changed things, not only where the table is
-	if d, ok := groupDuration(ts); ok && failed == 0 && canceled == 0 {
-		switch w.kind {
-		case "upload":
-			a.noteTook(tookUpload, d)
-		case "download":
-			a.noteTook(tookDownload, d)
-		case "delete":
-			a.noteTook(tookDelete, d)
-		}
+	d, ran := groupDuration(ts)
+	op := opEntry{what: w.kind, ran: ran, d: d, account: w.loc.AccountID, accountName: a.accountNameOf(w.loc.AccountID),
+		where: scopeText(w.loc), n: done, bad: failed, err: firstErr}
+	if w.kind == tookDelete {
+		op.n, op.bad = items, itemsFailed
 	}
+	switch {
+	case failed > 0:
+		op.state = opFailed
+	case canceled > 0:
+		op.state = opCanceled
+	}
+	a.noteOp(op)
 	if w.loc.AccountID == a.scope.AccountID && w.loc.Bucket == a.scope.Bucket && a.scope.Bucket != "" {
 		a.reloadQuietly()
 	}

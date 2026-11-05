@@ -118,9 +118,12 @@ type app struct {
 	listErr     string
 	listGen     int
 	cancelList  context.CancelFunc
-	selectAfter string // key to select once the listing has loaded
-	took        opTime // how long the last finished operation took (optime.go)
-	listQuiet   bool   // the list being started is a refresh after an action: it keeps took
+	selectAfter string    // key to select once the listing has loaded
+	took        opTime    // how long the last finished operation took (optime.go)
+	ops         []opEntry // the recent operations, oldest first (optime.go, recentops.go)
+	opSeq       uint64    // how many operations were recorded (opEntry.seq)
+	opsOpen     bool      // the list of them shows above the status bar
+	listQuiet   bool      // the list being started is a refresh after an action: it keeps took
 	search      string
 	sort        ui.SortOrder
 	sortSeen    ui.SortOrder
@@ -376,7 +379,7 @@ func (a *app) selectAccount(id string) {
 	a.scope = Scope{AccountID: id}
 	a.navSel, a.tool = "", ""
 	a.buckets, a.bucketsErr = nil, ""
-	a.took = opTime{} // the time of another account's operation says nothing here
+	a.accountSwitched()
 	a.clearListing()
 	a.bucketsGen++
 	a.bucketsLoad = false
@@ -403,7 +406,7 @@ func (a *app) loadBuckets(openFirst bool) {
 		return
 	}
 	ctx, cancel := context.WithTimeout(a.ctx, 30*time.Second)
-	began := time.Now()
+	began, acct := time.Now(), a.account()
 	go func() {
 		defer cancel()
 		bs, err := a.svc.Buckets(ctx, id)
@@ -413,6 +416,7 @@ func (a *app) loadBuckets(openFirst bool) {
 				return
 			}
 			a.bucketsLoad = false
+			op := opEntry{what: tookBuckets, ran: true, d: took, account: id, accountName: acct.Name}
 			if err != nil {
 				a.markMemory("buckets-failed")
 				a.bucketsErr = a.noteErr(err, "buckets", func() {
@@ -423,10 +427,12 @@ func (a *app) loadBuckets(openFirst bool) {
 				if isLocked(err) {
 					a.bucketsFix = "unlock"
 				}
+				op.state, op.err = opFailed, a.bucketsErr
+				a.noteOp(op)
 				return
 			}
 			a.buckets = bs
-			a.noteTook(tookBuckets, took)
+			a.noteOp(op)
 			a.markMemory("buckets-ready")
 			if openFirst && len(bs) > 0 && a.scope.Bucket == "" && a.tool == "" {
 				a.openBucket(bs[0].Name)
@@ -509,7 +515,10 @@ func (a *app) listScope() {
 	a.cancelList = cancel
 	a.listGen++
 	gen, scope, flat := a.listGen, a.scope, a.objOps.flat
-	quiet, began := a.listQuiet, time.Now()
+	quiet, began, acct := a.listQuiet, time.Now(), a.account()
+	// What the list of recent operations says of this listing, however it ends;
+	// each ending takes its own copy.
+	base := opEntry{what: tookList, ran: true, account: scope.AccountID, accountName: acct.Name, where: scopeText(scope)}
 	a.loading, a.listErr = true, ""
 	a.markMemory("listing-start")
 	go func() {
@@ -517,6 +526,12 @@ func (a *app) listScope() {
 		for first := true; ; first = false {
 			page, err := a.svc.List(ctx, scope, core.ListOptions{Token: token, Flat: flat})
 			if ctx.Err() != nil {
+				// Left before it ended: another folder was opened, or the account changed.
+				if !quiet {
+					left := base
+					left.state, left.d = opCanceled, time.Since(began)
+					a.post(func() { a.noteOp(left) })
+				}
 				return
 			}
 			if flat && err == nil {
@@ -534,6 +549,11 @@ func (a *app) listScope() {
 						}
 					}), false
 					a.markMemory("listing-failed")
+					if !quiet {
+						failed := base
+						failed.state, failed.d, failed.err = opFailed, took, a.listErr
+						a.noteOp(failed)
+					}
 					return
 				}
 				if isFirst {
@@ -548,7 +568,9 @@ func (a *app) listScope() {
 				if page.NextToken == "" {
 					a.loading = false
 					if !quiet {
-						a.noteTook(tookList, took)
+						done := base
+						done.d, done.n = took, len(a.raw)
+						a.noteOp(done)
 					}
 					a.pruneSelection()
 					a.applySelectAfter()

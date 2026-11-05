@@ -61,18 +61,39 @@ func (a *app) statusBar(c *ui.Context) {
 }
 
 // tookIndicator shows how long the last finished operation took, left of the
-// transfer counts; hovering it says which operation that was. Nothing shows
-// before the first one has finished.
+// transfer counts; hovering it says which operation that was, and clicking it
+// opens the list of recent operations. Nothing shows before the first operation
+// has finished. When only operations that failed or were canceled are on the
+// list (the last success went with an account switch, or there was none), the
+// timer shows without a time.
 func (a *app) tookIndicator(c *ui.Context, count func(key, s string)) {
-	if a.took.what == "" {
+	if a.took.what == "" && len(a.ops) == 0 {
+		a.opsOpen = false
 		return
 	}
 	k := tk(c)
-	text, tip := humanDuration(a.took.d), a.took.tip()
-	ui.Row(c.Key("took")).Gap(3).AlignItems(ui.Center).Label(tip).Tooltip(tip).Children(func() {
+	text, tip := "", locales.RecentOpsTitle()
+	if a.took.what != "" {
+		text, tip = humanDuration(a.took.d), a.took.tip()
+	}
+	b := ui.ButtonBase(c.Key("took")).Label(tip).Tooltip(tip+" · "+locales.StatusbarRecentHint()).Expanded(a.opsOpen).
+		Height(20).Padding(0, 6).Gap(3).Radius(4).AlignItems(ui.Center).Transition(hoverFade())
+	switch {
+	case a.opsOpen:
+		b.Background(k.SurfacePressed) // pressed while its list shows
+	case b.Hovered():
+		b.Background(k.SurfaceHover)
+	}
+	b.Children(func() {
 		ui.Icon(c, icons.Get("timer")).FontSize(12).TextColor(k.TextMuted)
-		count("took", text)
+		if text != "" {
+			count("took", text)
+		}
 	})
+	if b.Clicked() {
+		a.opsOpen = !a.opsOpen
+	}
+	a.recentOpsPopover(c, b)
 }
 
 func (a *app) statusBrowse(part func(string), count func(key, s string), dot func()) {

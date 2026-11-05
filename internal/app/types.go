@@ -58,6 +58,13 @@ type Settings struct {
 	// password lives in the secret store); SaveSettings keeps the current value.
 	// The command line reads the same setting.
 	Proxy ProxySettings `json:"proxy,omitzero"`
+	// RecentOps is how many finished operations the desktop app's list of recent
+	// operations keeps (DefaultRecentOps when absent, MinRecentOps to
+	// MaxRecentOps). The list lives in memory only and is gone on restart.
+	RecentOps int `json:"recentOps"`
+	// KeepRecentOps keeps that list when another account is chosen. The zero
+	// value clears it, so that the list shows what was done with this account.
+	KeepRecentOps bool `json:"keepRecentOps,omitempty"`
 }
 
 // SecretBackend values.
