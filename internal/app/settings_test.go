@@ -15,7 +15,7 @@ func TestSettingsSaveLoadRoundTrip(t *testing.T) {
 	s, dir := newTestServiceDir(t, "", nil)
 	want := Settings{Theme: "dark", Limits: Limits{3, 4, 5}, BulkWorkers: 6, PartSizeMiB: 32,
 		DefaultDownloadDir: t.TempDir(), Conflict: ConflictSkip, ShowVersions: true, LogToFile: true,
-		SecretBackend: SecretBackendKeyring, VaultAutoLockMinutes: 20}
+		SecretBackend: SecretBackendKeyring, VaultAutoLockMinutes: 20, RecentOps: 250, KeepRecentOps: true}
 	if err := s.SaveSettings(want); err != nil {
 		t.Fatal(err)
 	}
@@ -47,6 +47,8 @@ func TestSaveSettingsFillsZeroValuesAndValidates(t *testing.T) {
 		{BulkWorkers: 500},
 		{PartSizeMiB: 1},
 		{PartSizeMiB: 99999},
+		{RecentOps: -1},
+		{RecentOps: MaxRecentOps + 1},
 		{Conflict: "explode"},
 		{DefaultDownloadDir: "relative/dir"},
 	}
@@ -58,6 +60,47 @@ func TestSaveSettingsFillsZeroValuesAndValidates(t *testing.T) {
 	}
 	if s.Settings() != d {
 		t.Fatal("rejected settings must not change the current ones")
+	}
+}
+
+func TestRecentOpsSettingDefaultsBoundsAndOldFiles(t *testing.T) {
+	if d := DefaultSettings(); d.RecentOps != 100 || d.KeepRecentOps {
+		t.Fatalf("defaults: %+v", d)
+	}
+	// A file from before the setting existed gets the default.
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"theme":"dark"}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s, _ := newTestServiceDir(t, dir, nil)
+	if got := s.Settings(); got.RecentOps != DefaultRecentOps || got.KeepRecentOps {
+		t.Fatalf("old file: %+v", got)
+	}
+	// Both ends of the range are real values, and a saved choice survives a restart.
+	for _, n := range []int{MinRecentOps, MaxRecentOps} {
+		st := s.Settings()
+		st.RecentOps, st.KeepRecentOps = n, true
+		if err := s.SaveSettings(st); err != nil {
+			t.Fatalf("%d: %v", n, err)
+		}
+		if got := s.Settings(); got.RecentOps != n || !got.KeepRecentOps {
+			t.Fatalf("%d: %+v", n, got)
+		}
+	}
+	s2, _ := newTestServiceDir(t, dir, nil)
+	if got := s2.Settings(); got.RecentOps != MaxRecentOps || !got.KeepRecentOps {
+		t.Fatalf("reloaded: %+v", got)
+	}
+	// 0 is "not set", not "keep nothing": it becomes the default.
+	st := s2.Settings()
+	st.RecentOps = 0
+	if err := s2.SaveSettings(st); err != nil || s2.Settings().RecentOps != DefaultRecentOps {
+		t.Fatalf("0: err=%v got=%+v", err, s2.Settings())
+	}
+	// A value outside the range is refused and leaves the saved one alone.
+	st.RecentOps = MaxRecentOps + 1
+	if err := s2.SaveSettings(st); !IsKind(err, ErrInvalid) || s2.Settings().RecentOps != DefaultRecentOps {
+		t.Fatalf("over the maximum: err=%v got=%+v", err, s2.Settings())
 	}
 }
 

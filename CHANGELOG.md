@@ -4,6 +4,12 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Recent operations. Click the time in the status bar to open a list of the latest operations: loading the bucket list, opening a folder, uploads, downloads and deletes. Each line shows whether it succeeded, failed or was canceled, how long it took and when it ended. The status bar itself still shows the last successful one. The list is kept in memory and is empty again after you quit Pail. **Settings › Diagnostics** sets how many operations it keeps (100 by default, up to 1000) and whether it is kept when you switch account (by default it is cleared).
+
 ## [0.4.2] - 2026-11-05
 
 ### Added

@@ -60,6 +60,8 @@ type Settings struct {
 	SecretBackend        string // "keyring" (default) | "vault"; only SetSecretBackend changes it, SaveSettings keeps the current value
 	VaultAutoLockMinutes int    // default 15, 0 = never; 0 is a real value and is NOT replaced by the default in SaveSettings
 	Proxy                ProxySettings // zero = HTTP_PROXY / HTTPS_PROXY / NO_PROXY from the environment; only SaveProxy changes it, SaveSettings keeps the current value
+	RecentOps            int           // desktop list of recent operations: how many it keeps, MinRecentOps..MaxRecentOps (1..1000), default 100; the list itself is never stored
+	KeepRecentOps        bool          // keep that list when another account is chosen; default false
 }
 type Limits struct{ Upload, Download, Other int } // each >=1, default 8
 func (s *Service) Settings() Settings

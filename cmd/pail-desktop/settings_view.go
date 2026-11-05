@@ -30,6 +30,8 @@ type settingsForm struct {
 	conflict                         string
 	dir                              string
 	logOn                            bool
+	recentOps                        string               // how many recent operations to keep
+	keepOps                          bool                 // keep them when another account is chosen
 	proxy                            proxyForm            // the Network section (proxy_view.go)
 	errs                             map[string]string    // by setting key: why the last edit was not saved
 	saved                            map[string]time.Time // by setting key: when it was last saved
@@ -78,6 +80,8 @@ var numSettings = []numSetting{
 		func(f *settingsForm) *string { return &f.workers }, func(s core.Settings) int { return s.BulkWorkers }, func(s *core.Settings, n int) { s.BulkWorkers = n }},
 	{"part", locales.SettingsPartRow, locales.SettingsPart, locales.SettingsPartHelp, 5, 5120, " MiB",
 		func(f *settingsForm) *string { return &f.part }, func(s core.Settings) int { return s.PartSizeMiB }, func(s *core.Settings, n int) { s.PartSizeMiB = n }},
+	{"recentOps", locales.SettingsRecentOps, locales.SettingsRecentOps, locales.SettingsRecentOpsHelp, core.MinRecentOps, core.MaxRecentOps, "",
+		func(f *settingsForm) *string { return &f.recentOps }, func(s core.Settings) int { return s.RecentOps }, func(s *core.Settings, n int) { s.RecentOps = n }},
 }
 
 // loadSettingsForm fills the form from the saved settings.
@@ -90,6 +94,7 @@ func (a *app) loadSettingsForm() {
 	f.conflict, f.dir = string(st.Conflict), st.DefaultDownloadDir
 	f.proxy = proxyFormOf(st.Proxy)
 	f.logOn = st.LogToFile
+	f.recentOps, f.keepOps = strconv.Itoa(st.RecentOps), st.KeepRecentOps
 }
 
 // sfFail files why a setting was not saved, under its field.
@@ -195,6 +200,12 @@ func (a *app) setTheme(mode string) {
 // setLogToFile switches the diagnostic log at once and saves the choice.
 func (a *app) setLogToFile(on bool) {
 	a.applySetting("log", func(st *core.Settings) { st.LogToFile = on }, func() { a.sf.logOn = !on })
+}
+
+// setKeepRecentOps chooses whether the list of recent operations survives a
+// change of account, and saves the choice. It takes effect at the next change.
+func (a *app) setKeepRecentOps(on bool) {
+	a.applySetting("keepOps", func(st *core.Settings) { st.KeepRecentOps = on }, func() { a.sf.keepOps = !on })
 }
 
 // openLogDir shows the folder of the diagnostic log files in the file manager.
@@ -393,6 +404,13 @@ func (a *app) settingsView(c *ui.Context) {
 			})
 			settingsRow(c, locales.SettingsLogFiles(), "", func() {
 				ghostButton(c, icons.Get("folder-open"), locales.SettingsOpenLogDir(), locales.SettingsOpenLogDirTip(), false).Margin(0, 0, 0, -8).OnClick(a.openLogDir)
+			})
+			a.numberRow(c, numSettings[5])
+			settingsRowHelp(c, locales.SettingsKeepRecentOps(), locales.SettingsKeepRecentOpsHelp(), f.errs["keepOps"], func() {
+				if switchControl(c, &f.keepOps, locales.SettingsKeepRecentOps()).Changed() {
+					a.setKeepRecentOps(f.keepOps)
+				}
+				a.savedMark(c, "keepOps")
 			})
 			a.aboutSection(c)
 		})
