@@ -119,6 +119,8 @@ type app struct {
 	listGen     int
 	cancelList  context.CancelFunc
 	selectAfter string // key to select once the listing has loaded
+	took        opTime // how long the last finished operation took (optime.go)
+	listQuiet   bool   // the list being started is a refresh after an action: it keeps took
 	search      string
 	sort        ui.SortOrder
 	sortSeen    ui.SortOrder
@@ -169,6 +171,7 @@ type app struct {
 	del       deleteState
 	newFolder bool
 	folderDlg folderState
+	alias     aliasState // the Set alias dialog (bucket_alias.go)
 	af        acctForm
 	confirm   confirmState
 	sf        settingsForm
@@ -347,7 +350,7 @@ func (a *app) bucket() (Bucket, bool) {
 
 // modalOpen reports whether a dialog holds the keyboard.
 func (a *app) modalOpen() bool {
-	return a.del.open || a.newFolder || a.af.open || a.confirm.open || a.tl.sync.dsc.open || a.mgModalOpen() || a.objOpsModalOpen() || a.vu.modal() ||
+	return a.del.open || a.newFolder || a.alias.open || a.af.open || a.confirm.open || a.tl.sync.dsc.open || a.mgModalOpen() || a.objOpsModalOpen() || a.vu.modal() ||
 		a.pal.open || a.about.open || a.keys.open
 }
 
@@ -373,6 +376,7 @@ func (a *app) selectAccount(id string) {
 	a.scope = Scope{AccountID: id}
 	a.navSel, a.tool = "", ""
 	a.buckets, a.bucketsErr = nil, ""
+	a.took = opTime{} // the time of another account's operation says nothing here
 	a.clearListing()
 	a.bucketsGen++
 	a.bucketsLoad = false
@@ -399,9 +403,11 @@ func (a *app) loadBuckets(openFirst bool) {
 		return
 	}
 	ctx, cancel := context.WithTimeout(a.ctx, 30*time.Second)
+	began := time.Now()
 	go func() {
 		defer cancel()
 		bs, err := a.svc.Buckets(ctx, id)
+		took := time.Since(began)
 		a.post(func() {
 			if gen != a.bucketsGen {
 				return
@@ -420,6 +426,7 @@ func (a *app) loadBuckets(openFirst bool) {
 				return
 			}
 			a.buckets = bs
+			a.noteTook(tookBuckets, took)
 			a.markMemory("buckets-ready")
 			if openFirst && len(bs) > 0 && a.scope.Bucket == "" && a.tool == "" {
 				a.openBucket(bs[0].Name)
@@ -502,6 +509,7 @@ func (a *app) listScope() {
 	a.cancelList = cancel
 	a.listGen++
 	gen, scope, flat := a.listGen, a.scope, a.objOps.flat
+	quiet, began := a.listQuiet, time.Now()
 	a.loading, a.listErr = true, ""
 	a.markMemory("listing-start")
 	go func() {
@@ -514,7 +522,7 @@ func (a *app) listScope() {
 			if flat && err == nil {
 				page.Entries = flatEntries(page.Entries, scope.Prefix)
 			}
-			isFirst := first
+			isFirst, took := first, time.Since(began)
 			a.post(func() {
 				if gen != a.listGen {
 					return
@@ -539,6 +547,9 @@ func (a *app) listScope() {
 				}
 				if page.NextToken == "" {
 					a.loading = false
+					if !quiet {
+						a.noteTook(tookList, took)
+					}
 					a.pruneSelection()
 					a.applySelectAfter()
 					a.markMemory("listing-ready")

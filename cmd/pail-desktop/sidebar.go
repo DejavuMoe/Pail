@@ -199,19 +199,21 @@ func (a *app) bucketList(c *ui.Context) {
 				filter := strings.ToLower(strings.TrimSpace(a.bucketFilter))
 				shown := 0
 				for _, b := range a.buckets {
-					if filter != "" && !strings.Contains(strings.ToLower(b.Name), filter) {
+					label := a.bucketLabel(b.Name)
+					if filter != "" && !strings.Contains(strings.ToLower(b.Name), filter) && !strings.Contains(strings.ToLower(label), filter) {
 						continue
 					}
 					shown++
-					tip := b.Name
+					tip := a.bucketTip(b.Name)
 					if b.Region != "" {
 						tip += " · " + b.Region
 					}
-					item := a.sidebarItem(c, "b:"+b.Name, icons.Get("database"), b.Name, b.Region, false).Tooltip(tip)
+					item := a.sidebarItem(c, "b:"+b.Name, icons.Get("database"), label, b.Region, false).Tooltip(tip)
 					a.contextMenu(item, menuSpec{name: locales.MenuBucketActions(b.Name)}, func(m *menuBuilder) {
 						name := b.Name
 						m.Item(locales.SidebarOpen(), func() { a.openBucket(name) }).Icon("folder-open")
 						m.Item(locales.SidebarBucketSettings(), func() { a.openBucketSettings(name) }).Icon("sliders-horizontal")
+						m.Item(locales.SidebarSetAlias(), func() { a.openAliasDialog(name) }).Icon("pencil")
 						m.Separator()
 						m.Item(locales.SidebarDownloadBucket(), func() { a.downloadBucket(name) }).Icon("download")
 						m.Item(locales.SidebarCopyContents(), func() { a.openBucketCopy(name, false) }).Icon("copy")

@@ -112,7 +112,7 @@ func (a *app) multiSummary(c *ui.Context) {
 
 func (a *app) currentFolderSummary(c *ui.Context) {
 	folders, files, bytes := a.folderSummary()
-	title := a.scope.Bucket
+	title := a.bucketLabel(a.scope.Bucket)
 	if parts := splitPrefix(a.scope.Prefix); len(parts) > 0 {
 		title = parts[len(parts)-1]
 	}

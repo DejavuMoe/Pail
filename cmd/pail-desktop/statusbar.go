@@ -31,6 +31,7 @@ func (a *app) statusBar(c *ui.Context) {
 			a.statusBrowse(part, count, dot)
 		}
 		ui.Spacer(c)
+		a.tookIndicator(c, count)
 		a.lockIndicator(c)
 		if !a.hasAccount() && len(a.tasks) == 0 {
 			return
@@ -56,6 +57,21 @@ func (a *app) statusBar(c *ui.Context) {
 				part(fmt.Sprint(n.count))
 			})
 		}
+	})
+}
+
+// tookIndicator shows how long the last finished operation took, left of the
+// transfer counts; hovering it says which operation that was. Nothing shows
+// before the first one has finished.
+func (a *app) tookIndicator(c *ui.Context, count func(key, s string)) {
+	if a.took.what == "" {
+		return
+	}
+	k := tk(c)
+	text, tip := humanDuration(a.took.d), a.took.tip()
+	ui.Row(c.Key("took")).Gap(3).AlignItems(ui.Center).Label(tip).Tooltip(tip).Children(func() {
+		ui.Icon(c, icons.Get("timer")).FontSize(12).TextColor(k.TextMuted)
+		count("took", text)
 	})
 }
 

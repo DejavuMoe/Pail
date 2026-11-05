@@ -52,6 +52,12 @@ type Settings struct {
 	// (the menu bar on macOS); closing the window then quits. The zero value
 	// shows it, so settings saved before it existed show it too.
 	HideTrayIcon bool `json:"hideTrayIcon,omitempty"`
+	// Proxy sends the requests of every account (S3, STS and CloudFront)
+	// through a proxy server. The zero value follows HTTP_PROXY, HTTPS_PROXY and
+	// NO_PROXY from the environment. It can only be changed with SaveProxy (its
+	// password lives in the secret store); SaveSettings keeps the current value.
+	// The command line reads the same setting.
+	Proxy ProxySettings `json:"proxy,omitzero"`
 }
 
 // SecretBackend values.
@@ -86,6 +92,11 @@ type Account struct {
 	// to the listed buckets (empty = all).
 	CDNURL     string   `json:"cdnUrl,omitempty"`
 	CDNBuckets []string `json:"cdnBuckets,omitempty"`
+	// BucketAliases maps a bucket name to the name the app shows for it. The
+	// bucket itself is never renamed: requests, links and the command line keep
+	// using the real name. Only SetBucketAlias changes it; SaveAccount keeps the
+	// saved aliases whatever the caller passes.
+	BucketAliases map[string]string `json:"bucketAliases,omitempty"`
 	// SecretMissing is derived by Accounts(), never persisted or read back: a
 	// static account whose secret is not stored (after ResetVault). The UI asks
 	// the user to enter it again; SaveAccount with new secrets clears it.

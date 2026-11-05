@@ -100,6 +100,9 @@ func (st Settings) validate() error {
 	if st.DefaultDownloadDir != "" && !filepath.IsAbs(st.DefaultDownloadDir) {
 		return errors.New("default download directory must be an absolute path")
 	}
+	if pr := st.Proxy.Problem(false); pr != ProxyOK {
+		return errors.New(proxyProblemText(pr))
+	}
 	return nil
 }
 
@@ -124,6 +127,7 @@ func (s *Service) SaveSettings(st Settings) error {
 	// secrets); whatever the caller passes is replaced by the current value.
 	s.mu.Lock()
 	st.SecretBackend = s.settings.SecretBackend
+	st.Proxy = s.settings.Proxy // only SaveProxy changes it
 	s.mu.Unlock()
 	if err := writeJSONAtomic(s.path("settings.json"), st); err != nil {
 		return classify("SaveSettings", err)
