@@ -131,6 +131,7 @@ func TestConfigValidation(t *testing.T) {
 		"bad endpoint":      {Endpoint: "ftp://x", AccessKeyID: "a", SecretAccessKey: "b"},
 		"endpoint userinfo": {Endpoint: "http://u:p@x", AccessKeyID: "a", SecretAccessKey: "b"},
 		"bad checksum mode": {AccessKeyID: "a", SecretAccessKey: "b", ChecksumMode: "always"},
+		"bad proxy":         {AccessKeyID: "a", SecretAccessKey: "b", ProxyURL: "ftp://127.0.0.1:21"},
 	} {
 		if _, err := New(context.Background(), cfg); err == nil {
 			t.Errorf("%s accepted", name)
@@ -139,7 +140,7 @@ func TestConfigValidation(t *testing.T) {
 }
 
 func TestHTTPClientTimeouts(t *testing.T) {
-	hc := NewHTTPClient(false)
+	hc := NewHTTPClient(false, "")
 	tr := hc.Transport.(*http.Transport)
 	if hc.Timeout != 0 {
 		t.Fatal("overall request timeout would cut off large transfers")
@@ -147,7 +148,7 @@ func TestHTTPClientTimeouts(t *testing.T) {
 	if tr.TLSHandshakeTimeout != 10*time.Second || tr.ResponseHeaderTimeout != 60*time.Second || tr.DisableKeepAlives || tr.TLSClientConfig.InsecureSkipVerify {
 		t.Fatalf("unexpected transport: %+v", tr)
 	}
-	if !NewHTTPClient(true).Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify {
+	if !NewHTTPClient(true, "").Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify {
 		t.Fatal("InsecureSkipVerify not applied")
 	}
 }

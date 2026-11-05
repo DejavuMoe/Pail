@@ -6,10 +6,13 @@ import (
 	"encoding/hex"
 	"errors"
 	"fmt"
+	"maps"
 	"net/url"
 	"regexp"
 	"strings"
 	"time"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/DejavuMoe/Pail/internal/storage"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -50,6 +53,7 @@ func (s *Service) Accounts() []Account {
 	for i, r := range s.accounts {
 		out[i] = r.Account
 		out[i].CDNBuckets = append([]string(nil), r.CDNBuckets...) // nil stays nil
+		out[i].BucketAliases = maps.Clone(r.BucketAliases)
 		out[i].SecretMissing = r.Credentials == CredStatic && !r.HasSecret
 	}
 	return out
@@ -206,8 +210,10 @@ func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error) {
 	}
 
 	rec := accountRecord{Account: a}
+	rec.BucketAliases = nil // only SetBucketAlias changes them
 	if exists {
 		rec.SecretGen, rec.HasSecret, rec.HasSession = old.SecretGen, old.HasSecret, old.HasSession
+		rec.BucketAliases = old.BucketAliases
 	}
 	switch {
 	case a.Credentials != CredStatic:
@@ -326,6 +332,95 @@ func (s *Service) DeleteAccount(id string) error {
 	return nil
 }
 
+// MaxAliasRunes is the longest bucket alias, in characters; the sidebar would cut a longer one anyway.
+const MaxAliasRunes = 64
+
+// normalizeAlias trims an alias and checks it. A name longer than MaxAliasRunes,
+// or with control characters (a line break would break the sidebar row), is
+// refused.
+func normalizeAlias(alias string) (string, error) {
+	alias = strings.TrimSpace(alias)
+	if utf8.RuneCountInString(alias) > MaxAliasRunes {
+		return "", fmt.Errorf("bucket alias may have at most %d characters", MaxAliasRunes)
+	}
+	for _, r := range alias {
+		if unicode.IsControl(r) {
+			return "", errors.New("bucket alias must not contain control characters")
+		}
+	}
+	return alias, nil
+}
+
+// BucketAlias returns the display name saved for a bucket of the account, or
+// "" when it has none.
+func (s *Service) BucketAlias(accountID, bucket string) string {
+	rec, _ := s.account(accountID)
+	return rec.BucketAliases[bucket]
+}
+
+// SetBucketAlias saves the name the app shows for a bucket of the account; an
+// empty alias (or the bucket's own name) removes it. It is only a label of this
+// app: nothing changes on the storage service, and requests, links and the
+// command line keep the real name. Two buckets of one account cannot share an
+// alias, which would make them look the same.
+func (s *Service) SetBucketAlias(accountID, bucket, alias string) error {
+	const op = "SetBucketAlias"
+	if strings.TrimSpace(bucket) == "" {
+		return invalid(op, "a bucket name is required")
+	}
+	alias, err := normalizeAlias(alias)
+	if err != nil {
+		return invalid(op, "%v", err)
+	}
+	if alias == bucket {
+		alias = ""
+	}
+
+	s.acctMu.Lock()
+	defer s.acctMu.Unlock()
+	s.mu.Lock()
+	next := make([]accountRecord, len(s.accounts))
+	copy(next, s.accounts)
+	s.mu.Unlock()
+	idx := -1
+	for i := range next {
+		if next[i].ID == accountID {
+			idx = i
+		}
+	}
+	if idx < 0 {
+		return opErr(op, ErrNotFound, "no account %q", accountID)
+	}
+	aliases := maps.Clone(next[idx].BucketAliases)
+	if alias == "" {
+		if _, had := aliases[bucket]; !had {
+			return nil
+		}
+		delete(aliases, bucket)
+	} else {
+		for other, a := range aliases {
+			if other != bucket && a == alias {
+				return invalid(op, "the alias %q is already used by bucket %q", alias, other)
+			}
+		}
+		if aliases == nil {
+			aliases = map[string]string{}
+		}
+		aliases[bucket] = alias
+	}
+	if len(aliases) == 0 {
+		aliases = nil
+	}
+	next[idx].BucketAliases = aliases
+	if err := writeJSONAtomic(s.path("accounts.json"), next); err != nil {
+		return classify(op, err)
+	}
+	s.mu.Lock()
+	s.accounts = next
+	s.mu.Unlock()
+	return nil
+}
+
 // TestAccount builds a throwaway client from a (and sec, or the stored secrets
 // of an existing a.ID when sec is nil) and lists buckets. Nothing is cached or
 // saved. Note that anonymous accounts cannot list buckets, so they fail here
@@ -353,7 +448,11 @@ func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) erro
 			}
 		}
 	}
-	c, err := storage.New(ctx, storageConfig(a, secrets))
+	proxy, err := s.proxyAddress(ctx, s.Settings().Proxy)
+	if err != nil {
+		return classify(op, err)
+	}
+	c, err := storage.New(ctx, storageConfig(a, secrets, proxy))
 	if err != nil {
 		return classify(op, err)
 	}

@@ -74,7 +74,7 @@ func (a *app) toolHeader(c *ui.Context) {
 	cmd := a.cmd("tool." + a.tool)
 	back := locales.ToolsBackToBrowser()
 	if a.scope.Bucket != "" {
-		back = locales.ToolsBackTo(a.scope.Bucket)
+		back = locales.ToolsBackTo(a.bucketLabel(a.scope.Bucket))
 	}
 	if ghostButton(c, icons.Get("arrow-left"), locales.CommonBack(), back, false).Clicked() {
 		if a.tool == "sync" {

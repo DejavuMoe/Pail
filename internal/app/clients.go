@@ -27,8 +27,9 @@ type clientEntry struct {
 type buildCall struct{ done chan struct{} }
 
 // storageConfig translates an Account and its secrets to the protocol layer.
-func storageConfig(a Account, sec Secrets) storage.Config {
+func storageConfig(a Account, sec Secrets, proxy string) storage.Config {
 	cfg := storage.Config{
+		ProxyURL:           proxy,
 		Endpoint:           a.Endpoint,
 		Region:             a.Region,
 		UsePathStyle:       a.PathStyle,
@@ -101,6 +102,7 @@ func (s *Service) entry(ctx context.Context, id string) (*clientEntry, error) {
 			s.mu.Unlock()
 			return nil, opErr("", ErrNotFound, "no account %q", id)
 		}
+		proxyCfg := s.settings.Proxy // read together with the epoch: changing the proxy drops the entry
 		if c := s.building[id]; c != nil {
 			s.mu.Unlock()
 			select {
@@ -116,9 +118,13 @@ func (s *Service) entry(ctx context.Context, id string) (*clientEntry, error) {
 		s.mu.Unlock()
 
 		sec, err := s.readSecrets(ctx, rec) // may block on an OS dialog; no lock held
+		proxy := ""
+		if err == nil {
+			proxy, err = s.proxyAddress(ctx, proxyCfg) // the proxy password, likewise
+		}
 		var e *clientEntry
 		if err == nil {
-			e = &clientEntry{acc: rec.Account, cfg: storageConfig(rec.Account, sec)}
+			e = &clientEntry{acc: rec.Account, cfg: storageConfig(rec.Account, sec, proxy)}
 		}
 
 		s.mu.Lock()

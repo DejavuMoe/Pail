@@ -30,6 +30,7 @@ type settingsForm struct {
 	conflict                         string
 	dir                              string
 	logOn                            bool
+	proxy                            proxyForm            // the Network section (proxy_view.go)
 	errs                             map[string]string    // by setting key: why the last edit was not saved
 	saved                            map[string]time.Time // by setting key: when it was last saved
 	focus                            map[string]bool      // by setting key: the field had the focus last frame
@@ -87,6 +88,7 @@ func (a *app) loadSettingsForm() {
 	f.upload, f.download, f.other = strconv.Itoa(st.Limits.Upload), strconv.Itoa(st.Limits.Download), strconv.Itoa(st.Limits.Other)
 	f.workers, f.part = strconv.Itoa(st.BulkWorkers), strconv.Itoa(st.PartSizeMiB)
 	f.conflict, f.dir = string(st.Conflict), st.DefaultDownloadDir
+	f.proxy = proxyFormOf(st.Proxy)
 	f.logOn = st.LogToFile
 }
 
@@ -380,6 +382,7 @@ func (a *app) settingsView(c *ui.Context) {
 					a.savedMark(c, "dir")
 				})
 			})
+			a.networkSection(c)
 			a.securitySection(c)
 			settingsSection(c, locales.SettingsDiagnostics())
 			settingsRowHelp(c, locales.SettingsLog(), locales.SettingsLogHelp(), f.errs["log"], func() {

@@ -12,8 +12,11 @@ import (
 	"net"
 	"net/http"
 	"net/url"
+	"strconv"
 	"strings"
 	"time"
+
+	"golang.org/x/net/http/httpproxy"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	v4 "github.com/aws/aws-sdk-go-v2/aws/signer/v4"
@@ -51,15 +54,67 @@ type Config struct {
 	RoleSessionName    string
 	InsecureSkipVerify bool
 	ChecksumMode       string
+	// ProxyURL sends every request of the account through this proxy (see
+	// NormalizeProxy for the accepted forms); local addresses and the hosts in
+	// NO_PROXY still connect directly. Empty follows HTTP_PROXY, HTTPS_PROXY
+	// and NO_PROXY from the environment.
+	ProxyURL string
 	// HTTPClient overrides the transport (tests). When nil NewHTTPClient is used.
 	HTTPClient aws.HTTPClient
 }
 
+// NormalizeProxy checks a proxy address, scheme://[user[:password]@]host[:port],
+// and returns it in the form the transport uses. The schemes are http, https,
+// socks5 and socks5h. "" stays empty (follow the environment). The caller
+// builds the address from its own fields and keeps the password out of files.
+func NormalizeProxy(s string) (string, error) {
+	s = strings.TrimSpace(s)
+	if s == "" {
+		return "", nil
+	}
+	u, err := url.Parse(s)
+	if err != nil || u.Hostname() == "" {
+		return "", errors.New("proxy must look like socks5://127.0.0.1:7890 or http://user:password@127.0.0.1:8080")
+	}
+	switch scheme := strings.ToLower(u.Scheme); scheme {
+	case "http", "https", "socks5", "socks5h":
+		u.Scheme = scheme
+	default:
+		return "", fmt.Errorf("proxy scheme %q is not supported; use http, https or socks5", u.Scheme)
+	}
+	if (u.Path != "" && u.Path != "/") || u.RawQuery != "" || u.Fragment != "" {
+		return "", errors.New("proxy must be a scheme, a host and an optional port")
+	}
+	if p := u.Port(); p != "" {
+		if n, err := strconv.Atoi(p); err != nil || n < 1 || n > 65535 {
+			return "", errors.New("proxy port must be between 1 and 65535")
+		}
+	}
+	return (&url.URL{Scheme: u.Scheme, User: u.User, Host: u.Host}).String(), nil
+}
+
+// proxyFunc is the transport's proxy selector. An address that does not pass
+// NormalizeProxy fails every request instead of silently connecting directly.
+func proxyFunc(proxyURL string) func(*http.Request) (*url.URL, error) {
+	if strings.TrimSpace(proxyURL) == "" {
+		return http.ProxyFromEnvironment
+	}
+	norm, err := NormalizeProxy(proxyURL)
+	if err != nil {
+		return func(*http.Request) (*url.URL, error) { return nil, err }
+	}
+	cfg := httpproxy.FromEnvironment()
+	cfg.HTTPProxy, cfg.HTTPSProxy = norm, norm
+	pick := cfg.ProxyFunc()
+	return func(req *http.Request) (*url.URL, error) { return pick(req.URL) }
+}
+
 // NewHTTPClient returns a client with connection-level timeouts but no overall
-// request timeout, so multi-gigabyte transfers are never cut off.
-func NewHTTPClient(insecureSkipVerify bool) *http.Client {
+// request timeout, so multi-gigabyte transfers are never cut off. proxyURL is
+// Config.ProxyURL.
+func NewHTTPClient(insecureSkipVerify bool, proxyURL string) *http.Client {
 	return &http.Client{Transport: &http.Transport{
-		Proxy:                 http.ProxyFromEnvironment,
+		Proxy:                 proxyFunc(proxyURL),
 		DialContext:           (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
 		TLSHandshakeTimeout:   10 * time.Second,
 		ResponseHeaderTimeout: 60 * time.Second,
@@ -90,6 +145,9 @@ func (cfg Config) validate() error {
 	default:
 		return fmt.Errorf("unknown checksum mode %q", cfg.ChecksumMode)
 	}
+	if _, err := NormalizeProxy(cfg.ProxyURL); err != nil {
+		return err
+	}
 	return nil
 }
 
@@ -104,7 +162,7 @@ func (cfg Config) AWSConfig(ctx context.Context) (aws.Config, error) {
 	}
 	var hc aws.HTTPClient = cfg.HTTPClient
 	if hc == nil {
-		hc = NewHTTPClient(cfg.InsecureSkipVerify)
+		hc = NewHTTPClient(cfg.InsecureSkipVerify, cfg.ProxyURL)
 	}
 	var ac aws.Config
 	switch {

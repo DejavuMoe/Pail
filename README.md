@@ -16,6 +16,10 @@
   <a href="README.zh-CN.md">简体中文</a>
 </p>
 
+<p align="center">
+  <a href="https://awesomemygo.dev/apps/pail"><img src="https://awesomemygo.dev/badge.svg" width="200" height="28" alt="Listed on Awesome MyGo"></a>
+</p>
+
 <picture>
   <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-dark.webp">
   <img src="docs/images/main-light.webp" alt="The Pail main window: bucket list, object table and inspector">
@@ -23,12 +27,12 @@
 
 ## Features
 
-- **Accounts.** Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. For services other than AWS, set the endpoint, region and path-style addressing, and test the connection before saving.
-- **Browsing.** A sortable, multi-select object table that pages automatically, with breadcrumbs, a filter, a flat view and an inspector. Preview text files (JSON, CSV, XML and others), images and hex. Copy keys, URIs, URLs and presigned URLs. Calculate the size of folders on request.
+- **Accounts.** Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. For services other than AWS, set the endpoint, region and path-style addressing, and test the connection before saving. A proxy server (HTTP, HTTPS or SOCKS5, with an optional user name and password) set in Settings applies to every account.
+- **Browsing.** A sortable, multi-select object table that pages automatically, with breadcrumbs, a filter, a flat view and an inspector. Preview text files (JSON, CSV, XML and others), images and hex. Copy keys, URIs, URLs and presigned URLs. Calculate the size of folders on request. The status bar shows how long the last operation took.
 - **Transfers.** Upload and download files, folders, versions and whole buckets, or drag files into the window. Uploads and downloads have their own queues with adjustable concurrency, progress, speed, cancel and retry. When a file already exists: skip, overwrite, keep both, overwrite if newer, or overwrite if the size differs. Large files are uploaded in parts with checksums; downloads are written to a temporary file and moved into place after they are verified.
 - **Object properties.** Headers, metadata, tags, ACL, storage class and server-side encryption (SSE-S3, SSE-KMS, SSE-C) for one object or a selection. Properties you do not change are kept.
 - **Versions.** List versions and delete markers, download several versions at once, restore an older version or a deleted key, and permanently delete the versions you select.
-- **Buckets.** Create buckets (with region and object lock), empty and delete them, and copy or move a bucket's contents. Edit 14 bucket settings as a form or as JSON: versioning, encryption, policy, CORS, lifecycle, logging, tags, static website, public access block, ownership, object lock, requester pays, transfer acceleration and replication. List and abort incomplete multipart uploads.
+- **Buckets.** Create buckets (with region and object lock), empty and delete them, and copy or move a bucket's contents. Edit 14 bucket settings as a form or as JSON: versioning, encryption, policy, CORS, lifecycle, logging, tags, static website, public access block, ownership, object lock, requester pays, transfer acceleration and replication. List and abort incomplete multipart uploads. Give a bucket an alias to see a name you recognise in the sidebar and the path bar.
 - **Sync jobs.** Save jobs that upload, download or mirror a folder. Compare by size and time, size or checksum, exclude files by pattern, and review the plan before it runs.
 - **Upload rules.** Match by bucket and key pattern to set headers, storage class and encryption, or to compress with GZIP, ZIP or AES-256 ZIP. Compressed objects can be decoded on download.
 - **Links.** Presigned GET and PUT URLs with an expiry, for a chosen version or for many objects at once. An optional CDN domain per account, with the CDN link offered after each upload. CloudFront invalidations for AWS accounts.
@@ -107,9 +111,9 @@ Every command, its flags, JSON output and exit codes are in the [command-line re
 ## Data and privacy
 
 - **Configuration** lives in the `Pail` folder of your user configuration directory: `%AppData%\Pail` on Windows, `~/Library/Application Support/Pail` on macOS, `~/.config/Pail` on Linux, or the directory given with `--config-dir`. It holds settings, accounts, sync jobs, upload rules and the names of stored secrets. A folder from Pail's earlier name, `openS3`, is migrated once on first start.
-- **Secrets** (secret access keys, session tokens and saved passwords) go to the system keychain under the service name `Pail`: Windows Credential Manager, macOS Keychain or the Secret Service on Linux. Where there is no keychain, choose the encrypted vault `vault.json` in **Settings › Security**. Access key IDs are not secret and are stored with the accounts.
+- **Secrets** (secret access keys, session tokens, proxy passwords and saved passwords) go to the system keychain under the service name `Pail`: Windows Credential Manager, macOS Keychain or the Secret Service on Linux. Where there is no keychain, choose the encrypted vault `vault.json` in **Settings › Security**. Access key IDs are not secret and are stored with the accounts.
 - **Logs** are off by default. When you turn them on, Pail writes `logs/pail.log` in the configuration directory with URL query strings, Authorization headers, signatures and known secret values removed. Passwords you type by hand are recognised only by their label, so read a log before you share it.
-- **Network:** Pail connects only to the endpoints of the accounts you add. It has no telemetry and does not check for updates.
+- **Network:** Pail connects only to the endpoints of the accounts you add, through the proxy from **Settings › Network** or the `HTTP_PROXY` and `HTTPS_PROXY` variables when one is set. It has no telemetry and does not check for updates.
 
 ## Tested platforms and services
 

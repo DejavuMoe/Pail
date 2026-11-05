@@ -37,6 +37,7 @@ var settingsI18NAllow = map[string]bool{
 // the switch is found from the left edge of the label, not from its text end.
 func (h *harness) clickSettingSwitch(label string) {
 	h.t.Helper()
+	h.showSetting(label)
 	h.tt.Frame()
 	r, ok := h.tt.Find(label)
 	if !ok {

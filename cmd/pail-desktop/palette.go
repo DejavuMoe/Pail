@@ -91,14 +91,14 @@ func (a *app) paletteEntries() []palEntry {
 	}
 	if a.hasAccount() {
 		for _, b := range a.buckets {
-			name := b.Name
+			name, shown := b.Name, a.bucketLabel(b.Name)
 			e := palEntry{
-				label: m.PaletteOpenBucket(name), english: en.PaletteOpenBucket(name),
+				label: m.PaletteOpenBucket(shown), english: en.PaletteOpenBucket(shown),
 				group: groupNavigate, heading: groupName(m, groupNavigate), icon: "database", enabled: true,
 				current: a.tool == "" && a.scope.Bucket == name,
 				run:     func() { a.openBucket(name) },
 			}
-			e.hay = searchText(e.label, e.english, e.heading, groupName(en, groupNavigate), b.Region, "browse")
+			e.hay = searchText(e.label, e.english, e.heading, groupName(en, groupNavigate), b.Region, "browse", name) // the real name finds it too
 			out = append(out, e)
 		}
 	}

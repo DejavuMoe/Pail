@@ -64,7 +64,7 @@ func (a *app) objects(c *ui.Context) {
 		case a.loading && len(a.raw) == 0:
 			ui.Column(c).Grow(1).Center().Gap(10).Children(func() {
 				ui.Spinner(c).Size(22, 22)
-				mutedText(c, locales.ObjectsLoading(a.scope.Bucket))
+				mutedText(c, locales.ObjectsLoading(a.bucketLabel(a.scope.Bucket)))
 			})
 		case len(a.rows) == 0:
 			a.emptyState(c)
@@ -78,7 +78,7 @@ func (a *app) objects(c *ui.Context) {
 			ui.Column(c).Absolute().Top(4).Left(4).Right(4).Bottom(4).PassThrough().Center().Gap(8).
 				Background(k.Selection.Alpha(0.5)).Border(1.5, k.Accent).Radius(8).Children(func() {
 				ui.Icon(c, icons.Get("upload")).FontSize(24).TextColor(k.Accent)
-				prefix := a.scope.Bucket + "/" + a.scope.Prefix
+				prefix := a.bucketLabel(a.scope.Bucket) + "/" + a.scope.Prefix
 				ui.Text(c, locales.ObjectsDropToUpload(prefix)).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
 			})
 		}

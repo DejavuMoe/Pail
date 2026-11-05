@@ -193,10 +193,27 @@ func TestRemoveAccountConfirmsAndExplains(t *testing.T) {
 
 // ---- settings --------------------------------------------------------------------------------------------
 
+// showSetting scrolls the Settings page until the row with this text is in the
+// visible part of the page: the sections below the first screen start out of
+// reach.
+func (h *harness) showSetting(label string) {
+	h.t.Helper()
+	h.tt.Frame()
+	r, ok := h.tt.Find(label)
+	if !ok {
+		h.t.Fatalf("no settings row %q; have %q", label, h.tt.Texts())
+	}
+	if mid := r.Y + r.H/2; mid < 120 || mid > testH-300 {
+		h.tt.Scroll(700, 300, 0, mid-300)
+		h.settle()
+	}
+}
+
 // settingField clicks into the text field of a Settings row: the label is a
 // fixed 200px column and the control starts 16px after it.
 func (h *harness) settingField(label string) {
 	h.t.Helper()
+	h.showSetting(label)
 	h.tt.Frame()
 	r, ok := h.tt.Find(label)
 	if !ok {

@@ -74,6 +74,7 @@ type resetState struct {
 	typed, err string
 	accounts   []string // names that will need their secret again
 	refs       []string
+	proxy      bool // the proxy password is stored and will be lost
 }
 
 func (v *vaultUI) busyNow() bool {
@@ -444,6 +445,7 @@ func (a *app) openReset() {
 		}
 	}
 	r.refs = a.svc.SecretRefs()
+	r.proxy = a.svc.Settings().Proxy.HasPassword
 	a.vu.reset = r
 }
 
@@ -595,6 +597,9 @@ func (a *app) resetNotice(c *ui.Context, r *core.VaultReset) {
 	}
 	if len(r.Refs) > 0 {
 		warnNotice(c, locales.VaultRefsLost(strings.Join(r.Refs, ", ")))
+	}
+	if r.Proxy {
+		warnNotice(c, locales.VaultProxyPasswordLost())
 	}
 }
 
@@ -829,6 +834,12 @@ func (a *app) resetDialog(c *ui.Context) {
 			ui.Column(c).Gap(6).Children(func() {
 				fieldLabel(c, locales.VaultResetRefs())
 				nameList(c, r.refs)
+			})
+		}
+		if r.proxy {
+			ui.Column(c).Gap(6).Children(func() {
+				fieldLabel(c, locales.VaultResetSettings())
+				nameList(c, []string{locales.SettingsProxyPasswordName()})
 			})
 		}
 		formField(c, locales.VaultTypeToConfirm(resetWord), "", func() {

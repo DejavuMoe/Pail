@@ -54,6 +54,27 @@ func formatETA(done, total int64, speed float64) string {
 	return fmt.Sprintf("%d:%02d", s/60, s%60)
 }
 
+// humanDuration is how long something took, in a few characters: "850 ms",
+// "3.5 s", "42 s", "1 m 05 s", "2 h 07 m". The units are the same in every
+// language, like the sizes' "MB".
+func humanDuration(d time.Duration) string {
+	if d < time.Second {
+		return fmt.Sprintf("%d ms", max(d, 0).Milliseconds())
+	}
+	if t := d.Round(100 * time.Millisecond); t < 10*time.Second {
+		return fmt.Sprintf("%.1f s", t.Seconds())
+	}
+	t := d.Round(time.Second)
+	switch {
+	case t < time.Minute:
+		return fmt.Sprintf("%d s", int(t/time.Second))
+	case t < time.Hour:
+		return fmt.Sprintf("%d m %02d s", int(t/time.Minute), int(t%time.Minute/time.Second))
+	}
+	t = d.Round(time.Minute)
+	return fmt.Sprintf("%d h %02d m", int(t/time.Hour), int(t%time.Hour/time.Minute))
+}
+
 func formatSpeed(speed float64) string {
 	if speed < 1 {
 		return "—"

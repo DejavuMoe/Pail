@@ -20,6 +20,7 @@ func (a *app) dialogs(c *ui.Context) {
 	a.vaultDialogs(c) // so the unlock dialog is above whatever asked for it
 	a.keysDialog(c)
 	a.aboutDialog(c)
+	a.aliasDialog(c)   // a small dialog that opens nothing: only the palette is above it
 	a.paletteDialog(c) // last: the palette is above everything
 }
 

@@ -25,6 +25,7 @@ type VaultState struct {
 
 // VaultReset lists what ResetVault could not recover.
 type VaultReset struct {
+	Proxy    bool     // the proxy password was in the vault and has to be entered again
 	Accounts []string // IDs of accounts whose secret must be entered again
 	Refs     []string // secret reference names (SSE-C keys, ZIP passwords) whose value is gone
 }
@@ -241,6 +242,9 @@ func (s *Service) secretKeys() []string {
 	}
 	for _, n := range s.refs {
 		keys = append(keys, refKey(n))
+	}
+	if s.settings.Proxy.HasPassword {
+		keys = append(keys, proxyPasswordKey)
 	}
 	return keys
 }
@@ -467,6 +471,10 @@ func (s *Service) ResetVault() (VaultReset, error) {
 		st := s.settings
 		s.mu.Unlock()
 		st.SecretBackend = SecretBackendKeyring
+		if st.Proxy.HasPassword {
+			res.Proxy = true
+			st.Proxy.HasPassword = false
+		}
 		s.backendMu.Lock()
 		err := writeJSONAtomic(s.path("settings.json"), st)
 		if err == nil {
