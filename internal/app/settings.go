@@ -20,6 +20,14 @@ const (
 	defaultPart   = 16
 )
 
+// The length of the desktop app's list of recent operations. The upper bound
+// keeps a typo from holding a million entries in memory.
+const (
+	MinRecentOps     = 1
+	MaxRecentOps     = 1000
+	DefaultRecentOps = 100
+)
+
 // DefaultSettings returns the settings used when settings.json does not exist.
 //
 // The default ConflictPolicy is "rename": it never overwrites data and never
@@ -35,6 +43,7 @@ func DefaultSettings() Settings {
 
 		SecretBackend:        SecretBackendKeyring,
 		VaultAutoLockMinutes: 15,
+		RecentOps:            DefaultRecentOps,
 	}
 }
 
@@ -65,6 +74,9 @@ func (st Settings) withDefaults() Settings {
 	if st.SecretBackend == "" {
 		st.SecretBackend = d.SecretBackend
 	}
+	if st.RecentOps == 0 {
+		st.RecentOps = d.RecentOps
+	}
 	// VaultAutoLockMinutes: 0 means "never", so it is not defaulted here. A file
 	// that predates the field keeps the default because load() decodes onto
 	// DefaultSettings.
@@ -85,6 +97,9 @@ func (st Settings) validate() error {
 	}
 	if st.PartSizeMiB < minPartMiB || st.PartSizeMiB > maxPartMiB {
 		return fmt.Errorf("part size must be between %d and %d MiB", minPartMiB, maxPartMiB)
+	}
+	if st.RecentOps < MinRecentOps || st.RecentOps > MaxRecentOps {
+		return fmt.Errorf("recent operations must be between %d and %d", MinRecentOps, MaxRecentOps)
 	}
 	if !st.Conflict.Valid() {
 		return fmt.Errorf("unknown conflict policy %q", st.Conflict)
