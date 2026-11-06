@@ -166,3 +166,4 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 - MinIO 套件没有加 `-race` 运行；`-race` 只跑了单元与协议测试。
 - 只写权限账户在 rename 策略下无法识别重放产生的 412；大小写不同的同名 key 的编号不会跨扫描记忆。
 - 命令行外壳没有对真实服务端运行。
+- v0.5.0（命令行账户、保险库与对象命令，状态栏计数）：新命令只有进程内对 `internal/s3test` 的测试；状态栏与折叠传输条的计数动画只有 headless 测试（含加载期间不滚动的断言）和一张开发构建的 `--demo` 截图，没有在原生窗口里目视动画过程。发布包：GitHub Actions 的 CI 与 CodeQL 通过且没有未处理的告警，`check-release` 通过；`verify-release` 复核下载的六个归档与 `SHA256SUMS` 通过；Windows amd64 解压后 `pail version` 与 `pail-desktop --version` 为 0.5.0，桌面程序 `--smoke-exit 6s` 原生窗口启动并以 0 退出（空配置，停在欢迎页），发布包不再接受 `--demo`；Linux amd64 包在 WSL 解压后两个程序的版本为 0.5.0；macOS 与两个 arm64 包只经 CI 的原生测试任务，没有在真机上运行。
