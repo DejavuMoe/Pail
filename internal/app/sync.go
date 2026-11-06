@@ -334,10 +334,8 @@ func (p *syPlanner) planUpload() ([]*syItem, error) {
 			p.skip(l.Rel, "object key is longer than 1024 bytes", l.Size)
 			continue
 		}
-		phys, comp, why, err := syPhysicalKey(list, bucket, key, p.job.NoRules)
-		if err != nil {
-			return nil, err
-		}
+		phys, comp, why := syPhysicalKey(list, bucket, key, p.job.NoRules)
+
 		if why == "" && len(phys) > maxKeyBytes {
 			why = "object key is longer than 1024 bytes"
 		}
