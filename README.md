@@ -110,7 +110,7 @@ Every command, its flags, JSON output and exit codes are in the [command-line re
 
 ## Data and privacy
 
-- **Configuration** lives in the `Pail` folder of your user configuration directory: `%AppData%\Pail` on Windows, `~/Library/Application Support/Pail` on macOS, `~/.config/Pail` on Linux, or the directory given with `--config-dir`. It holds settings, accounts, sync jobs, upload rules and the names of stored secrets. A folder from Pail's earlier name, `openS3`, is migrated once on first start.
+- **Configuration** lives in the `Pail` folder of your user configuration directory: `%AppData%\Pail` on Windows, `~/Library/Application Support/Pail` on macOS, `~/.config/Pail` on Linux, or the directory given with `--config-dir`. It holds settings, accounts, sync jobs, upload rules and the names of stored secrets.
 - **Secrets** (secret access keys, session tokens, proxy passwords and saved passwords) go to the system keychain under the service name `Pail`: Windows Credential Manager, macOS Keychain or the Secret Service on Linux. Where there is no keychain, choose the encrypted vault `vault.json` in **Settings › Security**. Access key IDs are not secret and are stored with the accounts.
 - **Logs** are off by default. When you turn them on, Pail writes `logs/pail.log` in the configuration directory with URL query strings, Authorization headers, signatures and known secret values removed. Passwords you type by hand are recognised only by their label, so read a log before you share it.
 - **Network:** Pail connects only to the endpoints of the accounts you add, through the proxy from **Settings › Network** or the `HTTP_PROXY` and `HTTPS_PROXY` variables when one is set. It has no telemetry and does not check for updates.

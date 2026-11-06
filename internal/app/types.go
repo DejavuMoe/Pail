@@ -11,7 +11,7 @@ import "time"
 // Options configures New.
 type Options struct {
 	ConfigDir string  // default os.UserConfigDir()/Pail
-	Keyring   Keyring // nil = the OS keyring (service "Pail"; entries of the former "openS3" service are migrated)
+	Keyring   Keyring // nil = the OS keyring (service "Pail")
 	Now       func() time.Time
 }
 

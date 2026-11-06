@@ -5,7 +5,7 @@ package app
 //
 // File format (version 1):
 //
-//	{"format":"pail-vault" (read: also "opens3-vault"),"version":1,
+//	{"format":"pail-vault","version":1,
 //	 "kdf":{"name":"argon2id","time":3,"memoryKiB":65536,"threads":4,"salt":b64(16)},
 //	 "cipher":"xchacha20poly1305","nonce":b64(24),"data":b64}
 //
@@ -40,16 +40,14 @@ import (
 )
 
 const (
-	vaultFileName = "vault.json"
-	vaultFormat   = "pail-vault"
-	// legacyVaultFormat is the format name that builds before the rename to Pail wrote. Such files are still read (their AAD uses the header as read) and are rewritten as vaultFormat on the next write.
-	legacyVaultFormat = "opens3-vault"
-	vaultVersion      = 1
-	vaultKDFName      = "argon2id"
-	vaultCipherName   = "xchacha20poly1305"
-	vaultSaltLen      = 16
-	vaultKeyLen       = 32
-	vaultMaxFile      = 64 << 20 // sanity bound on vault.json
+	vaultFileName   = "vault.json"
+	vaultFormat     = "pail-vault"
+	vaultVersion    = 1
+	vaultKDFName    = "argon2id"
+	vaultCipherName = "xchacha20poly1305"
+	vaultSaltLen    = 16
+	vaultKeyLen     = 32
+	vaultMaxFile    = 64 << 20 // sanity bound on vault.json
 
 	// Master password policy: at least 8 characters, at most 1024 bytes.
 	vaultMinPassword = 8
@@ -179,7 +177,7 @@ func (v *vault) readFile() (vaultFile, error) {
 }
 
 func validateVaultFile(f vaultFile) error {
-	if f.Format != vaultFormat && f.Format != legacyVaultFormat {
+	if f.Format != vaultFormat {
 		return vaultInvalid("vault.json is not a Pail vault")
 	}
 	if f.Version != vaultVersion {
@@ -491,9 +489,7 @@ func (v *vault) mutate(fn func(map[string][]byte) bool) error {
 		wipeMap(cur)
 		return nil
 	}
-	hdr := v.hdr
-	hdr.Format = vaultFormat // a legacy file is upgraded by this write (new AAD, fresh nonce, same key)
-	nf, err := sealFile(hdr, v.key, cur)
+	nf, err := sealFile(v.hdr, v.key, cur)
 	if err == nil {
 		err = writeJSONAtomic(v.path, nf)
 	}
@@ -501,7 +497,6 @@ func (v *vault) mutate(fn func(map[string][]byte) bool) error {
 		wipeMap(cur)
 		return err
 	}
-	v.hdr = hdr
 	wipeMap(v.data)
 	v.data = cur
 	return nil
