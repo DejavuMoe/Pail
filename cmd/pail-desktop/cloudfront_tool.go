@@ -228,8 +228,8 @@ func (a *app) cfLoadInvs(silent bool) {
 // invalidations of the chosen distribution while one is still in progress.
 func (a *app) cfTick() {
 	cf := &a.tl.cf
-	if a.tool != "cloudfront" || cf.invFor == "" || cf.invLoad {
-		return
+	if a.tool != "cloudfront" || cf.invFor == "" || cf.invLoad || a.windowHidden() {
+		return // nobody sees the status of a window kept in the tray
 	}
 	busy := cf.dlg.result != nil && cf.dlg.result.Status == "InProgress"
 	for _, v := range cf.invs {

@@ -113,6 +113,8 @@ type app struct {
 	rows        []Entry // filtered and sorted, what the table shows
 	byKey       map[string]int
 	rowsDirty   bool
+	rebuiltAt   time.Time // when the rows were last rebuilt
+	rebuildWake bool      // a timer is set to bring the next rebuild about
 	loading     bool
 	listErr     string
 	listGen     int
@@ -255,9 +257,15 @@ func (a *app) close() {
 }
 
 // enqueue is safe from any goroutine: it queues fn for the UI thread and
-// wakes the window (when there is one) so it drains the queue.
+// wakes the window (when there is one) so it drains the queue. Once the app is
+// stopped nothing drains the queue any more, so work that is still finishing
+// drops its result instead of blocking forever on a full queue.
 func (a *app) enqueue(fn func()) {
-	a.pending <- fn
+	select {
+	case a.pending <- fn:
+	case <-a.ctx.Done():
+		return
+	}
 	if w := a.wake.Load(); w != nil {
 		(*w)()
 	}
@@ -593,6 +601,33 @@ func (a *app) pruneSelection() {
 	}
 }
 
+// rebuildEvery is how often the rows are rebuilt while a listing is still
+// arriving. Each rebuild sorts everything loaded so far, so doing it for every
+// page of a huge folder would cost more than loading it.
+const rebuildEvery = 250 * time.Millisecond
+
+// rowsDue reports whether this frame should rebuild the rows. A changed sort,
+// search or a finished listing rebuilds at once; pages that arrive during a
+// listing wait for the next rebuildEvery, and a timer brings that frame about
+// when no other event does.
+func (a *app) rowsDue() bool {
+	if !a.rowsDirty && a.sort == a.sortSeen {
+		return false
+	}
+	if !a.loading || a.sort != a.sortSeen || a.rebuiltAt.IsZero() {
+		return true
+	}
+	wait := rebuildEvery - time.Since(a.rebuiltAt)
+	if wait <= 0 {
+		return true
+	}
+	if !a.rebuildWake {
+		a.rebuildWake = true
+		time.AfterFunc(wait, func() { a.post(func() { a.rebuildWake = false }) })
+	}
+	return false
+}
+
 // rebuildRows filters and sorts raw into rows: folders always first.
 func (a *app) rebuildRows() {
 	q := strings.ToLower(strings.TrimSpace(a.search))
@@ -652,6 +687,7 @@ func (a *app) rebuildRows() {
 	}
 	a.rowsDirty = false
 	a.sortSeen = a.sort
+	a.rebuiltAt = time.Now()
 }
 
 func cmpInt(x, y int64) int {
@@ -674,6 +710,23 @@ func (a *app) selectedKeys() []string {
 	}
 	slices.SortFunc(out, func(x, y string) int { return a.byKey[x] - a.byKey[y] })
 	return out
+}
+
+// soleSelected is the key of the one listed row that is chosen; ok is false when
+// none or several are. It stops reading the selection at the second row, so the
+// per-frame questions "is exactly one row chosen" do not grow with a Ctrl+A.
+func (a *app) soleSelected() (key string, ok bool) {
+	n := 0
+	for k := range a.sel.All() {
+		if _, listed := a.byKey[k]; !listed {
+			continue
+		}
+		if n++; n > 1 {
+			return "", false
+		}
+		key = k
+	}
+	return key, n == 1
 }
 
 // selectedCount is how many listed rows are chosen: len(selectedKeys()),
@@ -742,14 +795,13 @@ func (a *app) resetHead() {
 
 // ensureHead starts loading the details of the single selected object.
 func (a *app) ensureHead() {
-	keys := a.selectedKeys()
-	if len(keys) != 1 || strings.HasSuffix(keys[0], "/") {
+	key, one := a.soleSelected()
+	if !one || strings.HasSuffix(key, "/") {
 		if a.headKey != "" {
 			a.resetHead()
 		}
 		return
 	}
-	key := keys[0]
 	if key == a.headKey {
 		return
 	}

@@ -28,7 +28,11 @@ func hasCDNSelection(a *app) bool {
 
 // oneCDNObject is a single live object with a CDN link.
 func oneCDNObject(a *app) bool {
-	return oneObject(a) && !a.mg.del.on && a.objectCDN(a.selectedKeys()[0]) != ""
+	if !oneObject(a) || a.mg.del.on {
+		return false
+	}
+	k, _ := a.soleSelected()
+	return a.objectCDN(k) != ""
 }
 
 // copyCDN copies the CDN links of the selected objects, one per line.
