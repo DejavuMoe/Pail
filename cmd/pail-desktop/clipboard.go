@@ -151,8 +151,7 @@ func (a *app) askMove(dest Scope) {
 // It reports whether rows are over e right now.
 func (a *app) dropTarget(e ui.Element, dest *Scope) bool {
 	_, over := ui.DragOver[any](e)
-	if v, ok := ui.Drop[any](e); ok && dest != nil && a.sel.Len() > 0 {
-		_ = v
+	if _, ok := ui.Drop[any](e); ok && dest != nil && a.sel.Len() > 0 {
 		a.askMove(*dest)
 	}
 	return over && dest != nil

@@ -1,7 +1,6 @@
 package app
 
 import (
-	"fmt"
 	"path"
 	"path/filepath"
 	"strings"
@@ -86,11 +85,8 @@ func versionedName(name, versionID string) string {
 	if len(short) > 8 {
 		short = short[:8]
 	}
-	ext := path.Ext(name)
-	if ext == name {
-		ext = ""
-	}
-	return fmt.Sprintf("%s (v%s)%s", strings.TrimSuffix(name, ext), short, ext)
+	return insertBeforeExt(name, " (v"+short+")")
+
 }
 
 // versionedKey applies versionedName to the last segment of a key.

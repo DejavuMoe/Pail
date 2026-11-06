@@ -11,15 +11,22 @@ import (
 // token for chosen rows, 12px cells. The rows are built under a theme whose
 // Accent is that token; the rest of the frame keeps the real Accent.
 func toolTable(c *ui.Context, st *ui.ListState, cols []ui.TableColumn, n int, cell func(row, col int)) ui.Element {
+	defer tableTheme(c)()
+	return ui.Table(c, st, cols, n, cell)
+}
+
+// tableTheme makes the theme under which table rows are built: the Selection
+// token as Accent, 8 spacing units (30px) per row, table font size. Call the
+// returned func to restore the frame's real theme.
+func tableTheme(c *ui.Context) (restore func()) {
 	k := tk(c)
 	full := c.Theme()
 	rowTheme := *full
 	rowTheme.Accent, rowTheme.AccentText = k.Selection, k.Text
-	rowTheme.Spacing = 3.75
+	rowTheme.Spacing = tableSpacing
 	rowTheme.FontSize = sizeSecondary
 	c.SetTheme(&rowTheme)
-	defer c.SetTheme(full)
-	return ui.Table(c, st, cols, n, cell)
+	return func() { c.SetTheme(full) }
 }
 
 // textAreaBox is a multi-line field styled like inputBox.

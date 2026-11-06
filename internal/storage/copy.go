@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 	"github.com/aws/smithy-go"
@@ -332,4 +333,9 @@ func copyPartSize(size, requested int64) (int64, error) {
 		return 0, errors.New("copy part size exceeds 5 GiB")
 	}
 	return partSize, nil
+}
+
+func isStatus(err error, code int) bool {
+	var re *awshttp.ResponseError
+	return errors.As(err, &re) && re.HTTPStatusCode() == code
 }

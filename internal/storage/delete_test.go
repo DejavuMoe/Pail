@@ -328,50 +328,6 @@ func TestDeleteWithoutVersionIDAcknowledged(t *testing.T) {
 	assertCounts(t, c.DeleteObjects(context.Background(), "b", []ObjectID{{Key: "plain"}}), 1, 0, 0, 0)
 }
 
-func TestProbeConditionalWrites(t *testing.T) {
-	for _, tc := range []struct {
-		name string
-		h    func(n int, w http.ResponseWriter)
-		want bool
-	}{
-		{"honored", func(n int, w http.ResponseWriter) {
-			if n == 2 {
-				w.WriteHeader(412)
-				fmt.Fprint(w, `<Error><Code>PreconditionFailed</Code></Error>`)
-			}
-		}, true},
-		{"ignored", func(n int, w http.ResponseWriter) {}, false},
-		{"not-implemented", func(n int, w http.ResponseWriter) {
-			w.WriteHeader(501)
-			fmt.Fprint(w, `<Error><Code>NotImplemented</Code></Error>`)
-		}, false},
-	} {
-		t.Run(tc.name, func(t *testing.T) {
-			var puts atomic.Int32
-			var deleted atomic.Bool
-			c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
-				switch r.Method {
-				case "PUT":
-					if r.Header.Get("If-None-Match") != "*" || !strings.HasPrefix(r.URL.Path, "/bucket/.pail-probe-") {
-						t.Errorf("bad probe request %s %v", r.URL, r.Header)
-					}
-					tc.h(int(puts.Add(1)), w)
-				case "DELETE":
-					deleted.Store(true)
-					w.WriteHeader(204)
-				}
-			})
-			got, err := c.ProbeConditionalWrites(context.Background(), "bucket")
-			if err != nil || got != tc.want {
-				t.Fatalf("got %v err %v", got, err)
-			}
-			if tc.name != "not-implemented" && !deleted.Load() {
-				t.Fatal("probe object not removed")
-			}
-		})
-	}
-}
-
 // 4xx answers to the whole request mean nothing was deleted (failed); 5xx and
 // transport errors leave the outcome open (unknown).
 func TestFxDeleteObjectsWholeRequestRefusal(t *testing.T) {

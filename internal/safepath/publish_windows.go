@@ -34,4 +34,6 @@ func publishNoReplace(tmp, final string) error {
 	return err
 }
 
-func syncDir(string) {} // directories cannot be fsynced on Windows
+// SyncDir flushes the directory entry to disk, best effort. A no-op on Windows,
+// where directories cannot be fsynced.
+func SyncDir(string) {}

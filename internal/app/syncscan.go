@@ -15,9 +15,6 @@ import (
 	"time"
 	"unicode/utf8"
 
-	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-
 	"github.com/DejavuMoe/Pail/internal/rules"
 	"github.com/DejavuMoe/Pail/internal/storage"
 )
@@ -225,7 +222,7 @@ type syRemote struct {
 // (keys ending in "/") are not part of a sync and are left out.
 func syListRemote(ctx context.Context, c *storage.Client, loc Location) ([]syRemote, error) {
 	var out []syRemote
-	err := scanList(ctx, c, loc.Bucket, loc.Prefix, func(o remoteObject) error {
+	err := scanList(ctx, c, loc.Bucket, loc.Prefix, func(o bkObj) error {
 		rel := relativeKey(o.Key, loc.Prefix)
 		if rel == "" || strings.HasSuffix(rel, "/") || !strings.HasPrefix(o.Key, loc.Prefix) {
 			return nil
@@ -242,9 +239,9 @@ func syListRemote(ctx context.Context, c *storage.Client, loc Location) ([]syRem
 
 // syHead returns the user metadata (lower-case keys) of an object.
 func syHead(ctx context.Context, c *storage.Client, bucket, key string) (map[string]string, error) {
-	h, err := c.S3().HeadObject(ctx, &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)})
+	h, err := headObj(ctx, c, "HeadObject", bucket, key, "")
 	if err != nil {
-		return nil, classify("HeadObject", err)
+		return nil, err
 	}
 	m := make(map[string]string, len(h.Metadata))
 	for k, v := range h.Metadata {

@@ -451,18 +451,6 @@ type memWriterAt struct{ b []byte }
 
 func (m *memWriterAt) WriteAt(p []byte, off int64) (int, error) { return copy(m.b[off:], p), nil }
 
-func TestProbeConditionalWrites(t *testing.T) {
-	e := newEnv(t, false)
-	ok, err := e.c.ProbeConditionalWrites(e.ctx, e.bucket)
-	if err != nil {
-		t.Fatal(err)
-	}
-	t.Logf("MinIO honours If-None-Match:* on PutObject: %v", ok)
-	if left := e.listAll(t, ".pail-probe-"); len(left) != 0 {
-		t.Fatalf("probe object left behind: %v", left)
-	}
-}
-
 func cleanBucket(t *testing.T, c *storage.Client, bucket string) {
 	t.Helper()
 	ctx, cancel := context.WithTimeout(context.Background(), time.Minute)

@@ -9,7 +9,6 @@ import (
 	"strings"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/DejavuMoe/Pail/internal/rules"
 	"github.com/DejavuMoe/Pail/internal/storage"
@@ -44,13 +43,9 @@ func (h decodeHints) zip() bool {
 
 // headDecodeHints reads the decode hints of one object (or version) with a HEAD.
 func headDecodeHints(ctx context.Context, c *storage.Client, bucket, key, versionID string) (decodeHints, error) {
-	in := &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}
-	if versionID != "" {
-		in.VersionId = aws.String(versionID)
-	}
-	h, err := c.S3().HeadObject(ctx, in)
+	h, err := headObj(ctx, c, "Download", bucket, key, versionID)
 	if err != nil {
-		return decodeHints{}, classify("Download", err)
+		return decodeHints{}, err
 	}
 	return decodeHints{ContentEncoding: aws.ToString(h.ContentEncoding), Compression: h.Metadata[compressionMetaKey]}, nil
 }

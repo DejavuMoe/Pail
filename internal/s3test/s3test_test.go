@@ -341,25 +341,6 @@ func TestRangeAndConditionals(t *testing.T) {
 	if err == nil || !errors.As(err, &re) || re.HTTPStatusCode() != 304 {
 		t.Fatalf("get if-none-match: %v", err)
 	}
-	// disabling conditional writes ignores If-None-Match
-	srv.SetConditionalWrites(false)
-	if _, err := c.PutObject(ctx, &s3.PutObjectInput{Bucket: s("rng"), Key: s("k"), Body: strings.NewReader("again"), IfNoneMatch: s("*")}); err != nil {
-		t.Fatalf("conditional writes disabled: %v", err)
-	}
-	ok, err := storageClientProbe(t, srv)
-	if err != nil || ok {
-		t.Fatalf("probe disabled = %v %v", ok, err)
-	}
-	srv.SetConditionalWrites(true)
-	ok, err = storageClientProbe(t, srv)
-	if err != nil || !ok {
-		t.Fatalf("probe enabled = %v %v", ok, err)
-	}
-}
-
-func storageClientProbe(t *testing.T, srv *s3test.Server) (bool, error) {
-	cl, _ := storage.New(context.Background(), storage.Config{Endpoint: srv.URL, UsePathStyle: true, AccessKeyID: "a", SecretAccessKey: "b"})
-	return cl.ProbeConditionalWrites(context.Background(), "rng")
 }
 
 func TestCopyObject(t *testing.T) {

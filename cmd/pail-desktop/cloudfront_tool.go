@@ -272,15 +272,14 @@ func (a *app) openInvalidation(paths string) {
 
 func (a *app) cfOpenDialog(paths string) {
 	cf := &a.tl.cf
-	d, ok := cf.selectedDist()
-	if !ok {
+	if _, ok := cf.selectedDist(); !ok {
 		return
 	}
 	cf.dlg = invalidateDlg{open: true, paths: paths, bucket: a.scope.Bucket}
 	if a.scope.Bucket == "" {
 		return
 	}
-	bucket, acct, api, dist := a.scope.Bucket, cf.acct, a.cfService(), d.ID
+	bucket, acct, api := a.scope.Bucket, cf.acct, a.cfService()
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(60 * time.Second)
 		defer cancel()
@@ -295,7 +294,6 @@ func (a *app) cfOpenDialog(paths string) {
 					set[x.ID] = true
 				}
 			}
-			_ = dist
 			cf.dlg.forBucket = set
 		}
 	})
@@ -430,7 +428,7 @@ func (a *app) cfView(c *ui.Context) {
 			cf.list.Key = func(i int) any { return ds[i].ID }
 			cf.list.Label = func(i int) string { return ds[i].ID }
 			cf.list.Selected = &cf.cursor
-			tbl := toolTable(c, &cf.list, distColumns(), len(ds), func(row, col int) {
+			toolTable(c, &cf.list, distColumns(), len(ds), func(row, col int) {
 				d := &ds[row]
 				switch col {
 				case 0:
@@ -449,7 +447,6 @@ func (a *app) cfView(c *ui.Context) {
 					secondaryCell(c, en, true, ui.Start)
 				}
 			}).Grow(1).MinHeight(0).Label(locales.CloudfrontDistributions())
-			_ = tbl
 			a.cfSyncSelection()
 			hairline(c)
 			a.cfInvalidations(c)

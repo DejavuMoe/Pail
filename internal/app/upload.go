@@ -453,13 +453,12 @@ type remoteHead struct {
 
 // headRemoteMeta HEADs bucket/key; a missing key is not an error.
 func headRemoteMeta(ctx context.Context, c *storage.Client, bucket, key string) (remoteHead, error) {
-	out, err := c.S3().HeadObject(ctx, &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)})
+	out, err := headObj(ctx, c, "HeadObject", bucket, key, "")
 	if err != nil {
-		cerr := classify("HeadObject", err)
-		if KindOf(cerr) == ErrNotFound {
+		if KindOf(err) == ErrNotFound {
 			return remoteHead{}, nil
 		}
-		return remoteHead{}, cerr
+		return remoteHead{}, err
 	}
 	meta := make(map[string]string, len(out.Metadata))
 	for k, v := range out.Metadata {

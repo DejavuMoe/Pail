@@ -175,7 +175,7 @@ func (c *cli) report(err error) int {
 		if oe.Kind == app.ErrCanceled {
 			code = exitInterrupt
 		}
-		c.fail(describeOpError(oe), kindName(oe.Kind), code)
+		c.fail(kindName(oe.Kind)+": "+oe.Error(), kindName(oe.Kind), code)
 		return code
 	}
 	if errors.Is(err, context.Canceled) {
@@ -218,10 +218,6 @@ func kindName(k app.ErrKind) string {
 		return "locked"
 	}
 	return "error"
-}
-
-func describeOpError(oe *app.OpError) string {
-	return kindName(oe.Kind) + ": " + oe.Error()
 }
 
 func (c *cli) emit(v any) { _ = c.enc.Encode(v) }

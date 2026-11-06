@@ -225,12 +225,12 @@ func bucketOriginRE(bucket string) *regexp.Regexp {
 
 func normalizeDomain(d string) string { return strings.TrimSuffix(strings.ToLower(d), ".") }
 
-// OriginMatchesBucket reports whether an origin domain is an S3 REST or website
+// originMatchesBucket reports whether an origin domain is an S3 REST or website
 // endpoint of bucket: bucket.s3.amazonaws.com, bucket.s3.<region>.amazonaws.com,
 // the legacy bucket.s3-<region> form, dualstack names, the China partition and
 // bucket.s3-website[-.]<region> website endpoints. Look-alike hosts such as
 // bucket.s3.amazonaws.com.evil.example do not match.
-func OriginMatchesBucket(domain, bucket string) bool {
+func originMatchesBucket(domain, bucket string) bool {
 	return bucket != "" && bucketOriginRE(bucket).MatchString(normalizeDomain(domain))
 }
 

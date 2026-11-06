@@ -52,20 +52,20 @@ func TestOriginMatchesBucket(t *testing.T) {
 	for _, host := range []string{"assets.s3.amazonaws.com", "assets.s3.us-east-1.amazonaws.com", "assets.s3-us-west-2.amazonaws.com",
 		"assets.s3.dualstack.eu-west-1.amazonaws.com", "assets.s3.cn-north-1.amazonaws.com.cn", "ASSETS.S3.AMAZONAWS.COM.",
 		"assets.s3-website-us-east-1.amazonaws.com", "assets.s3-website.us-east-1.amazonaws.com"} {
-		if !OriginMatchesBucket(host, "assets") {
+		if !originMatchesBucket(host, "assets") {
 			t.Errorf("valid S3 origin rejected: %s", host)
 		}
 	}
 	for _, host := range []string{"assets.s3.amazonaws.com.attacker.invalid", "other.s3.amazonaws.com", "assets.example.com", "xassets.s3.amazonaws.com",
 		"assets.s3.amazonaws.com.cn.evil", "assets.s3.Bad_Region.amazonaws.com", "assets.s3x.amazonaws.com", "evil.assets.s3.amazonaws.com", ""} {
-		if OriginMatchesBucket(host, "assets") {
+		if originMatchesBucket(host, "assets") {
 			t.Errorf("non-matching origin accepted: %s", host)
 		}
 	}
-	if !OriginMatchesBucket("my.dotted.bucket.s3.amazonaws.com", "my.dotted.bucket") || OriginMatchesBucket("myXdottedXbucket.s3.amazonaws.com", "my.dotted.bucket") {
+	if !originMatchesBucket("my.dotted.bucket.s3.amazonaws.com", "my.dotted.bucket") || originMatchesBucket("myXdottedXbucket.s3.amazonaws.com", "my.dotted.bucket") {
 		t.Error("dots in bucket names must be literal")
 	}
-	if OriginMatchesBucket("x.s3.amazonaws.com", "") {
+	if originMatchesBucket("x.s3.amazonaws.com", "") {
 		t.Error("empty bucket matched")
 	}
 }

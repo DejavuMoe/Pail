@@ -416,3 +416,9 @@ func TestListErrorShowsRetry(t *testing.T) {
 	h.mustClick("Retry")
 	h.mustHave("customers-export.csv")
 }
+
+// idle reports whether no background request is in flight.
+func (a *app) idle() bool {
+	return !a.bucketsLoad && !a.loading && a.headState != 1 && a.prev.state != previewLoading &&
+		(!a.del.open || a.del.state != delCounting) && !a.af.busy() && !a.folderDlg.busy && a.busyOps.Load() == 0 && !a.vu.busyNow()
+}

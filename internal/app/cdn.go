@@ -4,6 +4,8 @@ import (
 	"errors"
 	"net/url"
 	"strings"
+
+	"github.com/DejavuMoe/Pail/internal/storage"
 )
 
 const (
@@ -87,7 +89,7 @@ func (s *Service) CDNURL(loc Location, key string) string {
 			return ""
 		}
 	}
-	esc := escapeKey(key)
+	esc := storage.EscapePath(key)
 	if strings.Contains(rec.CDNURL, cdnPlaceKey) {
 		return strings.NewReplacer(cdnPlaceBucket, loc.Bucket, cdnPlaceKey, esc).Replace(rec.CDNURL)
 	}

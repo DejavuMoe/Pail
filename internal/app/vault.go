@@ -35,6 +35,7 @@ import (
 	"sync"
 	"unicode/utf8"
 
+	"github.com/DejavuMoe/Pail/internal/safepath"
 	"golang.org/x/crypto/argon2"
 	"golang.org/x/crypto/chacha20poly1305"
 )
@@ -361,7 +362,7 @@ func (v *vault) destroy() error {
 	if err := os.Remove(v.path); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
-	syncDir(filepath.Dir(v.path))
+	safepath.SyncDir(filepath.Dir(v.path))
 	return nil
 }
 

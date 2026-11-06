@@ -142,9 +142,9 @@ func (s *Service) bkRewriteOne(ctx context.Context, r *run, c *storage.Client, l
 	if o.VersionID != "" {
 		return bkFailf(res, "a specific version cannot be rewritten; only current objects")
 	}
-	h, err := c.S3().HeadObject(ctx, &s3.HeadObjectInput{Bucket: aws.String(loc.Bucket), Key: aws.String(o.Key)})
+	h, err := headObj(ctx, c, "Head", loc.Bucket, o.Key, "")
 	if err != nil {
-		return bkFail(ctx, res, classify("Head", err))
+		return bkFail(ctx, res, err)
 	}
 	size := aws.ToInt64(h.ContentLength)
 	if !o.Resolved {

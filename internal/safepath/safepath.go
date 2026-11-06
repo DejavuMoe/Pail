@@ -139,7 +139,7 @@ func Publish(tmp, final string, overwrite bool) error {
 	if err != nil {
 		return err
 	}
-	syncDir(filepath.Dir(final))
+	SyncDir(filepath.Dir(final))
 	return nil
 }
 

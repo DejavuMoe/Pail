@@ -220,6 +220,8 @@ func (st *bkState) retryScope(items []ItemResult) (bkScope, bool) {
 // with the key after which listing can resume once the page is dealt with.
 type bkLister func(ctx context.Context, scan bkScan, emit func(page []bkObj, resumeAfter string) error) error
 
+// bkDecoder decodes keys only when the service says it encoded them; some
+// S3-compatible servers ignore EncodingType and return plain keys.
 func bkDecoder(enc types.EncodingType) func(string) string {
 	if enc != types.EncodingTypeUrl {
 		return func(v string) string { return v }
@@ -373,15 +375,25 @@ func bkListDeleted(c *storage.Client, bucket string) bkLister {
 
 // ---- head ----------------------------------------------------------------------------------
 
-// bkHead resolves one object (or version) with a HEAD.
-func bkHead(ctx context.Context, c *storage.Client, bucket, key, versionID string) (bkObj, *s3.HeadObjectOutput, error) {
+// headObj HEADs one object (or version, when versionID is set); a failure is
+// classified for op.
+func headObj(ctx context.Context, c *storage.Client, op, bucket, key, versionID string) (*s3.HeadObjectOutput, error) {
 	in := &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}
 	if versionID != "" {
 		in.VersionId = aws.String(versionID)
 	}
 	h, err := c.S3().HeadObject(ctx, in)
 	if err != nil {
-		return bkObj{}, nil, classify("Head", err)
+		return nil, classify(op, err)
+	}
+	return h, nil
+}
+
+// bkHead resolves one object (or version) with a HEAD.
+func bkHead(ctx context.Context, c *storage.Client, bucket, key, versionID string) (bkObj, *s3.HeadObjectOutput, error) {
+	h, err := headObj(ctx, c, "Head", bucket, key, versionID)
+	if err != nil {
+		return bkObj{}, nil, err
 	}
 	o := bkObj{
 		Key: key, VersionID: aws.ToString(h.VersionId), ETag: aws.ToString(h.ETag), Size: aws.ToInt64(h.ContentLength),

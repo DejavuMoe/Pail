@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"strings"
-	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -34,11 +33,9 @@ import (
 //     send a conditional header when the provider honours it (caps.go) and
 //     otherwise rely on the HEAD done by resolveRemoteConflict.
 
-// bkEstimateDefaultLimit is where Estimate stops counting.
-const bkEstimateDefaultLimit = 100000
-
-// bkEstimateLimit is a variable only so that tests can use a small limit.
-var bkEstimateLimit = bkEstimateDefaultLimit
+// bkEstimateLimit is where Estimate stops counting; a variable only so that
+// tests can use a small limit.
+var bkEstimateLimit = 100000
 
 // Estimate counts the objects and bytes a selection covers, for confirmation
 // dialogs. It stops at 100,000 objects and sets Truncated. Explicitly named
@@ -67,26 +64,24 @@ func (s *Service) Estimate(ctx context.Context, sel Selection) (Estimate, error)
 
 	sizes := make([]int64, len(scope.Objs))
 	errs := make([]error, len(scope.Objs))
-	var wg sync.WaitGroup
-	sem := make(chan struct{}, 8)
-	for i, o := range scope.Objs {
+	for i := range sizes {
 		sizes[i] = -1
-		wg.Add(1)
-		sem <- struct{}{}
-		go func() {
-			defer func() { <-sem; wg.Done() }()
-			h, _, err := bkHead(ctx, c, sel.Bucket, o.Key, o.VersionID)
-			switch {
-			case err == nil:
-				sizes[i] = h.Size
-			case IsKind(err, ErrNotFound), bkStatus(err) == 405:
-				// absent, or a delete marker: nothing to count
-			default:
-				errs[i] = err
-			}
-		}()
 	}
-	wg.Wait()
+	syParallel(ctx, len(scope.Objs), 8, func(i int) {
+		o := scope.Objs[i]
+		h, _, err := bkHead(ctx, c, sel.Bucket, o.Key, o.VersionID)
+		switch {
+		case err == nil:
+			sizes[i] = h.Size
+		case IsKind(err, ErrNotFound), bkStatus(err) == 405:
+			// absent, or a delete marker: nothing to count
+		default:
+			errs[i] = err
+		}
+	})
+	if err := ctx.Err(); err != nil {
+		return Estimate{}, classify(op, err) // the sizes are incomplete
+	}
 	for i := range scope.Objs {
 		if errs[i] != nil {
 			return Estimate{}, classify(op, errs[i])
