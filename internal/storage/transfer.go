@@ -4,6 +4,7 @@ import (
 	"bytes"
 	"context"
 	"errors"
+	"fmt"
 	"io"
 	"sync"
 	"sync/atomic"
@@ -174,8 +175,31 @@ func (p *progressWriter) WriteAt(b []byte, off int64) (int, error) {
 	return n, err
 }
 
+// errRangeIgnored reports a service that answered a ranged GET with the whole
+// object and no Content-Range header.
+var errRangeIgnored = errors.New("the service ignored the Range header")
+
+// rangeCheckClient stops a ranged download at the first response that carries
+// more bytes than the range asked for. Without it the SDK writes the first part
+// from that response, hits the end of its buffer and reports a bare EOF.
+type rangeCheckClient struct{ *s3.Client }
+
+func (r rangeCheckClient) GetObject(ctx context.Context, in *s3.GetObjectInput, opts ...func(*s3.Options)) (*s3.GetObjectOutput, error) {
+	out, err := r.Client.GetObject(ctx, in, opts...)
+	if err != nil || in.Range == nil || out.ContentRange != nil || out.ContentLength == nil {
+		return out, err
+	}
+	var start, end int64
+	if _, e := fmt.Sscanf(*in.Range, "bytes=%d-%d", &start, &end); e != nil || *out.ContentLength <= end-start+1 {
+		return out, err
+	}
+	out.Body.Close()
+	return nil, errRangeIgnored
+}
+
 // Download fetches an object into w with ranged parallel GETs. Progress is O(1)
-// per write; bytes rewritten by a retried range are clamped by opts.Size.
+// per write; bytes rewritten by a retried range are clamped by opts.Size. A
+// service that ignores Range is read once, over a single connection.
 func (c *Client) Download(ctx context.Context, in *s3.GetObjectInput, w io.WriterAt, opts TransferOptions) (int64, error) {
 	if err := opts.validate(); err != nil {
 		return 0, err
@@ -186,7 +210,7 @@ func (c *Client) Download(ctx context.Context, in *s3.GetObjectInput, w io.Write
 	if opts.Progress != nil {
 		w = &progressWriter{w: w, c: &counter{size: opts.Size, report: opts.Progress}}
 	}
-	d := manager.NewDownloader(c.sdk, func(d *manager.Downloader) {
+	d := manager.NewDownloader(rangeCheckClient{c.sdk}, func(d *manager.Downloader) {
 		if opts.PartSize > 0 {
 			d.PartSize = opts.PartSize
 		}
@@ -194,5 +218,23 @@ func (c *Client) Download(ctx context.Context, in *s3.GetObjectInput, w io.Write
 			d.Concurrency = opts.Concurrency
 		}
 	})
-	return d.Download(ctx, w, in)
+	n, err := d.Download(ctx, w, in)
+	if errors.Is(err, errRangeIgnored) && in.Range == nil && ctx.Err() == nil {
+		return c.downloadWhole(ctx, in, w)
+	}
+	return n, err
+}
+
+// downloadWhole streams the object with one unranged GET.
+func (c *Client) downloadWhole(ctx context.Context, in *s3.GetObjectInput, w io.WriterAt) (int64, error) {
+	out, err := c.sdk.GetObject(ctx, in)
+	if err != nil {
+		return 0, err
+	}
+	defer out.Body.Close()
+	n, err := io.Copy(io.NewOffsetWriter(w, 0), out.Body)
+	if err == nil && out.ContentLength != nil && n != *out.ContentLength {
+		err = io.ErrUnexpectedEOF
+	}
+	return n, err
 }
