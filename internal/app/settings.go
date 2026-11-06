@@ -6,6 +6,8 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+
+	"github.com/DejavuMoe/Pail/internal/safepath"
 )
 
 // Settings limits. There is deliberately no free-edition cap; the upper bounds
@@ -202,7 +204,7 @@ func writeJSONAtomic(path string, v any) (err error) {
 	if err = os.Rename(tmp, path); err != nil {
 		return err
 	}
-	syncDir(dir)
+	safepath.SyncDir(dir)
 	return nil
 }
 
@@ -225,13 +227,4 @@ func readJSON(path string, v any) (found bool, err error) {
 
 func isChmodUnsupported(err error) bool {
 	return errors.Is(err, errors.ErrUnsupported)
-}
-
-// syncDir flushes the directory entry on platforms where that is possible
-// (best effort; it fails harmlessly on Windows).
-func syncDir(dir string) {
-	if d, err := os.Open(dir); err == nil {
-		d.Sync()
-		d.Close()
-	}
 }

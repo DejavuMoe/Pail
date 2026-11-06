@@ -2,6 +2,7 @@ package main
 
 import (
 	"regexp"
+	"slices"
 	"strings"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
@@ -175,7 +176,7 @@ func (a *app) submitRewrite() {
 			a.transfersOpen, a.transTab = true, 0
 			value := class
 			if enc {
-				value = encLabels()[indexOf(encModes, e.Mode)]
+				value = encLabels()[max(0, slices.Index(encModes, e.Mode))]
 			}
 			a.follow(id, func(t Task) {
 				sum := a.bulkSummary(t)
@@ -215,15 +216,6 @@ func rewriteResult(enc bool, t Task, sum bulkSummary, value string) string {
 		return locales.RewriteEncDone(value, sum.ok)
 	}
 	return locales.RewriteClassDone(value, sum.ok)
-}
-
-func indexOf(list []string, s string) int {
-	for i, v := range list {
-		if v == s {
-			return i
-		}
-	}
-	return 0
 }
 
 // rewriteDialog draws whichever rewrite dialog is open.

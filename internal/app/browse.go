@@ -113,15 +113,8 @@ func (s *Service) List(ctx context.Context, loc Location, opt ListOptions) (Page
 	}
 	// Decode only when the service says it encoded; some S3-compatible
 	// servers ignore EncodingType and return plain keys.
-	decode := func(v string) string { return v }
-	if out.EncodingType == types.EncodingTypeUrl {
-		decode = func(v string) string {
-			if d, err := url.QueryUnescape(v); err == nil {
-				return d
-			}
-			return v
-		}
-	}
+	decode := bkDecoder(out.EncodingType)
+
 	page := Page{Entries: make([]Entry, 0, len(out.CommonPrefixes)+len(out.Contents))}
 	for _, cp := range out.CommonPrefixes {
 		key := decode(aws.ToString(cp.Prefix))
@@ -170,13 +163,9 @@ func (s *Service) Head(ctx context.Context, loc Location, key, versionID string)
 	if err != nil {
 		return ObjectInfo{}, err
 	}
-	in := &s3.HeadObjectInput{Bucket: aws.String(loc.Bucket), Key: aws.String(key)}
-	if versionID != "" {
-		in.VersionId = aws.String(versionID)
-	}
-	h, err := c.S3().HeadObject(ctx, in)
+	h, err := headObj(ctx, c, op, loc.Bucket, key, versionID)
 	if err != nil {
-		return ObjectInfo{}, classify(op, err)
+		return ObjectInfo{}, err
 	}
 	info := ObjectInfo{
 		Key: key, VersionID: aws.ToString(h.VersionId), ETag: aws.ToString(h.ETag),
@@ -364,7 +353,7 @@ func (s *Service) PublicURL(loc Location, key string) string {
 	if region == "" {
 		region = "us-east-1"
 	}
-	esc := escapeKey(key)
+	esc := storage.EscapePath(key)
 	if rec.Endpoint == "" { // AWS
 		domain := "amazonaws.com"
 		if strings.HasPrefix(region, "cn-") {
@@ -392,24 +381,6 @@ func (s *Service) PublicURL(loc Location, key string) string {
 	return u.Scheme + "://" + host + base + "/" + esc
 }
 
-// escapeKey percent-encodes everything except unreserved characters and "/".
-func escapeKey(key string) string {
-	const hex = "0123456789ABCDEF"
-	var b strings.Builder
-	for i := 0; i < len(key); i++ {
-		c := key[i]
-		switch {
-		case c >= 'a' && c <= 'z', c >= 'A' && c <= 'Z', c >= '0' && c <= '9', c == '-', c == '.', c == '_', c == '~', c == '/':
-			b.WriteByte(c)
-		default:
-			b.WriteByte('%')
-			b.WriteByte(hex[c>>4])
-			b.WriteByte(hex[c&15])
-		}
-	}
-	return b.String()
-}
-
 // CreateFolder creates the zero-byte placeholder object "<prefix><name>/".
 // name may carry one trailing "/" but no "/" inside, and may not be "." or "..".
 func (s *Service) CreateFolder(ctx context.Context, loc Location, name string) error {
@@ -427,7 +398,7 @@ func (s *Service) CreateFolder(ctx context.Context, loc Location, name string) e
 	if err != nil {
 		return err
 	}
-	if _, err := c.UploadBytes(ctx, loc.Bucket, loc.Prefix+name+"/", "application/x-directory", nil); err != nil {
+	if _, err := c.UploadBytes(ctx, loc.Bucket, loc.Prefix+name+"/", folderContentType, nil); err != nil {
 		return classify(op, err)
 	}
 	return nil

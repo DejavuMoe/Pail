@@ -4,6 +4,7 @@ import (
 	"os"
 	"path/filepath"
 	"runtime"
+	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -336,7 +337,7 @@ func (a *app) settingsView(c *ui.Context) {
 			settingsRowHelp(c, locales.SettingsTheme(), locales.SettingsThemeHelp(), f.errs["theme"], func() {
 				// The mode lives in the app (the ⋯ menu and the palette change it
 				// too), so the control shows it each frame.
-				sel := slicesIndex(themeModes, a.themeMode())
+				sel := max(0, slices.Index(themeModes, a.themeMode()))
 				th := themeLabels()
 				if segmented(c, &sel, locales.SettingsTheme(), th...) {
 					a.setTheme(themeModes[sel])
@@ -415,14 +416,4 @@ func (a *app) settingsView(c *ui.Context) {
 			a.aboutSection(c)
 		})
 	})
-}
-
-// slicesIndex is the index of s in list, 0 when absent.
-func slicesIndex(list []string, s string) int {
-	for i, x := range list {
-		if x == s {
-			return i
-		}
-	}
-	return 0
 }

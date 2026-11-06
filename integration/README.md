@@ -62,7 +62,6 @@ Without `PAIL_TEST_ENDPOINT` the suite skips. With an endpoint but without expli
 - Versioning: distinct version IDs, historical reads, copy from a version, delete marker, `DeleteObjects` of a version, the marker, an unknown version and a duplicate.
 - Presigned GET (current and pinned version), HEAD and PUT; context cancellation.
 - Every checksum mode (`""`, auto, when_required, when_supported) with empty, small and multipart payloads.
-- `ProbeConditionalWrites` (the outcome is logged, not asserted: it depends on the provider).
 
 ### Application layer (`app_*_test.go`)
 

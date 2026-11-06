@@ -4,7 +4,6 @@ import (
 	"context"
 	"fmt"
 	"strings"
-	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -49,7 +48,7 @@ func listMultipart(ctx context.Context, c *storage.Client, bucket, prefix string
 		if err != nil {
 			return nil, err
 		}
-		dec := bmDecoder(page.EncodingType)
+		dec := bkDecoder(page.EncodingType)
 		for _, u := range page.Uploads {
 			mu := MultipartUpload{Key: dec(aws.ToString(u.Key)), UploadID: aws.ToString(u.UploadId),
 				Initiated: aws.ToTime(u.Initiated), StorageClass: string(u.StorageClass)}
@@ -107,46 +106,29 @@ func bmAbortSpec(s *Service, loc Location, uploads []MultipartUpload) taskSpec {
 				}
 				return err
 			}
-			workers := s.Settings().BulkWorkers
-			if workers < 1 {
-				workers = 1
-			}
-			ch := make(chan MultipartUpload)
-			var wg sync.WaitGroup
-			for i := 0; i < workers; i++ {
-				wg.Add(1)
-				go func() {
-					defer wg.Done()
-					for u := range ch {
-						it := ItemResult{Key: u.Key, VersionID: u.UploadID, Status: ItemSucceeded}
-						_, err := c.S3().AbortMultipartUpload(ctx, &s3.AbortMultipartUploadInput{
-							Bucket: aws.String(loc.Bucket), Key: aws.String(u.Key), UploadId: aws.String(u.UploadID)})
-						switch {
-						case err == nil:
-						case storage.ErrorCode(err) == "NoSuchUpload":
-							it.Err = "already gone"
-						case ctx.Err() != nil:
-							it.Status, it.Err = ItemUnprocessed, "canceled"
-						default:
-							it.Status, it.Err = ItemFailed, classify("AbortMultipartUploads", err).Error()
-						}
-						r.Item(it)
-					}
-				}()
-			}
-			for _, u := range uploads {
-				if ctx.Err() != nil {
-					r.Item(ItemResult{Key: u.Key, VersionID: u.UploadID, Status: ItemUnprocessed, Err: "canceled"})
-					continue
+			started := make([]bool, len(uploads)) // each index is written by one goroutine only
+			syParallel(ctx, len(uploads), s.bkWorkers(), func(i int) {
+				started[i] = true
+				u := uploads[i]
+				it := ItemResult{Key: u.Key, VersionID: u.UploadID, Status: ItemSucceeded}
+				_, err := c.S3().AbortMultipartUpload(ctx, &s3.AbortMultipartUploadInput{
+					Bucket: aws.String(loc.Bucket), Key: aws.String(u.Key), UploadId: aws.String(u.UploadID)})
+				switch {
+				case err == nil:
+				case storage.ErrorCode(err) == "NoSuchUpload":
+					it.Err = "already gone"
+				case ctx.Err() != nil:
+					it.Status, it.Err = ItemUnprocessed, "canceled"
+				default:
+					it.Status, it.Err = ItemFailed, classify("AbortMultipartUploads", err).Error()
 				}
-				select {
-				case ch <- u:
-				case <-ctx.Done():
+				r.Item(it)
+			})
+			for i, u := range uploads {
+				if !started[i] {
 					r.Item(ItemResult{Key: u.Key, VersionID: u.UploadID, Status: ItemUnprocessed, Err: "canceled"})
 				}
 			}
-			close(ch)
-			wg.Wait()
 			return ctx.Err()
 		},
 		Retry: func(failed []ItemResult) (taskSpec, bool) {
