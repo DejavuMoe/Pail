@@ -128,6 +128,7 @@ type Secrets struct{ SecretAccessKey, SessionToken string }
 func (s *Service) Accounts() []Account
 func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error)
 // sec == nil 表示保留已有机密。先写新机密，再更新账户记录，最后删除旧机密。
+func ValidateAccount(a Account) (Account, error) // the checks of SaveAccount without saving; returns the normalised account
 func (s *Service) DeleteAccount(id string) error // also deletes its keyring entries
 func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) error // ListBuckets with a throwaway client
 func (s *Service) BucketAlias(accountID, bucket string) string                      // "" = none
@@ -192,6 +193,7 @@ type ObjectInfo struct {
 type Header struct{ Name, Value string }
 func (s *Service) Head(ctx context.Context, loc Location, key, versionID string) (ObjectInfo, error)
 func (s *Service) Preview(ctx context.Context, loc Location, key, versionID string, maxBytes int64) (data []byte, truncated bool, err error)
+func (s *Service) OpenObject(ctx context.Context, loc Location, key, versionID string) (io.ReadCloser, int64, error) // streams from byte 0; size -1 when unknown; caller closes
 func (s *Service) PresignURL(ctx context.Context, loc Location, key, versionID, method string, ttl time.Duration) (string, error)
 func (s *Service) PublicURL(loc Location, key string) string
 func (s *Service) CDNURL(loc Location, key string) string // "" without CDN, filtered-out bucket, folder key or unknown account

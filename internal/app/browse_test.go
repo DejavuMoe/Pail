@@ -1,9 +1,11 @@
 package app
 
 import (
+	"bytes"
 	"context"
 	"errors"
 	"fmt"
+	"io"
 	"net/http"
 	"net/http/httptest"
 	"net/url"
@@ -408,6 +410,42 @@ func TestPreview(t *testing.T) {
 	}
 	if _, _, err := e.s.Preview(ctx, loc, "big", "", 0); !IsKind(err, ErrInvalid) {
 		t.Fatalf("zero limit: %v", err)
+	}
+}
+
+func TestOpenObject(t *testing.T) {
+	e := newS3Env(t)
+	e.srv.CreateBucket("b", true)
+	raw := []byte("a\x00b\xff\r\nc")
+	v1 := e.srv.PutObject("b", "k", raw, "", nil)
+	e.srv.PutObject("b", "k", []byte("second"), "", nil)
+	ctx := testCtx(t)
+	loc := e.loc("b", "")
+
+	read := func(version string) ([]byte, int64) {
+		t.Helper()
+		rc, size, err := e.s.OpenObject(ctx, loc, "k", version)
+		if err != nil {
+			t.Fatal(err)
+		}
+		defer rc.Close()
+		b, err := io.ReadAll(rc)
+		if err != nil {
+			t.Fatal(err)
+		}
+		return b, size
+	}
+	if b, size := read(""); string(b) != "second" || size != 6 {
+		t.Fatalf("current: %q %d", b, size)
+	}
+	if b, size := read(v1); !bytes.Equal(b, raw) || size != int64(len(raw)) {
+		t.Fatalf("version: %q %d", b, size)
+	}
+	if _, _, err := e.s.OpenObject(ctx, loc, "missing", ""); !IsKind(err, ErrNotFound) {
+		t.Fatalf("missing: %v", err)
+	}
+	if _, _, err := e.s.OpenObject(ctx, loc, "", ""); !IsKind(err, ErrInvalid) {
+		t.Fatalf("empty key: %v", err)
 	}
 }
 

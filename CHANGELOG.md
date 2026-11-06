@@ -9,6 +9,9 @@ All notable changes to this project are documented in this file. The format foll
 ### Added
 
 - Recent operations. Click the time in the status bar to open a list of the latest operations: loading the bucket list, opening a folder, uploads, downloads and deletes. Each line shows whether it succeeded, failed or was canceled, how long it took and when it ended. The status bar itself still shows the last successful one. The list is kept in memory and is empty again after you quit Pail. **Settings › Diagnostics** sets how many operations it keeps (100 by default, up to 1000) and whether it is kept when you switch account (by default it is cleared).
+- Accounts and the encrypted vault on the command line. `pail account` adds, edits, shows, tests and removes accounts. It asks for the secret access key without echo, or reads it from stdin with `--secret-stdin`, and never prints it. `pail vault` creates the encrypted vault, changes its master password, moves the secrets between the vault and the system keychain, and resets a vault whose password is forgotten.
+- Object commands on the command line. `pail stat` shows an object's properties, `pail cat` writes its bytes to stdout, `pail mkdir` creates a folder and `pail du` totals the size below a prefix. `pail tags`, `pail acl`, `pail props` and `pail storage-class` read and change tags, ACLs, headers, metadata and storage classes.
+- More administration on the command line. `pail bucket alias` sets a bucket's display name, `pail multipart` lists and aborts unfinished multipart uploads, `pail sync job` lists, adds and removes saved sync jobs, `pail cloudfront` lists distributions and invalidates paths, and `pail settings` reads and changes the desktop app's settings. `pail help COMMAND` prints the usage of one command.
 
 ### Changed
 

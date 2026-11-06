@@ -97,7 +97,11 @@ var commands []command
 func init() {
 	commands = []command{
 		{"accounts", "accounts", "list configured accounts", false, setupAccounts},
-		{"vault", "vault status [--vault-password-stdin]", "show the secret backend and encrypted vault state", false, setupVault},
+		{"account", "account ls\naccount show [NAME]\naccount add NAME [--provider aws|s3] [--endpoint URL] [--region R] [--path-style] [--credentials static|profile|default|anonymous] [--access-key-id ID] [--profile P] [--role-arn ARN] [--external-id ID] [--role-session-name N] [--insecure-skip-verify] [--checksum-mode M] [--cdn-url URL] [--cdn-bucket B] [--secret-stdin] [--ask-session-token] [--no-test]\naccount edit [NAME] [--rename NEW] [account flags as for add] [--set-secret [--secret-stdin]]\naccount test [NAME]\naccount rm [NAME]",
+			"add, change, test and remove accounts", false, setupAccount},
+		{"vault", "vault status [--vault-password-stdin]\nvault init\nvault unlock\nvault lock\nvault passwd [--new-vault-password-stdin]\nvault backend keychain|vault\nvault reset",
+			"manage the secret backend and the encrypted vault", false, setupVault},
+		{"bucket", "bucket alias s3://bucket [NAME | --clear]", "show, set or clear a bucket's display name", true, setupBucket},
 		{"buckets", "buckets", "list buckets with their region", true, setupBuckets},
 		{"ls", "ls [s3://bucket/prefix/] [-r]", "list objects", true, setupLs},
 		{"cp", "cp SRC DST [-r] [--conflict P] [--decode M]", "copy local<->S3 or within S3", true, setupCp},
@@ -109,7 +113,18 @@ func init() {
 		{"url", "url s3://bucket/key [--kind cdn|public]", "print the CDN or public URL of an object", true, setupURL},
 		{"versions", "versions s3://bucket/prefix/", "list versions and delete markers", true, setupVersions},
 		{"restore", "restore s3://bucket/key --version-id V | s3://bucket/prefix/ --deleted [-r]", "restore a version or deleted objects", true, setupRestore},
-		{"sync", "sync LOCAL s3://b/prefix/ | s3://b/prefix/ LOCAL | --job NAME", "one-way synchronisation", false, setupSync},
+		{"stat", "stat s3://bucket/key [--version-id V]", "show the properties of an object", true, setupStat},
+		{"cat", "cat s3://bucket/key [--version-id V]", "write an object to stdout", true, setupCat},
+		{"mkdir", "mkdir s3://bucket/prefix/", "create a folder placeholder", true, setupMkdir},
+		{"du", "du [s3://bucket/prefix/]", "total size of the objects below a prefix", true, setupDu},
+		{"tags", "tags get s3://bucket/key [--version-id V]\ntags set s3://bucket/key K=V... [--merge] [--version-id V]\ntags set s3://bucket/key --clear", "read or replace object tags", true, setupTags},
+		{"acl", "acl get s3://bucket/key [--version-id V]\nacl set s3://bucket/key CANNED [--version-id V]", "read or set an object's ACL", true, setupACL},
+		{"props", "props get s3://bucket/key\nprops set s3://bucket/key [--content-type T] [--cache-control V] [--content-disposition V] [--content-encoding V] [--content-language V] [--expires DATE] [--metadata K=V] [--delete-header NAME] [--delete-metadata K] [-r]", "show or change object properties", true, setupProps},
+		{"storage-class", "storage-class s3://bucket/key CLASS [-r]", "change the storage class of objects", true, setupStorageClass},
+		{"multipart", "multipart ls s3://bucket[/prefix/]\nmultipart abort s3://bucket[/prefix/] [--older-than D]", "list or abort unfinished multipart uploads", true, setupMultipart},
+		{"cloudfront", "cloudfront invalidate DISTRIBUTION PATH...", "invalidate CloudFront paths (AWS accounts)", true, setupCloudFront},
+		{"settings", "settings get [KEY]\nsettings set KEY VALUE", "read or change the settings shared with the desktop app", false, setupSettings},
+		{"sync", "sync LOCAL s3://b/prefix/ | s3://b/prefix/ LOCAL | --job NAME\nsync job ls\nsync job add NAME LOCAL s3://b/prefix/ | s3://b/prefix/ LOCAL [--mode M] [--compare C] [--exclude GLOB] [--no-rules]\nsync job rm NAME", "one-way synchronisation and saved jobs", false, setupSync},
 	}
 }
 
@@ -278,19 +293,17 @@ func (c *cli) dispatch(ctx context.Context, args []string) error {
 		return usagef("no command given")
 	}
 	if rest[0] == "help" {
-		c.usage(c.io.Stdout)
-		return nil
+		if len(rest) == 1 {
+			c.usage(c.io.Stdout)
+			return nil
+		}
+		return c.commandHelp(rest[1])
 	}
 	if rest[0] == "version" {
 		fmt.Fprintln(c.io.Stdout, "pail", version)
 		return nil
 	}
-	var cm *command
-	for i := range commands {
-		if commands[i].name == rest[0] {
-			cm = &commands[i]
-		}
-	}
+	cm := findCommand(rest[0])
 	if cm == nil {
 		return usagef("unknown command %q (run pail help)", rest[0])
 	}
@@ -301,9 +314,7 @@ func (c *cli) dispatch(ctx context.Context, args []string) error {
 	pos, err := parseInterspersed(fs, rest[1:])
 	if err != nil {
 		if errors.Is(err, flag.ErrHelp) {
-			fmt.Fprintf(c.io.Stdout, "usage: pail %s\n", cm.synopsis)
-			fs.SetOutput(c.io.Stdout)
-			fs.PrintDefaults()
+			c.printHelp(cm, fs)
 			return nil
 		}
 		return err
@@ -326,13 +337,60 @@ func (c *cli) dispatch(ctx context.Context, args []string) error {
 			return err
 		}
 	}
-	// Sync selects its saved job's account before deciding which secrets it needs.
-	if cm.name != "vault" && cm.name != "sync" && c.needsVault(cm.name) {
+	// These commands decide for themselves when they need the vault: sync
+	// selects its saved job's account first, the others mostly edit
+	// configuration that is not encrypted.
+	if !selfUnlocking[cm.name] && c.needsVault(cm.name) {
 		if err := c.unlockVault(); err != nil {
 			return err
 		}
 	}
 	return rn(ctx, pos)
+}
+
+// selfUnlocking lists the commands that never get the automatic vault unlock.
+var selfUnlocking = map[string]bool{"vault": true, "sync": true, "account": true, "bucket": true, "settings": true}
+
+func findCommand(name string) *command {
+	for i := range commands {
+		if commands[i].name == name {
+			return &commands[i]
+		}
+	}
+	return nil
+}
+
+// printHelp writes the synopsis lines, the description and the flags of cm.
+func (c *cli) printHelp(cm *command, fs *flag.FlagSet) {
+	out := c.io.Stdout
+	for i, line := range strings.Split(cm.synopsis, "\n") {
+		lead := "usage: "
+		if i > 0 {
+			lead = "       "
+		}
+		fmt.Fprintf(out, "%spail %s\n", lead, line)
+	}
+	fmt.Fprintf(out, "\n%s\n\nflags:\n", cm.desc)
+	fs.SetOutput(out)
+	fs.PrintDefaults()
+}
+
+// commandHelp implements "pail help COMMAND".
+func (c *cli) commandHelp(name string) error {
+	if name == "version" {
+		fmt.Fprintln(c.io.Stdout, "usage: pail version\n\nprint the version")
+		return nil
+	}
+	cm := findCommand(name)
+	if cm == nil {
+		return usagef("unknown command %q (run pail help)", name)
+	}
+	fs := flag.NewFlagSet(cm.name, flag.ContinueOnError)
+	fs.SetOutput(io.Discard)
+	c.g.register(fs)
+	cm.setup(c, fs) // registers the command's flags; nothing runs
+	c.printHelp(cm, fs)
+	return nil
 }
 
 func (c *cli) resolveAccount() error {
@@ -346,7 +404,7 @@ func (c *cli) resolveAccount() error {
 		return strings.Join(names, ", ")
 	}
 	if len(accts) == 0 {
-		return usagef("no accounts are configured; add one in the Pail desktop app")
+		return usagef("no accounts are configured; add one with pail account add or in the Pail desktop app")
 	}
 	if c.g.account == "" {
 		if len(accts) == 1 {
@@ -475,8 +533,15 @@ func fmtEstimate(e app.Estimate) string {
 
 // confirm prints the scope and asks for approval. Without a terminal it
 // requires --yes.
-func (c *cli) confirm(scope []string) error {
-	lines := append([]string{"Account: " + c.acct.Name + " (" + c.acct.ID + ")"}, scope...)
+func (c *cli) confirm(scope []string) error { return c.confirmTyped(scope, "") }
+
+// confirmTyped is confirm; with word set, the terminal prompt asks the user to
+// type that word instead of answering y/N (used for irreversible resets).
+func (c *cli) confirmTyped(scope []string, word string) error {
+	lines := scope
+	if c.acct != nil {
+		lines = append([]string{"Account: " + c.acct.Name + " (" + c.acct.ID + ")"}, scope...)
+	}
 	if !(c.g.quiet && c.g.yes) {
 		for _, l := range lines {
 			fmt.Fprintln(c.io.Stderr, l)
@@ -487,6 +552,14 @@ func (c *cli) confirm(scope []string) error {
 	}
 	if !c.io.StdinTTY {
 		return usagef("confirmation required: stdin is not a terminal; re-run with --yes to proceed")
+	}
+	if word != "" {
+		fmt.Fprintf(c.io.Stderr, "Type %s to proceed: ", word)
+		line, _ := c.in.ReadString('\n')
+		if strings.TrimSpace(line) == word {
+			return nil
+		}
+		return &exitErr{exitFailure, "aborted: nothing was changed"}
 	}
 	fmt.Fprint(c.io.Stderr, "Proceed? [y/N] ")
 	line, _ := c.in.ReadString('\n')

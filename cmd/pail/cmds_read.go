@@ -5,38 +5,10 @@ import (
 	"flag"
 	"fmt"
 	"strings"
-	"text/tabwriter"
 	"time"
 
 	"github.com/DejavuMoe/Pail/internal/app"
 )
-
-func setupAccounts(c *cli, fs *flag.FlagSet) runner {
-	return func(ctx context.Context, pos []string) error {
-		if len(pos) != 0 {
-			return usagef("accounts takes no arguments")
-		}
-		accts := c.svc.Accounts()
-		if c.g.json {
-			for _, a := range accts {
-				c.emit(map[string]any{"type": "account", "id": a.ID, "name": a.Name, "provider": a.Provider,
-					"endpoint": a.Endpoint, "region": a.Region, "credentials": a.Credentials})
-			}
-			c.emit(map[string]any{"type": "summary", "command": "accounts", "ok": true, "count": len(accts)})
-			return nil
-		}
-		if len(accts) == 0 {
-			c.infof("no accounts configured; add one in the Pail desktop app")
-			return nil
-		}
-		tw := tabwriter.NewWriter(c.io.Stdout, 2, 4, 2, ' ', 0)
-		fmt.Fprintln(tw, "NAME\tID\tPROVIDER\tENDPOINT\tREGION")
-		for _, a := range accts {
-			fmt.Fprintf(tw, "%s\t%s\t%s\t%s\t%s\n", a.Name, a.ID, a.Provider, orDash(a.Endpoint), orDash(a.Region))
-		}
-		return tw.Flush()
-	}
-}
 
 func orDash(s string) string {
 	if s == "" {

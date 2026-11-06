@@ -95,14 +95,16 @@ The executables are not signed. If SmartScreen says "Windows protected your PC",
 
 ## Command line
 
-`pail` uses the accounts and saved sync jobs of the desktop app. Add accounts in the desktop app first.
+`pail` uses the accounts, saved sync jobs and settings of the desktop app. Add an account with `pail account add`, which asks for the secret access key without echo, or in the desktop app.
 
 ```sh
+pail account add backup --endpoint https://s3.example.com --region us-east-1 --path-style --access-key-id AKIAEXAMPLE
 pail accounts
 pail ls s3://my-bucket/photos/ -r
 pail cp ./dist s3://my-bucket/site/ -r --conflict newer
 pail sync ./photos s3://my-bucket/photos/ --dry-run
 pail presign s3://my-bucket/report.pdf --expires 1h
+pail cat s3://my-bucket/notes.txt
 ```
 
 Every command, its flags, JSON output and exit codes are in the [command-line reference](docs/cli.md).

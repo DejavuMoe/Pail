@@ -1,8 +1,6 @@
 package main
 
 import (
-	"context"
-	"flag"
 	"fmt"
 	"strings"
 
@@ -68,15 +66,6 @@ func (c *cli) unlockVault() error {
 		fmt.Fprintln(c.io.Stderr, "pail: wrong master password")
 	}
 	return err
-}
-
-func setupVault(c *cli, fs *flag.FlagSet) runner {
-	return func(ctx context.Context, pos []string) error {
-		if len(pos) != 1 || pos[0] != "status" {
-			return usagef("usage: pail vault status [--vault-password-stdin]")
-		}
-		return c.vaultStatus()
-	}
 }
 
 // vaultStatus reports the backend and the vault file. It never prints
