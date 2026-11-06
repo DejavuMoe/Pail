@@ -64,7 +64,7 @@ The site loads no webfonts. Text uses each operating system's default sans-serif
 
 ## Screenshots and social card
 
-`docs/images/main-light.webp` and `docs/images/main-dark.webp` are native macOS window captures (2742×1822, transparent shadow) taken in `pail-desktop --demo` mode. They are compressed at https://picforge.de/?tool=compression with the WebP "Balanced" preset (quality 75, no resize) and keep their alpha channel. The README and the landing page both use them.
+`docs/images/main-light.webp` and `docs/images/main-dark.webp` are native macOS window captures (2742×1822, transparent shadow) taken in demo mode (`go run -tags pail_demo ./cmd/pail-desktop --demo`). They are compressed at https://picforge.de/?tool=compression with the WebP "Balanced" preset (quality 75, no resize) and keep their alpha channel. The README and the landing page both use them.
 
 `docs/images/social.webp` is the Open Graph and Twitter card. Render `designs/pail-site/social-preview.html` at 1200×630 and compress the result the same way. Local HTML and asset checks do not show that a social platform has refreshed its cache.
 
