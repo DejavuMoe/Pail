@@ -29,11 +29,8 @@ import (
 // syIsTempName matches the hidden temporary files of downloads in progress;
 // sync never uploads, compares or trashes them.
 func syIsTempName(name string) bool {
-	return (strings.HasPrefix(name, ".pail-") || strings.HasPrefix(name, legacyTempPrefix)) && strings.HasSuffix(name, ".tmp")
+	return strings.HasPrefix(name, ".pail-") && strings.HasSuffix(name, ".tmp")
 }
-
-// legacyTempPrefix is the hidden download temp-file prefix of builds before the rename to Pail.
-const legacyTempPrefix = ".opens3-"
 
 // syExcluder applies SyncJob.Excludes with rules.Match semantics (case
 // sensitive, "*" crosses "/", anchored at the root of the sync).

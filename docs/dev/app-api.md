@@ -13,7 +13,7 @@
 
 ## 1. 配置与存储（`settings.go`、`secrets.go`）
 
-配置目录：`os.UserConfigDir()/Pail`，可用 `Options.ConfigDir` 覆盖。文件一律原子写入（临时文件 → fsync → rename），权限 0600。若存在旧版的 `openS3` 目录且 `Pail` 目录尚不存在，首次启动时自动迁移一次。
+配置目录：`os.UserConfigDir()/Pail`，可用 `Options.ConfigDir` 覆盖。文件一律原子写入（临时文件 → fsync → rename），权限 0600。
 
 | 文件 | 内容 |
 | --- | --- |
@@ -28,7 +28,7 @@
 
 文件损坏时加载报错，不静默重置；多实例之间以最后一次写入为准。
 
-钥匙串服务名为 `Pail`（旧服务名 `openS3` 的条目自动迁移），条目键如下：
+钥匙串服务名为 `Pail`，条目键如下：
 
 - `account/<id>/secret`
 - `account/<id>/session`
@@ -100,7 +100,7 @@ func (s *Service) ResetVault() (VaultReset, error)
 ```
 
 - **主密码**：至少 8 个字符（按 rune），至多 1024 字节。不做 Unicode 规范化。
-- **文件格式**：`{"format":"pail-vault","version":1,"kdf":{"name":"argon2id","time":3,"memoryKiB":65536,"threads":4,"salt":b64(16)},"cipher":"xchacha20poly1305","nonce":b64(24),"data":b64}`。旧格式名 `opens3-vault` 的文件仍可打开。`data` 是 JSON 对象（键 → 值）的密文，附加数据（AAD）是除 `nonce`、`data` 之外的头部的 JSON 编码，所以 KDF 参数、盐、算法名不能被调换。每次写入重新生成随机 nonce；文件 0600，临时文件 + fsync + rename。读取时拒绝范围外参数（内存 8 MiB–1 GiB、time 1–10、threads 1–16），先校验再做 KDF。
+- **文件格式**：`{"format":"pail-vault","version":1,"kdf":{"name":"argon2id","time":3,"memoryKiB":65536,"threads":4,"salt":b64(16)},"cipher":"xchacha20poly1305","nonce":b64(24),"data":b64}`。`data` 是 JSON 对象（键 → 值）的密文，附加数据（AAD）是除 `nonce`、`data` 之外的头部的 JSON 编码，所以 KDF 参数、盐、算法名不能被调换。每次写入重新生成随机 nonce；文件 0600，临时文件 + fsync + rename。读取时拒绝范围外参数（内存 8 MiB–1 GiB、time 1–10、threads 1–16），先校验再做 KDF。
 - **解密失败的文件永不覆盖**：每次写入前重新读取并用持有的密钥解密；文件头与已解锁状态不一致（别的进程改了密码）返回 `Conflict`，内容无法解密返回 `Invalid`，都不写盘。别的进程对不同键的并发写入会被合并，不会丢失。
 - **锁定**：`LockVault` 清零密钥和已解密条目（尽力而为，Go 字符串无法保证擦除），并丢弃客户端缓存（缓存中含明文凭据）；运行中的任务保留已持有的客户端。后端为 vault 且已锁定时，所有需要机密的操作（`Buckets`、`TestAccount`、`SaveAccount` 带新机密、`SetSecret`、`ResolvePassword` ...）立即返回 `Kind == Locked` 的 `*OpError`，不阻塞、不弹系统对话框。启动时后端为 vault 则处于锁定状态。
 - **自动锁定**：`VaultAutoLockMinutes` 分钟无活动后锁定（`s.now` 计时，每 10 秒检查一次，访问时也检查）。任何机密读写、使用账户（包括命中缓存）都算活动。
@@ -425,7 +425,7 @@ func (s *Service) RunSync(p SyncPreview) (groupID string, err error)
 // executes the previewed actions as normal transfer/delete tasks; each action re-checks its precondition (conditional write / ETag) and reports skipped if the world changed
 ```
 
-上传方向在对象上写入 `pail-mtime` metadata，供下次比较时间使用（同步还写入 `pail-size`、`pail-sha256`，压缩上传写入 `pail-compression`；旧版 `opens3-*` 键仍会被读取）。checksum 模式用 SHA256：本地文件直接计算，远端读取 metadata `pail-sha256`；远端缺这项 metadata 时，在预览中标为 changed 并说明原因，不用 multipart ETag 冒充哈希。
+上传方向在对象上写入 `pail-mtime` metadata，供下次比较时间使用（同步还写入 `pail-size`、`pail-sha256`，压缩上传写入 `pail-compression`）。checksum 模式用 SHA256：本地文件直接计算，远端读取 metadata `pail-sha256`；远端缺这项 metadata 时，在预览中标为 changed 并说明原因，不用 multipart ETag 冒充哈希。
 
 ## 10. CloudFront（`cloudfront.go`）
 

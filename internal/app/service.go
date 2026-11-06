@@ -1,5 +1,5 @@
 // Package app is the application layer of Pail. The desktop UI and the CLI
-// depend only on this package (docs/rewrite/APP_API.md).
+// depend only on this package (docs/dev/app-api.md).
 //
 // Concurrency rules, which every file in this package follows:
 //
@@ -89,18 +89,23 @@ type Service struct {
 	lgMu sync.Mutex
 }
 
+// configDirName is the per-user configuration directory name.
+const configDirName = "Pail"
+
+// userConfigDir locates the base of the default configuration directory; a variable so that tests can point it at a temp dir.
+var userConfigDir = os.UserConfigDir
+
 // New opens (or initialises) the configuration directory, loads all
 // persisted files and starts the task queue. A corrupt file is an error; it is
 // never silently reset.
 func New(opts Options) (*Service, error) {
 	dir := opts.ConfigDir
-	var dirMig configDirMigration
 	if dir == "" {
 		base, err := userConfigDir()
 		if err != nil {
 			return nil, fmt.Errorf("locate user config directory: %w", err)
 		}
-		dir, dirMig = resolveDefaultConfigDir(base)
+		dir = filepath.Join(base, configDirName)
 	}
 	if err := os.MkdirAll(dir, 0o700); err != nil {
 		return nil, fmt.Errorf("create config directory: %w", err)
@@ -117,7 +122,6 @@ func New(opts Options) (*Service, error) {
 		condUnsupported: map[string]bool{},
 	}
 	osk := opts.Keyring
-	migrateKeyring := osk == nil // only the real OS keychain has legacy entries
 	if osk == nil {
 		osk = osKeyring{keyringService}
 	}
@@ -137,15 +141,6 @@ func New(opts Options) (*Service, error) {
 		s.applyLogging(true)
 	}
 	s.lgInfo("service start", "log_dir", s.LogDir())
-	if dirMig.Note != "" {
-		s.lgInfo(dirMig.Note)
-	}
-	if dirMig.Err != nil {
-		s.lgWarn(dirMig.Err.Error())
-	}
-	if migrateKeyring {
-		s.runLegacyKeyringMigration()
-	}
 	// Compressed-upload spool files orphaned by a crash (never swept before).
 	sweepSpoolFiles(os.TempDir(), 24*time.Hour, time.Now())
 	return s, nil

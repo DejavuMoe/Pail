@@ -110,7 +110,7 @@ pail presign s3://my-bucket/report.pdf --expires 1h
 
 ## 数据与隐私
 
-- **配置**保存在用户配置目录下的 `Pail` 文件夹：Windows 是 `%AppData%\Pail`，macOS 是 `~/Library/Application Support/Pail`，Linux 是 `~/.config/Pail`；也可以用 `--config-dir` 指定。里面有设置、账户、同步任务、上传规则和已保存机密的名称。Pail 旧名称 `openS3` 留下的文件夹会在首次启动时迁移一次。
+- **配置**保存在用户配置目录下的 `Pail` 文件夹：Windows 是 `%AppData%\Pail`，macOS 是 `~/Library/Application Support/Pail`，Linux 是 `~/.config/Pail`；也可以用 `--config-dir` 指定。里面有设置、账户、同步任务、上传规则和已保存机密的名称。
 - **机密**（私有访问密钥、会话令牌、代理密码和保存的密码）存进系统钥匙串，服务名为 `Pail`：Windows 凭据管理器、macOS 钥匙串或 Linux 的 Secret Service。没有钥匙串时，可以在**设置 › 安全**里改用加密保险库 `vault.json`。访问密钥 ID 不是机密，和账户保存在一起。
 - **日志**默认关闭。开启后，Pail 在配置目录写入 `logs/pail.log`，并去掉 URL 查询参数、Authorization 请求头、签名和已知的机密值。手动输入的密码只能按标签识别，分享日志前请先检查一遍。
 - **网络**：Pail 只连接你添加的账户所对应的端点；设置了代理时（**设置 › 网络**，或环境变量 `HTTP_PROXY`、`HTTPS_PROXY`）经由代理连接。没有遥测，也不检查更新。

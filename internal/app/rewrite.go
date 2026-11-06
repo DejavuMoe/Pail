@@ -523,7 +523,7 @@ func bkValidatePatch(op string, p PropertiesPatch) (*bkPatch, error) {
 		case strings.HasPrefix(k, "x-amz-"):
 			return invalid(op, "metadata key %q is reserved; enter the name without x-amz-meta-", k)
 		case isInternalMeta(k):
-			return invalid(op, "metadata keys starting with %s or %s are managed by Pail and cannot be edited", internalMetaPrefix, legacyMetaPrefix)
+			return invalid(op, "metadata keys starting with %s are managed by Pail and cannot be edited", internalMetaPrefix)
 		}
 		return nil
 	}
@@ -558,7 +558,7 @@ func bkValidatePatch(op string, p PropertiesPatch) (*bkPatch, error) {
 
 // SetProperties applies p to the selected current objects by rewriting them
 // in place. Metadata keys are lower case without x-amz-meta-; names starting
-// with pail- (and the legacy opens3-) are reserved for Pail's own bookkeeping. The 2 KiB limit on
+// with pail- are reserved for Pail's own bookkeeping. The 2 KiB limit on
 // user metadata is checked again per object against the merged result.
 func (s *Service) SetProperties(sel Selection, p PropertiesPatch) (string, error) {
 	const op = "SetProperties"
