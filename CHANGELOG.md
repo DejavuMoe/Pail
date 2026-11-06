@@ -17,10 +17,12 @@ All notable changes to this project are documented in this file. The format foll
 ### Removed
 
 - Automatic migration of data from Pail's name before its first release, `openS3`: the `openS3` configuration folder, the `openS3` keychain entries, `opens3-vault` vault files and `opens3-*` object metadata are no longer read. Releases of Pail never used that name.
+- `pail-desktop --demo` is no longer part of the release builds, which also makes the programs smaller. Developers still get it by building from source with `-tags pail_demo`.
 
 ### Fixed
 
 - Downloads from servers that ignore range requests, such as some NAS devices, no longer fail with "EOF" once the file is larger than one part. Pail now downloads such a file over a single connection.
+- Canceling a download from such a server shows "canceled" again, not the error "the service ignored the Range header".
 
 ## [0.4.2] - 2026-11-05
 

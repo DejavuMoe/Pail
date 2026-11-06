@@ -431,7 +431,7 @@ func (s *Service) Invalidations(ctx context.Context, accountID, distID string) (
 
 ## 11. 测试夹具 `internal/s3test`
 
-内存版 S3 httptest 服务器，供 app、UI 和 CLI 测试使用，UI 的 `--demo` 模式也可以用它。覆盖范围：
+内存版 S3 httptest 服务器，供 app、UI 和 CLI 测试使用，演示环境（`internal/demo`）也建在它上面。覆盖范围：
 
 - 对象：ListBuckets，ListObjectsV2（delimiter 与分页），Get、Put、Head、Delete，DeleteObjects；
 - 复制：CopyObject、UploadPartCopy；

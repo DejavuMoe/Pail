@@ -1,6 +1,6 @@
 // Command pail-desktop is the Pail desktop app: the layout and design
-// system on top of internal/app. With --demo it runs against an
-// in-memory S3 server instead of a real account.
+// system on top of internal/app. Built with -tags pail_demo it also has
+// --demo, which runs against an in-memory S3 server instead of a real account.
 package main
 
 import (
@@ -35,7 +35,7 @@ var appIcon []byte
 
 func main() {
 	showVersion := flag.Bool("version", false, "print the version and exit")
-	demo := flag.Bool("demo", false, "run against an in-memory demo S3 server (nothing leaves this machine)")
+	demo := demoFlag()
 	cfgDir := flag.String("config-dir", "", "configuration directory (default: the user config directory)")
 	theme := flag.String("theme", "", "theme: system, light or dark (default: the saved setting)")
 	size := flag.String("size", "1440x900", "initial window size, WIDTHxHEIGHT")
@@ -62,14 +62,13 @@ func main() {
 	registerFonts()
 
 	var (
-		svc *core.Service
-		env *demoEnv
+		svc      *core.Service
+		stopDemo func()
 	)
 	if *demo {
-		if env, err = newDemoEnv("", true); err != nil {
+		if svc, stopDemo, err = startDemo(); err != nil {
 			log.Fatalf("demo: %v", err)
 		}
-		svc = env.Svc
 	} else if svc, err = core.New(core.Options{ConfigDir: *cfgDir}); err != nil {
 		log.Fatalf("open configuration: %v", err)
 	}
@@ -153,8 +152,8 @@ func main() {
 	}
 
 	a.close()
-	if env != nil {
-		env.Close() // stops the service, the server and removes the temp dir
+	if stopDemo != nil {
+		stopDemo() // stops the service, the server and removes the temp dir
 		return
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
