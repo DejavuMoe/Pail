@@ -82,7 +82,6 @@ The executables are not signed. If SmartScreen says "Windows protected your PC",
 
    Choose **Test connection**, then save. The secret key is stored in the system keychain.
 2. Pick a bucket in the sidebar. Drag files into the window to upload them; select objects and choose **Download** to save them.
-3. To try Pail without an account, run `pail-desktop --demo`. It starts an in-memory S3 server inside the app; nothing is sent anywhere and nothing is saved.
 
 `pail-desktop` also accepts these flags:
 

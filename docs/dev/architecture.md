@@ -13,7 +13,8 @@ internal/cloud     AWS 专有服务（类型化 CloudFront）
 internal/rules     上传规则、GZIP / ZIP / AES-256 ZIP
 internal/safepath  下载路径安全：拒绝 `..`、绝对路径、Windows 保留名、符号链接逃逸；临时文件加发布
 internal/trash     本地删除进系统回收站（Windows、Linux 按 freedesktop 规范）
-internal/s3test    内存版 S3 测试服务，`--demo` 也用它
+internal/s3test    内存版 S3 测试服务
+internal/demo      演示环境（s3test + 示例数据），桌面端测试和 `-tags pail_demo` 的 `--demo` 使用，不进发布构建
 integration/       真实服务端验收：MinIO 夹具与外部 S3 兼容端点套件
 tools/genicons     从 SVG 生成图标、.ico、.icns、Windows 资源对象
 tools/release      本地与 CI 共用的 Go 发布入口，跨平台构建并自动验包

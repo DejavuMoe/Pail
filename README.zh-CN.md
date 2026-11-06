@@ -82,7 +82,6 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 
    点击**测试连接**，然后保存。私有访问密钥会存进系统钥匙串。
 2. 在侧栏选择存储桶。把文件拖进窗口即可上传；选中对象后点击**下载**保存到本地。
-3. 没有账户也可以先试用：运行 `pail-desktop --demo`。它在应用内启动一个内存 S3 服务，不发送任何数据，也不保存任何内容。
 
 `pail-desktop` 还支持这些参数：
 

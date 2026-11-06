@@ -1,4 +1,8 @@
-package main
+// Package demo is the in-memory environment behind `pail-desktop --demo` (built
+// with -tags pail_demo) and the desktop tests: an s3test server seeded with a
+// realistic bucket layout, and a real application Service talking to it. It is
+// never linked into release builds.
+package demo
 
 import (
 	"bytes"
@@ -19,13 +23,13 @@ import (
 	"github.com/DejavuMoe/Pail/internal/s3test"
 )
 
-// demoAccountName is the one account of the demo environment.
-const demoAccountName = "Demo · in-memory S3"
+// AccountName is the one account of the demo environment.
+const AccountName = "Demo · in-memory S3"
 
-// demoEnv is the --demo environment: an in-memory S3 server (internal/s3test),
+// Env is the --demo environment: an in-memory S3 server (internal/s3test),
 // seeded with a realistic bucket layout, and a real application Service that
 // talks to it with a throw-away config directory and an in-memory keyring.
-type demoEnv struct {
+type Env struct {
 	Srv     *s3test.Server
 	Svc     *core.Service
 	Dir     string
@@ -33,11 +37,11 @@ type demoEnv struct {
 	owned   bool // Dir was created here and is removed by Close
 }
 
-// newDemoEnv builds the environment in dir ("" creates a temporary directory
+// New builds the environment in dir ("" creates a temporary directory
 // that Close removes). With seed false only the server, the service and the
 // account exist, with no buckets.
-func newDemoEnv(dir string, seed bool) (*demoEnv, error) {
-	d := &demoEnv{Dir: dir}
+func New(dir string, seed bool) (*Env, error) {
+	d := &Env{Dir: dir}
 	if dir == "" {
 		tmp, err := os.MkdirTemp("", "pail-demo-*")
 		if err != nil {
@@ -53,7 +57,7 @@ func newDemoEnv(dir string, seed bool) (*demoEnv, error) {
 	}
 	d.Svc = svc
 	acct, err := svc.SaveAccount(core.Account{
-		Name: demoAccountName, Provider: core.ProviderS3, Endpoint: d.Srv.URL, Region: "us-east-1",
+		Name: AccountName, Provider: core.ProviderS3, Endpoint: d.Srv.URL, Region: "us-east-1",
 		PathStyle: true, Credentials: core.CredStatic, AccessKeyID: "demo",
 	}, &core.Secrets{SecretAccessKey: "demo-secret"})
 	if err != nil {
@@ -71,7 +75,7 @@ func newDemoEnv(dir string, seed bool) (*demoEnv, error) {
 }
 
 // Close stops the server and the service and removes a temporary directory.
-func (d *demoEnv) Close() {
+func (d *Env) Close() {
 	if d.Svc != nil {
 		ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 		_ = d.Svc.Shutdown(ctx)
@@ -85,21 +89,21 @@ func (d *demoEnv) Close() {
 	}
 }
 
-type demoBucket struct{ name, region string }
+type Bucket struct{ Name, Region string }
 
-var demoBuckets = []demoBucket{
+var Buckets = []Bucket{
 	{"acme-assets", "us-east-1"},
 	{"acme-backups", "us-west-2"},
 	{"acme-logs", "eu-west-1"},
 	{"acme-analytics", "us-east-1"},
 	{"acme-website", "us-east-1"},
 	{"acme-media-archive", "ap-southeast-2"},
-	{demoVersioned, "us-east-1"},
+	{Versioned, "us-east-1"},
 }
 
-// demoVersioned is the bucket with versioning on: notes.txt has three
+// Versioned is the bucket with versioning on: notes.txt has three
 // versions, config/app.yaml two, and old-plan.txt was deleted.
-const demoVersioned = "acme-versioned"
+const Versioned = "acme-versioned"
 
 const (
 	clsStd  = "STANDARD"
@@ -112,12 +116,12 @@ const (
 // seed creates the buckets through the Service (so they carry regions) and
 // fills them directly in the server. Bodies stay small: sizes in the table
 // are real, just modest.
-func (d *demoEnv) seed() error {
+func (d *Env) seed() error {
 	ctx, cancel := context.WithTimeout(context.Background(), 30*time.Second)
 	defer cancel()
-	for _, b := range demoBuckets {
-		if err := d.Svc.CreateBucket(ctx, d.Account.ID, b.name, b.region, false); err != nil {
-			return fmt.Errorf("create demo bucket %s: %w", b.name, err)
+	for _, b := range Buckets {
+		if err := d.Svc.CreateBucket(ctx, d.Account.ID, b.Name, b.Region, false); err != nil {
+			return fmt.Errorf("create demo bucket %s: %w", b.Name, err)
 		}
 	}
 	rng := rand.New(rand.NewPCG(7, 42))
@@ -138,7 +142,7 @@ func (d *demoEnv) seed() error {
 		"build-id": "b-20261018.4", "uploaded-by": "ci-deploy", "source-sha": "9f2c1ae",
 	})
 	put(a, "tmp/", nil, clsStd)
-	for key, body := range demoImages() {
+	for key, body := range Images() {
 		put(a, key, body, clsStd)
 	}
 	for _, n := range []string{"Inter-Regular.woff2", "Inter-SemiBold.woff2", "JetBrainsMono.ttf"} {
@@ -185,8 +189,8 @@ func (d *demoEnv) seed() error {
 	lite("acme-website", "index.html", "about.html", "styles.css", "app.js", "favicon.ico")
 	lite("acme-media-archive", "2024/shoot-a/IMG_0001.jpg", "2024/shoot-a/IMG_0002.jpg", "2024/shoot-b/clip.mp4")
 
-	d.Srv.CreateBucket(demoVersioned, true) // turns versioning on
-	const v = demoVersioned
+	d.Srv.CreateBucket(Versioned, true) // turns versioning on
+	const v = Versioned
 	for i, body := range []string{"Draft notes\n", "Draft notes\n- ship the beta\n", "Draft notes\n- ship the beta\n- write the docs\n"} {
 		d.Srv.PutObject(v, "notes.txt", []byte(body), "text/plain; charset=utf-8", map[string]string{"revision": fmt.Sprint(i + 1)})
 	}
@@ -248,18 +252,18 @@ func contentTypeFor(key string) string {
 }
 
 // Keep only immutable image bodies; PutObject copies them into each isolated server.
-var demoImages = sync.OnceValue(func() map[string][]byte {
+var Images = sync.OnceValue(func() map[string][]byte {
 	images := make(map[string][]byte, 9)
 	for i, name := range []string{"hero.png", "logo-dark.png", "logo-light.png", "team-offsite.jpg", "product-shot-01.png", "product-shot-02.png", "banner-autumn.png", "og-card.png"} {
-		images["assets/images/"+name] = demoImage(name, i)
+		images["assets/images/"+name] = Image(name, i)
 	}
-	images["website/img/hero.png"] = demoImage("hero", 9)
+	images["website/img/hero.png"] = Image("hero", 9)
 	return images
 })
 
-// demoImage draws a small, smooth 320x200 picture; key picks the hue. A .jpg
+// Image draws a small, smooth 320x200 picture; key picks the hue. A .jpg
 // name yields JPEG, everything else PNG.
-func demoImage(key string, n int) []byte {
+func Image(key string, n int) []byte {
 	const w, h = 320, 200
 	img := image.NewRGBA(image.Rect(0, 0, w, h))
 	hue := float64(n*47%360) / 360

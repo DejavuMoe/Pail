@@ -195,8 +195,8 @@ func TestPaletteListsEveryCommandAndBuckets(t *testing.T) {
 		}
 	}
 	for _, b := range demoBuckets {
-		if !have["Open bucket "+b.name] {
-			t.Errorf("the palette lacks %q", "Open bucket "+b.name)
+		if !have["Open bucket "+b.Name] {
+			t.Errorf("the palette lacks %q", "Open bucket "+b.Name)
 		}
 	}
 	// A shortcut is drawn as one keycap per key (Ctrl, U), so the keys are

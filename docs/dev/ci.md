@@ -24,7 +24,7 @@ Run these from the repository root in PowerShell, Bash or another shell; the com
 | --- | --- | --- |
 | Static checks | `go vet ./...` | Go on the current host |
 | Native tests | `go test ./...` | Go on the current host; protocol fixtures are in-process |
-| Native build | `go build -o build/ ./cmd/pail ./cmd/pail-desktop` | Go; application builds do not require cgo |
+| Native build | `go build -trimpath -ldflags "-s -w" -o build/ ./cmd/pail ./cmd/pail-desktop` | Go; application builds do not require cgo |
 | All release archives | `go run ./tools/release -version 0.4.2` | Go; includes archive verification |
 | One target | `go run ./tools/release -version 0.4.2 -targets linux/amd64` | Same tool and rules as a full release |
 | Downloaded archive verification | `go run ./tools/verify-release -dir build/release/0.4.2 -version 0.4.2` | Go |
@@ -37,7 +37,7 @@ CI keeps six native OS/architecture test jobs because cross-compiling a binary d
 
 The desktop tests render the real UI in memory, including animation frames, minimum-window layouts and translated dialogs. Keep these tests in the full race run. They share process-wide locale and native-menu settings, so adding `t.Parallel()` to the UI suites would break their isolation.
 
-Demo environments share only the nine immutable encoded image bodies, initialized with `sync.OnceValue`. Each environment still creates its own service, account, buckets and objects; the test server copies image bytes on insertion. `TestDemoImagesMatchAndStayIsolated` compares every seeded image with the original generator, checks image dimensions and formats, and checks that replacing an image in one environment leaves the other environment and cache unchanged. Ordinary local tests and CI use this same path.
+Demo environments share only the nine immutable encoded image bodies, initialized with `sync.OnceValue`. Each environment still creates its own service, account, buckets and objects; the test server copies image bytes on insertion. `internal/demo` `TestImagesMatchAndStayIsolated` compares every seeded image with the original generator, checks image dimensions and formats, and checks that replacing an image in one environment leaves the other environment and cache unchanged. Ordinary local tests and CI use this same path.
 
 The Race job adds the workflow file to `setup-go`'s cache dependency paths, giving instrumented builds a different key from native builds. An exact cache hit is immutable: sharing the native key prevented the Race job from saving newly compiled race-instrumented packages. This changes build caching only; the job still runs `go test -race -count=1 -timeout 15m ./...`.
 
@@ -128,4 +128,4 @@ Generated icons and Windows resources are committed; regenerate them with `go ru
 
 Plain `go test ./...` skips integration tests unless their endpoint variables are present. Never provide `PAIL_EXT_*` to ordinary CI: doing so enables the real external suite. `scripts/test-external.ps1` is manual only, scoped to the authorized endpoint and a unique `pail-e2e/` prefix. It must never run with fork credentials or automatically after a push.
 
-`pail-desktop --demo --smoke-exit 5s --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
+`go run -tags pail_demo ./cmd/pail-desktop --demo --smoke-exit 5s --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).

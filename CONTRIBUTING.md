@@ -12,8 +12,18 @@ Issues are tracked on GitHub; the GitHub repository is a read-only mirror of the
 ## Build
 
 ```sh
-go build -o build/ ./cmd/pail-desktop ./cmd/pail
+go build -trimpath -ldflags "-s -w" -o build/ ./cmd/pail-desktop ./cmd/pail
 ```
+
+Without `-s -w` the programs are about 9 MB (desktop) and 5 MB (command line) larger, because they keep the symbol table and debug information. Release builds use these flags.
+
+The demo mode is not in release builds. To run the desktop app against an in-memory S3 server with sample data (nothing leaves the machine), build it in:
+
+```sh
+go run -tags pail_demo ./cmd/pail-desktop --demo
+```
+
+`go test ./...` needs no tag: the tests use `internal/demo` directly.
 
 ## Release packaging
 
