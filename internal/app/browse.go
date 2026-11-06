@@ -286,6 +286,34 @@ func (s *Service) Preview(ctx context.Context, loc Location, key, versionID stri
 	return data, truncated, nil
 }
 
+// OpenObject starts reading an object (or version) from its first byte and
+// returns the body with the object's size (-1 when the server does not say).
+// The caller must close the reader. Nothing is buffered: it is meant for
+// streaming large objects, where Preview would hold them in memory.
+func (s *Service) OpenObject(ctx context.Context, loc Location, key, versionID string) (io.ReadCloser, int64, error) {
+	const op = "OpenObject"
+	if key == "" {
+		return nil, 0, invalid(op, "key is required")
+	}
+	c, err := s.bucketClient(ctx, op, loc)
+	if err != nil {
+		return nil, 0, err
+	}
+	in := &s3.GetObjectInput{Bucket: aws.String(loc.Bucket), Key: aws.String(key)}
+	if versionID != "" {
+		in.VersionId = aws.String(versionID)
+	}
+	out, err := c.S3().GetObject(ctx, in)
+	if err != nil {
+		return nil, 0, classify(op, err)
+	}
+	size := int64(-1)
+	if out.ContentLength != nil {
+		size = *out.ContentLength
+	}
+	return out.Body, size, nil
+}
+
 // contentRangeTotal parses the total of "bytes 0-99/1234".
 func contentRangeTotal(v string) (int64, bool) {
 	i := strings.LastIndexByte(v, '/')

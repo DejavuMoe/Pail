@@ -25,6 +25,9 @@ func setupSync(c *cli, fs *flag.FlagSet) runner {
 	jobName := fs.String("job", "", "run a sync job saved in the desktop app")
 	noRules := fs.Bool("no-rules", false, "do not apply upload rules")
 	return func(ctx context.Context, pos []string) error {
+		if *jobName == "" && isSyncJobCommand(pos) {
+			return c.syncJobCommand(fs, pos[1:], *mode, *compare, excludes, *noRules)
+		}
 		job, err := c.syncJob(pos, *jobName, *mode, *compare, excludes, *noRules, *dry)
 		if err != nil {
 			return err
