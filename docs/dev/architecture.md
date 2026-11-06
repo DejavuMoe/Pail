@@ -82,7 +82,6 @@ tools/pack         归档写入，保证可执行文件权限为 0755
 - 界面文案放在 `cmd/pail-desktop/locales/en.json`（源语言）和 `zh-Hans.json`，采用 ICU MessageFormat；由 `mygo generate` 生成类型化函数，缺键在编译期报错。
 - 测试检查：两个目录的键与占位符一致、中文文案风格（全角标点、中英文之间留空格、不出现"您"）、伪语言 `en-XA` 与 `zh-Hans` 在最小窗口 960×600 下所有对话框可达、目录里的每个键都被代码使用。
 - 术语表见 [design.md](design.md)。服务端错误详情保留原文，前面加一句本地化概括。
-- 尚未本地化：`internal/app` 产生的任务标题（传输面板）和命令行输出仍为英文。
 
 ## 7. 测试分层
 
