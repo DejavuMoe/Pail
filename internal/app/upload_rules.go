@@ -53,11 +53,12 @@ func (s *Service) SaveUploadRules(list []rules.UploadRule) error {
 // PreviewUploadRules evaluates the saved rules for an object that would be
 // uploaded to bucket/key (before any ".zip" suffix is added).
 func (s *Service) PreviewUploadRules(bucket, key string) (rules.UploadOptions, error) {
-	opts, err := rules.Evaluate(s.UploadRules(), bucket, key)
-	if err != nil {
-		return rules.UploadOptions{}, invalid("PreviewUploadRules", "%v", err)
-	}
-	return opts, nil
+	// The saved rules were validated when they were loaded or saved, and the
+	// slice is replaced as a whole, never edited, so it is read without a copy.
+	s.mu.Lock()
+	saved := s.rules
+	s.mu.Unlock()
+	return rules.Select(saved, bucket, key), nil
 }
 
 func validateUploadRules(list []rules.UploadRule) error {

@@ -69,12 +69,21 @@ func (e *syExcluder) path(rel string) (string, bool) {
 			}
 		}
 	}
-	for _, p := range e.files {
-		if rules.Match(p, rel) {
-			return rel, true
-		}
+	if e.file(rel) {
+		return rel, true
 	}
 	return "", false
+}
+
+// file reports whether a file pattern matches rel. A scan that already skips
+// excluded directories (syScanLocal) needs nothing more than this.
+func (e *syExcluder) file(rel string) bool {
+	for _, p := range e.files {
+		if rules.Match(p, rel) {
+			return true
+		}
+	}
+	return false
 }
 
 // ---- local side ---------------------------------------------------------------------------
@@ -137,9 +146,9 @@ func syScanLocal(ctx context.Context, root string, ex *syExcluder) (*syLocalScan
 					sc.skip(r, "Pail temporary file")
 					continue
 				}
-				if path, ok := ex.path(r); ok {
+				if ex.file(r) { // excluded directories were pruned above
 					sc.protected[r] = true
-					sc.skips = append(sc.skips, SyncAction{Op: "skip", Path: path, Reason: "excluded"})
+					sc.skips = append(sc.skips, SyncAction{Op: "skip", Path: r, Reason: "excluded"})
 					continue
 				}
 				fi, err := e.Info()
@@ -165,6 +174,10 @@ func (sc *syLocalScan) skip(rel, reason string) {
 	sc.skips = append(sc.skips, SyncAction{Op: "skip", Path: rel, Reason: reason})
 }
 
+// hashBuffers holds the read buffers of syHashFile: a sync hashes thousands of
+// files, eight at a time, and each would otherwise allocate 1 MiB.
+var hashBuffers = sync.Pool{New: func() any { b := make([]byte, 1<<20); return &b }}
+
 // syHashFile returns the lower-case hex SHA-256 of the file as it was scanned.
 // It fails when the file changed (size or time) between the scan and the end of
 // reading.
@@ -188,7 +201,9 @@ func syHashFile(ctx context.Context, l syLocal) (string, error) {
 		return "", err
 	}
 	h := sha256.New()
-	buf := make([]byte, 1<<20)
+	bp := hashBuffers.Get().(*[]byte)
+	defer hashBuffers.Put(bp)
+	buf := *bp
 	for {
 		if err := ctx.Err(); err != nil {
 			return "", err
@@ -286,31 +301,29 @@ loop:
 // file to the object key the upload will really write: ZIP and AES-ZIP rules
 // append ".zip", GZIP keeps the key. compressed reports that a compression rule
 // applies. skip is non-empty when the upload task would refuse the file
-// (conflicting rule); err is a broken rule set.
-func syPhysicalKey(list []rules.UploadRule, bucket, key string, noRules bool) (phys string, compressed bool, skip string, err error) {
+// (conflicting rule). list is the saved rule set, which was validated when it
+// was loaded or saved.
+func syPhysicalKey(list []rules.UploadRule, bucket, key string, noRules bool) (phys string, compressed bool, skip string) {
 	if noRules {
-		return key, false, "", nil
+		return key, false, ""
 	}
-	opts, err := rules.Evaluate(list, bucket, key)
-	if err != nil {
-		return "", false, "", invalid("PreviewSync", "%v", err)
-	}
+	opts := rules.Select(list, bucket, key)
 	comp := opts.Compression
 	if comp == nil {
-		return key, false, "", nil
+		return key, false, ""
 	}
 	enc := opts.Headers["Content-Encoding"]
 	switch comp.Method {
 	case "gzip":
 		if enc != "" && !strings.EqualFold(enc, "identity") {
-			return "", true, errGzipEncodingConflict.Error(), nil
+			return "", true, errGzipEncodingConflict.Error()
 		}
-		return key, true, "", nil
+		return key, true, ""
 	case "zip":
 		if enc != "" {
-			return "", true, "a rule sets Content-Encoding and also asks for ZIP compression", nil
+			return "", true, "a rule sets Content-Encoding and also asks for ZIP compression"
 		}
-		return key + ".zip", true, "", nil
+		return key + ".zip", true, ""
 	}
-	return "", true, fmt.Sprintf("unsupported compression method %q", comp.Method), nil
+	return "", true, fmt.Sprintf("unsupported compression method %q", comp.Method)
 }

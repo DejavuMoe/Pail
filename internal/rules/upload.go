@@ -85,13 +85,20 @@ func Validate(rules []UploadRule) error {
 	return nil
 }
 
-// Evaluate selects first match independently for headers+metadata, storage
-// class, SSE, and compression. Empty categories do not claim precedence.
-// MatchedRules includes only rules contributing a selected category.
+// Evaluate validates rules, then selects the options for bucket/key (see Select).
 func Evaluate(rules []UploadRule, bucket, key string) (UploadOptions, error) {
 	if err := Validate(rules); err != nil {
 		return UploadOptions{}, err
 	}
+	return Select(rules, bucket, key), nil
+}
+
+// Select picks first match independently for headers+metadata, storage
+// class, SSE, and compression. Empty categories do not claim precedence.
+// MatchedRules includes only rules contributing a selected category. The rules
+// must have passed Validate: callers that evaluate many keys against one saved
+// rule set validate once instead of once per key.
+func Select(rules []UploadRule, bucket, key string) UploadOptions {
 	out := UploadOptions{Headers: map[string]string{}, Metadata: map[string]string{}}
 	headersSelected := false
 	for _, r := range rules {
@@ -126,8 +133,9 @@ func Evaluate(rules []UploadRule, bucket, key string) (UploadOptions, error) {
 			out.MatchedRules = append(out.MatchedRules, r.Name)
 		}
 	}
-	return out, nil
+	return out
 }
+
 func sortedKeys(m map[string]string) []string {
 	keys := make([]string, 0, len(m))
 	for k := range m {
