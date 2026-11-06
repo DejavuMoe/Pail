@@ -42,7 +42,6 @@ func main() {
 	tool := flag.String("tool", "", "open a tool view at start: sync, cloudfront, rules, mime, multipart, settings")
 	smokeExit := flag.Duration("smoke-exit", 0, "close the window after this duration, e.g. 5s")
 	smokeShot := flag.String("smoke-screenshot", "", "save a native window PNG before smoke exit")
-	memoryDir := flag.String("memory-profile", "", "write staged memory samples to a new directory (diagnostics)")
 	flag.Parse()
 	if *showVersion {
 		fmt.Println("Pail", version)
@@ -60,17 +59,7 @@ func main() {
 	if !*demo && *cfgDir == "" && !mygo.App.RequestSingleInstanceLock() {
 		return
 	}
-	opts.memory, err = startMemorySampler(*memoryDir, *demo, 5*time.Second)
-	if err != nil {
-		log.Fatalf("memory profile: %v", err)
-	}
-	defer func() {
-		if err := opts.memory.close(); err != nil {
-			log.Printf("memory profile: %v", err)
-		}
-	}()
 	registerFonts()
-	opts.memory.mark("fonts-registered", memoryState{})
 
 	var (
 		svc *core.Service
@@ -85,7 +74,6 @@ func main() {
 		log.Fatalf("open configuration: %v", err)
 	}
 
-	opts.memory.mark("service-ready", memoryState{Accounts: len(svc.Accounts()), SecretBackend: svc.SecretBackend()})
 	a := newApp(svc, opts)
 	a.reveal = func(p string) { mygo.Shell.ShowItemInFolder(p) }
 	a.openPath = mygo.Shell.OpenPath
@@ -156,7 +144,6 @@ func main() {
 		})
 		mygo.App.OnSecondInstance(func([]string, string) { tray.open() })
 		win.OnClosed(a.stop)
-		a.markMemory("window-ready")
 		if *smokeExit > 0 {
 			go smoke(a.ctx, win, *smokeExit, *smokeShot)
 		}

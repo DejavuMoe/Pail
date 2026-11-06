@@ -588,7 +588,6 @@ func ghostToggle(c *ui.Context, icon *ui.SVG, label, tip string, on, disabled, i
 // deletedInspector is the detail panel while deleted items are listed.
 func (a *app) deletedInspector(c *ui.Context) {
 	keys := a.selectedKeys()
-	k := tk(c)
 	if len(keys) == 1 && !strings.HasSuffix(keys[0], "/") {
 		e := a.rows[a.byKey[keys[0]]]
 		a.header(c, "trash-2", e.Name, locales.VersionsDeletedLabel())
@@ -602,5 +601,4 @@ func (a *app) deletedInspector(c *ui.Context) {
 			a.restoreSelected()
 		}
 	})
-	_ = k
 }

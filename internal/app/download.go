@@ -298,11 +298,11 @@ func (ds *remoteScan) unit(u scanUnit) error {
 	var err error
 	switch {
 	case u.Whole:
-		err = scanList(ds.ctx, ds.c, ds.req.Source.Bucket, "", func(o remoteObject) error { return ds.object(o, false) })
+		err = scanList(ds.ctx, ds.c, ds.req.Source.Bucket, "", func(o bkObj) error { return ds.object(o, false) })
 	case u.Folder:
-		err = scanList(ds.ctx, ds.c, ds.req.Source.Bucket, u.Key, func(o remoteObject) error { return ds.object(o, false) })
+		err = scanList(ds.ctx, ds.c, ds.req.Source.Bucket, u.Key, func(o bkObj) error { return ds.object(o, false) })
 	default:
-		var ro remoteObject
+		var ro bkObj
 		if ro, err = headRemote(ds.ctx, ds.c, ds.req.Source.Bucket, u.Key, u.VersionID); err == nil {
 			err = ds.object(ro, u.VersionID != "")
 		}
@@ -321,7 +321,7 @@ func (ds *remoteScan) unit(u scanUnit) error {
 // directory, anything else becomes a download task. A returned error ends the
 // listing of the current unit (only the task context ending does that;
 // per-object problems are reported as items).
-func (ds *remoteScan) object(o remoteObject, versioned bool) error {
+func (ds *remoteScan) object(o bkObj, versioned bool) error {
 	if err := ds.ctx.Err(); err != nil {
 		return err
 	}
@@ -537,9 +537,6 @@ func (s *Service) runDownload(ctx context.Context, r *run, j downloadJob) (err e
 		}
 		if err := s.decodeInto(ctx, f, n, out, mode, j.PasswordRef, limit); err != nil {
 			return err
-		}
-		if err := out.Sync(); err != nil {
-			return classify(op, err)
 		}
 		st, err := out.Stat()
 		if err != nil {

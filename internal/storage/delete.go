@@ -1,13 +1,9 @@
 package storage
 
 import (
-	"bytes"
 	"context"
-	"crypto/rand"
-	"encoding/hex"
 	"errors"
 	"fmt"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
@@ -165,45 +161,4 @@ func reconcileDelete(chunk []DeleteResult, index map[ObjectID][]int, out *s3.Del
 			}
 		}
 	}
-}
-
-// ProbeConditionalWrites reports whether the service honours If-None-Match:* on
-// PutObject. It writes (and removes) one empty probe object, so call it only
-// after the user has accepted writes to the bucket; on a versioned bucket the
-// removal leaves a delete marker. A service that rejects the header as
-// unimplemented reports false without error.
-func (c *Client) ProbeConditionalWrites(ctx context.Context, bucket string) (bool, error) {
-	var rnd [6]byte
-	_, _ = rand.Read(rnd[:])
-	key := ".pail-probe-" + hex.EncodeToString(rnd[:])
-	put := func() error {
-		_, err := c.sdk.PutObject(ctx, &s3.PutObjectInput{Bucket: aws.String(bucket), Key: aws.String(key), Body: bytes.NewReader(nil), IfNoneMatch: aws.String("*")})
-		return err
-	}
-	if err := put(); err != nil {
-		if ErrorCode(err) == "NotImplemented" {
-			return false, nil
-		}
-		return false, err
-	}
-	defer func() {
-		cleanup, cancel := context.WithTimeout(context.WithoutCancel(ctx), 30*time.Second)
-		defer cancel()
-		_, _ = c.sdk.DeleteObject(cleanup, &s3.DeleteObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)})
-	}()
-	err := put()
-	switch {
-	case err == nil:
-		return false, nil // second create-only write succeeded: header ignored
-	case ErrorCode(err) == "PreconditionFailed" || isStatus(err, 412):
-		return true, nil
-	case ErrorCode(err) == "NotImplemented":
-		return false, nil
-	}
-	return false, err
-}
-
-func isStatus(err error, code int) bool {
-	var re *awshttp.ResponseError
-	return errors.As(err, &re) && re.HTTPStatusCode() == code
 }

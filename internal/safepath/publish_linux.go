@@ -43,7 +43,8 @@ func publishLink(tmp, final string) error {
 	return err
 }
 
-func syncDir(dir string) {
+// SyncDir flushes the directory entry to disk, best effort.
+func SyncDir(dir string) {
 	if d, err := os.Open(filepath.Clean(dir)); err == nil {
 		_ = d.Sync()
 		_ = d.Close()

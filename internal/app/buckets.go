@@ -3,7 +3,6 @@ package app
 import (
 	"context"
 	"errors"
-	"net/url"
 	"regexp"
 	"strings"
 
@@ -108,18 +107,6 @@ func bmRemaining(r *run, reason string) {
 	r.Item(ItemResult{Key: "*", Status: ItemUnprocessed, Err: reason})
 }
 
-func bmDecoder(enc types.EncodingType) func(string) string {
-	if enc != types.EncodingTypeUrl {
-		return func(v string) string { return v }
-	}
-	return func(v string) string {
-		if d, err := url.QueryUnescape(v); err == nil {
-			return d
-		}
-		return v
-	}
-}
-
 // EmptyBucket deletes every object of the bucket in a background task. With
 // allVersions every version and delete marker is removed; otherwise only the
 // current objects (a versioned bucket keeps its history and gains delete
@@ -170,7 +157,7 @@ func (s *Service) EmptyBucket(accountID, name string, allVersions bool) (string,
 					if err != nil {
 						return fail(err)
 					}
-					dec := bmDecoder(out.EncodingType)
+					dec := bkDecoder(out.EncodingType)
 					var ids []storage.ObjectID
 					for _, v := range out.Versions {
 						ids = append(ids, storage.ObjectID{Key: dec(aws.ToString(v.Key)), VersionID: aws.ToString(v.VersionId)})
@@ -200,7 +187,7 @@ func (s *Service) EmptyBucket(accountID, name string, allVersions bool) (string,
 				if err != nil {
 					return fail(err)
 				}
-				dec := bmDecoder(out.EncodingType)
+				dec := bkDecoder(out.EncodingType)
 				ids := make([]storage.ObjectID, 0, len(out.Contents))
 				for _, o := range out.Contents {
 					ids = append(ids, storage.ObjectID{Key: dec(aws.ToString(o.Key))})

@@ -481,7 +481,6 @@ func (a *app) syncView(c *ui.Context) {
 }
 
 func (a *app) syncList(c *ui.Context) {
-	k := tk(c)
 	s := &a.tl.sync
 	toolPane(c, "sync-pane", 300, func() {
 		paneBar(c, "sync-bar", func() {
@@ -517,7 +516,6 @@ func (a *app) syncList(c *ui.Context) {
 				}
 			})
 		})
-		_ = k
 	})
 }
 
@@ -556,7 +554,6 @@ func (a *app) syncRow(c *ui.Context, key string, on bool, j core.SyncJob, click 
 }
 
 func (a *app) syncEditor(c *ui.Context) {
-	k := tk(c)
 	s := &a.tl.sync
 	ui.Column(c).Grow(1).MinWidth(0).MinHeight(0).Children(func() {
 		if s.sel < 0 && !s.hasDraft {
@@ -573,7 +570,6 @@ func (a *app) syncEditor(c *ui.Context) {
 				a.syncPreviewPane(c)
 			})
 		})
-		_ = k
 	})
 }
 

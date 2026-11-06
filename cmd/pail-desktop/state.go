@@ -20,7 +20,6 @@ type options struct {
 	width, height int
 	tool          string
 	demo          bool
-	memory        *memorySampler // nil unless --memory-profile is supplied
 	// still turns every animation off (c.DisableAnimations in each frame): the
 	// tests of layout and behaviour run so, since the tester's clock does not
 	// move and a frame of an entrance would be what they saw. The tests of the
@@ -244,7 +243,6 @@ func newApp(svc *core.Service, opts options) *app {
 		a.openTool(opts.tool)
 	}
 	a.vaultAtStart()
-	a.markMemory("app-ready")
 	a.loadBuckets(true)
 	go a.vaultPoll()
 	return a
@@ -278,12 +276,6 @@ func (a *app) drain() {
 			return
 		}
 	}
-}
-
-// idle reports whether no background request is in flight.
-func (a *app) idle() bool {
-	return !a.bucketsLoad && !a.loading && a.headState != 1 && a.prev.state != previewLoading &&
-		(!a.del.open || a.del.state != delCounting) && !a.af.busy() && !a.folderDlg.busy && a.busyOps.Load() == 0 && !a.vu.busyNow()
 }
 
 // toast queues a message for the next frame. While the window is hidden in
@@ -398,11 +390,9 @@ func (a *app) loadBuckets(openFirst bool) {
 	a.bucketsGen++
 	gen := a.bucketsGen
 	a.bucketsLoad, a.bucketsErr, a.bucketsFix = true, "", ""
-	a.markMemory("buckets-start")
 	if a.account().SecretMissing { // nothing to connect with until the secret is entered
 		a.bucketsLoad = false
 		a.bucketsErr, a.bucketsFix = locales.StateBucketsSecretMissing(), "secret"
-		a.markMemory("buckets-failed")
 		return
 	}
 	ctx, cancel := context.WithTimeout(a.ctx, 30*time.Second)
@@ -418,7 +408,6 @@ func (a *app) loadBuckets(openFirst bool) {
 			a.bucketsLoad = false
 			op := opEntry{what: tookBuckets, ran: true, d: took, account: id, accountName: acct.Name}
 			if err != nil {
-				a.markMemory("buckets-failed")
 				a.bucketsErr = a.noteErr(err, "buckets", func() {
 					if a.accountID == id {
 						a.loadBuckets(openFirst)
@@ -433,7 +422,6 @@ func (a *app) loadBuckets(openFirst bool) {
 			}
 			a.buckets = bs
 			a.noteOp(op)
-			a.markMemory("buckets-ready")
 			if openFirst && len(bs) > 0 && a.scope.Bucket == "" && a.tool == "" {
 				a.openBucket(bs[0].Name)
 			}
@@ -452,7 +440,6 @@ func (a *app) clearListing() {
 	a.sel.Clear()
 	a.cursor = -1
 	a.resetHead()
-	a.markMemory("listing-cleared")
 }
 
 func (a *app) openBucket(name string) {
@@ -520,7 +507,6 @@ func (a *app) listScope() {
 	// each ending takes its own copy.
 	base := opEntry{what: tookList, ran: true, account: scope.AccountID, accountName: acct.Name, where: scopeText(scope)}
 	a.loading, a.listErr = true, ""
-	a.markMemory("listing-start")
 	go func() {
 		token := ""
 		for first := true; ; first = false {
@@ -548,7 +534,6 @@ func (a *app) listScope() {
 							a.reload()
 						}
 					}), false
-					a.markMemory("listing-failed")
 					if !quiet {
 						failed := base
 						failed.state, failed.d, failed.err = opFailed, took, a.listErr
@@ -563,7 +548,6 @@ func (a *app) listScope() {
 				}
 				a.rowsDirty = true
 				if isFirst {
-					a.markMemory("listing-first-page")
 				}
 				if page.NextToken == "" {
 					a.loading = false
@@ -574,7 +558,6 @@ func (a *app) listScope() {
 					}
 					a.pruneSelection()
 					a.applySelectAfter()
-					a.markMemory("listing-ready")
 				}
 			})
 			if err != nil || page.NextToken == "" {
@@ -862,7 +845,6 @@ func (a *app) applyInbox() {
 		}
 	}
 	if stateChanged {
-		a.markMemory("tasks-changed")
 	}
 }
 

@@ -301,17 +301,17 @@ func (c *Client) BucketRegion(ctx context.Context, bucket string) (string, error
 
 // CopySource builds an x-amz-copy-source value with correct escaping.
 func CopySource(bucket, key, versionID string) string {
-	source := escapeCopySource(bucket) + "/" + escapeCopySource(key)
+	source := EscapePath(bucket) + "/" + EscapePath(key)
 	if versionID != "" {
 		source += "?versionId=" + url.QueryEscape(versionID)
 	}
 	return source
 }
 
-// escapeCopySource percent-encodes every byte except unreserved characters
-// and "/". url.PathEscape keeps sub-delimiters such as "+", which AWS and
-// VersityGW decode as a space in x-amz-copy-source.
-func escapeCopySource(s string) string {
+// EscapePath percent-encodes every byte except unreserved characters and "/".
+// url.PathEscape keeps sub-delimiters such as "+", which AWS and VersityGW
+// decode as a space in x-amz-copy-source.
+func EscapePath(s string) string {
 	const hex = "0123456789ABCDEF"
 	var b strings.Builder
 	for i := 0; i < len(s); i++ {

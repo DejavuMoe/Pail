@@ -4,16 +4,12 @@ import (
 	"context"
 	"fmt"
 	"io/fs"
-	"net/url"
 	"os"
 	"path/filepath"
 	"strings"
 	"sync"
-	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
-	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/DejavuMoe/Pail/internal/storage"
 )
@@ -137,75 +133,30 @@ func scanDetail(n int) string {
 
 // ---- remote side: listing the objects a download selected -----------------------------
 
-// remoteObject is one object found by a listing or HEAD.
-type remoteObject struct {
-	Key, VersionID, ETag string
-	Size                 int64
-	Modified             time.Time
-}
-
 // scanList walks every object under prefix (no delimiter), page by page, and
 // calls fn for each. Keys are URL-decoded when the service says it encoded them.
-func scanList(ctx context.Context, c *storage.Client, bucket, prefix string, fn func(remoteObject) error) error {
-	var token *string
-	for {
-		in := &s3.ListObjectsV2Input{
-			Bucket:            aws.String(bucket),
-			EncodingType:      s3types.EncodingTypeUrl,
-			ContinuationToken: token,
-		}
-		if prefix != "" {
-			in.Prefix = aws.String(prefix)
-		}
-		out, err := c.S3().ListObjectsV2(ctx, in)
-		if err != nil {
-			return classify("Download", err)
-		}
-		decode := func(v string) string { return v }
-		if out.EncodingType == s3types.EncodingTypeUrl {
-			decode = func(v string) string {
-				if d, err := url.QueryUnescape(v); err == nil {
-					return d
-				}
-				return v
-			}
-		}
-		for _, o := range out.Contents {
-			ro := remoteObject{
-				Key: decode(aws.ToString(o.Key)), ETag: aws.ToString(o.ETag),
-				Size: aws.ToInt64(o.Size), Modified: aws.ToTime(o.LastModified),
-			}
-			if err := fn(ro); err != nil {
+func scanList(ctx context.Context, c *storage.Client, bucket, prefix string, fn func(bkObj) error) error {
+	return bkListObjects(c, bucket)(ctx, bkScan{Prefix: prefix}, func(page []bkObj, _ string) error {
+		for _, o := range page {
+			if err := fn(o); err != nil {
 				return err
 			}
 		}
-		if !aws.ToBool(out.IsTruncated) {
-			return nil
-		}
-		if aws.ToString(out.NextContinuationToken) == "" {
-			// Stopping quietly would make a partial listing look complete.
-			return opErr("List", ErrOther, "the service reported a truncated listing without a continuation token")
-		}
-		token = out.NextContinuationToken
-	}
+		return nil
+	})
 }
 
 // headRemote HEADs one object (or version) for the size, ETag and time a
 // download needs.
-func headRemote(ctx context.Context, c *storage.Client, bucket, key, versionID string) (remoteObject, error) {
-	in := &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)}
-	if versionID != "" {
-		in.VersionId = aws.String(versionID)
-	}
-	h, err := c.S3().HeadObject(ctx, in)
+func headRemote(ctx context.Context, c *storage.Client, bucket, key, versionID string) (bkObj, error) {
+	h, err := headObj(ctx, c, "Download", bucket, key, versionID)
 	if err != nil {
-		return remoteObject{}, classify("Download", err)
+		return bkObj{}, err
 	}
-	ro := remoteObject{
+	return bkObj{
 		Key: key, VersionID: versionID, ETag: aws.ToString(h.ETag),
 		Size: aws.ToInt64(h.ContentLength), Modified: aws.ToTime(h.LastModified),
-	}
-	return ro, nil
+	}, nil
 }
 
 // relativeKey is the key below the selected prefix: the local path of a

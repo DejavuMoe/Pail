@@ -125,14 +125,12 @@ type Server struct {
 	inject      func(r *http.Request) *Fault
 	unsupported map[string]bool
 
-	condWrites atomic.Bool
-	seq        atomic.Uint64
+	seq atomic.Uint64
 }
 
 // New starts a server. Server.URL is the endpoint (path-style addressing).
 func New() *Server {
 	s := &Server{buckets: map[string]*bucket{}, unsupported: map[string]bool{}}
-	s.condWrites.Store(true)
 	s.ts = httptest.NewServer(http.HandlerFunc(s.serve))
 	s.URL = s.ts.URL
 	return s
@@ -181,10 +179,6 @@ func (s *Server) ClearUnsupported(op string) {
 	}
 	s.cfgMu.Unlock()
 }
-
-// SetConditionalWrites controls whether If-None-Match is honoured on PUT and
-// CompleteMultipartUpload (default true).
-func (s *Server) SetConditionalWrites(enabled bool) { s.condWrites.Store(enabled) }
 
 // ---- direct state helpers ----
 

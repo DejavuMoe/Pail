@@ -336,7 +336,6 @@ func (a *app) multiHeaders(c *ui.Context) {
 // propsBody draws the headers and metadata sections.
 func (a *app) propsBody(c *ui.Context) {
 	p := &a.mg.props
-	k := tk(c)
 	if !p.ready {
 		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
 			ui.Spinner(c).Size(14, 14)
@@ -367,7 +366,6 @@ func (a *app) propsBody(c *ui.Context) {
 				mutedText(c, locales.EditPropsReadOnly(p.readOnly)).Grow(1).MinWidth(0)
 			})
 		}
-		_ = k
 	})
 }
 

@@ -104,13 +104,8 @@ func (a *app) table(c *ui.Context) {
 	// the table the softer Selection token, so the rows are built under a
 	// theme whose Accent is that token; the rest of the frame keeps the real
 	// Accent.
-	full := c.Theme()
-	rowTheme := *full
-	rowTheme.Accent, rowTheme.AccentText = k.Selection, k.Text
-	rowTheme.Spacing = tableSpacing // table rows are 8 spacing units: 30px
-	rowTheme.FontSize = sizeSecondary
-	c.SetTheme(&rowTheme)
-	defer c.SetTheme(full)
+	defer tableTheme(c)()
+
 	cols := visibleColumns(a.lay.colTier)
 	chosen := a.selectedCount()
 	everyBox := chosen >= 2 // the selection bar is up: every row shows its box

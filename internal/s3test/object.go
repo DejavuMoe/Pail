@@ -122,7 +122,7 @@ func (c *call) resolve(b *bucket, key, vid string) (*version, *resp) {
 // version or nil.
 func (c *call) checkWrite(cur *version) *resp {
 	h := c.r.Header
-	if inm := h.Get("If-None-Match"); inm != "" && c.s.condWrites.Load() {
+	if inm := h.Get("If-None-Match"); inm != "" {
 		if cur != nil && etagListMatches(inm, cur.etag) {
 			return c.precondFailed()
 		}

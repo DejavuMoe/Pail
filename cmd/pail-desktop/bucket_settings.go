@@ -604,7 +604,6 @@ func (a *app) cfgMessage(c *ui.Context, s *cfgState) {
 }
 
 func (a *app) versioningForm(c *ui.Context, sec bsSection, s *cfgState) {
-	k := tk(c)
 	if s.server == "" {
 		ui.Column(c).Gap(12).Children(func() {
 			mutedText(c, locales.BucketSettingsNeverVersioned())
@@ -629,7 +628,6 @@ func (a *app) versioningForm(c *ui.Context, sec bsSection, s *cfgState) {
 			}
 		})
 	})
-	_ = k
 }
 
 // formFooter is the message line and the buttons under a small form.

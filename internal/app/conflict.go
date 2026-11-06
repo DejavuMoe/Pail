@@ -9,7 +9,6 @@ import (
 
 	"github.com/DejavuMoe/Pail/internal/storage"
 	"github.com/aws/aws-sdk-go-v2/aws"
-	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
 // conflictDecision is how a write to an S3 destination key proceeds under a
@@ -87,13 +86,12 @@ type remoteTarget struct {
 
 // headTarget HEADs bucket/key; a missing key is not an error.
 func headTarget(ctx context.Context, c *storage.Client, bucket, key string) (remoteTarget, error) {
-	out, err := c.S3().HeadObject(ctx, &s3.HeadObjectInput{Bucket: aws.String(bucket), Key: aws.String(key)})
+	out, err := headObj(ctx, c, "HeadObject", bucket, key, "")
 	if err != nil {
-		cerr := classify("HeadObject", err)
-		if KindOf(cerr) == ErrNotFound {
+		if KindOf(err) == ErrNotFound {
 			return remoteTarget{}, nil
 		}
-		return remoteTarget{}, cerr
+		return remoteTarget{}, err
 	}
 	return remoteTarget{
 		exists:   true,
@@ -107,11 +105,17 @@ func headTarget(ctx context.Context, c *storage.Client, bucket, key string) (rem
 // do: "report.pdf" → "report (1).pdf", "a.tar.gz" → "a.tar (1).gz",
 // "README" → "README (1)", ".env" → ".env (1)".
 func numberedName(name string, n int) string {
+	return insertBeforeExt(name, fmt.Sprintf(" (%d)", n))
+}
+
+// insertBeforeExt puts suffix before the last extension of name. A dot-file
+// without another dot (".env") has no extension.
+func insertBeforeExt(name, suffix string) string {
 	ext := path.Ext(name)
-	if ext == name { // dot-file without another dot
+	if ext == name {
 		ext = ""
 	}
-	return fmt.Sprintf("%s (%d)%s", strings.TrimSuffix(name, ext), n, ext)
+	return strings.TrimSuffix(name, ext) + suffix + ext
 }
 
 // numberedKey applies numberedName to the last segment of an object key.
