@@ -73,18 +73,19 @@ func (a *app) inspector(c *ui.Context) {
 }
 
 func (a *app) inspectorBody(c *ui.Context) {
-	keys := a.selectedKeys()
+	n := a.selectedCount()
+	key, _ := a.soleSelected()
 	switch {
-	case a.mg.del.on && len(keys) > 0:
+	case a.mg.del.on && n > 0:
 		a.deletedInspector(c)
-	case len(keys) > 1 && a.inspTab == 1:
+	case n > 1 && a.inspTab == 1:
 		a.multiHeaders(c)
-	case len(keys) > 1:
+	case n > 1:
 		a.multiSummary(c)
-	case len(keys) == 1 && !strings.HasSuffix(keys[0], "/"):
+	case n == 1 && !strings.HasSuffix(key, "/"):
 		a.objectTabs(c)
-	case len(keys) == 1:
-		a.folderOverview(c, a.rows[a.byKey[keys[0]]])
+	case n == 1:
+		a.folderOverview(c, a.rows[a.byKey[key]])
 	default:
 		a.currentFolderSummary(c)
 	}

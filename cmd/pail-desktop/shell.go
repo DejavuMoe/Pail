@@ -28,7 +28,7 @@ func (a *app) view(c *ui.Context) {
 	}
 	a.autoTransfers()
 	a.flushOutput(c)
-	if a.rowsDirty || a.sort != a.sortSeen {
+	if a.rowsDue() {
 		a.rebuildRows()
 	}
 	a.ensureHead()

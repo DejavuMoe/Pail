@@ -19,7 +19,8 @@ type renameState struct {
 }
 
 func canRename(a *app) bool {
-	return a.browsing() && len(a.selectedKeys()) == 1 && !a.mg.del.on && !a.objOps.flat // a flat row lives in another folder
+	_, one := a.soleSelected()
+	return a.browsing() && one && !a.mg.del.on && !a.objOps.flat // a flat row lives in another folder
 }
 
 // startRename opens the name of the selected row for editing.

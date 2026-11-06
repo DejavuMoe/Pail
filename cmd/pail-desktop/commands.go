@@ -197,12 +197,15 @@ func awsBrowsing(a *app) bool { return a.browsing() && a.cfAvailable() }
 
 func deletedOn(a *app) bool    { return a.browsing() && a.mg.del.on }
 func liveBrowsing(a *app) bool { return a.browsing() && !a.mg.del.on }
-func oneSelected(a *app) bool  { return a.browsing() && len(a.selectedKeys()) == 1 }
+func oneSelected(a *app) bool {
+	_, one := a.soleSelected()
+	return a.browsing() && one
+}
 
 // oneObject is a single selected object (not a folder).
 func oneObject(a *app) bool {
-	k := a.selectedKeys()
-	return a.browsing() && len(k) == 1 && !strings.HasSuffix(k[0], "/")
+	k, one := a.soleSelected()
+	return a.browsing() && one && !strings.HasSuffix(k, "/")
 }
 
 func commandTable() []command {
@@ -237,8 +240,8 @@ func commandTable() []command {
 			Enabled: (*app).browsing, Run: func(a *app) { a.openNewFolder() }},
 		{ID: "open", Label: locales.Messages.CmdOpen, Icon: "folder-open",
 			Enabled: func(a *app) bool {
-				k := a.selectedKeys()
-				return a.browsing() && len(k) == 1 && strings.HasSuffix(k[0], "/")
+				k, one := a.soleSelected()
+				return a.browsing() && one && strings.HasSuffix(k, "/")
 			},
 			Run: func(a *app) { a.openPrefix(a.selectedKeys()[0]) }},
 		{ID: "copy", Label: locales.Messages.CmdCopy, Icon: "copy", Chords: []chord{{ui.Cmd, ui.KeyC, "Ctrl+C"}},

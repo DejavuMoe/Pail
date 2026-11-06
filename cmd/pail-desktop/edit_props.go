@@ -2,6 +2,9 @@ package main
 
 import (
 	"context"
+	"fmt"
+	"hash/maphash"
+	"math/bits"
 	"slices"
 	"sort"
 	"strconv"
@@ -42,8 +45,27 @@ func (p *propsForm) reset(sig string) { *p = propsForm{sig: sig} }
 
 // selectionSig identifies the current selection for the forms.
 func (a *app) selectionSig() string {
-	return a.scope.AccountID + "|" + a.scope.Bucket + "|" + a.scope.Prefix + "|" + strings.Join(a.selectedKeys(), "\x00")
+	head := a.scope.AccountID + "|" + a.scope.Bucket + "|" + a.scope.Prefix + "|"
+	if n := a.selectedCount(); n > sigExactMax {
+		// A big selection is told apart by its size and an order-independent
+		// 128-bit hash of its keys, instead of by all of them, sorted, every frame.
+		var sum, mix uint64
+		for k := range a.sel.All() {
+			if _, ok := a.byKey[k]; ok {
+				h := maphash.String(sigSeed, k)
+				sum += h
+				mix ^= bits.RotateLeft64(h*0x9e3779b97f4a7c15, int(h&63))
+			}
+		}
+		return fmt.Sprintf("%s#%d:%016x%016x", head, n, sum, mix)
+	}
+	return head + strings.Join(a.selectedKeys(), "\x00")
 }
+
+// sigExactMax is the size up to which a selection signature holds the keys.
+const sigExactMax = 16
+
+var sigSeed = maphash.MakeSeed()
 
 // build fills the form from the objects' details. unknown marks values that
 // could not be compared (folders, too many objects): every field then reads
@@ -234,13 +256,13 @@ func sortedKeys(m map[string]string) []string {
 // object.
 func (a *app) ensureProps() {
 	p := &a.mg.props
-	keys := a.selectedKeys()
-	if len(keys) == 0 || a.mg.del.on {
+	n := a.selectedCount()
+	if n == 0 || a.mg.del.on {
 		return
 	}
 	sig := a.selectionSig()
-	if len(keys) == 1 && !strings.HasSuffix(keys[0], "/") {
-		if a.headState != 2 || a.headKey != keys[0] {
+	if one, _ := a.soleSelected(); n == 1 && !strings.HasSuffix(one, "/") {
+		if a.headState != 2 || a.headKey != one {
 			return
 		}
 		if p.sig == sig && p.ready && p.gen == a.headGen {
@@ -256,6 +278,7 @@ func (a *app) ensureProps() {
 	}
 	p.reset(sig)
 	p.loading = true
+	keys := a.selectedKeys()
 	var files []string
 	folders := 0
 	for _, k := range keys {
