@@ -95,14 +95,16 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 
 ## 命令行
 
-`pail` 使用桌面应用的账户和已保存的同步任务，账户需要先在桌面应用里添加。
+`pail` 使用桌面应用的账户、已保存的同步任务和设置。可以用 `pail account add` 添加账户，它会以不回显的方式询问私有访问密钥；也可以在桌面应用里添加。
 
 ```sh
+pail account add backup --endpoint https://s3.example.com --region us-east-1 --path-style --access-key-id AKIAEXAMPLE
 pail accounts
 pail ls s3://my-bucket/photos/ -r
 pail cp ./dist s3://my-bucket/site/ -r --conflict newer
 pail sync ./photos s3://my-bucket/photos/ --dry-run
 pail presign s3://my-bucket/report.pdf --expires 1h
+pail cat s3://my-bucket/notes.txt
 ```
 
 全部命令、参数、JSON 输出和退出码见 [命令行参考](docs/cli.zh-CN.md)。

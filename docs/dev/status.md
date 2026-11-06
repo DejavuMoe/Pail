@@ -144,7 +144,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
-| `pail` 命令行（accounts、buckets、ls、cp、mv、rm、mb、rb、presign、url、versions、restore、sync、vault status） | ✅ | n/a | ✅ 进程内对 `internal/s3test` | ❌ 命令行外壳本身没有对真实服务端运行 | 它调用的应用层在真实服务端验证过 |
+| `pail` 命令行（accounts、account、vault、bucket alias、buckets、ls、cp、mv、rm、mb、rb、presign、url、versions、restore、stat、cat、mkdir、du、tags、acl、props、storage-class、multipart、cloudfront、settings、sync 及 sync job） | ✅ | n/a | ✅ 进程内对 `internal/s3test` | ❌ 命令行外壳本身没有对真实服务端运行 | 它调用的应用层在真实服务端验证过。`cloudfront` 的 `invalidate` 与 `ls` 在命令行层只测了非 AWS 账户被拒绝和确认流程，没有对 CloudFront 或模拟端点运行 |
 | CLI 结果与参数边界 | ✅ | n/a | ✅ `TestBulkSummaryBeyondItemRetention` 删除 10001 项并核对汇总；`TestSavedSyncJobSelectsItsAccount` 覆盖多账户、显式账户冲突和保险库；`TestDoubleDashDownloadDestination`、`TestInterspersedEndOfOptions` 验证 `--` 与选项值 | ❌ 这些边界未对真实服务端验证 | 不从截断的逐项明细推导总数 |
 | 发布包（Windows / Linux / macOS，amd64 与 arm64）与 SHA256SUMS | n/a | n/a | ✅ 打包工具保留 Unix 权限位（tar.gz 与 zip 各有测试） | ✅ Windows 与 Linux amd64 解压后运行过；macOS arm64 与 amd64 在真机上手动运行过，首次启动需 `xattr -dr com.apple.quarantine`；六平台 CI 原生测试与版本冒烟通过 | 已在 GitHub Releases 发布 |
 

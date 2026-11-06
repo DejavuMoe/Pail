@@ -156,6 +156,17 @@ func normalizeAccount(a Account) (Account, error) {
 	return a, nil
 }
 
+// ValidateAccount trims, defaults and checks a exactly as SaveAccount does and
+// returns the normalised account. It saves nothing and does not look at
+// secrets; callers use it to refuse bad input before asking for a secret.
+func ValidateAccount(a Account) (Account, error) {
+	a, err := normalizeAccount(a)
+	if err != nil {
+		return a, invalid("ValidateAccount", "%v", err)
+	}
+	return a, nil
+}
+
 func validateSecrets(sec *Secrets) error {
 	if sec.SecretAccessKey == "" {
 		return errors.New("secret access key is required")
