@@ -2,7 +2,7 @@
 
 English | [简体中文](cli.zh-CN.md)
 
-`pail` works with the same accounts, saved sync jobs and secrets as the desktop app. It shares the desktop app's configuration directory and secret store (the OS keychain or the encrypted vault). Accounts cannot be added or changed from the command line; do that in the desktop app. Requests go through the proxy saved in the desktop app's **Settings › Network**; without one, \pail\ follows the \HTTP_PROXY\, \HTTPS_PROXY\ and \NO_PROXY\ environment variables.
+`pail` works with the same accounts, saved sync jobs and secrets as the desktop app. It shares the desktop app's configuration directory and secret store (the OS keychain or the encrypted vault). Accounts cannot be added or changed from the command line; do that in the desktop app. Requests go through the proxy saved in the desktop app's **Settings › Network**; without one, `pail` follows the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables.
 
 Release archives use versioned filenames, for example `pail-v<version>-windows-amd64.exe`. The examples below assume you installed the program as `pail` (`pail.exe` on Windows); you can also run the full filename.
 
@@ -74,7 +74,7 @@ pail version
 
 ### Command details
 
-- `-r` (also `-recursive`) works the same way in `ls`, `cp`, `mv`, `rm` and `restore`.
+- `-r` (also `--recursive`) works the same way in `ls`, `cp`, `mv`, `rm` and `restore`.
 - `vault status` shows the secret backend (`keyring` or `vault`), whether `vault.json` exists and the desktop app's auto-lock setting. With `--vault-password-stdin` it also checks the master password. With `--json` it prints one object (shape below).
 - `ls` shows folders as `PRE name/` and sizes in a readable form (raw bytes with `--json`). Without a path it lists buckets. `-r` lists every key below the prefix. A key without a trailing `/` that is not a folder lists that single object.
 - `cp` and `mv` take `--conflict` with `skip`, `overwrite`, `rename`, `newer` or `different_size`. When it is omitted, both use the default saved in the desktop app's settings (initially `rename`). `mv` copies, verifies, then deletes the source.

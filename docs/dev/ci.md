@@ -107,7 +107,7 @@ go run ./tools/release -version 0.4.2
 go run ./tools/verify-release -dir build/release/0.4.2 -version 0.4.2
 ```
 
-`-version` is required and accepts SemVer without the `v` prefix. `-targets` accepts a nonempty comma-separated subset of the six supported targets without duplicates. The repository root is discovered from the current directory or its parents, without Git metadata. The default output is `<repo>/build/release/<version>/`; an explicit relative `-out-dir` resolves from the caller's directory. Temporary staging is created under the output parent and removed on completion or ordinary errors. Existing release output is replaced only after all selected targets build and pass verification; linked outputs and unrelated files are refused. Run only one release build for a given output/version at a time. Interruption or filesystem failure during final replacement can require a rerun; atomic replacement is not claimed.
+`-version` is required and accepts SemVer without the `v` prefix. `-targets` accepts a nonempty comma-separated subset of the six supported targets without duplicates. The repository root is discovered from the current directory or its parents, without Git metadata. The default output is `<repo>/build/release/<version>/`; an explicit relative `-out-dir` resolves from the caller's directory. Existing release output is replaced only after all selected targets build and pass verification; linked outputs and unrelated files are refused. Run only one release build for a given output/version at a time.
 
 The optional `scripts/release.ps1` wrapper retains `-Version`, `-Targets`, `-OutDir` and `-CliOnly` for existing callers, and requires PowerShell 7.3+. It has no build, platform or archive logic of its own and is not used by CI.
 
@@ -120,7 +120,7 @@ The optional `scripts/release.ps1` wrapper retains `-Version`, `-Targets`, `-Out
 
 Each archive has a top-level directory matching its filename without the extension. `tools/release` invokes the existing `tools/pack` command, which preserves executable mode 0755 even when packaging on Windows. `tools/verify-release` rejects missing/unexpected files, incorrect checksums, unsafe archive entries, wrong executable permissions, wrong GOOS/GOARCH, cgo-enabled binaries, incorrect executable packages and broken platform launch entries. The release tool invokes it automatically with the selected targets; when independently verifying a subset, pass the same `-targets` list. `-cli-only` produces local CLI-only archives without desktop launch assets, explicitly skips complete-release verification, and must not be published as a full release.
 
-The Go tool supplies target environment variables only to child processes; it never changes the caller's environment or working directory. The PowerShell wrapper restores its working directory. Generated icons and Windows resources are committed; regenerate them with `go run ./tools/genicons`. Archives are cross-compiled with `CGO_ENABLED=0`, `-trimpath`, `-s -w` and `-X main.version=<version>`. Windows GUI adds `-H windowsgui`. Binaries have no developer signature; macOS is not notarized. Byte-for-byte reproducible builds are not claimed.
+Generated icons and Windows resources are committed; regenerate them with `go run ./tools/genicons`. Archives are cross-compiled with `CGO_ENABLED=0`, `-trimpath`, `-s -w` and `-X main.version=<version>`. Windows GUI adds `-H windowsgui`. Binaries have no developer signature; macOS is not notarized.
 
 ## Integration and manual-only checks
 

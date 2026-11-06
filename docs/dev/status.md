@@ -23,8 +23,6 @@
 | Amazon S3、Cloudflare R2、Wasabi | 所有者手动测试，可用（2026-10-20 确认）。这是手动的真实端到端验证，没有对应的自动化套件，具体覆盖的功能没有逐项记录 |
 | AWS 的 STS AssumeRole 与 CloudFront | 没有测试 |
 
-更名为 Pail 之后（2026-10-20）重跑了：Windows `gofmt`/`go vet`/`go test`、Linux `go vet` 与 `go test -race`（全部包）、六个目标的发布构建与包内容检查、MinIO 固定版本套件、`--demo` 冒烟与 README 截图重新生成。VersityGW 外部套件和 MinIO 最新上游套件在更名后尚未重跑，上表这两行的结果来自更名前的同一份功能代码。
-
 VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-None-Match` / `If-Match`，CopyObject 忽略 `If-None-Match`；五种 checksum 与对象标签可用；读取对象 ACL 返回 NotImplemented（应用报 Unsupported）；存储类别与 SSE 被静默忽略（应用把这些项报为 failed）；未开启版本控制；Cloudflare 会解压 gzip 对象，HEAD 与 GET 的大小不一致（应用拒绝发布这类下载）。
 
 ## 功能
@@ -161,13 +159,8 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 - 本地镜像删除移入真实回收站：只验证了预览。
 - 窗口内菜单（Windows 与 Linux）：只有 headless 测试与快照目视，没有在原生窗口里手动操作，也没有用读屏软件验证。macOS 的系统右键菜单与系统菜单栏：没有目视审阅。
 - 界面动效：只有受控时钟的 headless 测试与快照目视，没有在任何原生窗口里观看过，流畅度、帧率与"减少动态效果"的系统设置都未在真实桌面上验证。
-- 窗口拖动缩放时的布局抖动：应用侧的晚一帧回读和断点翻转已修，有 headless 回归测试。mygo v0.6.0 的 Direct3D 11 后端改为只重绘变化区域、`Present` 不再阻塞主线程，但缩放中的帧仍同步绘制；系统按钮与帧是否原子合成没有确认。v0.3.0 发布包已在 Windows 原生窗口拖动缩小、最大化和还原，稳定帧未见布局错乱；未采集拖动中的连续帧或做升级前后对比，因此仍不标记为解决。
-- mygo v0.6.3 的库内改动未在原生窗口测量：Direct3D 11 上内容未变的帧改为等待显示器下一次刷新再继续，动画中不足一像素的变化不再连续重绘；超过 8 MB 的单段文字布局在不挤掉近期布局时也会缓存（上限 32 MB），减少重复排版但可能增加常驻内存。v0.3.2 发布包：Windows amd64 解压后 `pail version` 正常，原生窗口 `--demo` 启动并保持运行；Linux amd64 包在 WSL 解压后 `pail version` 与 `pail-desktop --version` 正常；CPU 占用与内存没有做前后对比。
-- mygo v0.7.3（自 v0.6.3 升级）：导出 API 对 Pail 无删除或签名变化，Windows、Linux 构建与全部测试通过，macOS arm64 交叉编译通过（不代表真机）。Windows 原生窗口 `--demo` 在 2 倍缩放、960×600 下启动，`⋯` 菜单与主题子菜单可用键盘打开、切换并恢复。以下库内修复与 Pail 有关，但均未单独实机验证：Windows 缩放窗口时内容不再放大裁切、快速缩放的新边缘显示背景色而非黑色、隐藏标题栏不再出现强调色条、中日韩短标签不再被省略号截断；macOS 从原生界面点击打开的文件对话框能正常显示并等待、无文本框聚焦时 ⌘C/⌘V/⌘X/⌘A/⌘Z 窗口快捷键可触发、拖动区域移动窗口不再抖动、不再启动 AutoFill 辅助进程；Linux 从窗口自身控件关闭不再崩溃、快速轻点不再留下按住状态、两个应用同时启动不再损坏字体缓存；`Spinner` 等动画只重绘自身。破坏性变化不影响 Pail：页面的捏合缩放与滑动导航只作用于网页视图（Pail 不用），slug 与 DMG/安装包命名只作用于 `mygo build`（Pail 用 `tools/release`），macOS 子窗口（Pail 只有一个窗口）。v0.3.3 发布包：`verify-release` 复核下载的六个归档与 `SHA256SUMS` 通过；Windows amd64 解压后 `pail version` 为 0.3.3，原生窗口 `--demo` 启动并保持运行；Linux amd64 包在 WSL 解压后 `pail version` 与 `pail-desktop --version` 为 0.3.3；CPU 占用与内存没有做前后对比。
-- mygo v0.7.4（自 v0.7.3 升级）：窗口创建时隐藏、首帧绘制后再显示，macOS 空闲 CPU 与耗电降低，Windows 11 高缩放下菜单文字不再被截断。这些库内改动均未在原生窗口实机验证。工具栏文字标签的断点从 680 改为 800，使最小窗口 960×600 下所有平台都是纯图标。
-- 托盘与文件夹大小这一批改动的验证：Windows 上 `gofmt`、`go vet ./...`、`go test ./...` 通过；Linux（WSL Debian）在修正工具栏断点后 `go vet`、构建、`go test` 通过。Windows 原生窗口 `--demo --smoke-exit 6s --smoke-screenshot`：创建时隐藏的窗口首帧后正常显示，装有托盘图标时 `App.Quit` 未被关窗拦截，7 秒内以 0 退出，截图经人工目视（中文界面、文件夹大小列显示"–"、工具栏计算按钮）。托盘图标的外观、菜单、关闭即隐藏、单实例与系统通知没有实机操作；macOS 与 Linux 桌面没有运行。v0.4.0 发布包：GitHub Actions 的 CI（九个任务，含 macOS 两个原生测试任务）与 CodeQL 通过，`check-release` 通过；`verify-release` 复核下载的六个归档与 `SHA256SUMS` 通过；Windows amd64 解压后 `pail version` 为 0.4.0，桌面程序 `--demo --smoke-exit 6s` 原生窗口启动并以 0 退出，截图经人工目视；Linux amd64 包在 WSL 解压后 `pail version` 与 `pail-desktop --version` 为 0.4.0；CPU 占用与内存没有做前后对比。
-- v0.4.1（文件夹大小可重复计算）：这一处修复只有 headless 测试（`foldersize_test.go`：已算出的文件夹在 Pail 之外被改动后，右键菜单与工具栏按钮仍可用并得到新大小，计算中禁用），没有在原生窗口里操作过。发布包：GitHub Actions 的 CI 与 CodeQL 通过且没有未处理的告警，`check-release` 通过；`verify-release` 复核下载的六个归档与 `SHA256SUMS` 通过；Windows amd64 解压后 `pail version` 为 0.4.1，桌面程序 `--demo --smoke-exit 6s` 原生窗口启动并以 0 退出，截图经人工目视；Linux amd64 包在 WSL 解压后 `pail version` 与 `pail-desktop --version` 为 0.4.1；macOS 包只经 CI 的原生测试任务，没有在真机上运行。
-- v0.4.2（桶别名、代理服务器、状态栏用时）：这一批只有 headless 测试（`alias_proxy_took_test.go` 与应用层、存储层测试）。原生窗口里只看过 `--demo` 的浏览页与设置页截图（开发构建，网络区为默认状态），没有在原生窗口里操作过代理字段、别名对话框或保险库重置里的代理密码，也没有对真实代理软件运行过。发布包：GitHub Actions 的 CI 与 CodeQL 通过且没有未处理的告警，`check-release` 通过；`verify-release` 复核下载的六个归档与 `SHA256SUMS` 通过；Windows amd64 解压后 `pail version` 与 `pail-desktop --version` 为 0.4.2，桌面程序 `--demo --smoke-exit 6s` 原生窗口启动并以 0 退出，截图经人工目视；Linux amd64 包在 WSL 解压后 `pail version` 与 `pail-desktop --version` 为 0.4.2；macOS 包只经 CI 的原生测试任务，没有在真机上运行。
+- 窗口拖动缩放时的布局抖动：应用侧的晚一帧回读和断点翻转已修，有 headless 回归测试。缩放中的帧仍同步绘制，系统按钮与帧是否原子合成没有确认，没有采集拖动中的连续帧，因此不标记为解决。
+- 依赖库（mygo）升级带来的窗口行为改动、托盘（图标、菜单、关闭即隐藏、单实例、系统通知）、文件夹大小、桶别名、代理字段和最近操作列表：只有 headless 测试，没有在原生窗口里逐项操作；macOS 与 Linux 桌面没有运行这些功能。每个发布包都经 `verify-release` 复核，Windows 与 Linux amd64 包解压后冒烟通过，macOS 包只经 CI 的原生测试任务。CPU 占用与内存没有做前后对比。
 - 代理服务器：本地 HTTP 代理与 SOCKS5 服务器上的协议测试通过（含用户名和密码），但没有经过真实代理软件、真实 S3 服务或 AWS STS 验证；不支持 NTLM 等其他认证方式。
 - `internal/app` 产生的任务标题（传输面板）和命令行输出未本地化，仍为英文。
 - MinIO 套件没有加 `-race` 运行；`-race` 只跑了单元与协议测试。
