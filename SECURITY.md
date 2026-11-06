@@ -8,7 +8,7 @@ Include the affected Pail version or commit, operating system and architecture, 
 
 Please check the [latest stable release](https://github.com/DejavuMoe/Pail/releases/latest) when possible. Reports affecting `master` are also welcome. Response and fix times depend on severity and maintainer availability; no response deadline or bounty is promised.
 
-GitHub hosts private reports and release assets; Forgejo remains the source repository. Coordinate disclosure privately. Maintainers develop and validate fixes through Forgejo and publish an advisory when appropriate.
+Coordinate disclosure privately; a security advisory is published when appropriate.
 
 ## 安全漏洞报告
 
@@ -18,4 +18,4 @@ GitHub hosts private reports and release assets; Forgejo remains the source repo
 
 条件允许时，请先检查[最新稳定版](https://github.com/DejavuMoe/Pail/releases/latest)是否仍受影响；也欢迎报告 `master` 上的问题。响应与修复时间取决于严重程度和维护者的可用时间，不承诺处理期限或漏洞奖金。
 
-GitHub 承载私密报告和发布产物，Forgejo 仍是源代码主仓库。请私下协调披露；维护者通过 Forgejo 开发并验证修复，在适当时发布安全公告。
+请私下协调披露；在适当时发布安全公告。

@@ -58,7 +58,3 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 ## Privacy and multimodal evidence
 
 - Screenshots come only from `--demo` mode; no real account data.
-
-## Decided
-
-- Deploy: Woodpecker builds the site; the publish step copies it into a mounted directory on the agent host that serves the site, with no SSH (see `docs/dev/site.md`).

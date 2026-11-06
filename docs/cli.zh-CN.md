@@ -31,47 +31,29 @@ S3 路径写作 `s3://bucket/key-or-prefix/`，其他参数都视为本地路径
 
 ## 命令
 
-| 命令 | 作用 |
-| --- | --- |
-| `accounts` | 列出账户的名称、ID、服务商、端点和区域。 |
-| `vault` | 显示机密后端和加密保险库的状态。 |
-| `buckets` | 列出存储桶及其区域。 |
-| `ls` | 列出对象和文件夹。 |
-| `cp` | 从本地复制到 S3（上传）、从 S3 复制到本地（下载），或在同一账户的 S3 内复制。 |
-| `mv` | 在 S3 内移动对象。 |
-| `rm` | 删除对象、文件夹，或某个对象键的所有版本。 |
-| `mb` | 创建存储桶。 |
-| `rb` | 删除空的存储桶。 |
-| `presign` | 生成预签名 URL。 |
-| `url` | 不发出请求，直接输出对象的 CDN 或公开地址。 |
-| `versions` | 列出版本和删除标记。 |
-| `restore` | 把旧版本恢复为当前版本，或恢复已删除的对象键。 |
-| `sync` | 在本地文件夹和 S3 前缀之间做单向同步。 |
-| `version` | 输出版本号。 |
-
 用法：
 
 ```text
-pail accounts
-pail vault status [--vault-password-stdin]
-pail buckets
-pail ls [s3://bucket/prefix/] [-r]
+pail accounts                                       # 列出账户
+pail vault status [--vault-password-stdin]          # 机密后端和保险库状态
+pail buckets                                        # 列出存储桶及其区域
+pail ls [s3://bucket/prefix/] [-r]                  # 列出对象和文件夹
 pail cp SRC DST [-r] [--conflict POLICY] [--decode gzip|zip|auto]
-pail mv s3://SRC s3://DST [-r] [--conflict POLICY]
-pail rm s3://bucket/key [-r] [--versions]
+                                                    # 上传、下载，或在 S3 内复制
+pail mv s3://SRC s3://DST [-r] [--conflict POLICY]  # 在 S3 内移动
+pail rm s3://bucket/key [-r] [--versions]           # 删除对象、文件夹或各版本
 pail mb s3://bucket [--region REGION] [--object-lock]
-pail rb s3://bucket
+pail rb s3://bucket                                 # 删除空的存储桶
 pail presign s3://bucket/key [--expires 1h] [--method GET|PUT] [--version-id V]
-pail url s3://bucket/key [--kind cdn|public]
-pail versions s3://bucket/prefix/
-pail restore s3://bucket/key --version-id V
-pail restore s3://bucket/prefix/ --deleted [-r]
-pail sync LOCAL s3://bucket/prefix/ [SYNC FLAGS]
-pail sync s3://bucket/prefix/ LOCAL [SYNC FLAGS]
+pail url s3://bucket/key [--kind cdn|public]        # CDN 或公开地址，不发请求
+pail versions s3://bucket/prefix/                   # 版本和删除标记
+pail restore s3://bucket/key --version-id V         # 把旧版本恢复为当前版本
+pail restore s3://bucket/prefix/ --deleted [-r]     # 恢复已删除的对象键
+pail sync LOCAL s3://bucket/prefix/ [SYNC FLAGS]    # 单向同步：上传
+pail sync s3://bucket/prefix/ LOCAL [SYNC FLAGS]    # 单向同步：下载
 pail sync --job NAME [--dry-run]
 pail version
 ```
-
 ### 命令详解
 
 - `-r`（也可写 `--recursive`）在 `ls`、`cp`、`mv`、`rm` 和 `restore` 中含义相同。

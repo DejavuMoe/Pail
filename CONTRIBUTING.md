@@ -60,24 +60,8 @@ The site in `site/` and `tools/site/` is built from the repository's own Markdow
 
 ## Documentation
 
-Write documentation as described in [docs/dev/writing.md](docs/dev/writing.md); `go test ./tools/site/` checks the rules that can be checked automatically.
-
-`README.md`, `docs/cli.md` and `CHANGELOG.md` have Chinese counterparts (`README.zh-CN.md`, `docs/cli.zh-CN.md`, `CHANGELOG.zh-CN.md`). Change both in the same commit and keep the headings in the same order and at the same levels.
+Write documentation as described in [docs/dev/writing.md](docs/dev/writing.md); `go test ./tools/site/` checks the rules that can be checked automatically. `README.md`, `docs/cli.md` and `CHANGELOG.md` each have a Chinese counterpart that changes in the same commit.
 
 ## Project layout
 
-- `cmd/pail-desktop`: desktop application (mygo).
-- `cmd/pail`: command line.
-- `internal/app`: application logic shared by both.
-- `internal/storage`: S3 protocol layer.
-- `internal/cloud`: AWS-specific services (CloudFront).
-- `internal/rules`: upload rules and compression.
-- `internal/safepath`: safe download paths.
-- `internal/trash`: local recycle bin.
-- `internal/s3test`: in-memory S3 server for tests and `--demo`.
-- `tools/`: icon generation, release packaging and verification, website generator.
-- `integration/`: tests against MinIO and external endpoints.
-- `site/`: templates, strings and static files of https://pail.download.
-- `designs/`: website prototypes.
-
-Architecture, the application API, design rules, CI and verification status are in [docs/dev/](docs/dev/).
+The packages and what each one does are listed in [docs/dev/architecture.md](docs/dev/architecture.md). Outside `cmd/` and `internal/`: `tools/` (icon generation, release packaging and verification, website generator), `integration/` (tests against MinIO and external endpoints), `site/` (templates, strings and static files of https://pail.download) and `designs/` (website prototypes). The application API, design rules, CI and verification status are in [docs/dev/](docs/dev/).
