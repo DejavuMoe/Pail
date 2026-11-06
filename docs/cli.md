@@ -31,47 +31,29 @@ Global flags can be placed before or after the command name.
 
 ## Commands
 
-| Command | What it does |
-| --- | --- |
-| `accounts` | List accounts with name, ID, provider, endpoint and region. |
-| `vault` | Show the secret backend and the encrypted vault state. |
-| `buckets` | List buckets with their region. |
-| `ls` | List objects and folders. |
-| `cp` | Copy from local to S3 (upload), from S3 to local (download), or within one account on S3. |
-| `mv` | Move objects within S3. |
-| `rm` | Delete objects, folders or all versions of a key. |
-| `mb` | Create a bucket. |
-| `rb` | Delete an empty bucket. |
-| `presign` | Create a presigned URL. |
-| `url` | Print an object's CDN or public address without sending a request. |
-| `versions` | List versions and delete markers. |
-| `restore` | Make an old version current, or undelete keys. |
-| `sync` | Synchronise a local folder and an S3 prefix in one direction. |
-| `version` | Print the version. |
-
 Usage:
 
 ```text
-pail accounts
-pail vault status [--vault-password-stdin]
-pail buckets
-pail ls [s3://bucket/prefix/] [-r]
+pail accounts                                       # list accounts
+pail vault status [--vault-password-stdin]          # secret backend and vault state
+pail buckets                                        # list buckets with their region
+pail ls [s3://bucket/prefix/] [-r]                  # list objects and folders
 pail cp SRC DST [-r] [--conflict POLICY] [--decode gzip|zip|auto]
-pail mv s3://SRC s3://DST [-r] [--conflict POLICY]
-pail rm s3://bucket/key [-r] [--versions]
+                                                    # upload, download, or copy within S3
+pail mv s3://SRC s3://DST [-r] [--conflict POLICY]  # move within S3
+pail rm s3://bucket/key [-r] [--versions]           # delete objects, folders or versions
 pail mb s3://bucket [--region REGION] [--object-lock]
-pail rb s3://bucket
+pail rb s3://bucket                                 # delete an empty bucket
 pail presign s3://bucket/key [--expires 1h] [--method GET|PUT] [--version-id V]
-pail url s3://bucket/key [--kind cdn|public]
-pail versions s3://bucket/prefix/
-pail restore s3://bucket/key --version-id V
-pail restore s3://bucket/prefix/ --deleted [-r]
-pail sync LOCAL s3://bucket/prefix/ [SYNC FLAGS]
-pail sync s3://bucket/prefix/ LOCAL [SYNC FLAGS]
+pail url s3://bucket/key [--kind cdn|public]        # CDN or public address, no request
+pail versions s3://bucket/prefix/                   # versions and delete markers
+pail restore s3://bucket/key --version-id V         # make an old version current
+pail restore s3://bucket/prefix/ --deleted [-r]     # undelete keys
+pail sync LOCAL s3://bucket/prefix/ [SYNC FLAGS]    # one-way sync, upload
+pail sync s3://bucket/prefix/ LOCAL [SYNC FLAGS]    # one-way sync, download
 pail sync --job NAME [--dry-run]
 pail version
 ```
-
 ### Command details
 
 - `-r` (also `--recursive`) works the same way in `ls`, `cp`, `mv`, `rm` and `restore`.

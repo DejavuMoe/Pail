@@ -4,16 +4,14 @@
 
 ## 0. 通用规则
 
-- **不在锁内做 I/O。** `Service.mu` 只保护内存 map；钥匙串、网络、磁盘一律在锁外执行。账户凭据首次读取后缓存，保存或删除账户时失效。
-- **网络调用都带 `ctx`。** 返回 task ID 的方法立即返回，工作在队列里进行。
-- **确认归 UI。** Service 不保存计划、令牌、过期时间，也不做指纹绑定。`Estimate` 只供确认框显示数量和字节。
-- **批量逐项结果。** 统一用 `ItemResult`。结果未知（`unknown`）的写操作不自动重放；`Retry` 只重试 `failed` 和 `unprocessed` 的项。
+锁与 I/O、`ctx`、确认归界面、逐项结果、已结束任务的保留上限等规则见 [architecture.md](architecture.md) 的 §2–§4，这里只写接口特有的部分。
+
+- **账户凭据**首次读取后缓存，保存或删除账户时失效。
 - **错误统一包装。** 用 `*OpError{Op, Code, Message, RequestID, Kind}` 包装，`Kind` 取 `NotFound | AccessDenied | Unsupported | Conflict | Network | Canceled | Invalid | Other | Locked`，UI 据此显示。403 不能当作"不支持"。`Locked` 表示加密保险库已锁定（`errors.Is(err, ErrVaultLocked)`），UI 应弹出主密码输入框后重试；CLI 退出码 2。
-- **内存有界。** 已结束的任务最多保留 1000 条（FIFO 淘汰），`ClearFinished` 可手动清理。
 
 ## 1. 配置与存储（`settings.go`、`secrets.go`）
 
-配置目录：`os.UserConfigDir()/Pail`，可用 `Options.ConfigDir` 覆盖。文件一律原子写入（临时文件 → fsync → rename），权限 0600。
+配置目录与写入方式见 [architecture.md](architecture.md) 的 §5，可用 `Options.ConfigDir` 覆盖。各文件的内容类型：
 
 | 文件 | 内容 |
 | --- | --- |
@@ -26,13 +24,7 @@
 | `vault.json` | 可选的加密保险库，见 §1.1（仅 `SecretBackend == "vault"` 时存在） |
 | `logs/pail.log` | 脱敏日志（`Settings.LogToFile` 开启时） |
 
-文件损坏时加载报错，不静默重置；多实例之间以最后一次写入为准。
-
-钥匙串服务名为 `Pail`，条目键如下：
-
-- `account/<id>/secret`
-- `account/<id>/session`
-- `ref/<name>`：SSE-C key 或 ZIP 密码
+多实例之间以最后一次写入为准。钥匙串的服务名和条目键见 architecture.md §5。
 
 ```go
 type Options struct {
