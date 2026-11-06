@@ -617,7 +617,7 @@ func TestTransfersCollapseWithoutTasksAndExpandOnANewTask(t *testing.T) {
 	if h.a.transfersOpen {
 		t.Fatal("the panel is open with no tasks")
 	}
-	h.mustHave("Transfers", "0 active · 0 completed · 0 failed")
+	h.mustHave("Transfers", "0 active", "0 completed", "0 failed")
 	h.snap("transfers-collapsed-light")
 
 	upload := func(name string) {

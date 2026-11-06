@@ -78,8 +78,29 @@ var (
 
 // countRoll rolls the digits of a count that changes (status bar, transfer
 // counts): the characters that change move, those that stay stay; with reduced
-// motion the text fades across instead.
-var countRoll = ui.ContentTransition{Numeric: true}
+// motion the text fades across instead. It takes durStandard on the standard
+// curve, a little quicker and quieter than mygo's 350 ms spring, so that a
+// count that changes twice in a row does not look restless.
+var countRoll = ui.ContentTransition{Numeric: true, Animation: &countAnim}
+
+// countAnim is the roll of a count.
+var countAnim = ui.Animation{Duration: durStandard, Ease: easeStandard}
+
+// countText is a count in the secondary size and colour col, with digits of
+// equal width so that a changing number does not move what stands next to it.
+// It rolls when it changes if rolling is set. A value that is still on its way
+// (the items of a folder that is loading page by page) passes false: it is
+// replaced at once, because a roll restarted by every page never finishes.
+// An element that did not roll in the frame before shows its new text at once,
+// so the first roll after such a stretch is the next change, not the one
+// that ended it.
+func countText(c *ui.Context, key, s string, col ui.Color, rolling bool) ui.Element {
+	e := ui.Text(c.Key(key), s).FontSize(sizeSecondary).TextColor(col).SingleLine().FontFeatures("tnum")
+	if rolling {
+		e.ContentTransition(countRoll)
+	}
+	return e
+}
 
 // Motions shared by pointer: ElementTransition takes pointers, and a literal
 // in a view would allocate in every frame.

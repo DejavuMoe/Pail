@@ -21,6 +21,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Fixed
 
+- The counts at the bottom of the window no longer jitter. While a folder is loading, its item count changes at once instead of rolling with every page, digits no longer spill above the status bar, and the collapsed transfers strip rolls each of its three counts separately.
 - Downloads from servers that ignore range requests, such as some NAS devices, no longer fail with "EOF" once the file is larger than one part. Pail now downloads such a file over a single connection.
 - Canceling a download from such a server shows "canceled" again, not the error "the service ignored the Range header".
 
@@ -36,6 +37,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Fixed
 
+- The counts at the bottom of the window no longer jitter. While a folder is loading, its item count changes at once instead of rolling with every page, digits no longer spill above the status bar, and the collapsed transfers strip rolls each of its three counts separately.
 - Folder sizes: Calculate size and Calculate folder sizes were greyed out once a size had been calculated, so you could not measure a folder again after its content changed. They now stay available and measure the folder again.
 
 ## [0.4.0] - 2026-11-02
@@ -55,6 +57,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Fixed
 
+- The counts at the bottom of the window no longer jitter. While a folder is loading, its item count changes at once instead of rolling with every page, digits no longer spill above the status bar, and the collapsed transfers strip rolls each of its three counts separately.
 - macOS: the app icon is no longer larger than other apps' icons in the Dock and Finder.
 
 ## [0.3.3] - 2026-10-31
@@ -65,6 +68,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Fixed
 
+- The counts at the bottom of the window no longer jitter. While a folder is loading, its item count changes at once instead of rolling with every page, digits no longer spill above the status bar, and the collapsed transfers strip rolls each of its three counts separately.
 - Windows: while you resize the window, its content no longer shows enlarged and cut off at the right and bottom, and newly exposed edges show the background colour instead of black.
 - Windows: with "Show accent colour on title bars and window borders" on, no accent strip appears at the top of the window.
 - Windows: short Chinese labels are no longer cut off with an ellipsis.
@@ -81,6 +85,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Fixed
 
+- The counts at the bottom of the window no longer jitter. While a folder is loading, its item count changes at once instead of rolling with every page, digits no longer spill above the status bar, and the collapsed transfers strip rolls each of its three counts separately.
 - Large upload and download batches now report their full result even after older tasks leave the history, so an early failure is no longer hidden.
 - Skipped files no longer count as uploaded or downloaded in completion notifications.
 - Command-line summaries no longer undercount bulk operations with more than 10,000 results.
@@ -101,6 +106,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Fixed
 
+- The counts at the bottom of the window no longer jitter. While a folder is loading, its item count changes at once instead of rolling with every page, digits no longer spill above the status bar, and the collapsed transfers strip rolls each of its three counts separately.
 - Completed tasks no longer retain their data after being evicted from the task history.
 
 ## [0.3.0] - 2026-10-21
@@ -129,6 +135,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Fixed
 
+- The counts at the bottom of the window no longer jitter. While a folder is loading, its item count changes at once instead of rolling with every page, digits no longer spill above the status bar, and the collapsed transfers strip rolls each of its three counts separately.
 - Inspector: the standard header labels (Content-Type, Cache-Control and so on) showed only an ellipsis next to the "?" icon. They now show the full name unless the panel is too narrow.
 - Resizing the window no longer makes the search box, toolbar labels, path bar or object table columns lag behind or flicker.
 - The sidebar and the inspector keep the width you set when the window is narrower than 1100 px.

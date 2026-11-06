@@ -11174,16 +11174,36 @@ func (msgs Messages) TransfersQueued() string {
 	return Catalog.Format(msgs.locale, "transfersQueued", nil)
 }
 
-// TransfersSummary says "{active} active · {completed} completed · {failed} failed"
+// TransfersSummaryActive says "{n} active"
 // in the language the app shows.
-func TransfersSummary(active string, completed string, failed string) string {
-	return In(i18n.Locale()).TransfersSummary(active, completed, failed)
+func TransfersSummaryActive(n string) string { return In(i18n.Locale()).TransfersSummaryActive(n) }
+
+// TransfersSummaryActive says "{n} active"
+// in the language of msgs.
+func (msgs Messages) TransfersSummaryActive(n string) string {
+	return Catalog.Format(msgs.locale, "transfersSummaryActive", map[string]any{"n": n})
 }
 
-// TransfersSummary says "{active} active · {completed} completed · {failed} failed"
+// TransfersSummaryCompleted says "{n} completed"
+// in the language the app shows.
+func TransfersSummaryCompleted(n string) string {
+	return In(i18n.Locale()).TransfersSummaryCompleted(n)
+}
+
+// TransfersSummaryCompleted says "{n} completed"
 // in the language of msgs.
-func (msgs Messages) TransfersSummary(active string, completed string, failed string) string {
-	return Catalog.Format(msgs.locale, "transfersSummary", map[string]any{"active": active, "completed": completed, "failed": failed})
+func (msgs Messages) TransfersSummaryCompleted(n string) string {
+	return Catalog.Format(msgs.locale, "transfersSummaryCompleted", map[string]any{"n": n})
+}
+
+// TransfersSummaryFailed says "{n} failed"
+// in the language the app shows.
+func TransfersSummaryFailed(n string) string { return In(i18n.Locale()).TransfersSummaryFailed(n) }
+
+// TransfersSummaryFailed says "{n} failed"
+// in the language of msgs.
+func (msgs Messages) TransfersSummaryFailed(n string) string {
+	return Catalog.Format(msgs.locale, "transfersSummaryFailed", map[string]any{"n": n})
 }
 
 // TransfersTabActive says "Active {n}"

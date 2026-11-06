@@ -109,7 +109,16 @@ func (a *app) transfersBar(c *ui.Context) {
 	bar.Children(func() {
 		ui.Icon(c, icons.Get("chevron-up")).FontSize(14).TextColor(k.TextMuted)
 		ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeSecondary).TextColor(k.Text)
-		ui.Text(c, locales.TransfersSummary(fmt.Sprint(n[0]), fmt.Sprint(n[1]), fmt.Sprint(n[2]))).FontSize(sizeSecondary).TextColor(k.TextMuted).ContentTransition(countRoll)
+		// Three counts, each rolling alone, so that one finishing and another
+		// starting in the same moment do not turn the whole line over.
+		for i, s := range []string{
+			locales.TransfersSummaryActive(fmt.Sprint(n[0])), locales.TransfersSummaryCompleted(fmt.Sprint(n[1])), locales.TransfersSummaryFailed(fmt.Sprint(n[2])),
+		} {
+			if i > 0 {
+				ui.Text(c.Key(i), "·").FontSize(sizeSecondary).TextColor(k.TextSubtle)
+			}
+			countText(c, "summary-"+fmt.Sprint(i), s, k.TextMuted, true)
+		}
 	})
 	if bar.Clicked() {
 		a.transfersOpen = true
@@ -150,7 +159,7 @@ func (a *app) transfersPanel(c *ui.Context) {
 						case tab.Hovered():
 							col = k.Text
 						}
-						ui.Text(c, label).FontSize(sizeSecondary).FontWeight(w).TextColor(tab.AnimateColor("ink", col, colorAnim)).SingleLine().ContentTransition(countRoll)
+						ui.Text(c, label).FontSize(sizeSecondary).FontWeight(w).TextColor(tab.AnimateColor("ink", col, colorAnim)).SingleLine().FontFeatures("tnum").ContentTransition(countRoll)
 						if on {
 							tabIndicator(c, "transfer-tabs")
 						}
