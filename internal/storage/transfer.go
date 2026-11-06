@@ -219,8 +219,15 @@ func (c *Client) Download(ctx context.Context, in *s3.GetObjectInput, w io.Write
 		}
 	})
 	n, err := d.Download(ctx, w, in)
-	if errors.Is(err, errRangeIgnored) && in.Range == nil && ctx.Err() == nil {
-		return c.downloadWhole(ctx, in, w)
+	if errors.Is(err, errRangeIgnored) {
+		// A canceled download is reported as canceled, whichever response was
+		// in flight when it happened.
+		if ctx.Err() != nil {
+			return n, context.Cause(ctx)
+		}
+		if in.Range == nil {
+			return c.downloadWhole(ctx, in, w)
+		}
 	}
 	return n, err
 }
