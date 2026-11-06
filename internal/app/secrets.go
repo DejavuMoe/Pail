@@ -14,9 +14,6 @@ import (
 // keyringService is the service name under which every entry is stored.
 const keyringService = "Pail"
 
-// legacyKeyringService is the service name used before the rename to Pail; entries are migrated away from it (keyringmigrate.go).
-const legacyKeyringService = "openS3"
-
 // ErrSecretNotFound is returned by Keyring.Get when the entry does not exist.
 var ErrSecretNotFound = errors.New("secret not found")
 

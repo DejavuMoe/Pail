@@ -42,26 +42,10 @@ const (
 // internalMetaPrefix is the user-metadata prefix of Pail's own keys.
 const internalMetaPrefix = "pail-"
 
-// legacyMetaPrefix is the user-metadata prefix that builds before the rename to Pail wrote ("opens3-"); readers still accept it.
-const legacyMetaPrefix = "opens3-"
-
 // isInternalMeta reports whether a (lower-case) user-metadata key belongs to
-// Pail's own bookkeeping, under the current or the legacy prefix.
+// Pail's own bookkeeping.
 func isInternalMeta(k string) bool {
-	return strings.HasPrefix(k, internalMetaPrefix) || strings.HasPrefix(k, legacyMetaPrefix)
-}
-
-// metaGet reads an internal metadata value by its current name ("pail-...")
-// and falls back to the legacy name ("opens3-...") that older builds wrote,
-// so objects synced or compressed by an older build keep working.
-func metaGet(meta map[string]string, key string) string {
-	if v := meta[key]; v != "" {
-		return v
-	}
-	if rest, ok := strings.CutPrefix(key, internalMetaPrefix); ok {
-		return meta[legacyMetaPrefix+rest]
-	}
-	return ""
+	return strings.HasPrefix(k, internalMetaPrefix)
 }
 
 // transferPolicy resolves an empty request policy to the configured default.

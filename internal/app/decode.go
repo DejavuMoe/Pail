@@ -52,7 +52,7 @@ func headDecodeHints(ctx context.Context, c *storage.Client, bucket, key, versio
 	if err != nil {
 		return decodeHints{}, classify("Download", err)
 	}
-	return decodeHints{ContentEncoding: aws.ToString(h.ContentEncoding), Compression: metaGet(h.Metadata, compressionMetaKey)}, nil
+	return decodeHints{ContentEncoding: aws.ToString(h.ContentEncoding), Compression: h.Metadata[compressionMetaKey]}, nil
 }
 
 // detectDecode resolves DecodeAuto. Auto only undoes compression Pail itself

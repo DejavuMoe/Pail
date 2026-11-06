@@ -10,6 +10,10 @@ All notable changes to this project are documented in this file. The format foll
 
 - Recent operations. Click the time in the status bar to open a list of the latest operations: loading the bucket list, opening a folder, uploads, downloads and deletes. Each line shows whether it succeeded, failed or was canceled, how long it took and when it ended. The status bar itself still shows the last successful one. The list is kept in memory and is empty again after you quit Pail. **Settings › Diagnostics** sets how many operations it keeps (100 by default, up to 1000) and whether it is kept when you switch account (by default it is cleared).
 
+### Removed
+
+- Automatic migration of data from Pail's name before its first release, `openS3`: the `openS3` configuration folder, the `openS3` keychain entries, `opens3-vault` vault files and `opens3-*` object metadata are no longer read. Releases of Pail never used that name.
+
 ### Fixed
 
 - Downloads from servers that ignore range requests, such as some NAS devices, no longer fail with "EOF" once the file is larger than one part. Pail now downloads such a file over a single connection.

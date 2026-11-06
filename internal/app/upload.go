@@ -286,7 +286,7 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 		if err := compress(); err != nil {
 			return false, err
 		}
-		return h.size == bodySize && metaGet(h.meta, mtimeMetaKey) == in.Metadata[mtimeMetaKey], nil
+		return h.size == bodySize && h.meta[mtimeMetaKey] == in.Metadata[mtimeMetaKey], nil
 	}
 	resolve := func() (conflictDecision, error) {
 		if j.Sync != nil {
@@ -500,8 +500,6 @@ func resolveRenameIdentity(ctx context.Context, c *storage.Client, bucket, key s
 const (
 	spoolPrefix = "pail-upload-"
 	spoolSuffix = ".tmp"
-	// legacySpoolPrefix is the spool name of builds before the rename to Pail; the sweeper still removes those orphans.
-	legacySpoolPrefix = "opens3-upload-"
 )
 
 // sweepSpoolFiles removes spool files of earlier runs that were killed before
@@ -514,7 +512,7 @@ func sweepSpoolFiles(dir string, maxAge time.Duration, now time.Time) {
 	}
 	for _, e := range ents {
 		name := e.Name()
-		if !e.Type().IsRegular() || !(strings.HasPrefix(name, spoolPrefix) || strings.HasPrefix(name, legacySpoolPrefix)) || !strings.HasSuffix(name, spoolSuffix) {
+		if !e.Type().IsRegular() || !strings.HasPrefix(name, spoolPrefix) || !strings.HasSuffix(name, spoolSuffix) {
 			continue
 		}
 		if fi, err := e.Info(); err == nil && now.Sub(fi.ModTime()) > maxAge {

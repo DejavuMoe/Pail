@@ -112,7 +112,7 @@ func syDecide(c syCmp, l *syLocalInfo, r *syRemoteInfo) (copy bool, reason strin
 
 func syDecideUp(c syCmp, l *syLocalInfo, r *syRemoteInfo) (bool, string) {
 	rsize := r.Size
-	if v, err := strconv.ParseInt(metaGet(r.Meta, syMetaSize), 10, 64); err == nil && v >= 0 {
+	if v, err := strconv.ParseInt(r.Meta[syMetaSize], 10, 64); err == nil && v >= 0 {
 		rsize = v
 	} else if r.Compressed {
 		return true, "no size metadata"
@@ -158,7 +158,7 @@ func syDecideDown(c syCmp, l *syLocalInfo, r *syRemoteInfo) (bool, string) {
 }
 
 func syChecksumDiffers(meta map[string]string, local string) (bool, string) {
-	want := strings.ToLower(strings.TrimSpace(metaGet(meta, syMetaSHA)))
+	want := strings.ToLower(strings.TrimSpace(meta[syMetaSHA]))
 	switch {
 	case want == "":
 		return true, "no checksum metadata"
@@ -170,7 +170,7 @@ func syChecksumDiffers(meta map[string]string, local string) (bool, string) {
 
 // syMTime parses pail-mtime.
 func syMTime(meta map[string]string) (time.Time, bool) {
-	v := metaGet(meta, mtimeMetaKey)
+	v := meta[mtimeMetaKey]
 	if v == "" {
 		return time.Time{}, false
 	}
