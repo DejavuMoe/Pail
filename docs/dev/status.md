@@ -82,6 +82,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | create-only 条件写入与降级 | ✅ | ✅ | ✅ 412 不会被当成"不支持"，501 会降级 | ✅ 并发写竞态（MinIO、VersityGW） | 降级到 HEAD 时存在竞态，只写权限账户在 rename 策略下无法识别重放产生的 412 |
 | 分片上传与下载、四种 checksum 模式 | ✅ | ✅ 设置 | ✅ | ✅ 含 VersityGW 的服务端 checksum | 自定义 endpoint 默认 `WhenRequired` |
 | 下载先写临时文件、校验后原子发布 | ✅ | ✅ | ✅ | ✅ | 不依赖硬链接；大小不符的下载被拒绝 |
+| 服务端忽略 Range 时改用单连接下载 | ✅ | n/a | ✅ `download_norange_test.go`：httptest 对每个 GET 返回整个对象，内容与进度正确，只发一次带 Range 的探测和一次不带 Range 的 GET；小对象不重试；回退前已取消则不回退 | ❌ 没有忽略 Range 的真实服务端可验证（issue #6 的用户 NAS 未复测） | 修复前同一测试稳定复现 `EOF` |
 | 未完成的分片上传：列出与中止 | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | MinIO 对"文件夹"前缀返回空，应用改为列整桶后本地过滤 |
 | 任务栏进度（v0.3.0） | n/a | ⚠️ headless 测试（`flows_test.go`）：合计规则（字节、无字节时按项目数、不确定、0.5% 步长、只算排队与进行中的任务）；本地测试服务上传进行中时设置进度、值不变时不重复设置、取消后清除；不绘制界面时，后台任务事件仍更新进度并在完成后清除 | n/a | ⚠️ Windows v0.3.0 发布包连接隔离的本地限速 S3 测试服务：128 MiB 上传全程最小化，任务栏出现进度并在完成后清除；512 MiB 上传最小化时显示进度，恢复窗口取消后再次最小化，进度清除，服务端确认请求取消 | 未验证 macOS Dock 或 Linux dock；本地测试服务不代表真实云端验收。尚未开始的任务不计入总字节，开始时进度可能回退 |
 
