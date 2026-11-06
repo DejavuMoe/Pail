@@ -833,3 +833,50 @@ func TestSelectionBarEasesInAndOut(t *testing.T) {
 		t.Fatal("the bar is still there once folded")
 	}
 }
+
+// A count that is still on its way is replaced at once; one that has settled
+// rolls on its next change. The items of a folder that loads page by page grow
+// with every page, and a roll restarted by each of them never ends.
+func TestItemCountDoesNotRollWhileLoading(t *testing.T) {
+	h := newMotionHarness(t, "light")
+	h.a.loading = true
+	h.tt.Frame()
+	h.tt.Advance(time.Second)
+	h.tt.Frame()
+	if n := len(h.a.rows); n < 4 {
+		t.Fatalf("the bucket shows %d rows, the test needs a few", n)
+	}
+	h.a.rows = h.a.rows[:len(h.a.rows)-2]
+	h.tt.Frame()
+	if h.tt.FramePending() {
+		t.Error("the item count rolls while the folder is loading")
+	}
+	h.a.loading = false
+	h.tt.Frame()
+	h.tt.Advance(time.Second)
+	h.tt.Frame()
+	h.a.rows = h.a.rows[:len(h.a.rows)-1]
+	h.tt.Frame()
+	if !h.tt.FramePending() {
+		t.Error("the item count does not roll once the folder has loaded")
+	}
+	h.tt.Advance(time.Second)
+	h.tt.Frame()
+	if h.tt.FramePending() {
+		t.Error("the roll never comes to rest")
+	}
+}
+
+// The strip of the collapsed transfers panel shows three counts, each its own
+// element, so that each rolls on its own.
+func TestCollapsedTransfersCountsAreSeparate(t *testing.T) {
+	h := newMotionHarness(t, "light")
+	seedTasks(h)
+	h.a.transfersOpen = false
+	h.tt.Frame()
+	h.tt.Advance(time.Second)
+	h.tt.Frame()
+	for _, s := range []string{"3 active", "1 completed", "2 failed"} {
+		h.rectOf(s)
+	}
+}
