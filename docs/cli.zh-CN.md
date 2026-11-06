@@ -74,7 +74,7 @@ pail version
 
 ### 命令详解
 
-- `-r`（也可写 `-recursive`）在 `ls`、`cp`、`mv`、`rm` 和 `restore` 中含义相同。
+- `-r`（也可写 `--recursive`）在 `ls`、`cp`、`mv`、`rm` 和 `restore` 中含义相同。
 - `vault status` 显示机密后端（`keyring` 或 `vault`）、`vault.json` 是否存在，以及桌面应用的自动锁定设置。加上 `--vault-password-stdin` 时还会校验主密码。使用 `--json` 时输出一个对象（结构见下）。
 - `ls` 把文件夹显示为 `PRE name/`，大小以易读格式显示（`--json` 时为原始字节数）。不带路径时列出存储桶。`-r` 列出前缀下的所有对象键。末尾没有 `/` 且不是文件夹的对象键，只列出该单个对象。
 - `cp` 和 `mv` 的 `--conflict` 取值为 `skip`、`overwrite`、`rename`、`newer` 或 `different_size`。省略时都使用桌面应用设置中保存的默认值（初始为 `rename`）。`mv` 先复制，校验后再删除源对象。

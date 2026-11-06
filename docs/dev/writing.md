@@ -1,6 +1,6 @@
 # 写作规范
 
-适用于 `README*.md`、`docs/cli*.md`、`CHANGELOG*.md`、`CONTRIBUTING.md`、`docs/dev/` 和网站文案 `site/locales/`。应用界面文案另见 [design.md](design.md) 的术语表。能自动检查的规则由 `go test ./tools/site/ -run TestCopyRules` 执行。
+适用于 `README*.md`、`docs/cli*.md`、`CHANGELOG*.md`、`CONTRIBUTING.md`、`docs/dev/` 和网站文案 `site/locales/`。应用界面文案另见 [design.md](design.md) 的术语表。能自动检查的规则由 `go test ./tools/site/ -run TestCopyRules` 执行，它只检查 README、`docs/cli*.md`、`CHANGELOG*.md` 和 `site/locales/`，不检查 `CONTRIBUTING.md` 和 `docs/dev/`。
 
 ## 读者
 
@@ -10,7 +10,7 @@
 | `CHANGELOG*.md` | 升级的人 | 用户能感知的变化 |
 | `CONTRIBUTING.md`、`docs/dev/` | 改代码的人 | 构建、测试、架构、发布、验证记录 |
 
-同一件事只写在一处。用户文档不链接 `docs/dev/`；README 的"从源码构建"只指向 `CONTRIBUTING.md`。
+同一件事只写在一处。用户文档不链接 `docs/dev/`；README 的"从源码构建"只给 Go 版本和构建命令，其余指向 `CONTRIBUTING.md`。
 
 ## 句子
 
