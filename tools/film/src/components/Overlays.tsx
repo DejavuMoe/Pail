@@ -6,17 +6,22 @@ import { T, manifest } from '../data'
 
 const arrow = 'M1 1 L1 17.5 L5.4 13.7 L8.3 20.4 L11 19.2 L8.2 12.6 L14 12.6 Z'
 
+// Catmull-Rom through four neighbouring samples: a smooth path, not a polyline.
+const spline = (p0: number, p1: number, p2: number, p3: number, t: number) =>
+  0.5 * (2 * p1 + (-p0 + p2) * t + (2 * p0 - 5 * p1 + 4 * p2 - p3) * t * t + (-p0 + 3 * p1 - 3 * p2 + p3) * t * t * t)
+
+// c is a frame number of the capture (not of the 30 fps timeline).
 export const Cursor = ({ c, z }: { c: number; z: number }) => {
   const n = manifest.cursor.length
-  const i0 = Math.min(n - 1, Math.max(0, Math.floor(c)))
-  const i1 = Math.min(n - 1, i0 + 1)
-  const f = c - i0
-  const a = manifest.cursor[i0]
-  const b = manifest.cursor[i1]
+  const at = (i: number) => manifest.cursor[Math.min(n - 1, Math.max(0, i))]
+  const i1 = Math.min(n - 1, Math.max(0, Math.floor(c)))
+  const f = c - i1
+  const a = at(i1)
+  const b = at(i1 + 1)
   const show = Math.min(a[3], b[3])
   if (!show) return null
-  const x = a[0] + (b[0] - a[0]) * f
-  const y = a[1] + (b[1] - a[1]) * f
+  const x = spline(at(i1 - 1)[0], a[0], b[0], at(i1 + 2)[0], f)
+  const y = spline(at(i1 - 1)[1], a[1], b[1], at(i1 + 2)[1], f)
   const down = a[2] > 0.5
   const k = (1.2 / z) * (down ? 0.88 : 1)
   return (
@@ -32,9 +37,9 @@ export const Cursor = ({ c, z }: { c: number; z: number }) => {
 export const Clicks = ({ c, z }: { c: number; z: number }) => (
   <>
     {manifest.events
-      .filter((e) => e.kind === 'click' && c >= e.frame && c < e.frame + 20)
+      .filter((e) => e.kind === 'click' && c >= e.frame && c < e.frame + 20 * T.cu)
       .map((e, i) => {
-        const t = (c - e.frame) / 20
+        const t = (c - e.frame) / (20 * T.cu)
         const r = (10 + 30 * easeOut(t)) / z
         return (
           <div

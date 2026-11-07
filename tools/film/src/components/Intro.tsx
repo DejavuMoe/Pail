@@ -1,7 +1,7 @@
-import { useCurrentFrame, spring, useVideoConfig } from 'remotion'
+import { useCurrentFrame, spring } from 'remotion'
 import { C, FONT, MONO, clamp, easeInOut, easeOut } from '../theme'
 import { Icon } from './Icon'
-import { APP_START, INTRO } from '../timeline.js'
+import { APP_START, INTRO, OUT_FPS, SUB } from '../timeline.js'
 
 // Object keys of the demo bucket fall into the icon and fill its three strata.
 const KEYS = [
@@ -16,8 +16,10 @@ const ICON_Y = 372 // icon center
 const ICON = 220
 
 export const Intro = () => {
-  const f = useCurrentFrame()
-  const { fps } = useVideoConfig()
+  const raw = useCurrentFrame()
+  const f = raw / SUB // frames of the 30 fps timeline
+  // springs are stepped by whole frames, so they get the real frame and rate
+  const sp = (at: number, config: { damping: number; stiffness: number }) => spring({ frame: raw - at * SUB, fps: OUT_FPS, config })
 
   // keys
   const keys = KEYS.map((k, i) => {
@@ -43,9 +45,9 @@ export const Intro = () => {
     )
   })
 
-  const iconIn = spring({ frame: f - INTRO.icon, fps, config: { damping: 14, stiffness: 120 } })
+  const iconIn = sp(INTRO.icon, { damping: 14, stiffness: 120 })
   const bump = INTRO.strata.reduce((s, at) => s + 0.045 * Math.exp(-Math.max(0, f - at) / 5) * (f >= at ? 1 : 0), 0)
-  const fill = INTRO.strata.map((at) => spring({ frame: f - at, fps, config: { damping: 15, stiffness: 160 } })) as [number, number, number]
+  const fill = INTRO.strata.map((at) => sp(at, { damping: 15, stiffness: 160 })) as [number, number, number]
 
   const rise = (at: number, d = 16) => ({ opacity: easeOut((f - at) / d), transform: `translateY(${(1 - easeOut((f - at) / d)) * 26}px)` })
 

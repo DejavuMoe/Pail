@@ -1,13 +1,14 @@
-import { useCurrentFrame, spring, useVideoConfig } from 'remotion'
+import { useCurrentFrame, spring } from 'remotion'
 import { C, FONT, MONO, easeOut } from '../theme'
 import { Icon } from './Icon'
+import { OUT_FPS, SUB } from '../timeline.js'
 
 // The window has shrunk away; the icon, where to get Pail, and one line.
 export const Outro = () => {
-  const f = useCurrentFrame() // 0 at the start of the outro
-  const { fps } = useVideoConfig()
+  const raw = useCurrentFrame()
+  const f = raw / SUB // 0 at the start of the outro, in frames of the 30 fps timeline
   const rise = (at: number, d = 16) => ({ opacity: easeOut((f - at) / d), transform: `translateY(${(1 - easeOut((f - at) / d)) * 22}px)` })
-  const pop = spring({ frame: f - 10, fps, config: { damping: 13, stiffness: 110 } })
+  const pop = spring({ frame: raw - 10 * SUB, fps: OUT_FPS, config: { damping: 13, stiffness: 110 } })
   return (
     <div style={{ position: 'absolute', inset: 0, fontFamily: FONT, textAlign: 'center' }}>
       <div style={{ position: 'absolute', left: 960 - 90, top: 150, transform: `scale(${0.6 + 0.4 * pop})`, opacity: Math.min(1, pop * 2) }}>

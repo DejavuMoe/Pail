@@ -25,7 +25,20 @@ export const BASE_SCALE = 1.0
 export const FOCUS_X = WIDTH / 2
 export const FOCUS_Y = 468
 
-export function buildTimeline(m) {
+// The picture is rendered at OUT_FPS, but everything below is written (and the
+// sound is cut) in frames of a 30 fps film: "video frame" and "capture frame"
+// mean frames of that film, and may be fractions. SUB output frames make one.
+export const OUT_FPS = 60
+export const SUB = OUT_FPS / FPS
+
+export function buildTimeline(manifest) {
+  // The capture may have been recorded at a higher rate; bring it to 30 fps units.
+  const cu = (manifest.fps ?? FPS) / FPS
+  const m = {
+    frames: { length: manifest.frames.length / cu },
+    events: manifest.events.map((e) => ({ ...e, frame: e.frame / cu })),
+    scenes: Object.fromEntries(Object.entries(manifest.scenes).map(([k, [a, b]]) => [k, [a / cu, b / cu]])),
+  }
   const ev = (kind, name, nth = 0) => {
     const hit = m.events.filter((e) => e.kind === kind && (name == null || e.name === name))[nth]
     if (!hit) throw new Error(`timeline: no event ${kind} ${name} #${nth}`)
@@ -122,7 +135,7 @@ export function buildTimeline(m) {
     { from: a.theme - 6, to: N - 6, en: 'Light and dark themes', zh: '亮色与暗色主题' },
   ]
 
-  return { a, N, ev, segs, capToVid, vidToCap, cam, captions, outroStart, total, capEndVid }
+  return { a, N, cu, ev, segs, capToVid, vidToCap, cam, captions, outroStart, total, capEndVid }
 }
 
 // camAt gives the camera pose at capture frame c.
