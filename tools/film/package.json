@@ -1,0 +1,24 @@
+{
+  "name": "pail-film",
+  "private": true,
+  "type": "module",
+  "description": "Product demo video of Pail: composites frames of the real app (go test -run TestFilm) with Remotion.",
+  "scripts": {
+    "studio": "remotion studio src/index.ts",
+    "events": "node scripts/events.mjs",
+    "audio": "node audio/synth.mjs",
+    "srt": "node scripts/srt.mjs",
+    "render": "remotion render src/index.ts Main out/pail-demo-silent.mp4 --codec h264 --crf 18",
+    "still": "remotion still src/index.ts Main"
+  },
+  "dependencies": {
+    "@remotion/cli": "4.0.541",
+    "react": "19.1.0",
+    "react-dom": "19.1.0",
+    "remotion": "4.0.541"
+  },
+  "devDependencies": {
+    "@types/react": "19.1.8",
+    "typescript": "5.9.2"
+  }
+}
