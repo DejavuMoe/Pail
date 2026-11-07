@@ -130,10 +130,10 @@ Run `sh scripts/test-publish-site.sh` on Linux to check atomic activation, two-r
 
 ## Preview
 
-Prototype: serve `designs/` and open `http://127.0.0.1:4311/pail-site/`.
+Prototype: serve the repository root and open `http://127.0.0.1:4311/designs/pail-site/`. The prototype's demo section and terminal read `docs/video/` and `cli-demo.json` by relative path.
 
 ```powershell
-python -m http.server 4311 --bind 127.0.0.1 --directory designs
+python -m http.server 4311 --bind 127.0.0.1 --directory .
 ```
 
 Production:
