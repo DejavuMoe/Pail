@@ -17,7 +17,7 @@
 | Linux（WSL，含 WSLg） | `go vet ./...`、`go test -race ./...`（全部包）；WSLg 原生窗口冒烟；Linux tar.gz 在 WSL 解压后 `--version` 与冒烟通过；中文经 fontconfig 回退到 Noto Sans CJK SC 正常显示 |
 | MinIO | `scripts/test-integration.ps1`：固定版本 RELEASE.2025-04-22（本地从源码构建）与最新上游 RELEASE.2025-10-15（从源码构建），存储层与应用层套件全部通过 |
 | VersityGW | 自托管，前面是 Cloudflare，path-style，桶 `test`，另有 CDN 域名。外部套件通过，每次运行结束后前缀为空、桶内原有对象不变、日志中无密钥 |
-| macOS（arm64 与 amd64，真机） | 所有者在 Apple silicon（arm64）与 Intel（amd64）两台真实 Mac 上手动运行了应用（2026-10-20 确认）。下载得到的应用首次启动时，需要先执行 `xattr -dr com.apple.quarantine` 清除隔离属性，macOS 才会打开。`.app` 没有开发者签名、未公证。CI 另有六个目标（Windows、Linux、macOS 的 amd64 与 arm64）的原生 `go vet`、`go test` 与版本冒烟 |
+| macOS（arm64 与 amd64，真机） | 所有者在 Apple silicon（arm64）与 Intel（amd64）两台真实 Mac 上手动运行应用，每个版本都运行。下载得到的应用首次启动时，需要先执行 `xattr -dr com.apple.quarantine` 清除隔离属性，macOS 才会打开。`.app` 没有开发者签名、未公证。CI 另有六个目标（Windows、Linux、macOS 的 amd64 与 arm64）的原生 `go vet`、`go test` 与版本冒烟 |
 | GitHub Release | 六个安装包与 `SHA256SUMS` 由 Release 工作流打包、校验后发布；下载公开产物再次验包通过，全部不含 README |
 | 网站 | https://pail.download 由 Woodpecker 部署；发布后检查过中英文页面、下载链接、404、robots、sitemap 与分享元信息 |
 | Amazon S3、Cloudflare R2、Wasabi | 所有者手动测试，可用（2026-10-20 确认）。这是手动的真实端到端验证，没有对应的自动化套件，具体覆盖的功能没有逐项记录 |
@@ -162,10 +162,10 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 - 窗口内菜单（Windows 与 Linux）：只有 headless 测试与快照目视，没有在原生窗口里手动操作，也没有用读屏软件验证。macOS 的系统右键菜单与系统菜单栏：没有目视审阅。
 - 界面动效：只有受控时钟的 headless 测试与快照目视，没有在任何原生窗口里观看过，流畅度、帧率与"减少动态效果"的系统设置都未在真实桌面上验证。
 - 窗口拖动缩放时的布局抖动：应用侧的晚一帧回读和断点翻转已修，有 headless 回归测试。缩放中的帧仍同步绘制，系统按钮与帧是否原子合成没有确认，没有采集拖动中的连续帧，因此不标记为解决。
-- 依赖库（mygo）升级带来的窗口行为改动、托盘（图标、菜单、关闭即隐藏、单实例、系统通知）、文件夹大小、桶别名、代理字段和最近操作列表：只有 headless 测试，没有在原生窗口里逐项操作；macOS 与 Linux 桌面没有运行这些功能。每个发布包都经 `verify-release` 复核，Windows 与 Linux amd64 包解压后冒烟通过，macOS 包只经 CI 的原生测试任务。CPU 占用与内存没有做前后对比。
+- 依赖库（mygo）升级带来的窗口行为改动、托盘（图标、菜单、关闭即隐藏、单实例、系统通知）、文件夹大小、桶别名、代理字段和最近操作列表：只有 headless 测试，没有在原生窗口里逐项操作；Linux 桌面没有运行这些功能；macOS 上所有者每个版本都手动运行应用，但没有逐项记录这些功能。每个发布包都经 `verify-release` 复核，Windows 与 Linux amd64 包解压后冒烟通过。CPU 占用与内存没有做前后对比。
 - 代理服务器：本地 HTTP 代理与 SOCKS5 服务器上的协议测试通过（含用户名和密码），但没有经过真实代理软件、真实 S3 服务或 AWS STS 验证；不支持 NTLM 等其他认证方式。
 - `internal/app` 产生的任务标题（传输面板）和命令行输出未本地化，仍为英文。
 - MinIO 套件没有加 `-race` 运行；`-race` 只跑了单元与协议测试。
 - 只写权限账户在 rename 策略下无法识别重放产生的 412；大小写不同的同名 key 的编号不会跨扫描记忆。
 - 命令行外壳没有对真实服务端运行。
-- v0.5.0（命令行账户、保险库与对象命令，状态栏计数）：新命令只有进程内对 `internal/s3test` 的测试；状态栏与折叠传输条的计数动画只有 headless 测试（含加载期间不滚动的断言）和一张开发构建的 `--demo` 截图，没有在原生窗口里目视动画过程。发布包：GitHub Actions 的 CI 与 CodeQL 通过且没有未处理的告警，`check-release` 通过；`verify-release` 复核下载的六个归档与 `SHA256SUMS` 通过；Windows amd64 解压后 `pail version` 与 `pail-desktop --version` 为 0.5.0，桌面程序 `--smoke-exit 6s` 原生窗口启动并以 0 退出（空配置，停在欢迎页），发布包不再接受 `--demo`；Linux amd64 包在 WSL 解压后两个程序的版本为 0.5.0；macOS 与两个 arm64 包只经 CI 的原生测试任务，没有在真机上运行。
+- v0.5.0（命令行账户、保险库与对象命令，状态栏计数）：新命令只有进程内对 `internal/s3test` 的测试；状态栏与折叠传输条的计数动画只有 headless 测试（含加载期间不滚动的断言）和一张开发构建的 `--demo` 截图，没有在原生窗口里目视动画过程。发布包：GitHub Actions 的 CI 与 CodeQL 通过且没有未处理的告警，`check-release` 通过；`verify-release` 复核下载的六个归档与 `SHA256SUMS` 通过；Windows amd64 解压后 `pail version` 与 `pail-desktop --version` 为 0.5.0，桌面程序 `--smoke-exit 6s` 原生窗口启动并以 0 退出（空配置，停在欢迎页），发布包不再接受 `--demo`；Linux amd64 包在 WSL 解压后两个程序的版本为 0.5.0；macOS 包由所有者在 Apple silicon 与 Intel 两台 Mac 上手动运行；Windows 与 Linux 的 arm64 包只经 CI 的原生测试任务。

@@ -228,7 +228,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 - `bucket alias s3://bucket NAME` 设置桌面应用中显示的存储桶名称。`NAME` 为空或使用 `--clear` 会移除别名。省略 `NAME` 时输出当前别名。别名只保存在 Pail 的配置中，存储服务上没有任何变化，命令仍然使用真实的存储桶名称。
 - `multipart ls s3://bucket[/prefix/]` 列出未完成的分片上传，包括开始时间、存储类型、上传 ID 和对象键。`multipart abort` 使用同样的路径，在确认后中止这些上传，并丢弃已上传的分片。`--older-than D` 只处理开始于 `D` 之前的上传，例如 `36h` 或 `7d`。
 - `sync job ls` 列出已保存的同步作业。`sync job add NAME LOCAL s3://bucket/prefix/` 保存一个上传作业，`sync job add NAME s3://bucket/prefix/ LOCAL` 保存一个下载作业，`--mode`、`--compare`、`--exclude` 和 `--no-rules` 与 `sync` 相同。本地文件夹必须已存在。`sync job rm NAME` 在确认后删除已保存的作业，本地文件和对象不受影响。用 `sync --job NAME` 运行作业。
-- `cloudfront ls` 列出账户的 CloudFront 分配；`--bucket B` 只保留源站在该存储桶的分配。`cloudfront invalidate DISTRIBUTION PATH...` 先输出分配和路径并要求确认，再创建失效。它只适用于 AWS 账户。CloudFront 还没有在真实 AWS 账户上测试过。
+- `cloudfront ls` 列出账户的 CloudFront 分配；`--bucket B` 只保留源站在该存储桶的分配。`cloudfront invalidate DISTRIBUTION PATH...` 先输出分配和路径并要求确认，再创建失效。它只适用于 AWS 账户。
 - `settings get` 以 `KEY VALUE` 输出所有设置；`settings get KEY` 只输出值。`settings set KEY VALUE` 修改一项。它们就是桌面应用的设置。
 
 | 设置 | 取值 |
