@@ -80,7 +80,7 @@ func TestTerminalShowsRecordedCLIOutput(t *testing.T) {
 // first one. Both must choose alike.
 func TestTerminalClassesMatchScript(t *testing.T) {
 	js := read(t, filepath.Join(repoRoot(t), "site", "static", "app.js"))
-	for _, re := range []*regexp.Regexp{reTermUpload, reTermDelete, reTermDryRun} {
+	for _, re := range []*regexp.Regexp{reTermUpload, reTermDelete, reTermDryRun, reTermTable} {
 		if !strings.Contains(js, "/"+re.String()+"/") {
 			t.Errorf("app.js does not test for /%s/ as the generator does", re)
 		}
@@ -109,6 +109,11 @@ func TestPrototypeUsesRecordedExamples(t *testing.T) {
 		t.Error("designs/pail-site/cli-demo.json differs from site/cli-demo.json")
 	}
 	proto := read(t, filepath.Join(root, "designs", "pail-site", "index.html"))
+	for _, e := range recorded(t).Examples {
+		if !strings.Contains(proto, `data-term="`+e.ID+`"`) {
+			t.Errorf("the prototype has no tab for %q", e.ID)
+		}
+	}
 	pos := strings.Index(proto, `id="term-panel"`)
 	for _, l := range recorded(t).Examples[0].Lines {
 		i := strings.Index(proto[pos:], string(termLine(l)))
