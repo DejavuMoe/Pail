@@ -129,3 +129,13 @@ Generated icons and Windows resources are committed; regenerate them with `go ru
 Plain `go test ./...` skips integration tests unless their endpoint variables are present. Never provide `PAIL_EXT_*` to ordinary CI: doing so enables the real external suite. `scripts/test-external.ps1` is manual only, scoped to the authorized endpoint and a unique `pail-e2e/` prefix. It must never run with fork credentials or automatically after a push.
 
 `go run -tags pail_demo ./cmd/pail-desktop --demo --smoke-exit 5s --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
+
+## Demo video
+
+`tools/film` makes the product demo video. It is manual only and never runs in CI; the finished MP4 is not committed.
+
+1. Capture: `$env:PAIL_FILM_DIR = "tools/film/public/capture"; go test ./cmd/pail-desktop -run 'TestFilm$' -count=1 -timeout 20m` (`cmd/pail-desktop/film_test.go`). It drives the real app against the in-memory demo S3 server with the animations playing and the clock moved one frame at a time, and writes the frames and `manifest.json` (cursor path, clicks, drops, finished uploads). Without `PAIL_FILM_DIR` the test is skipped. No real account data is involved.
+2. Sound: `node tools/film/scripts/events.mjs && node tools/film/audio/synth.mjs` writes `public/audio/events.json` and a synthesized original score with sound effects cut to the same events.
+3. Render, in the Linux runner (it has a system Chromium): `linux-task.ps1 -Mode build -Project <repo> -Command 'cd tools/film && pnpm install && PAIL_FILM_CHROMIUM=/usr/bin/chromium pnpm exec remotion render src/index.ts Main out/pail-demo.mp4 --codec h264 --crf 18'`. `node tools/film/scripts/srt.mjs` writes the English and Chinese subtitle files. Copy only the finished files out of the build mirror.
+
+When and what happens is defined once, in `tools/film/src/timeline.js`. The result is checked by eye (contact sheets of the frames) and with `ffprobe` and `ffmpeg -af ebur128`; it is not covered by `go test`.
