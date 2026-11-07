@@ -137,10 +137,12 @@
           <p class="section-lede">{{t "demoLede"}}</p>
         </div>
         <figure class="demo-video reveal">
+          <div class="demo-frame">
           <video controls preload="none" playsinline width="1920" height="1080" poster="{{asset "pail-demo.webp"}}" aria-label="{{t "demoVideoLabel"}}">
             <source src="{{asset "pail-demo.mp4"}}" type="video/mp4">
             <p><a href="{{asset "pail-demo.mp4"}}">{{t "demoFallback"}}</a></p>
           </video>
+          </div>
           <figcaption>{{t "demoNote"}}</figcaption>
         </figure>
       </div>
