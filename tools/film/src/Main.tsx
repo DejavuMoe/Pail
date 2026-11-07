@@ -1,6 +1,6 @@
 import { AbsoluteFill, Audio, Sequence, staticFile, useCurrentFrame } from 'remotion'
 import { C, clamp, easeInOut, easeOut } from './theme'
-import { APP_START, OUTRO_FRAMES } from './timeline.js'
+import { APP_START, OUTRO_FRAMES, SUB } from './timeline.js'
 import { camAt } from './timeline.js'
 import { T, manifest } from './data'
 import { Stage } from './components/Stage'
@@ -12,9 +12,10 @@ import { Captions, Honest } from './components/Captions'
 const WIPE_FRAMES = 24
 
 export const Main = ({ audio = true }: { audio?: boolean }) => {
-  const v = useCurrentFrame()
-  const c = T.vidToCap(v)
-  const ci = Math.min(manifest.frames.length - 1, Math.max(0, Math.floor(c)))
+  const v = useCurrentFrame() / SUB // frames of the 30 fps timeline, fractions between them
+  const c = T.vidToCap(v) // capture frame, in the same unit
+  const c60 = c * T.cu // the capture's own frame number
+  const ci = Math.min(manifest.frames.length - 1, Math.max(0, Math.floor(c60 + 1e-6)))
   const pose = camAt(T.cam, c)
   const enter = easeOut((v - APP_START) / 40)
   const exit = easeInOut((v - T.outroStart) / 30)
@@ -24,15 +25,15 @@ export const Main = ({ audio = true }: { audio?: boolean }) => {
   const wp = easeInOut((v - wipeStart) / WIPE_FRAMES)
   const darkNow = c >= theme
   const showLight = !(darkNow && wp >= 1)
-  const lightFile = manifest.frames[Math.min(ci, theme - 1)]
+  const lightFile = manifest.frames[Math.min(ci, Math.round(theme * T.cu) - 1)]
   const R = wp * 1500
   const clip = `circle(${R}px at 960px 520px)`
 
   const overlays = (
     <>
       {c > T.a.drop - 90 && c < T.a.drop + 12 && <FileCards c={c} />}
-      <Clicks c={c} z={pose.z} />
-      <Cursor c={c} z={pose.z} />
+      <Clicks c={c60} z={pose.z} />
+      <Cursor c={c60} z={pose.z} />
     </>
   )
 
@@ -52,7 +53,7 @@ export const Main = ({ audio = true }: { audio?: boolean }) => {
       )}
       <Honest v={v} from={APP_START + 40} to={T.outroStart + 6} dark={darkNow && wp > 0.5} />
       <Captions v={v} />
-      <Sequence from={T.outroStart} durationInFrames={OUTRO_FRAMES}>
+      <Sequence from={T.outroStart * SUB} durationInFrames={OUTRO_FRAMES * SUB}>
         <Outro />
       </Sequence>
     </AbsoluteFill>

@@ -9,7 +9,8 @@ import { APP_START, FPS, INTRO, OUTRO_FRAMES, buildTimeline } from '../src/timel
 const root = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '..')
 const manifest = JSON.parse(fs.readFileSync(path.join(root, 'public/capture/manifest.json'), 'utf8'))
 const T = buildTimeline(manifest)
-const v = (c) => Math.round(T.capToVid(c))
+const vn = (c) => Math.round(T.capToVid(c) * 2) / 2 // c in 30 fps frames (T.a); half-frame precision
+const v = (c) => vn(c / T.cu) // c in frames of the capture
 
 const events = []
 for (const e of manifest.events) {
@@ -20,7 +21,7 @@ for (const e of manifest.events) {
 }
 events.sort((a, b) => a.frame - b.frame)
 
-const wipeStart = v(T.a.theme)
+const wipeStart = vn(T.a.theme)
 const out = {
   fps: FPS,
   totalFrames: T.total,
@@ -29,7 +30,7 @@ const out = {
   outro: { start: T.outroStart, frames: OUTRO_FRAMES },
   wipe: { start: wipeStart, end: wipeStart + 24 },
   // the transfers of the upload scene: from the drop to the end of the last one
-  upload: { start: v(T.a.drop), end: v(T.a.uploadDone) },
+  upload: { start: vn(T.a.drop), end: vn(T.a.uploadDone) },
   events,
 }
 fs.mkdirSync(path.join(root, 'public/audio'), { recursive: true })
