@@ -234,9 +234,10 @@
   var termTimer = null;
   function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function lineHTML(kind, text) {
-    if (kind === 'cmd') return '<span class="t-prompt">$</span> <span class="t-cmd">' + esc(text) + '</span>';
+    var wrap = /\S {2,}\S/.test(text) ? '' : ' t-wrap'; // aligned columns scroll, other lines wrap
+    if (kind === 'cmd') return '<span class="t-prompt">$</span> <span class="t-cmd' + wrap + '">' + esc(text) + '</span>';
     var cls = { out: 't-out', up: 't-ok', del: 't-del', dim: 't-dim' }[kind] || 't-out';
-    return '<span class="' + cls + '">' + esc(text) + '</span>';
+    return '<span class="' + cls + wrap + '">' + esc(text) + '</span>';
   }
   var PROMPT = '\n<span class="t-prompt">$</span> <span class="t-caret"></span>';
   function renderTerminal(name, animate) {
@@ -251,7 +252,7 @@
     var cmd = lines[0][1], n = 0;
     (function type() {
       n++;
-      termCode.innerHTML = '<span class="t-prompt">$</span> <span class="t-cmd">' + esc(cmd.slice(0, n)) + '</span><span class="t-caret"></span>';
+      termCode.innerHTML = '<span class="t-prompt">$</span> <span class="t-cmd t-wrap">' + esc(cmd.slice(0, n)) + '</span><span class="t-caret"></span>';
       if (n < cmd.length) { termTimer = setTimeout(type, 18 + Math.random() * 30); return; }
       var shown = 1;
       (function out() {

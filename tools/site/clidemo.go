@@ -71,31 +71,38 @@ var (
 	reTermUpload = regexp.MustCompile(`^(upload|download)\s`)
 	reTermDelete = regexp.MustCompile(`^delete\s`)
 	reTermDryRun = regexp.MustCompile(`^dry run:`)
+	// A line with aligned columns keeps its spaces and scrolls sideways; any
+	// other line (a command, JSON, a URL) wraps at the edge of the terminal.
+	reTermTable = regexp.MustCompile(`\S {2,}\S`)
 )
 
-// termClass is the CSS class of a line. app.js (termKind) makes the same choice
+// termClass is the CSS classes of a line. app.js (termKind) makes the same choice
 // for the examples it renders; TestTerminalClassesMatchScript keeps them equal.
 func termClass(l cliLine) string {
+	c := "t-out"
 	switch {
 	case l.Kind == "cmd":
-		return "t-cmd"
+		c = "t-cmd"
 	case l.Kind == "err":
-		return "t-dim"
+		c = "t-dim"
 	case reTermUpload.MatchString(l.Text):
-		return "t-ok"
+		c = "t-ok"
 	case reTermDelete.MatchString(l.Text):
-		return "t-del"
+		c = "t-del"
 	case reTermDryRun.MatchString(l.Text):
-		return "t-dim"
+		c = "t-dim"
 	}
-	return "t-out"
+	if !reTermTable.MatchString(l.Text) {
+		c += " t-wrap"
+	}
+	return c
 }
 
 // termLine renders one terminal line as the page and app.js both write it.
 func termLine(l cliLine) template.HTML {
 	text := html.EscapeString(l.Text)
 	if l.Kind == "cmd" {
-		return template.HTML(`<span class="t-prompt">$</span> <span class="t-cmd">` + text + `</span>`)
+		return template.HTML(`<span class="t-prompt">$</span> <span class="` + termClass(l) + `">` + text + `</span>`)
 	}
 	return template.HTML(`<span class="` + termClass(l) + `">` + text + `</span>`)
 }
