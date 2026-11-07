@@ -128,7 +128,7 @@ Generated icons and Windows resources are committed; regenerate them with `go ru
 
 Plain `go test ./...` skips integration tests unless their endpoint variables are present. Never provide `PAIL_EXT_*` to ordinary CI: doing so enables the real external suite. `scripts/test-external.ps1` is manual only, scoped to the authorized endpoint and a unique `pail-e2e/` prefix. It must never run with fork credentials or automatically after a push.
 
-`go run -tags pail_demo ./cmd/pail-desktop --demo --smoke-exit 5s --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
+The terminal examples on the website come from `site/cli-demo.json`. `go test ./cmd/pail -run TestSiteCLIDemo` compares it with what the CLI prints; run it with `PAIL_UPDATE_GOLDEN=1` to rewrite the file, then copy it to `designs/pail-site/cli-demo.json`. --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
 
 ## Demo video
 
