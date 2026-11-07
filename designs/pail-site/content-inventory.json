@@ -26495,7 +26495,7 @@
     },
     {
       "id": "content-2760c5d7403858f1",
-      "text": "A 48-second tour of the real app on an in-memory demo server: browse a bucket, upload files, share a link, restore an older version.",
+      "text": "A 48-second tour: browse a bucket, upload files, share a link, restore an older version.",
       "channels": [
         "text"
       ],
@@ -26519,7 +26519,7 @@
     },
     {
       "id": "content-b17fed30c0dfea09",
-      "text": "The app window is the real app, running against a built-in demo server with sample data. The titles and the files flying in were added for the video.",
+      "text": "The window is the real app on a demo server with sample data. The titles and the flying files are added.",
       "channels": [
         "text"
       ],
@@ -26615,7 +26615,7 @@
     },
     {
       "id": "content-a5ebdd2bdb275117",
-      "text": "48 秒带你看一遍真实的应用，连接的是内存中的演示服务：浏览存储桶、上传文件、分享链接、恢复旧版本。",
+      "text": "48 秒看完：浏览存储桶、上传文件、分享链接、恢复旧版本。",
       "channels": [
         "text"
       ],
@@ -26639,7 +26639,7 @@
     },
     {
       "id": "content-3cdd457ce71531b5",
-      "text": "应用窗口是真实的应用，连接的是内置的演示服务和示例数据。标题和飞入的文件是为视频加上的。",
+      "text": "窗口是真实的应用，连接的是演示服务和示例数据。标题和飞入的文件是后加的。",
       "channels": [
         "text"
       ],
@@ -26708,6 +26708,534 @@
         "needs-user-approval"
       ],
       "notes": "new in revision 3 (Demo video label (zh)); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-0941967313e42bad",
+      "text": "Browse buckets, move files, manage versions and bucket settings, share links. Free and open source for Windows, macOS and Linux.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string heroSub (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-4269e15d195aae32",
+      "text": "浏览存储桶、传输文件，管理版本和存储桶设置，分享链接。免费开源，支持 Windows、macOS 和 Linux。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string heroSub (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-c18389f3a04fc851",
+      "text": "Upload and download files, folders or whole buckets, or drag files into the window. Queues show progress and speed; cancel or retry any item. Large files go up in parts with checksums.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fTransfersBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-8f4282516992df0b",
+      "text": "上传、下载文件、文件夹或整个存储桶，也可以拖进窗口。队列显示进度和速度，可取消或重试。大文件分段上传并带校验和。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fTransfersBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-f606bc93f788e832",
+      "text": "See every version of an object, download or restore one, undo a delete, and permanently remove only the versions you pick.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fVersionsBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-db0820ee0eb596b7",
+      "text": "查看对象的所有版本，下载或恢复其中一个，撤销删除，只永久删除你选中的版本。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fVersionsBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-a3a7c6bd6596775d",
+      "text": "Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. For other services, set the endpoint, region and path-style addressing, and test the connection.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fAccountsBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-c09d26517d1181cf",
+      "text": "访问密钥、AWS 配置文件、默认凭据链、AssumeRole 或匿名访问。其他服务设置端点、区域和路径风格寻址，并先测试连接。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fAccountsBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-ccb51bd033485007",
+      "text": "14 settings, including versioning, encryption, policy, CORS, lifecycle and replication, as a form or as JSON.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fSettingsBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-86aa70a55d5d7644",
+      "text": "版本控制、加密、策略、CORS、生命周期、复制等 14 项设置，用表单或 JSON 编辑。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fSettingsBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-5dc5bc48d22a9d42",
+      "text": "Headers, metadata, tags, ACL, storage class and server-side encryption for one object or a selection.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fPropsBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-4ffe618d525f4f8d",
+      "text": "为单个或多个对象修改请求头、元数据、标签、ACL、存储类别和服务端加密。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fPropsBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-de49e260ad613e8c",
+      "text": "Upload, download or mirror a folder. Compare by size and time, size or checksum, exclude files by pattern, and review the plan first.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fSyncBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-44dfd6727de36c2c",
+      "text": "上传、下载或镜像文件夹。可按大小和时间、仅大小或校验和比较，按通配符排除文件，执行前先查看计划。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fSyncBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-f35d5362c3be288c",
+      "text": "Presigned GET or PUT links with an expiry, for one object or many. With a CDN domain on the account, copy the CDN link after an upload.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fLinksBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-e71485613de3ecb8",
+      "text": "带有效期的 GET 或 PUT 预签名链接，可批量生成。账户设了 CDN 域名后，上传完成即可复制 CDN 链接。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fLinksBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-c689f32fffe729a3",
+      "text": "Match a bucket and key pattern to set headers, storage class and encryption on upload, or to compress with GZIP, ZIP or AES-256 ZIP.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fRulesBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-8bf2cf3225dcd7f8",
+      "text": "按存储桶和对象键匹配，上传时设置请求头、存储类别和加密，或用 GZIP、ZIP、AES-256 ZIP 压缩。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string fRulesBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-9dc79fcf4ab68e4c",
+      "text": "Secret keys go to Windows Credential Manager, macOS Keychain or the Linux Secret Service. Without a keychain, use the encrypted vault.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string pKeysBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-b68a59e53e4940e2",
+      "text": "密钥存进 Windows 凭据管理器、macOS 钥匙串或 Linux 的 Secret Service；没有钥匙串时可以改用加密保险库。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string pKeysBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-0d12277816a4829d",
+      "text": "The log is off until you turn it on. Signatures, Authorization headers, query strings and known secrets are removed before anything is written.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string pLogBody (en)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
+    },
+    {
+      "id": "content-46da598947b8f7d2",
+      "text": "日志需要手动开启；写入前会去掉签名、Authorization 请求头、查询参数和已知的密钥。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "string pLogBody (zh)"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "shortened in revision 3; the facts are those of the approved sentence it replaces"
     }
   ]
 }

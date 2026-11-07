@@ -393,23 +393,22 @@ code, pre { font-family: var(--font-mono); }
 :root[data-lang="zh"] .providers-list::after { content: "。"; }
 
 /* ---------- Sections ---------- */
-.section { padding-top: clamp(96px, 11vw, 152px); }
+.section { padding-top: clamp(80px, 9vw, 128px); }
 
 /* The demo video: a fixed 16:9 box, so loading the poster or the file never
    moves the page. The poster and the video's own frame use the same graphite
    as the terminal; native controls, no autoplay. */
 .demo-video { max-width: 1040px; margin-inline: auto; }
-.demo-video video {
-  display: block;
-  width: 100%;
-  height: auto;
+/* The frame clips the video; the video itself has no border or radius, so the
+   poster and the picture fill it to the edge. */
+.demo-frame {
   aspect-ratio: 16 / 9;
-  background: var(--term-bg);
-  border: 1px solid var(--border);
   border-radius: var(--radius);
-  box-shadow: 0 1px 2px rgb(var(--shadow-color) / .06), 0 18px 48px rgb(var(--shadow-color) / .12);
+  overflow: hidden;
+  background: #121210;
+  box-shadow: 0 0 0 1px rgb(var(--shadow-color) / .10), 0 1px 2px rgb(var(--shadow-color) / .06), 0 22px 56px rgb(var(--shadow-color) / .16);
 }
-.demo-video figcaption { margin-top: 14px; color: var(--muted); font-size: 14px; text-align: center; text-wrap: balance; }
+.demo-video video { display: block; width: 100%; height: 100%; object-fit: cover; background: #121210; }.demo-video figcaption { margin-top: 14px; color: var(--muted); font-size: 14px; text-align: center; text-wrap: balance; }
 .demo-video video p { padding: 16px; margin: 0; color: var(--term-text); }
 .demo-video video a { color: var(--term-accent); }
 
@@ -677,7 +676,7 @@ code, pre { font-family: var(--font-mono); }
   background: var(--term-accent);
 }
 .term-body {
-  height: 268px;
+  height: 280px;
   margin: 0;
   padding: 18px 20px 22px;
   overflow: auto;
@@ -692,6 +691,8 @@ code, pre { font-family: var(--font-mono); }
 .term-body .t-cmd { color: var(--term-text); }
 .term-body .t-out { color: var(--term-muted); }
 .term-body .t-dim { color: var(--term-subtle); }
+/* JSON, URLs and long commands wrap at the edge; tables keep their columns and scroll. */
+.term-body .t-wrap { white-space: pre-wrap; overflow-wrap: break-word; }
 .term-body .t-ok { color: var(--term-success); }
 .term-body .t-del { color: var(--term-danger); }
 .term-body .t-caret {
