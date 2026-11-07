@@ -33,7 +33,7 @@ import (
 )
 
 const (
-	filmFPS   = 30
+	filmFPS   = 60 // the timeline in tools/film is written in 30 fps frames and converts
 	filmScale = 2
 )
 
@@ -117,16 +117,20 @@ func (r *filmRec) tick() {
 
 func (r *filmRec) frame() int { return len(r.m.Frames) }
 
+// f turns a duration written in frames of a 30 fps film into frames of this one.
+func (r *filmRec) f(n int) int { return n * filmFPS / 30 }
+
+// hold plays n frames of a 30 fps film (twice as many at 60 fps).
 func (r *filmRec) hold(n int) {
-	for range n {
+	for range r.f(n) {
 		r.tick()
 	}
 }
 
-// until plays frames until cond holds.
+// until plays frames until cond holds; max is in frames of a 30 fps film.
 func (r *filmRec) until(what string, max int, cond func() bool) {
 	r.t.Helper()
-	for range max {
+	for range r.f(max) {
 		if cond() {
 			return
 		}
@@ -164,7 +168,7 @@ func (r *filmRec) place(x, y float32, show bool) {
 func (r *filmRec) moveTo(x, y float32) {
 	x0, y0 := r.cx, r.cy
 	dist := math.Hypot(float64(x-x0), float64(y-y0))
-	frames := int(math.Min(40, math.Max(12, dist/18)))
+	frames := r.f(int(math.Min(40, math.Max(12, dist/18))))
 	nx, ny := -(float64(y - y0)), float64(x-x0) // the arc bends to the side
 	if l := math.Hypot(nx, ny); l > 0 {
 		nx, ny = nx/l, ny/l
@@ -197,11 +201,10 @@ func (r *filmRec) press(x, y float32, name string) {
 	r.event("click", name, x, y)
 	r.down = true
 	r.h.tt.Press(x, y)
-	r.tick()
-	r.tick()
+	r.hold(2)
 	r.h.tt.Release(x, y)
 	r.down = false
-	r.tick()
+	r.hold(1)
 }
 
 func (r *filmRec) clickAt(x, y float32, name string) {
@@ -229,16 +232,14 @@ func (r *filmRec) typeSlow(s string, perChar int) {
 	for _, c := range s {
 		r.h.tt.Type(string(c))
 		r.event("key", string(c), 0, 0)
-		for range perChar {
-			r.tick()
-		}
+		r.hold(perChar)
 	}
 }
 
 func (r *filmRec) key(mods ui.Modifiers, k ui.Key, name string) {
 	r.h.tt.Key(mods, k)
 	r.event("key", name, 0, 0)
-	r.tick()
+	r.hold(1)
 }
 
 func (r *filmRec) loaded() bool { return r.h.a.idle() && len(r.h.a.pending) == 0 }
@@ -345,7 +346,7 @@ func filmUpload(r *filmRec, env *demoEnv, files string) {
 	env.Srv.Inject(func(rq *http.Request) *s3test.Fault {
 		if rq.Method == http.MethodPut && rq.URL.Query().Get("partNumber") != "" {
 			pn, _ := strconv.Atoi(rq.URL.Query().Get("partNumber")) // later parts take longer: the bar fills steadily
-			return &s3test.Fault{Delay: time.Duration(pn) * 400 * time.Millisecond}
+			return &s3test.Fault{Delay: time.Duration(pn) * 800 * time.Millisecond}
 		}
 		return nil
 	})
