@@ -1,0 +1,112 @@
+{
+ "examples": [
+  {
+   "id": "ls",
+   "command": "pail ls s3://acme-assets/",
+   "lines": [
+    {
+     "kind": "cmd",
+     "text": "pail ls s3://acme-assets/"
+    },
+    {
+     "kind": "out",
+     "text": "                                PRE assets/"
+    },
+    {
+     "kind": "out",
+     "text": "                                PRE backups/"
+    },
+    {
+     "kind": "out",
+     "text": "                                PRE logs/"
+    },
+    {
+     "kind": "out",
+     "text": "                                PRE reports/"
+    },
+    {
+     "kind": "out",
+     "text": "                                PRE tmp/"
+    },
+    {
+     "kind": "out",
+     "text": "                                PRE website/"
+    },
+    {
+     "kind": "out",
+     "text": "2026-10-19 14:51:08        445 B  README.txt"
+    },
+    {
+     "kind": "out",
+     "text": "2026-10-19 14:51:08        303 B  manifest.json"
+    },
+    {
+     "kind": "err",
+     "text": "2 objects, 6 folders, 748 B"
+    }
+   ]
+  },
+  {
+   "id": "sync",
+   "command": "pail sync ./photos s3://acme-media-archive/photos/ --mode mirror --dry-run",
+   "lines": [
+    {
+     "kind": "cmd",
+     "text": "pail sync ./photos s3://acme-media-archive/photos/ --mode mirror --dry-run"
+    },
+    {
+     "kind": "out",
+     "text": "upload   2026/04/IMG_2231.heic  (3.2 MiB)  new"
+    },
+    {
+     "kind": "out",
+     "text": "upload   2026/04/cover.jpg  (2.9 MiB)  size differs"
+    },
+    {
+     "kind": "out",
+     "text": "delete   tmp/draft.png  (1.1 MiB)  not in the source"
+    },
+    {
+     "kind": "out",
+     "text": "plan: 2 uploads, 0 downloads, 1 deletes, 2 skipped, 6.1 MiB to transfer"
+    },
+    {
+     "kind": "out",
+     "text": "dry run: nothing was changed"
+    }
+   ]
+  },
+  {
+   "id": "presign",
+   "command": "pail presign s3://acme-assets/reports/customers-export.csv --expires 1h",
+   "lines": [
+    {
+     "kind": "cmd",
+     "text": "pail presign s3://acme-assets/reports/customers-export.csv --expires 1h"
+    },
+    {
+     "kind": "out",
+     "text": "https://acme-assets.s3.us-east-1.amazonaws.com/reports/customers-export.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=…&X-Amz-Date=20261019T145108Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&x-id=GetObject&X-Amz-Signature=…"
+    }
+   ]
+  },
+  {
+   "id": "json",
+   "command": "pail ls s3://acme-assets/reports/exports/ --json",
+   "lines": [
+    {
+     "kind": "cmd",
+     "text": "pail ls s3://acme-assets/reports/exports/ --json"
+    },
+    {
+     "kind": "out",
+     "text": "{\"etag\":\"\\\"9f8e5bd54db8f5de1054e1241bdff931\\\"\",\"key\":\"reports/exports/2026-10-17.csv\",\"modified\":\"2026-10-19T14:51:08Z\",\"size\":250,\"storageClass\":\"STANDARD\",\"type\":\"object\"}"
+    },
+    {
+     "kind": "out",
+     "text": "{\"bytes\":250,\"command\":\"ls\",\"folders\":0,\"objects\":1,\"ok\":true,\"type\":\"summary\"}"
+    }
+   ]
+  }
+ ]
+}
