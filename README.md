@@ -21,8 +21,8 @@
 </p>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-dark.webp">
-  <img src="docs/images/main-light.webp" alt="The Pail main window: bucket list, object table and inspector">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-dark-en.webp">
+  <img src="docs/images/main-light-en.webp" alt="The Pail main window: bucket list, object table and inspector">
 </picture>
 
 ## Features

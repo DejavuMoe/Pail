@@ -147,7 +147,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | `pail` 命令行（accounts、account、vault、bucket alias、buckets、ls、cp、mv、rm、mb、rb、presign、url、versions、restore、stat、cat、mkdir、du、tags、acl、props、storage-class、multipart、cloudfront、settings、sync 及 sync job） | ✅ | n/a | ✅ 进程内对 `internal/s3test` | ❌ 命令行外壳本身没有对真实服务端运行 | 它调用的应用层在真实服务端验证过。`cloudfront` 的 `invalidate` 与 `ls` 在命令行层只测了非 AWS 账户被拒绝和确认流程，没有对 CloudFront 或模拟端点运行 |
 | CLI 结果与参数边界 | ✅ | n/a | ✅ `TestBulkSummaryBeyondItemRetention` 删除 10001 项并核对汇总；`TestSavedSyncJobSelectsItsAccount` 覆盖多账户、显式账户冲突和保险库；`TestDoubleDashDownloadDestination`、`TestInterspersedEndOfOptions` 验证 `--` 与选项值 | ❌ 这些边界未对真实服务端验证 | 不从截断的逐项明细推导总数 |
 | 官网上的命令行演示与迷你演示（`site/cli-demo.json`、传输与版本小动画） | n/a | ⚠️ 用 ego-browser 读 DOM 核对过中英文页面（终端四个标签、视频属性、无第三方请求）；截图超时，没有目视 | ✅ `TestSiteCLIDemo`（`cmd/pail`）进程内对 `internal/s3test` 真跑四条命令并与黄金文件比较；`tools/site` 的测试核对页面、内嵌 JSON、原型与应用的用词（同一份文案键对照） | ❌ 没有对真实服务端录制 | 时间戳与预签名的凭据、签名做了规范化（见测试注释）；预签名示例用 AWS 类型账户在本地签名，没有联网 |
-| 官网演示视频（`docs/video/`，由 `tools/film` 制作） | n/a | ⚠️ 抽帧目视；没有连续观看，也没有听过配乐 | n/a | n/a | 应用窗口是 `cmd/pail-desktop/film_test.go` 逐帧渲染的真实应用，对内存 demo S3 操作；片头、片尾、字幕和飞入的文件是后加的 |
+| 官网首屏截图（``docs/images/main-{light,dark}-{en,zh}.webp``，四张 macOS 原生截图） | n/a | ⚠️ 所有者在 macOS 上用 ``--demo`` 截取（2026-11-07）；用 ego-browser 读 DOM 核对过中文页在亮、暗两种配色下选中的文件与尺寸，没有目视页面 | ✅ ``TestHeroScreenshotsFollowLanguageAndTheme`` 核对四张尺寸一致、页面写的宽高等于文件、两种语言页与两份 README 各用自己的图 | n/a | Open Graph 卡片（``social.webp``）由英文亮色截图重新合成，未在任何社交平台上刷新验证 |`docs/video/`，由 `tools/film` 制作） | n/a | ⚠️ 抽帧目视；没有连续观看，也没有听过配乐 | n/a | n/a | 应用窗口是 `cmd/pail-desktop/film_test.go` 逐帧渲染的真实应用，对内存 demo S3 操作；片头、片尾、字幕和飞入的文件是后加的 |
 | 发布包（Windows / Linux / macOS，amd64 与 arm64）与 SHA256SUMS | n/a | n/a | ✅ 打包工具保留 Unix 权限位（tar.gz 与 zip 各有测试） | ✅ Windows 与 Linux amd64 解压后运行过；macOS arm64 与 amd64 在真机上手动运行过，首次启动需 `xattr -dr com.apple.quarantine`；六平台 CI 原生测试与版本冒烟通过 | 已在 GitHub Releases 发布 |
 
 ## 已知限制与未验证
@@ -168,5 +168,4 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 - MinIO 套件没有加 `-race` 运行；`-race` 只跑了单元与协议测试。
 - 只写权限账户在 rename 策略下无法识别重放产生的 412；大小写不同的同名 key 的编号不会跨扫描记忆。
 - 命令行外壳没有对真实服务端运行。
-- 官网首屏截图 `docs/images/main-*.webp` 是 v0.2.0 时期的 macOS 原生截图：账户名（Demo S3）与状态栏等细节与当前应用不同。重拍需要在 macOS 上用 `--demo` 构建，未做。
 - v0.5.0（命令行账户、保险库与对象命令，状态栏计数）：新命令只有进程内对 `internal/s3test` 的测试；状态栏与折叠传输条的计数动画只有 headless 测试（含加载期间不滚动的断言）和一张开发构建的 `--demo` 截图，没有在原生窗口里目视动画过程。发布包：GitHub Actions 的 CI 与 CodeQL 通过且没有未处理的告警，`check-release` 通过；`verify-release` 复核下载的六个归档与 `SHA256SUMS` 通过；Windows amd64 解压后 `pail version` 与 `pail-desktop --version` 为 0.5.0，桌面程序 `--smoke-exit 6s` 原生窗口启动并以 0 退出（空配置，停在欢迎页），发布包不再接受 `--demo`；Linux amd64 包在 WSL 解压后两个程序的版本为 0.5.0；macOS 与两个 arm64 包只经 CI 的原生测试任务，没有在真机上运行。
