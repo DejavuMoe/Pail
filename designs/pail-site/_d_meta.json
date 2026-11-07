@@ -14,6 +14,16 @@
             "width": 1280,
             "height": 900
           }
+        },
+        {
+          "path": "index.html",
+          "createdAt": "2026-11-07T21:00:00.000Z",
+          "status": "review",
+          "subtitle": "Revision 3 (awaiting approval): a demo video section, terminal examples recorded from the real CLI, mini demos and the demo hint aligned with the product",
+          "viewport": {
+            "width": 1280,
+            "height": 900
+          }
         }
       ]
     },
