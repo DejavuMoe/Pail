@@ -52,6 +52,11 @@ type Settings struct {
 	// (the menu bar on macOS); closing the window then quits. The zero value
 	// shows it, so settings saved before it existed show it too.
 	HideTrayIcon bool `json:"hideTrayIcon,omitempty"`
+	// QuitWhenIdle makes closing the window quit the desktop app when no
+	// transfer is running, even with the tray icon showing; with transfers
+	// running, closing still hides it so they finish. The zero value keeps the
+	// app in the tray.
+	QuitWhenIdle bool `json:"quitWhenIdle,omitempty"`
 	// Proxy sends the requests of every account (S3, STS and CloudFront)
 	// through a proxy server. The zero value follows HTTP_PROXY, HTTPS_PROXY and
 	// NO_PROXY from the environment. It can only be changed with SaveProxy (its

@@ -119,6 +119,8 @@ func TestVaultLockNowShowsTheIndicator(t *testing.T) {
 		t.Error("the menu must offer Lock Vault while unlocked")
 	}
 
+	h.tt.Scroll(700, 300, 0, 300) // the Security section lies below the first screen
+	h.tt.Frame()
 	h.mustClick("Lock now")
 	h.waitFor("locked", func() bool { return !h.vaultState().Unlocked && h.tt.HasText("Vault locked") })
 	h.mustHave("Vault locked", "Locked", "Unlock…")

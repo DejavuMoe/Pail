@@ -245,6 +245,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 | `log-to-file` | `on` 或 `off` |
 | `vault-auto-lock-minutes` | 桌面应用在空闲多少分钟后锁定保险库，0 表示不锁定 |
 | `hide-tray-icon` | `on` 或 `off` |
+| `quit-when-idle` | `on` 或 `off`；没有传输在进行时，关闭桌面窗口即退出 |
 | `recent-ops` | 保留的最近操作条数，1 到 1000 |
 | `keep-recent-ops` | `on` 或 `off` |
 | `secret-backend` | 只读。用 `vault init` 和 `vault backend` 更改。 |

@@ -130,7 +130,7 @@ func main() {
 		quitting := false
 		mygo.App.OnBeforeQuit(func(*mygo.QuitEvent) { quitting = true })
 		win.OnClose(func(e *mygo.CloseEvent) {
-			if a.tray.on && !quitting {
+			if a.closeHides() && !quitting {
 				e.PreventDefault()
 				win.Hide()
 			}
