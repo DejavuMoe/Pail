@@ -91,7 +91,7 @@
     <section class="hero" id="top">
       <div class="wrap hero-copy">
         <h1 class="hero-title" data-i18n="heroTitle">A desktop client for S3‑compatible storage</h1>
-        <p class="hero-sub" data-i18n="heroSub">Browse buckets, transfer files, and manage object versions, bucket settings and share links. Free and open source, for Windows, macOS and Linux.</p>
+        <p class="hero-sub" data-i18n="heroSub">Browse buckets, move files, manage versions and bucket settings, share links. Free and open source for Windows, macOS and Linux.</p>
         <div class="hero-cta">
           <a class="btn btn-primary" href="#download" data-os-cta>
             <svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg>
@@ -131,14 +131,16 @@
       <div class="wrap">
         <div class="section-head reveal">
           <h2 class="section-title" id="demo-title" data-i18n="demoTitle">See Pail at work</h2>
-          <p class="section-lede" data-i18n="demoLede">A 48-second tour of the real app on an in-memory demo server: browse a bucket, upload files, share a link, restore an older version.</p>
+          <p class="section-lede" data-i18n="demoLede">A 48-second tour: browse a bucket, upload files, share a link, restore an older version.</p>
         </div>
         <figure class="demo-video reveal">
+          <div class="demo-frame">
           <video controls preload="none" playsinline width="1920" height="1080" poster="../../docs/video/pail-demo.webp" data-i18n-aria-label="demoVideoLabel" aria-label="Pail demo video">
             <source src="../../docs/video/pail-demo.mp4" type="video/mp4">
             <p><a href="../../docs/video/pail-demo.mp4" data-i18n="demoFallback">Download the demo video (MP4, 9 MB)</a></p>
           </video>
-          <figcaption data-i18n="demoNote">The app window is the real app, running against a built-in demo server with sample data. The titles and the files flying in were added for the video.</figcaption>
+          </div>
+          <figcaption data-i18n="demoNote">The window is the real app on a demo server with sample data. The titles and the flying files are added.</figcaption>
         </figure>
       </div>
     </section>
@@ -150,7 +152,7 @@
         <article class="showcase reveal">
           <div class="showcase-copy">
             <h3 data-i18n="fTransfersTitle">Uploads and downloads</h3>
-            <p data-i18n="fTransfersBody">Transfer files, folders or whole buckets, or drag files into the window. Uploads and downloads have separate queues with progress, speed, cancel and retry. Large files are uploaded in parts with checksums, and a download is moved into place only after it has been verified.</p>
+            <p data-i18n="fTransfersBody">Upload and download files, folders or whole buckets, or drag files into the window. Queues show progress and speed; cancel or retry any item. Large files go up in parts with checksums.</p>
           </div>
           <div class="mini mini-transfers" aria-hidden="true">
             <div class="tq-head">
@@ -192,7 +194,7 @@
         <article class="showcase showcase-flip reveal">
           <div class="showcase-copy">
             <h3 data-i18n="fVersionsTitle">Versions and delete markers</h3>
-            <p data-i18n="fVersionsBody">List every version of an object, download older versions, restore one or undo a delete, and permanently remove only the versions you select.</p>
+            <p data-i18n="fVersionsBody">See every version of an object, download or restore one, undo a delete, and permanently remove only the versions you pick.</p>
           </div>
           <div class="mini mini-versions" aria-hidden="true">
             <div class="mv-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file"></use></svg><span>reports/q3.csv</span></div>
@@ -205,12 +207,12 @@
         </article>
 
         <ul class="facts facts-3">
-          <li class="reveal"><h3 data-i18n="fAccountsTitle">Accounts</h3><p data-i18n="fAccountsBody">Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. For other services, set the endpoint, region and path-style addressing, and test the connection before saving.</p></li>
-          <li class="reveal"><h3 data-i18n="fSettingsTitle">Bucket settings</h3><p data-i18n="fSettingsBody">Edit 14 bucket settings, among them versioning, encryption, policy, CORS, lifecycle and replication, as a form or as JSON.</p></li>
-          <li class="reveal"><h3 data-i18n="fPropsTitle">Object properties</h3><p data-i18n="fPropsBody">Change headers, metadata, tags, ACL, storage class and server-side encryption for one object or a selection. Properties you leave alone are kept.</p></li>
-          <li class="reveal"><h3 data-i18n="fSyncTitle">Sync jobs</h3><p data-i18n="fSyncBody">Save jobs that upload, download or mirror a folder. Compare by size and time, size or checksum, exclude files by pattern, and review the plan before it runs.</p></li>
-          <li class="reveal"><h3 data-i18n="fLinksTitle">Presigned and CDN links</h3><p data-i18n="fLinksBody">Create presigned GET or PUT links with an expiry, for one object or many. With a CDN domain set on the account, copy the CDN link as soon as an upload finishes.</p></li>
-          <li class="reveal"><h3 data-i18n="fRulesTitle">Upload rules</h3><p data-i18n="fRulesBody">Match by bucket and key pattern to set headers, storage class and encryption on upload, or compress files with GZIP, ZIP or AES-256 ZIP.</p></li>
+          <li class="reveal"><h3 data-i18n="fAccountsTitle">Accounts</h3><p data-i18n="fAccountsBody">Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. For other services, set the endpoint, region and path-style addressing, and test the connection.</p></li>
+          <li class="reveal"><h3 data-i18n="fSettingsTitle">Bucket settings</h3><p data-i18n="fSettingsBody">14 settings, including versioning, encryption, policy, CORS, lifecycle and replication, as a form or as JSON.</p></li>
+          <li class="reveal"><h3 data-i18n="fPropsTitle">Object properties</h3><p data-i18n="fPropsBody">Headers, metadata, tags, ACL, storage class and server-side encryption for one object or a selection.</p></li>
+          <li class="reveal"><h3 data-i18n="fSyncTitle">Sync jobs</h3><p data-i18n="fSyncBody">Upload, download or mirror a folder. Compare by size and time, size or checksum, exclude files by pattern, and review the plan first.</p></li>
+          <li class="reveal"><h3 data-i18n="fLinksTitle">Presigned and CDN links</h3><p data-i18n="fLinksBody">Presigned GET or PUT links with an expiry, for one object or many. With a CDN domain on the account, copy the CDN link after an upload.</p></li>
+          <li class="reveal"><h3 data-i18n="fRulesTitle">Upload rules</h3><p data-i18n="fRulesBody">Match a bucket and key pattern to set headers, storage class and encryption on upload, or to compress with GZIP, ZIP or AES-256 ZIP.</p></li>
         </ul>
       </div>
     </section>
@@ -225,22 +227,18 @@
         <div class="terminal reveal" data-demo="terminal">
           <div class="term-bar">
             <div class="term-tabs" role="tablist" data-i18n-aria-label="cliExamples" aria-label="Examples">
-              <button type="button" role="tab" aria-selected="true" data-term="ls" id="term-tab-ls" aria-controls="term-panel">ls</button>
+              <button type="button" role="tab" aria-selected="true" data-term="account" id="term-tab-account" aria-controls="term-panel">account</button>
+              <button type="button" role="tab" aria-selected="false" data-term="ls" id="term-tab-ls" aria-controls="term-panel">ls</button>
+              <button type="button" role="tab" aria-selected="false" data-term="upload" id="term-tab-upload" aria-controls="term-panel">upload</button>
+              <button type="button" role="tab" aria-selected="false" data-term="download" id="term-tab-download" aria-controls="term-panel">download</button>
               <button type="button" role="tab" aria-selected="false" data-term="sync" id="term-tab-sync" aria-controls="term-panel">sync</button>
               <button type="button" role="tab" aria-selected="false" data-term="presign" id="term-tab-presign" aria-controls="term-panel">presign</button>
               <button type="button" role="tab" aria-selected="false" data-term="json" id="term-tab-json" aria-controls="term-panel">--json</button>
             </div>
           </div>
-          <pre class="term-body" id="term-panel" role="tabpanel" aria-labelledby="term-tab-ls" tabindex="0"><code><span class="t-prompt">$</span> <span class="t-cmd">pail ls s3://acme-assets/</span>
-<span class="t-out">                                PRE assets/</span>
-<span class="t-out">                                PRE backups/</span>
-<span class="t-out">                                PRE logs/</span>
-<span class="t-out">                                PRE reports/</span>
-<span class="t-out">                                PRE tmp/</span>
-<span class="t-out">                                PRE website/</span>
-<span class="t-out">2026-10-19 14:51:08        445 B  README.txt</span>
-<span class="t-out">2026-10-19 14:51:08        303 B  manifest.json</span>
-<span class="t-dim">2 objects, 6 folders, 748 B</span></code></pre>
+          <pre class="term-body" id="term-panel" role="tabpanel" aria-labelledby="term-tab-account" tabindex="0"><code><span class="t-prompt">$</span> <span class="t-cmd t-wrap">pail account add minio --endpoint https://s3.example.com --region us-east-1 --path-style --access-key-id minioadmin --secret-stdin</span>
+<span class="t-dim t-wrap">testing the connection ...</span>
+<span class="t-out t-wrap">added account minio (0a1b2c3d4e5f6071)</span></code></pre>
         </div>
       </div>
     </section>
@@ -253,8 +251,8 @@
         </div>
         <ul class="facts facts-4">
           <li class="reveal"><h3 data-i18n="pNetTitle">Only your endpoints</h3><p data-i18n="pNetBody">Pail connects only to the storage endpoints of the accounts you add.</p></li>
-          <li class="reveal"><h3 data-i18n="pKeysTitle">Keychain or encrypted vault</h3><p data-i18n="pKeysBody">Secret keys go to Windows Credential Manager, macOS Keychain or the Linux Secret Service. Without a keychain, use the optional vault, encrypted with Argon2id and XChaCha20-Poly1305.</p></li>
-          <li class="reveal"><h3 data-i18n="pLogTitle">Logs off by default</h3><p data-i18n="pLogBody">The diagnostic log is off until you turn it on. Signatures, Authorization headers, URL query strings and known secrets are removed before anything is written.</p></li>
+          <li class="reveal"><h3 data-i18n="pKeysTitle">Keychain or encrypted vault</h3><p data-i18n="pKeysBody">Secret keys go to Windows Credential Manager, macOS Keychain or the Linux Secret Service. Without a keychain, use the encrypted vault.</p></li>
+          <li class="reveal"><h3 data-i18n="pLogTitle">Logs off by default</h3><p data-i18n="pLogBody">The log is off until you turn it on. Signatures, Authorization headers, query strings and known secrets are removed before anything is written.</p></li>
           <li class="reveal"><h3 data-i18n="pScopeTitle">Scope before you confirm</h3><p data-i18n="pScopeBody">Destructive actions list what they will affect before they run. To delete a bucket, you type its name.</p></li>
         </ul>
       </div>

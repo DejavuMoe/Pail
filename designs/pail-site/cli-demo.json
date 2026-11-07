@@ -1,6 +1,24 @@
 {
  "examples": [
   {
+   "id": "account",
+   "command": "pail account add minio --endpoint https://s3.example.com --region us-east-1 --path-style --access-key-id minioadmin --secret-stdin",
+   "lines": [
+    {
+     "kind": "cmd",
+     "text": "pail account add minio --endpoint https://s3.example.com --region us-east-1 --path-style --access-key-id minioadmin --secret-stdin"
+    },
+    {
+     "kind": "err",
+     "text": "testing the connection ..."
+    },
+    {
+     "kind": "out",
+     "text": "added account minio (0a1b2c3d4e5f6071)"
+    }
+   ]
+  },
+  {
    "id": "ls",
    "command": "pail ls s3://acme-assets/",
    "lines": [
@@ -43,6 +61,42 @@
     {
      "kind": "err",
      "text": "2 objects, 6 folders, 748 B"
+    }
+   ]
+  },
+  {
+   "id": "upload",
+   "command": "pail cp ./q4-report.pdf s3://acme-assets/reports/",
+   "lines": [
+    {
+     "kind": "cmd",
+     "text": "pail cp ./q4-report.pdf s3://acme-assets/reports/"
+    },
+    {
+     "kind": "err",
+     "text": "done        reports/q4-report.pdf"
+    },
+    {
+     "kind": "err",
+     "text": "cp: 1 succeeded, 0 skipped, 0 failed, 0 unknown, 0 unprocessed, 1.8 MiB"
+    }
+   ]
+  },
+  {
+   "id": "download",
+   "command": "pail cp s3://acme-assets/reports/2026-Q3-financials.pdf ./downloads/",
+   "lines": [
+    {
+     "kind": "cmd",
+     "text": "pail cp s3://acme-assets/reports/2026-Q3-financials.pdf ./downloads/"
+    },
+    {
+     "kind": "err",
+     "text": "done        reports/2026-Q3-financials.pdf"
+    },
+    {
+     "kind": "err",
+     "text": "cp: 1 succeeded, 0 skipped, 0 failed, 0 unknown, 0 unprocessed, 13.8 KiB"
     }
    ]
   },
