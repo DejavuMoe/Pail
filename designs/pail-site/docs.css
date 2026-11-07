@@ -283,8 +283,15 @@
 }
 .prose th {
   background: var(--bg-sunk);
+  color: var(--muted);
+  font-size: 13px;
   font-weight: 600;
+  white-space: nowrap; /* a header such as 退出码 never breaks into two lines */
 }
+/* The first column is a short name: keep it on one line so the second column gets the room. */
+.prose td:first-child { white-space: nowrap; font-weight: 500; }
+.prose td:first-child code { font-weight: 400; }
+.prose tbody tr:hover td { background: color-mix(in srgb, var(--bg-sunk) 55%, transparent); }
 .prose tbody tr:last-child td { border-bottom: 0; }
 
 .prose hr {

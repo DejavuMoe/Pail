@@ -8,9 +8,10 @@ package main
 //
 //	$env:PAIL_UPDATE_GOLDEN = "1"; go test ./cmd/pail -run TestSiteCLIDemo
 //
-// Only three things are normalised, because they differ on every run: timestamps
-// become one fixed date, and the credential and signature of a presigned URL
-// become "…" (the signature is of throw-away keys; the rest of the URL is real).
+// Only a few things are normalised, because they differ on every run: timestamps
+// become one fixed date, the address of the demo server becomes example.com, and
+// the random id of a new account is fixed, the credential and signature of a presigned URL become "…" (the signature is of
+// throw-away keys; the rest of the URL is real).
 // stdout and stderr keep the order in which the command wrote them.
 
 import (
@@ -74,15 +75,18 @@ var (
 	reDemoAmzDt  = regexp.MustCompile(`X-Amz-Date=\d{8}T\d{6}Z`)
 	reDemoAmzCr  = regexp.MustCompile(`X-Amz-Credential=[^&]+`)
 	reDemoAmzSig = regexp.MustCompile(`X-Amz-Signature=[0-9a-f]+`)
+	reDemoAcctID = regexp.MustCompile(`(added account \S+ \()[0-9a-f]{16}\)`)
 )
 
 // normaliseDemo applies the three documented normalisations.
-func normaliseDemo(s string) string {
+func normaliseDemo(env *demo.Env, s string) string {
+	s = strings.ReplaceAll(s, env.Srv.URL, "https://s3.example.com")
 	s = reDemoTime.ReplaceAllString(s, "2026-10-19 14:51:08")
 	s = reDemoISO.ReplaceAllString(s, "2026-10-19T14:51:08Z")
 	s = reDemoAmzDt.ReplaceAllString(s, "X-Amz-Date=20261019T145108Z")
 	s = reDemoAmzCr.ReplaceAllString(s, "X-Amz-Credential=…")
 	s = reDemoAmzSig.ReplaceAllString(s, "X-Amz-Signature=…")
+	s = reDemoAcctID.ReplaceAllString(s, "${1}0a1b2c3d4e5f6071)")
 	return s
 }
 
@@ -147,14 +151,23 @@ func TestSiteCLIDemo(t *testing.T) {
 	put("photos/README.txt", 612)
 	put("photos/tmp/draft.png", 1_153_434)
 
+	// A file to upload; the download goes into a folder that does not exist yet.
+	if err := os.WriteFile(filepath.Join(work, "q4-report.pdf"), bytes.Repeat([]byte{'r'}, 1_887_437), 0o644); err != nil {
+		t.Fatal(err)
+	}
 	examples := []struct {
-		id, dir string
-		args    []string
+		id, dir, stdin string
+		args           []string
 	}{
-		{"ls", s3dir, []string{"ls", "s3://acme-assets/"}},
-		{"sync", s3dir, []string{"sync", "./photos", "s3://acme-media-archive/photos/", "--mode", "mirror", "--dry-run"}},
-		{"presign", awsdir, []string{"presign", "s3://acme-assets/reports/customers-export.csv", "--expires", "1h"}},
-		{"json", s3dir, []string{"ls", "s3://acme-assets/reports/exports/", "--json"}},
+		// A new configuration directory: the account is added from scratch. The
+		// secret comes from stdin, as it would from a pipe.
+		{"account", t.TempDir(), "demo-secret\n", []string{"account", "add", "minio", "--endpoint", env.Srv.URL, "--region", "us-east-1", "--path-style", "--access-key-id", "minioadmin", "--secret-stdin"}},
+		{"ls", s3dir, "", []string{"ls", "s3://acme-assets/"}},
+		{"upload", s3dir, "", []string{"cp", "./q4-report.pdf", "s3://acme-assets/reports/"}},
+		{"download", s3dir, "", []string{"cp", "s3://acme-assets/reports/2026-Q3-financials.pdf", "./downloads/"}},
+		{"sync", s3dir, "", []string{"sync", "./photos", "s3://acme-media-archive/photos/", "--mode", "mirror", "--dry-run"}},
+		{"presign", awsdir, "", []string{"presign", "s3://acme-assets/reports/customers-export.csv", "--expires", "1h"}},
+		{"json", s3dir, "", []string{"ls", "s3://acme-assets/reports/exports/", "--json"}},
 	}
 	var got demoFile
 	for _, ex := range examples {
@@ -162,13 +175,13 @@ func TestSiteCLIDemo(t *testing.T) {
 		var log []demoLine
 		out := &orderedWriter{mu: &mu, log: &log, kind: "out"}
 		errw := &orderedWriter{mu: &mu, log: &log, kind: "err"}
-		code := run(context.Background(), append([]string{"--config-dir", ex.dir}, ex.args...), IO{Stdout: out, Stderr: errw, Keyring: kr})
+		code := run(context.Background(), append([]string{"--config-dir", ex.dir}, ex.args...), IO{Stdin: strings.NewReader(ex.stdin), Stdout: out, Stderr: errw, Keyring: kr})
 		if code != 0 {
 			t.Fatalf("%s exited %d:\n%s", strings.Join(ex.args, " "), code, fmt.Sprint(log))
 		}
-		lines := []demoLine{{Kind: "cmd", Text: "pail " + strings.Join(ex.args, " ")}}
+		lines := []demoLine{{Kind: "cmd", Text: normaliseDemo(env, "pail "+strings.Join(ex.args, " "))}}
 		for _, l := range log {
-			lines = append(lines, demoLine{Kind: l.Kind, Text: normaliseDemo(l.Text)})
+			lines = append(lines, demoLine{Kind: l.Kind, Text: normaliseDemo(env, l.Text)})
 		}
 		got.Examples = append(got.Examples, demoExample{ID: ex.id, Command: lines[0].Text, Lines: lines})
 	}
