@@ -231,7 +231,7 @@ func TestAssetsAreFingerprintedAndClean(t *testing.T) {
 	if len(entries) != len(assets) {
 		t.Fatalf("%d assets, want %d", len(entries), len(assets))
 	}
-	hashed := regexp.MustCompile(`^[a-z-]+\.[0-9a-f]{10}\.(css|js|svg|webp)$`)
+	hashed := regexp.MustCompile(`^[a-z-]+\.[0-9a-f]{10}\.(css|js|svg|webp|mp4)$`)
 	for _, e := range entries {
 		if !hashed.MatchString(e.Name()) {
 			t.Errorf("asset %s is not fingerprinted", e.Name())
