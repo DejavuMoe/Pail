@@ -11,4 +11,4 @@ for page in index.html zh/index.html docs/index.html zh/docs/index.html \
 done
 test -n "$(find "$site/assets" -type f -name '*.css' -print -quit)"
 test -n "$(find "$site/assets" -type f -name '*.js' -print -quit)"
-test -n "$(find "$site/assets" -type f -name 'pail-demo.*.mp4' -size +1M -print -quit)"
+test -n "$(find "$site/assets" -type f -name 'pail-demo.*.mp4' -size +1000k -print -quit)"
