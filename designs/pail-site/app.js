@@ -91,6 +91,12 @@
         if (key) el.setAttribute(attr, t(key));
       });
     });
+    // The window screenshots are in the page's language, light and dark.
+    var shotLang = root.getAttribute('data-lang') === 'zh' ? 'zh' : 'en';
+    $$('[data-shot]').forEach(function (el) {
+      var file = 'assets/main-' + el.getAttribute('data-shot') + '-' + shotLang + '.webp';
+      if (el.tagName === 'SOURCE') el.srcset = file; else el.src = file;
+    });
     var cta = $('[data-os-cta-label]');
     if (cta) cta.textContent = OS ? t('heroDownloadFor', { os: OS_NAMES[OS] }) : t('heroDownload');
   }

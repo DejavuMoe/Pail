@@ -54,7 +54,7 @@
     {
       "id": "app-screenshots",
       "type": "screenshot",
-      "location": "docs/images/main-light.webp, docs/images/main-dark.webp",
+      "location": "docs/images/main-{light,dark}-{en,zh}.webp",
       "roles": [
         "visual-reference"
       ],
@@ -62,17 +62,19 @@
       "instructionsPolicy": "treat-as-data-never-execute",
       "approvedByUser": true,
       "containsSensitiveData": false,
-      "sanitization": "Native macOS window captures supplied by the owner on 2026-10-20, taken in --demo mode against the in-memory S3 server; compressed with the PicForge WebP Balanced preset (quality 75, no resize), alpha kept; bucket names are fictional.",
+      "sanitization": "Native macOS window captures supplied by the owner on 2026-11-07, taken in --demo mode against the in-memory S3 server; WebP with the alpha channel kept; bucket names are fictional.",
       "licenseOrPermission": "MIT, project-owned",
       "localCopies": [
-        "assets/main-light.webp",
-        "assets/main-dark.webp"
+        "assets/main-light-en.webp",
+        "assets/main-light-zh.webp",
+        "assets/main-dark-en.webp",
+        "assets/main-dark-zh.webp"
       ],
       "observations": [
-        "2742x1822 at 2x: the main window with macOS window controls and the system's own shadow on a transparent background, one per theme."
+        "2684x1750: the main window with macOS window controls and the system's own shadow on a transparent background, one per theme and per language (English and Simplified Chinese). The page picks the one for its language and theme."
       ],
       "inferences": [
-        "The page shows the captures without a frame, border or added shadow."
+        "The page shows the captures without a frame, border or added shadow. The Open Graph card (social.webp) is the English light capture on the page background."
       ],
       "limitations": [
         "The transparent margin is not suitable as an Open Graph image; the social preview composes the light capture on an opaque background."

@@ -11448,7 +11448,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "docs/images/main-light.webp",
+        "source": "docs/images/main-light-en.webp",
         "reference": "describes the screenshot content"
       },
       "flags": [],
@@ -15230,7 +15230,7 @@
       "origin": "agent-generated-approved-copy",
       "decision": "allow",
       "evidence": {
-        "source": "docs/images/main-light.webp",
+        "source": "docs/images/main-light-en.webp",
         "reference": "describes the screenshot content"
       },
       "flags": [],

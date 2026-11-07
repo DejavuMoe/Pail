@@ -25,8 +25,10 @@
           "app.js",
           "cli-demo.json",
           "assets/pail-icon.svg",
-          "assets/main-light.webp",
-          "assets/main-dark.webp",
+          "assets/main-light-en.webp",
+          "assets/main-light-zh.webp",
+          "assets/main-dark-en.webp",
+          "assets/main-dark-zh.webp",
           "../../docs/video/pail-demo.mp4",
           "../../docs/video/pail-demo.webp"
         ],
