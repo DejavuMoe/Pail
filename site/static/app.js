@@ -169,7 +169,7 @@
       r.fill.style.transform = 'scaleX(' + r.p.toFixed(4) + ')';
       if (!force && now - r.lastText < 160) return;
       r.lastText = now;
-      r.bytes.textContent = humanSize(Math.round(r.total * r.p)) + ' / ' + humanSize(r.total);
+      r.bytes.textContent = t('miniBytesOf', { done: humanSize(Math.round(r.total * r.p)), total: humanSize(r.total) });
     }
     rows.forEach(function (r) { paint(r, 0, true); });
     var raf = 0, last = 0, visible = false;
@@ -211,35 +211,23 @@
   })();
 
   /* ---------- Terminal ---------- */
-  var TERM = {
-    ls: [
-      ['cmd', 'pail ls s3://acme-assets/'],
-      ['out', '                                PRE assets/'],
-      ['out', '                                PRE backups/'],
-      ['out', '                                PRE logs/'],
-      ['out', '                                PRE reports/'],
-      ['out', '                                PRE website/'],
-      ['out', '2026-10-19 14:51:08        303 B  manifest.json'],
-      ['out', '2026-10-19 14:51:08        445 B  README.txt']
-    ],
-    sync: [
-      ['cmd', 'pail sync ./photos s3://acme-media/photos/ --mode mirror --dry-run'],
-      ['up', 'upload   2026/04/IMG_2231.heic  (3.2 MB)  new'],
-      ['up', 'upload   2026/04/cover.jpg  (2.9 MB)  size differs'],
-      ['del', 'delete   tmp/draft.png  (1.1 MB)  not in the source'],
-      ['out', 'plan: 2 uploads, 0 downloads, 1 deletes, 340 skipped, 6.1 MB to transfer'],
-      ['dim', 'dry run: nothing was changed']
-    ],
-    presign: [
-      ['cmd', 'pail presign s3://acme-assets/reports/q3.csv --expires 1h'],
-      ['out', 'https://acme-assets.s3.us-east-1.amazonaws.com/reports/q3.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=…&X-Amz-Date=20261019T145108Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=…']
-    ],
-    json: [
-      ['cmd', 'pail ls s3://acme-assets/reports/ --json'],
-      ['out', '{"etag":"\\"9b2cf535f27731c974343645a3985328\\"","key":"reports/q3.csv","modified":"2026-10-19T14:51:08Z","size":18742,"storageClass":"STANDARD","type":"object"}'],
-      ['out', '{"etag":"\\"1f3870be274f6c49b3e31a0c6728957f\\"","key":"reports/q2.csv","modified":"2026-07-02T09:12:40Z","size":17311,"storageClass":"STANDARD_IA","type":"object"}']
-    ]
-  };
+  // The examples are the CLI's own output, recorded by TestSiteCLIDemo in
+  // cmd/pail (site/cli-demo.json) and embedded in the page; nothing here is
+  // typed by hand. The page already shows the first one as plain HTML.
+  var TERM = {};
+  function termKind(l) {
+    if (l.kind === 'cmd') return 'cmd';
+    if (l.kind === 'err') return 'dim';
+    if (/^(upload|download)\s/.test(l.text)) return 'up';
+    if (/^delete\s/.test(l.text)) return 'del';
+    if (/^dry run:/.test(l.text)) return 'dim';
+    return 'out';
+  }
+  try {
+    JSON.parse($('#pail-cli-demo').textContent).examples.forEach(function (e) {
+      TERM[e.id] = e.lines.map(function (l) { return [termKind(l), l.text]; });
+    });
+  } catch (e) {}
   var term = $('[data-demo="terminal"]');
   var termCode = term ? $('.term-body code', term) : null;
   var termTabs = term ? $$('[data-term]', term) : [];
@@ -255,6 +243,7 @@
     if (!termCode) return;
     clearTimeout(termTimer);
     var lines = TERM[name];
+    if (!lines) return; // no recording: the page keeps its first example
     if (!animate || reduced.matches) {
       termCode.innerHTML = lines.map(function (l) { return lineHTML(l[0], l[1]); }).join('\n') + PROMPT;
       return;
@@ -288,11 +277,12 @@
     });
     tab.tabIndex = i ? -1 : 0;
   });
-  if (term) {
-    renderTerminal('ls', false);
+  if (term && termTabs.length) {
+    var firstTerm = termTabs[0].getAttribute('data-term');
+    renderTerminal(firstTerm, false);
     if (hasIO) {
       var termIO = new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) { termIO.disconnect(); renderTerminal('ls', true); }
+        if (entries[0].isIntersecting) { termIO.disconnect(); renderTerminal(firstTerm, true); }
       }, { threshold: 0.4 });
       termIO.observe(term);
     }

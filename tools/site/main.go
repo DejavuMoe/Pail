@@ -48,7 +48,7 @@ var languages = []language{
 
 // runtimeKeys are the strings app.js sets at runtime (download button, download
 // source note). They are embedded in the landing pages as JSON.
-var runtimeKeys = []string{"heroDownloadFor", "sourceGithubNote", "sourceMirrorNote"}
+var runtimeKeys = []string{"heroDownloadFor", "sourceGithubNote", "sourceMirrorNote", "miniBytesOf"}
 
 // asset is a file served from /assets/ under a content-hashed name.
 type asset struct {
@@ -66,6 +66,8 @@ var assets = []asset{
 	{name: "main-light.webp", src: "docs/images/main-light.webp"},
 	{name: "main-dark.webp", src: "docs/images/main-dark.webp"},
 	{name: "social.webp", src: "docs/images/social.webp"},
+	{name: "pail-demo.mp4", src: "docs/video/pail-demo.mp4"},
+	{name: "pail-demo.webp", src: "docs/video/pail-demo.webp"},
 }
 
 // outputs are the top-level entries a build writes. An existing -out
@@ -186,11 +188,21 @@ func build(c config) error {
 		"download": func(target string) string {
 			return release + "/Pail-v" + c.version + "-" + target
 		},
-		"tl": func(lang, key string) (string, error) { return lookup(locales, lang, key) },
+		"tl":       func(lang, key string) (string, error) { return lookup(locales, lang, key) },
+		"termLine": termLine,
 		// t is bound to the page's language before each render.
-		"t": func(string) (string, error) { return "", errors.New("t used outside a page") },
+		"t":       func(string) (string, error) { return "", errors.New("t used outside a page") },
+		"bytesOf": func(string, string) (string, error) { return "", errors.New("bytesOf used outside a page") },
 	}
 
+	cli, err := loadCLIDemo(c.root)
+	if err != nil {
+		return err
+	}
+	cliJSON, err := json.Marshal(cli) // escapes <, > and & for use inside <script>
+	if err != nil {
+		return err
+	}
 	pageTmpl, err := parseTemplates(c.root, funcs, "index.html.tmpl", "social.html.tmpl", "footer.html.tmpl")
 	if err != nil {
 		return err
@@ -225,13 +237,22 @@ func build(c config) error {
 			"MirrorBase":    mirrorBase,
 			"MirrorLabel":   mirrorLabel,
 			"Runtime":       template.JS(js),
+			"CLI":           cli,
+			"CLIJSON":       template.JS(cliJSON),
 		}
 		t, err := pageTmpl.Clone()
 		if err != nil {
 			return err
 		}
 		code := lang.Code
-		t.Funcs(template.FuncMap{"t": func(key string) (string, error) { return lookup(locales, code, key) }})
+		t.Funcs(template.FuncMap{
+			"t": func(key string) (string, error) { return lookup(locales, code, key) },
+			// bytesOf words progress as the app does: "1.4 MB of 2.2 MB", "1.4 MB / 2.2 MB" in Chinese.
+			"bytesOf": func(done, total string) (string, error) {
+				s, err := lookup(locales, code, "miniBytesOf")
+				return strings.NewReplacer("{done}", done, "{total}", total).Replace(s), err
+			},
+		})
 		if err := render(t, data, filepath.Join(c.out, filepath.FromSlash(strings.TrimPrefix(lang.Path, "/")), "index.html")); err != nil {
 			return fmt.Errorf("%s page: %w", lang.Code, err)
 		}

@@ -467,7 +467,7 @@ func copyFixture(t *testing.T) string {
 	t.Helper()
 	src, dst := repoRoot(t), t.TempDir()
 	files := []string{"LICENSE", "README.md", "README.zh-CN.md", "CHANGELOG.md", "CHANGELOG.zh-CN.md", "docs/cli.md", "docs/cli.zh-CN.md",
-		"docs/images/main-light.webp", "docs/images/main-dark.webp", "docs/images/social.webp", "assets/brand/pail-icon.svg"}
+		"docs/images/main-light.webp", "docs/images/main-dark.webp", "docs/images/social.webp", "docs/video/pail-demo.mp4", "docs/video/pail-demo.webp", "assets/brand/pail-icon.svg"}
 	err := filepath.WalkDir(filepath.Join(src, "site"), func(p string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
 			rel, _ := filepath.Rel(src, p)

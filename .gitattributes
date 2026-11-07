@@ -33,3 +33,4 @@ internal/rules/internal/zipaes/testdata/** binary
 .agents/skills/** linguist-vendored
 designs/pail-site/** linguist-vendored
 *.webp binary
+*.mp4   binary

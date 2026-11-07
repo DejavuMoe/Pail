@@ -194,7 +194,7 @@
       r.fill.style.transform = 'scaleX(' + r.p.toFixed(4) + ')';
       if (!force && now - r.lastText < 160) return;
       r.lastText = now;
-      r.bytes.textContent = humanSize(Math.round(r.total * r.p)) + ' of ' + humanSize(r.total);
+      r.bytes.textContent = t('miniBytesOf', { done: humanSize(Math.round(r.total * r.p)), total: humanSize(r.total) });
     }
     rows.forEach(function (r) { paint(r, 0, true); });
     var raf = 0, last = 0, visible = false;

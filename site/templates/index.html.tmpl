@@ -130,6 +130,22 @@
       </div>
     </section>
 
+    <section class="section" id="demo" aria-labelledby="demo-title">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2 class="section-title" id="demo-title">{{t "demoTitle"}}</h2>
+          <p class="section-lede">{{t "demoLede"}}</p>
+        </div>
+        <figure class="demo-video reveal">
+          <video controls preload="none" playsinline width="1920" height="1080" poster="{{asset "pail-demo.webp"}}" aria-label="{{t "demoVideoLabel"}}">
+            <source src="{{asset "pail-demo.mp4"}}" type="video/mp4">
+            <p><a href="{{asset "pail-demo.mp4"}}">{{t "demoFallback"}}</a></p>
+          </video>
+          <figcaption>{{t "demoNote"}}</figcaption>
+        </figure>
+      </div>
+    </section>
+
     <section class="section" id="features" aria-labelledby="features-title">
       <div class="wrap">
         <h2 class="section-title reveal" id="features-title">{{t "featuresTitle"}}</h2>
@@ -149,13 +165,13 @@
               <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-up"></use></svg>
               <span class="tq-name">site/assets/hero.webp</span>
               <span class="tq-bar"><i></i></span>
-              <span class="tq-bytes">1.4 MB / 2.2 MB</span>
+              <span class="tq-bytes">{{bytesOf "1.4 MB" "2.2 MB"}}</span>
             </div>
             <div class="tq-row" data-total="2576980378">
               <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-down"></use></svg>
               <span class="tq-name">backups/2026-10-19.tar.gz</span>
               <span class="tq-bar"><i></i></span>
-              <span class="tq-bytes">1.6 GB / 2.4 GB</span>
+              <span class="tq-bytes">{{bytesOf "1.6 GB" "2.4 GB"}}</span>
             </div>
             <div class="tq-row is-done">
               <svg class="i" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>
@@ -185,8 +201,8 @@
             <div class="mv-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file"></use></svg><span>reports/q3.csv</span></div>
             <ol class="mv-list">
               <li class="mv-marker"><span class="mv-dot"></span><span class="mv-label">{{t "miniDeleteMarker"}}</span><span class="mv-badge">{{t "miniLatest"}}</span><span class="mv-time">2026-10-19 22:51</span></li>
-              <li class="mv-target"><span class="mv-dot"></span><span class="mv-id">3HL4kqtJlcpX</span><span class="mv-size">18.3 KB</span><span class="mv-restore"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span>{{t "miniRestore"}}</span></span></li>
-              <li><span class="mv-dot"></span><span class="mv-id">Xd3dIbrHYrmS</span><span class="mv-size">17.9 KB</span><span class="mv-time">2026-10-12 09:04</span></li>
+              <li class="mv-target"><span class="mv-dot"></span><span class="mv-id">3HL4kqtJ</span><span class="mv-size">18.3 KB</span><span class="mv-restore"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span>{{t "miniRestore"}}</span></span></li>
+              <li><span class="mv-dot"></span><span class="mv-id">Xd3dIbrH</span><span class="mv-size">17.9 KB</span><span class="mv-time">2026-10-12 09:04</span></li>
             </ol>
           </div>
         </article>
@@ -212,20 +228,13 @@
         <div class="terminal reveal" data-demo="terminal">
           <div class="term-bar">
             <div class="term-tabs" role="tablist" aria-label="{{t "cliExamples"}}">
-              <button type="button" role="tab" aria-selected="true" data-term="ls" id="term-tab-ls" aria-controls="term-panel">ls</button>
-              <button type="button" role="tab" aria-selected="false" data-term="sync" id="term-tab-sync" aria-controls="term-panel">sync</button>
-              <button type="button" role="tab" aria-selected="false" data-term="presign" id="term-tab-presign" aria-controls="term-panel">presign</button>
-              <button type="button" role="tab" aria-selected="false" data-term="json" id="term-tab-json" aria-controls="term-panel">--json</button>
+{{- range $i, $e := .CLI.Examples}}
+              <button type="button" role="tab" aria-selected="{{if eq $i 0}}true{{else}}false{{end}}" data-term="{{$e.ID}}" id="term-tab-{{$e.ID}}" aria-controls="term-panel">{{$e.Tab}}</button>
+{{- end}}
             </div>
           </div>
-          <pre class="term-body" id="term-panel" role="tabpanel" aria-labelledby="term-tab-ls" tabindex="0"><code><span class="t-prompt">$</span> <span class="t-cmd">pail ls s3://acme-assets/</span>
-<span class="t-out">                                PRE assets/</span>
-<span class="t-out">                                PRE backups/</span>
-<span class="t-out">                                PRE logs/</span>
-<span class="t-out">                                PRE reports/</span>
-<span class="t-out">                                PRE website/</span>
-<span class="t-out">2026-10-19 14:51:08        303 B  manifest.json</span>
-<span class="t-out">2026-10-19 14:51:08        445 B  README.txt</span></code></pre>
+          <pre class="term-body" id="term-panel" role="tabpanel" aria-labelledby="term-tab-{{(index .CLI.Examples 0).ID}}" tabindex="0"><code>{{range $i, $l := (index .CLI.Examples 0).Lines}}{{if $i}}
+{{end}}{{termLine $l}}{{end}}</code></pre>
         </div>
       </div>
     </section>
@@ -256,7 +265,6 @@
             <li><a href="{{.GitHub}}/releases">{{t "allReleases"}}</a></li>
             <li><a href="{{.Links.Build}}">{{t "buildFromSource"}}</a></li>
           </ul>
-          <p class="demo-hint"><span>{{t "demoHint1"}}</span> <code>pail-desktop --demo</code> <span>{{t "demoHint2"}}</span></p>
         </div>
 
         <div class="dl reveal" data-github-base="{{.ReleaseBase}}/"{{if .MirrorBase}} data-mirror-base="{{.MirrorBase}}"{{end}}>
@@ -304,6 +312,7 @@
   {{template "footer" .}}
 
   <script type="application/json" id="pail-strings">{{.Runtime}}</script>
+  <script type="application/json" id="pail-cli-demo">{{.CLIJSON}}</script>
   <script src="{{asset "app.js"}}"></script>
 </body>
 </html>
