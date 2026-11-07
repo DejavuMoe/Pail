@@ -849,6 +849,8 @@
   "settingsTray": "在通知区域显示",
   "settingsTrayHelp": "在那里显示 Pail 图标。图标显示时，关闭窗口后 Pail 仍在运行，传输会继续完成；要退出，请在图标菜单中选择“退出 Pail”。关闭此项后，关闭窗口即退出 Pail。",
   "settingsTrayMac": "在菜单栏显示",
+  "settingsQuitIdle": "空闲时关闭窗口即退出",
+  "settingsQuitIdleHelp": "没有传输在进行时，关闭窗口会退出 Pail。有传输在进行时，仍留在托盘中，直到传输完成。",
   "settingsLog": "写入诊断日志",
   "settingsLogFiles": "日志文件",
   "settingsLogHelp": "把错误和任务结果写入日志文件，便于排查问题（最多 3 个文件，每个不超过 5 MiB）。日志中可能出现文件名和存储桶名；私有密钥、会话令牌、密码、签名和 URL 查询参数会被替换为 [REDACTED]。默认关闭。",

@@ -340,7 +340,7 @@
 
 ### 托盘图标
 
-`cmd/pail-desktop/tray.go`。Windows 通知区域、macOS 菜单栏、Linux AppIndicator。默认显示；设置 → 外观 的开关（界面文案 Windows 与 Linux 为"在通知区域显示"，macOS 为"在菜单栏显示"）写入 `settings.json` 的 `hideTrayIcon`，缺省即显示，旧设置文件因此保持显示。
+`cmd/pail-desktop/tray.go`。Windows 通知区域、macOS 菜单栏、Linux AppIndicator。默认显示；设置 → 外观 的开关（界面文案 Windows 与 Linux 为"在通知区域显示"，macOS 为"在菜单栏显示"）写入 `settings.json` 的 `hideTrayIcon`，缺省即显示，旧设置文件因此保持显示。图标显示时，"空闲时关闭窗口即退出"（`quitWhenIdle`，缺省关）开启后：没有传输在进行时，关闭窗口直接退出；有传输时仍隐藏到托盘，传输完成后不自动退出。
 
 - **图案**：`assets/brand/pail-tray.svg`，取应用图标的三层渐细地层和圆点，不带底板。macOS 与 Windows 用单色模板图，由系统按菜单栏、任务栏的明暗着色。Linux 用完整彩色应用图标，因为 AppIndicator 面板不会给图片着色。
 - **菜单**（所有平台都是系统原生菜单），依次：打开 Pail、传输状态行（"2 个传输 · 25%"或"没有进行中的传输"，不可点）、显示传输、上传文件…、退出 Pail。Tooltip 是"Pail — 状态"。

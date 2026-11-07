@@ -439,6 +439,7 @@ var settingKeys = []settingKey{
 	{"log-to-file", func(s app.Settings) any { return s.LogToFile }, setBool(func(s *app.Settings) *bool { return &s.LogToFile })},
 	{"vault-auto-lock-minutes", func(s app.Settings) any { return s.VaultAutoLockMinutes }, setInt(func(s *app.Settings) *int { return &s.VaultAutoLockMinutes }, true)},
 	{"hide-tray-icon", func(s app.Settings) any { return s.HideTrayIcon }, setBool(func(s *app.Settings) *bool { return &s.HideTrayIcon })},
+	{"quit-when-idle", func(s app.Settings) any { return s.QuitWhenIdle }, setBool(func(s *app.Settings) *bool { return &s.QuitWhenIdle })},
 	{"recent-ops", func(s app.Settings) any { return s.RecentOps }, setInt(func(s *app.Settings) *int { return &s.RecentOps })},
 	{"keep-recent-ops", func(s app.Settings) any { return s.KeepRecentOps }, setBool(func(s *app.Settings) *bool { return &s.KeepRecentOps })},
 	{"secret-backend", func(s app.Settings) any { return s.SecretBackend }, nil},

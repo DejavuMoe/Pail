@@ -849,6 +849,8 @@
   "settingsTray": "Show in notification area",
   "settingsTrayHelp": "Shows the Pail icon there. While it shows, closing the window keeps Pail running so transfers finish; choose Quit Pail from the icon's menu to quit. Turned off, closing the window quits Pail.",
   "settingsTrayMac": "Show in menu bar",
+  "settingsQuitIdle": "Quit when closed and idle",
+  "settingsQuitIdleHelp": "Closing the window quits Pail when no transfer is running. While transfers run, it still stays in the tray until they finish.",
   "settingsLog": "Write diagnostic log",
   "settingsLogFiles": "Log files",
   "settingsLogHelp": "Writes errors and task results to a log file for troubleshooting (3 files of up to 5 MiB each). File and bucket names can appear in it. Secret keys, session tokens, passwords, signatures and URL query strings are replaced with [REDACTED]. Off by default.",

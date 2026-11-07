@@ -4,6 +4,12 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Quit when closed and idle. With the tray icon showing, turn on **Settings › Appearance › Quit when closed and idle** (or `pail settings quit-when-idle on`) and closing the window quits Pail when no transfer is running. While a transfer runs, closing the window still keeps Pail in the tray. It is off by default.
+
 ## [0.5.0] - 2026-11-06
 
 ### Added

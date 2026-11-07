@@ -364,6 +364,15 @@ func (a *app) settingsView(c *ui.Context) {
 				}
 				a.savedMark(c, "tray")
 			})
+			if a.tray.on {
+				settingsRowHelp(c, locales.SettingsQuitIdle(), locales.SettingsQuitIdleHelp(), f.errs["quitIdle"], func() {
+					on := a.tray.quitIdle
+					if switchControl(c, &on, locales.SettingsQuitIdle()).Changed() {
+						a.setQuitWhenIdle(on)
+					}
+					a.savedMark(c, "quitIdle")
+				})
+			}
 			settingsSection(c, locales.SettingsTransfers())
 			for _, ns := range numSettings[:4] {
 				a.numberRow(c, ns)

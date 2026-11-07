@@ -4,6 +4,12 @@
 
 本项目所有值得注意的变更都记录在此文件中。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
+## [Unreleased]
+
+### 新增
+
+- 空闲时关闭窗口即退出。托盘图标显示时，打开**设置 › 外观 › 空闲时关闭窗口即退出**（或 `pail settings quit-when-idle on`），没有传输在进行时关闭窗口就会退出 Pail；有传输在进行时，关闭窗口仍让 Pail 留在托盘。默认关闭。
+
 ## [0.5.0] - 2026-11-06
 
 ### 新增

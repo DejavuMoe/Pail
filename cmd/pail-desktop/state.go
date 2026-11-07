@@ -235,6 +235,7 @@ func newApp(svc *core.Service, opts options) *app {
 		a.opts.theme = svc.Settings().Theme
 	}
 	a.tray.on = !svc.Settings().HideTrayIcon
+	a.tray.quitIdle = svc.Settings().QuitWhenIdle
 	a.unsub = svc.Subscribe(a.onEvent)
 	a.setTasks(svc.Tasks())
 	a.accounts = svc.Accounts()
