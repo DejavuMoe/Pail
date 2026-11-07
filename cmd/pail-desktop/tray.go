@@ -34,6 +34,8 @@ type trayUI struct {
 	set func(on bool)
 	// on is whether the icon shows: closing the window then keeps Pail running.
 	on bool
+	// quitIdle makes closing the window quit when no transfer runs.
+	quitIdle bool
 	// visible reports whether the window shows; nil counts it as shown.
 	visible func() bool
 	// notify shows a system notification, used for what would be a toast
@@ -47,6 +49,23 @@ type trayUI struct {
 
 // windowHidden reports whether the window is hidden in the tray.
 func (a *app) windowHidden() bool { return a.tray.visible != nil && !a.tray.visible() }
+
+// closeHides reports whether closing the window hides it in the tray rather
+// than quitting: the icon shows and, with quitIdle, a transfer still runs.
+func (a *app) closeHides() bool {
+	if !a.tray.on {
+		return false
+	}
+	return !a.tray.quitIdle || countTasks(a.tasks)[0] > 0
+}
+
+// setQuitWhenIdle saves whether closing an idle window quits.
+func (a *app) setQuitWhenIdle(on bool) {
+	a.tray.quitIdle = on
+	a.applySetting("quitIdle", func(st *core.Settings) { st.QuitWhenIdle = on }, func() {
+		a.tray.quitIdle = !on
+	})
+}
 
 // setTrayShown shows or removes the icon and saves the choice.
 func (a *app) setTrayShown(on bool) {

@@ -8618,6 +8618,26 @@ func (msgs Messages) SettingsTrayMac() string {
 	return Catalog.Format(msgs.locale, "settingsTrayMac", nil)
 }
 
+// SettingsQuitIdle says "Quit when closed and idle"
+// in the language the app shows.
+func SettingsQuitIdle() string { return In(i18n.Locale()).SettingsQuitIdle() }
+
+// SettingsQuitIdle says "Quit when closed and idle"
+// in the language of msgs.
+func (msgs Messages) SettingsQuitIdle() string {
+	return Catalog.Format(msgs.locale, "settingsQuitIdle", nil)
+}
+
+// SettingsQuitIdleHelp says "Closing the window quits Pail when no transfer is running. While transfers run, it still stays in the tray until they…"
+// in the language the app shows.
+func SettingsQuitIdleHelp() string { return In(i18n.Locale()).SettingsQuitIdleHelp() }
+
+// SettingsQuitIdleHelp says "Closing the window quits Pail when no transfer is running. While transfers run, it still stays in the tray until they…"
+// in the language of msgs.
+func (msgs Messages) SettingsQuitIdleHelp() string {
+	return Catalog.Format(msgs.locale, "settingsQuitIdleHelp", nil)
+}
+
 // SettingsLog says "Write diagnostic log"
 // in the language the app shows.
 func SettingsLog() string { return In(i18n.Locale()).SettingsLog() }

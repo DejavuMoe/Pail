@@ -316,3 +316,28 @@ func TestTraySettingIsSavedAndApplied(t *testing.T) {
 		t.Fatal("turning it back on was not saved")
 	}
 }
+
+func TestCloseQuitsWhenIdleOnlyIfAsked(t *testing.T) {
+	h := newHarness(t, "light")
+	if !h.a.closeHides() {
+		t.Fatal("closing hides to the tray by default")
+	}
+	h.a.setQuitWhenIdle(true)
+	h.settle()
+	if !h.a.svc.Settings().QuitWhenIdle {
+		t.Fatal("the choice was not saved")
+	}
+	if h.a.closeHides() {
+		t.Fatal("an idle window should quit on close")
+	}
+	h.a.tasks = []Task{{ID: "1", Kind: core.KindUpload, Status: core.StatusRunning}}
+	if !h.a.closeHides() {
+		t.Fatal("a running transfer must keep Pail in the tray")
+	}
+	h.a.tasks = nil
+	h.a.tray.on = false
+	h.a.tray.quitIdle = false
+	if h.a.closeHides() {
+		t.Fatal("without the icon closing quits")
+	}
+}

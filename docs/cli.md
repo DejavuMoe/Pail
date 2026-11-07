@@ -245,6 +245,7 @@ These commands act on one object. `stat`, `cat`, `tags` and `acl` take `--versio
 | `log-to-file` | `on` or `off` |
 | `vault-auto-lock-minutes` | Idle minutes before the desktop app locks the vault, 0 for never |
 | `hide-tray-icon` | `on` or `off` |
+| `quit-when-idle` | `on` or `off`; closing the desktop window quits when no transfer is running |
 | `recent-ops` | Recent operations kept, 1 to 1000 |
 | `keep-recent-ops` | `on` or `off` |
 | `secret-backend` | Read only. Change it with `vault init` and `vault backend`. |
