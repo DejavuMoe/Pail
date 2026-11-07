@@ -23,9 +23,12 @@
           "styles.css",
           "i18n.js",
           "app.js",
+          "cli-demo.json",
           "assets/pail-icon.svg",
           "assets/main-light.webp",
-          "assets/main-dark.webp"
+          "assets/main-dark.webp",
+          "../../docs/video/pail-demo.mp4",
+          "../../docs/video/pail-demo.webp"
         ],
         "states": [
           "theme-system",
@@ -42,6 +45,8 @@
           "terminal-sync",
           "terminal-presign",
           "terminal-json",
+          "demo-video-poster",
+          "demo-video-playing",
           "download-source-github",
           "download-source-mirror",
           "download-mirror-unavailable",
@@ -55,6 +60,7 @@
         ],
         "stableIds": [
           "top",
+          "demo",
           "features",
           "cli",
           "privacy",

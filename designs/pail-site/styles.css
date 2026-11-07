@@ -395,6 +395,24 @@ code, pre { font-family: var(--font-mono); }
 /* ---------- Sections ---------- */
 .section { padding-top: clamp(96px, 11vw, 152px); }
 
+/* The demo video: a fixed 16:9 box, so loading the poster or the file never
+   moves the page. The poster and the video's own frame use the same graphite
+   as the terminal; native controls, no autoplay. */
+.demo-video { max-width: 1040px; margin-inline: auto; }
+.demo-video video {
+  display: block;
+  width: 100%;
+  height: auto;
+  aspect-ratio: 16 / 9;
+  background: var(--term-bg);
+  border: 1px solid var(--border);
+  border-radius: var(--radius);
+  box-shadow: 0 1px 2px rgb(var(--shadow-color) / .06), 0 18px 48px rgb(var(--shadow-color) / .12);
+}
+.demo-video figcaption { margin-top: 14px; color: var(--muted); font-size: 14px; text-align: center; text-wrap: balance; }
+.demo-video video p { padding: 16px; margin: 0; color: var(--term-text); }
+.demo-video video a { color: var(--term-accent); }
+
 .section-title {
   font-family: var(--font-display);
   font-size: clamp(1.75rem, 3vw, 2.5rem);

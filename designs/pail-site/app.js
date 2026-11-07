@@ -194,7 +194,7 @@
       r.fill.style.transform = 'scaleX(' + r.p.toFixed(4) + ')';
       if (!force && now - r.lastText < 160) return;
       r.lastText = now;
-      r.bytes.textContent = humanSize(Math.round(r.total * r.p)) + ' / ' + humanSize(r.total);
+      r.bytes.textContent = humanSize(Math.round(r.total * r.p)) + ' of ' + humanSize(r.total);
     }
     rows.forEach(function (r) { paint(r, 0, true); });
     var raf = 0, last = 0, visible = false;
@@ -236,35 +236,22 @@
   })();
 
   /* ---------- Terminal ---------- */
-  var TERM = {
-    ls: [
-      ['cmd', 'pail ls s3://acme-assets/'],
-      ['out', '                                PRE assets/'],
-      ['out', '                                PRE backups/'],
-      ['out', '                                PRE logs/'],
-      ['out', '                                PRE reports/'],
-      ['out', '                                PRE website/'],
-      ['out', '2026-10-19 14:51:08        303 B  manifest.json'],
-      ['out', '2026-10-19 14:51:08        445 B  README.txt']
-    ],
-    sync: [
-      ['cmd', 'pail sync ./photos s3://acme-media/photos/ --mode mirror --dry-run'],
-      ['up', 'upload   2026/04/IMG_2231.heic  (3.2 MB)  new'],
-      ['up', 'upload   2026/04/cover.jpg  (2.9 MB)  size differs'],
-      ['del', 'delete   tmp/draft.png  (1.1 MB)  not in the source'],
-      ['out', 'plan: 2 uploads, 0 downloads, 1 deletes, 340 skipped, 6.1 MB to transfer'],
-      ['dim', 'dry run: nothing was changed']
-    ],
-    presign: [
-      ['cmd', 'pail presign s3://acme-assets/reports/q3.csv --expires 1h'],
-      ['out', 'https://acme-assets.s3.us-east-1.amazonaws.com/reports/q3.csv?X-Amz-Algorithm=AWS4-HMAC-SHA256&X-Amz-Credential=…&X-Amz-Date=20261019T145108Z&X-Amz-Expires=3600&X-Amz-SignedHeaders=host&X-Amz-Signature=…']
-    ],
-    json: [
-      ['cmd', 'pail ls s3://acme-assets/reports/ --json'],
-      ['out', '{"etag":"\\"9b2cf535f27731c974343645a3985328\\"","key":"reports/q3.csv","modified":"2026-10-19T14:51:08Z","size":18742,"storageClass":"STANDARD","type":"object"}'],
-      ['out', '{"etag":"\\"1f3870be274f6c49b3e31a0c6728957f\\"","key":"reports/q2.csv","modified":"2026-07-02T09:12:40Z","size":17311,"storageClass":"STANDARD_IA","type":"object"}']
-    ]
-  };
+  // The examples are the CLI's own output, recorded by TestSiteCLIDemo in
+  // cmd/pail (site/cli-demo.json); nothing here is typed by hand.
+  var TERM = {};
+  function termKind(l) {
+    if (l.kind === 'cmd') return 'cmd';
+    if (l.kind === 'err') return 'dim';
+    if (/^(upload|download)\s/.test(l.text)) return 'up';
+    if (/^delete\s/.test(l.text)) return 'del';
+    if (/^dry run:/.test(l.text)) return 'dim';
+    return 'out';
+  }
+  function setDemo(data) {
+    data.examples.forEach(function (e) {
+      TERM[e.id] = e.lines.map(function (l) { return [termKind(l), l.text]; });
+    });
+  }
   var term = $('[data-demo="terminal"]');
   var termCode = term ? $('.term-body code', term) : null;
   var termTabs = term ? $$('[data-term]', term) : [];
@@ -313,14 +300,19 @@
     });
     tab.tabIndex = i ? -1 : 0;
   });
-  if (term) {
-    renderTerminal('ls', false);
-    if (hasIO) {
-      var termIO = new IntersectionObserver(function (entries) {
-        if (entries[0].isIntersecting) { termIO.disconnect(); renderTerminal('ls', true); }
-      }, { threshold: 0.4 });
-      termIO.observe(term);
-    }
+  // The prototype is served as plain files, so it reads the recording next to
+  // it; the production page embeds the same file in its HTML.
+  if (term && window.fetch) {
+    fetch('cli-demo.json').then(function (r) { return r.json(); }).then(function (data) {
+      setDemo(data);
+      renderTerminal('ls', false);
+      if (hasIO) {
+        var termIO = new IntersectionObserver(function (entries) {
+          if (entries[0].isIntersecting) { termIO.disconnect(); renderTerminal('ls', true); }
+        }, { threshold: 0.4 });
+        termIO.observe(term);
+      }
+    }).catch(function () { /* the first example stays as written in the HTML */ });
   }
 
   /* ---------- Mobile navigation ---------- */

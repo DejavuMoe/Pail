@@ -26468,6 +26468,246 @@
       },
       "flags": [],
       "notes": "the repository's own documentation, rendered on the site"
+    },
+    {
+      "id": "content-cb08506b397ca096",
+      "text": "See Pail at work",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > div.wrap > div.section-head > h2#demo-title"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo section title); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-2760c5d7403858f1",
+      "text": "A 48-second tour of the real app on an in-memory demo server: browse a bucket, upload files, share a link, restore an older version.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > div.wrap > div.section-head > p.section-lede"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo section lede); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-b17fed30c0dfea09",
+      "text": "The app window is the real app, running against a built-in demo server with sample data. The titles and the files flying in were added for the video.",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > div.wrap > figure.demo-video > figcaption"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo video note); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-be0dd888feeeae63",
+      "text": "Download the demo video (MP4, 9 MB)",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > figure.demo-video > video > p > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo video fallback link); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-91cc4d2c4bfc741e",
+      "text": "Pail demo video",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > figure.demo-video > video[aria-label]"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-en.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo video label); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-a563f67d088cc844",
+      "text": "看看 Pail 怎么用",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > div.wrap > div.section-head > h2#demo-title"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo section title (zh)); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-a5ebdd2bdb275117",
+      "text": "48 秒带你看一遍真实的应用，连接的是内存中的演示服务：浏览存储桶、上传文件、分享链接、恢复旧版本。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > div.wrap > div.section-head > p.section-lede"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo section lede (zh)); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-3cdd457ce71531b5",
+      "text": "应用窗口是真实的应用，连接的是内置的演示服务和示例数据。标题和飞入的文件是为视频加上的。",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > div.wrap > figure.demo-video > figcaption"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo video note (zh)); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-a9e49d38e283e542",
+      "text": "下载演示视频（MP4，9 MB）",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > figure.demo-video > video > p > a"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo video fallback link (zh)); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
+    },
+    {
+      "id": "content-00c98058d1e34610",
+      "text": "Pail 演示视频",
+      "channels": [
+        "text"
+      ],
+      "locations": [
+        "section#demo > figure.demo-video > video[aria-label]"
+      ],
+      "visibility": [
+        "visible"
+      ],
+      "captures": [
+        "dom-zh.json"
+      ],
+      "purpose": "marketing-copy",
+      "origin": "agent-draft",
+      "decision": "review",
+      "evidence": null,
+      "flags": [
+        "needs-user-approval"
+      ],
+      "notes": "new in revision 3 (Demo video label (zh)); the facts come from docs/video and cmd/pail-desktop/film_test.go, not from approved copy"
     }
   ]
 }

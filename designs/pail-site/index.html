@@ -127,6 +127,22 @@
       </div>
     </section>
 
+    <section class="section" id="demo" aria-labelledby="demo-title">
+      <div class="wrap">
+        <div class="section-head reveal">
+          <h2 class="section-title" id="demo-title" data-i18n="demoTitle">See Pail at work</h2>
+          <p class="section-lede" data-i18n="demoLede">A 48-second tour of the real app on an in-memory demo server: browse a bucket, upload files, share a link, restore an older version.</p>
+        </div>
+        <figure class="demo-video reveal">
+          <video controls preload="none" playsinline width="1920" height="1080" poster="../../docs/video/pail-demo.webp" data-i18n-aria-label="demoVideoLabel" aria-label="Pail demo video">
+            <source src="../../docs/video/pail-demo.mp4" type="video/mp4">
+            <p><a href="../../docs/video/pail-demo.mp4" data-i18n="demoFallback">Download the demo video (MP4, 9 MB)</a></p>
+          </video>
+          <figcaption data-i18n="demoNote">The app window is the real app, running against a built-in demo server with sample data. The titles and the files flying in were added for the video.</figcaption>
+        </figure>
+      </div>
+    </section>
+
     <section class="section" id="features" aria-labelledby="features-title">
       <div class="wrap">
         <h2 class="section-title reveal" id="features-title" data-i18n="featuresTitle">Features</h2>
@@ -182,8 +198,8 @@
             <div class="mv-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file"></use></svg><span>reports/q3.csv</span></div>
             <ol class="mv-list">
               <li class="mv-marker"><span class="mv-dot"></span><span class="mv-label" data-i18n="miniDeleteMarker">Delete marker</span><span class="mv-badge" data-i18n="miniLatest">Latest</span><span class="mv-time">2026-10-19 22:51</span></li>
-              <li class="mv-target"><span class="mv-dot"></span><span class="mv-id">3HL4kqtJlcpX</span><span class="mv-size">18.3 KB</span><span class="mv-restore"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span data-i18n="miniRestore">Restore</span></span></li>
-              <li><span class="mv-dot"></span><span class="mv-id">Xd3dIbrHYrmS</span><span class="mv-size">17.9 KB</span><span class="mv-time">2026-10-12 09:04</span></li>
+              <li class="mv-target"><span class="mv-dot"></span><span class="mv-id">3HL4kqtJ</span><span class="mv-size">18.3 KB</span><span class="mv-restore"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span data-i18n="miniRestore">Restore</span></span></li>
+              <li><span class="mv-dot"></span><span class="mv-id">Xd3dIbrH</span><span class="mv-size">17.9 KB</span><span class="mv-time">2026-10-12 09:04</span></li>
             </ol>
           </div>
         </article>
@@ -220,9 +236,11 @@
 <span class="t-out">                                PRE backups/</span>
 <span class="t-out">                                PRE logs/</span>
 <span class="t-out">                                PRE reports/</span>
+<span class="t-out">                                PRE tmp/</span>
 <span class="t-out">                                PRE website/</span>
+<span class="t-out">2026-10-19 14:51:08        445 B  README.txt</span>
 <span class="t-out">2026-10-19 14:51:08        303 B  manifest.json</span>
-<span class="t-out">2026-10-19 14:51:08        445 B  README.txt</span></code></pre>
+<span class="t-dim">2 objects, 6 folders, 748 B</span></code></pre>
         </div>
       </div>
     </section>
@@ -253,7 +271,6 @@
             <li><a href="https://github.com/DejavuMoe/Pail/releases" data-i18n="allReleases">All releases</a></li>
             <li><a href="docs.html#build-from-source" data-i18n-href="hrefBuild" data-i18n="buildFromSource">Build from source</a></li>
           </ul>
-          <p class="demo-hint"><span data-i18n="demoHint1">No account yet? Run</span> <code>pail-desktop --demo</code> <span data-i18n="demoHint2">to try Pail with a built-in in-memory S3 server. Nothing leaves your computer.</span></p>
         </div>
 
         <div class="dl reveal" data-github-base="https://github.com/DejavuMoe/Pail/releases/download/v0.2.0/" data-mirror-base="https://pan.zsh.moe/Pail/v0.2.0/">
