@@ -21,8 +21,8 @@
 </p>
 
 <picture>
-  <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-dark.webp">
-  <img src="docs/images/main-light.webp" alt="Pail 主窗口：存储桶列表、对象表格和检查器">
+  <source media="(prefers-color-scheme: dark)" srcset="docs/images/main-dark-zh.webp">
+  <img src="docs/images/main-light-zh.webp" alt="Pail 主窗口：存储桶列表、对象表格和检查器">
 </picture>
 
 ## 功能

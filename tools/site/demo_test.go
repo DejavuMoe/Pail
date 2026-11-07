@@ -1,6 +1,7 @@
 package main
 
 import (
+	"encoding/binary"
 	"encoding/json"
 	"html"
 	"math"
@@ -255,6 +256,79 @@ func TestNoDemoFlagPromise(t *testing.T) {
 	for _, page := range []string{"index.html", "zh/index.html"} {
 		if strings.Contains(read(t, filepath.Join(out, page)), "--demo") {
 			t.Errorf("%s mentions --demo, which release builds do not have", page)
+		}
+	}
+}
+
+// webpSize reads the canvas size from a WebP header (VP8X, VP8L or VP8).
+func webpSize(b []byte) (w, h int, ok bool) {
+	if len(b) < 30 || string(b[0:4]) != "RIFF" || string(b[8:12]) != "WEBP" {
+		return 0, 0, false
+	}
+	switch string(b[12:16]) {
+	case "VP8X":
+		return 1 + int(b[24]) + int(b[25])<<8 + int(b[26])<<16, 1 + int(b[27]) + int(b[28])<<8 + int(b[29])<<16, true
+	case "VP8L":
+		v := binary.LittleEndian.Uint32(b[21:25])
+		return 1 + int(v&0x3FFF), 1 + int(v>>14&0x3FFF), true
+	case "VP8 ":
+		return int(binary.LittleEndian.Uint16(b[26:28]) & 0x3FFF), int(binary.LittleEndian.Uint16(b[28:30]) & 0x3FFF), true
+	}
+	return 0, 0, false
+}
+
+// The hero shows the window in the page's language and theme: four captures,
+// the width and height written in the page are the file's, and the READMEs use
+// the English and Chinese pair.
+func TestHeroScreenshotsFollowLanguageAndTheme(t *testing.T) {
+	root := repoRoot(t)
+	size := func(name string) (int, int) {
+		w, h, ok := webpSize([]byte(read(t, filepath.Join(root, "docs", "images", name))))
+		if !ok {
+			t.Fatalf("%s: not a WebP", name)
+		}
+		return w, h
+	}
+	w0, h0 := size("main-light-en.webp")
+	for _, name := range []string{"main-light-zh.webp", "main-dark-en.webp", "main-dark-zh.webp"} {
+		if w, h := size(name); w != w0 || h != h0 {
+			t.Errorf("%s is %dx%d, the others %dx%d: the layout would jump between themes and languages", name, w, h, w0, h0)
+		}
+	}
+	out := buildSite(t, "1.2.3")
+	for _, c := range []struct{ page, lang, other string }{{"index.html", "en", "zh"}, {"zh/index.html", "zh", "en"}} {
+		b := read(t, filepath.Join(out, c.page))
+		light := regexp.MustCompile(`<img src="(/assets/main-light-` + c.lang + `\.[0-9a-f]{10}\.webp)" width="(\d+)" height="(\d+)"`).FindStringSubmatch(b)
+		dark := regexp.MustCompile(`<source srcset="(/assets/main-dark-` + c.lang + `\.[0-9a-f]{10}\.webp)" media="\(prefers-color-scheme: dark\)"`).FindStringSubmatch(b)
+		if light == nil || dark == nil {
+			t.Errorf("%s: the hero does not use the %s light and dark captures", c.page, c.lang)
+			continue
+		}
+		if w, _ := strconv.Atoi(light[2]); w != w0 {
+			t.Errorf("%s: width %s, the file is %d", c.page, light[2], w0)
+		}
+		if h, _ := strconv.Atoi(light[3]); h != h0 {
+			t.Errorf("%s: height %s, the file is %d", c.page, light[3], h0)
+		}
+		for _, p := range []string{light[1], dark[1]} {
+			if _, err := os.Stat(filepath.Join(out, filepath.FromSlash(p))); err != nil {
+				t.Errorf("%s: %s was not published", c.page, p)
+			}
+		}
+		if strings.Contains(b, "main-light-"+c.other) || strings.Contains(b, "main-dark-"+c.other) {
+			t.Errorf("%s refers to the %s captures", c.page, c.other)
+		}
+	}
+	for readme, lang := range map[string]string{"README.md": "en", "README.zh-CN.md": "zh"} {
+		b := read(t, filepath.Join(root, readme))
+		for _, theme := range []string{"light", "dark"} {
+			name := "docs/images/main-" + theme + "-" + lang + ".webp"
+			if !strings.Contains(b, name) {
+				t.Errorf("%s does not show %s", readme, name)
+			}
+			if _, err := os.Stat(filepath.Join(root, filepath.FromSlash(name))); err != nil {
+				t.Errorf("%s: %v", readme, err)
+			}
 		}
 	}
 }

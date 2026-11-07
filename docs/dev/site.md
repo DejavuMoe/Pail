@@ -42,7 +42,7 @@ The generator (`tools/site/main.go`):
 
 - renders `/index.html` (English) and `/zh/index.html` (Simplified Chinese) with `hreflang` alternates and a canonical URL; text is rendered on the server, and only the strings `app.js` builds at runtime (`runtimeKeys`: `heroDownloadFor`, `sourceGithubNote`, `sourceMirrorNote`, `miniBytesOf`) are embedded as JSON, and so is the recording of the terminal (`site/cli-demo.json`; the page itself shows the first example as plain HTML);
 - renders the docs pages (below) and adds them to `sitemap.xml` with their language alternates;
-- copies `docs/images/main-{light,dark}.webp`, `docs/images/social.webp`, `docs/video/pail-demo.{mp4,webp}` and `assets/brand/pail-icon.svg` (XML comments removed) instead of keeping second copies;
+- copies `docs/images/main-{light,dark}-{en,zh}.webp`, `docs/images/social.webp`, `docs/video/pail-demo.{mp4,webp}` and `assets/brand/pail-icon.svg` (XML comments removed) instead of keeping second copies;
 - renders Open Graph and Twitter large-image metadata in the initial HTML of both landing pages and every documentation page: localized title, description and image alt text, page canonical URL, `en_US` / `zh_CN` locales, and an absolute fingerprinted URL of `social.webp` built from `-base-url`. `social.webp` is a 1200×630 card, and `TestSocialMetadata` checks the declared size. The 404 page stays `noindex` and has no social card;
 - fingerprints every file under `/assets/` (`styles.<hash>.css`) so it can be cached forever while HTML is revalidated;
 - writes `404.html`, `robots.txt` and `sitemap.xml`;
@@ -64,9 +64,9 @@ The site loads no webfonts. Text uses each operating system's default sans-serif
 
 ## Screenshots and social card
 
-`docs/images/main-light.webp` and `docs/images/main-dark.webp` are native macOS window captures (2742×1822, transparent shadow) taken in demo mode (`go run -tags pail_demo ./cmd/pail-desktop --demo`). They are compressed at https://picforge.de/?tool=compression with the WebP "Balanced" preset (quality 75, no resize) and keep their alpha channel. The README and the landing page both use them.
+`docs/images/main-{light,dark}-{en,zh}.webp` are native macOS window captures (2684×1750, transparent shadow) taken in demo mode (`go run -tags pail_demo ./cmd/pail-desktop --demo`), one per theme and per language, saved as WebP with their alpha channel. The landing page shows the pair for its language and theme (a dark `<source>` for the dark scheme, switched by the theme control); `README.md` uses the English pair and `README.zh-CN.md` the Chinese pair. `TestHeroScreenshotsFollowLanguageAndTheme` checks that the four have the same size, that the width and height written in the page are the file's and that each page and README refers to its own language.
 
-`docs/images/social.webp` is the Open Graph and Twitter card. Render `designs/pail-site/social-preview.html` at 1200×630 and compress the result the same way. Local HTML and asset checks do not show that a social platform has refreshed its cache.
+`docs/images/social.webp` is the Open Graph and Twitter card. It is `main-light-en.webp` on the page background (`#F3F1EC`, 1120 px wide, 8 px from the top, as in `designs/pail-site/social-preview.html`): `ffmpeg -f lavfi -i color=c=0xF3F1EC:s=1200x630 -i docs/images/main-light-en.webp -filter_complex "[1]scale=1120:-1[s];[0][s]overlay=40:8:format=auto" -frames:v 1 -c:v libwebp -quality 78 docs/images/social.webp`; copy it to `designs/pail-site/assets/`. Local HTML and asset checks do not show that a social platform has refreshed its cache.
 
 Social fields follow the [Open Graph protocol](https://ogp.me/); canonical and language alternates continue to identify the individual page. Metadata is rendered at build time, so crawlers do not need JavaScript.
 

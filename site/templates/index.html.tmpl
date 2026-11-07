@@ -113,8 +113,8 @@
       </div>
       <figure class="wrap hero-shot">
         <picture>
-          <source srcset="{{asset "main-dark.webp"}}" media="(prefers-color-scheme: dark)" type="image/webp" data-shot-dark>
-          <img src="{{asset "main-light.webp"}}" width="2742" height="1822" fetchpriority="high" decoding="async" alt="{{t "shotAlt"}}">
+          <source srcset="{{asset (printf "main-dark-%s.webp" .Lang)}}" media="(prefers-color-scheme: dark)" type="image/webp" data-shot-dark>
+          <img src="{{asset (printf "main-light-%s.webp" .Lang)}}" width="2684" height="1750" fetchpriority="high" decoding="async" alt="{{t "shotAlt"}}">
         </picture>
         <script>
           (function () {

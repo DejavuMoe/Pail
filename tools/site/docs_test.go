@@ -467,7 +467,7 @@ func copyFixture(t *testing.T) string {
 	t.Helper()
 	src, dst := repoRoot(t), t.TempDir()
 	files := []string{"LICENSE", "README.md", "README.zh-CN.md", "CHANGELOG.md", "CHANGELOG.zh-CN.md", "docs/cli.md", "docs/cli.zh-CN.md",
-		"docs/images/main-light.webp", "docs/images/main-dark.webp", "docs/images/social.webp", "docs/video/pail-demo.mp4", "docs/video/pail-demo.webp", "assets/brand/pail-icon.svg"}
+		"docs/images/main-light-en.webp", "docs/images/main-light-zh.webp", "docs/images/main-dark-en.webp", "docs/images/main-dark-zh.webp", "docs/images/social.webp", "docs/video/pail-demo.mp4", "docs/video/pail-demo.webp", "assets/brand/pail-icon.svg"}
 	err := filepath.WalkDir(filepath.Join(src, "site"), func(p string, d fs.DirEntry, err error) error {
 		if err == nil && !d.IsDir() {
 			rel, _ := filepath.Rel(src, p)
@@ -522,7 +522,7 @@ func TestBuildFailsOnBadDocs(t *testing.T) {
 		{"zh changelog with an extra level-3 heading", "CHANGELOG.zh-CN.md", "\n### 额外\n\n- x\n", "headings do not match"},
 		{"en CLI with an extra heading (zh left behind)", "docs/cli.md", "\n## Extra\n\ntext\n", "headings do not match"},
 		{"link escaping the repository", "docs/cli.md", "\nSee [x](../../secret.md).\n", "escapes the repository"},
-		{"image", "CHANGELOG.md", "\n![x](docs/images/main-light.webp)\n", "image not expected"},
+		{"image", "CHANGELOG.md", "\n![x](docs/images/main-light-en.webp)\n", "image not expected"},
 		{"deep heading", "docs/cli.md", "\n#### Too deep\n", "unexpected heading level"},
 	}
 	for _, c := range cases {
