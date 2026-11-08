@@ -64,7 +64,7 @@ type bucketSettings struct {
 
 // cfgState is one section: what the service holds and what the form shows.
 type cfgState struct {
-	state  int // 0 idle, 1 loading, 2 ready, 3 failed
+	state  loadPhase
 	server string
 	draft  string
 	err    string
@@ -233,10 +233,10 @@ func (bs *bucketSettings) template(cfg core.BucketConfig) string {
 func (a *app) ensureCfg() {
 	bs := &a.mg.bs
 	sec, s := bs.cur()
-	if s.state != 0 {
+	if s.state != loadNone {
 		return
 	}
-	s.state = 1
+	s.state = loadBusy
 	gen, acct, bucket, cfg := bs.gen, a.accountID, bs.bucket, sec.cfg
 	a.bg(func() func() {
 		ctx, cancel := a.shortCtx()
@@ -252,11 +252,11 @@ func (a *app) ensureCfg() {
 				return
 			}
 			if err != nil {
-				s.state, s.unsupp = 3, core.KindOf(err) == core.ErrUnsupported
+				s.state, s.unsupp = loadFailed, core.KindOf(err) == core.ErrUnsupported
 				s.err = plainError(err, locales.BucketSettingsReadWhat())
 				return
 			}
-			s.state, s.err, s.unsupp = 2, "", false
+			s.state, s.err, s.unsupp = loadReady, "", false
 			s.server, s.draft, s.configuring = js, js, false
 			s.parseForm(cfg, js)
 		}
@@ -417,7 +417,7 @@ func (a *app) saveCfg(sec bsSection, s *cfgState, js string, remove bool) {
 				s.msg, s.msgOK = plainError(err, locales.BucketSettingsChangeWhat()), false
 				return
 			}
-			s.state = 0 // read it back
+			s.state = loadNone // read it back
 			s.msg, s.msgOK = locales.CommonSaved(), true
 			if remove {
 				s.msg = locales.BucketSettingsRemoved()
@@ -523,21 +523,21 @@ func (a *app) settingsPane(c *ui.Context) {
 		})
 		// The form scrolls with its bar in the 20px right-hand gutter; the JSON
 		// editor scrolls inside itself and takes the whole pane.
-		scrolls := s.state == 2 && sec.form != secJSON
+		scrolls := s.state == loadReady && sec.form != secJSON
 		body := func() {
 			switch s.state {
-			case 0, 1:
+			case loadNone, loadBusy:
 				ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
 					ui.Spinner(c).Size(14, 14)
 					mutedText(c, locales.CommonLoading())
 				})
-			case 3:
+			case loadFailed:
 				if s.unsupp {
 					emptyBlock(c, "circle-alert", locales.BucketSettingsUnsupported(), "", 200)
 					return
 				}
 				errorLine(c, s.err)
-				ghostButton(c, iconOf("refresh-cw"), locales.CommonRetry(), locales.CommonRetry(), false).AlignSelf(ui.Start).OnClick(func() { s.state = 0 })
+				ghostButton(c, iconOf("refresh-cw"), locales.CommonRetry(), locales.CommonRetry(), false).AlignSelf(ui.Start).OnClick(func() { s.state = loadNone })
 			default:
 				a.settingsBody(c, sec, s)
 			}

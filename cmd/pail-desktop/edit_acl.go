@@ -13,7 +13,7 @@ import (
 type aclForm struct {
 	key      string
 	gen      int
-	state    int // 0 none, 1 loading, 2 ready, 3 failed
+	state    loadPhase
 	acl      core.ACL
 	err      string
 	unsupp   bool // the bucket or provider has no ACLs
@@ -120,10 +120,10 @@ func (a *app) ensureACL() {
 		return
 	}
 	key := keys[0]
-	if f.key == key && f.state != 0 {
+	if f.key == key && f.state != loadNone {
 		return
 	}
-	*f = aclForm{key: key, state: 1, gen: f.gen + 1}
+	*f = aclForm{key: key, state: loadBusy, gen: f.gen + 1}
 	gen, loc := f.gen, a.scope
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(30 * time.Second)
@@ -135,12 +135,12 @@ func (a *app) ensureACL() {
 			}
 			f := &a.mg.acl
 			if err != nil {
-				f.state = 3
+				f.state = loadFailed
 				f.unsupp = core.KindOf(err) == core.ErrUnsupported
 				f.err = plainError(err, locales.EditAclReadWhat())
 				return
 			}
-			f.state, f.acl, f.canned = 2, acl, cannedOf(acl)
+			f.state, f.acl, f.canned = loadReady, acl, cannedOf(acl)
 		}
 	})
 }
@@ -151,19 +151,19 @@ func (a *app) permissionsTab(c *ui.Context) {
 	f := &a.mg.acl
 	k := tk(c)
 	switch f.state {
-	case 0, 1:
+	case loadNone, loadBusy:
 		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
 			ui.Spinner(c).Size(14, 14)
 			mutedText(c, locales.EditAclLoading())
 		})
 		return
-	case 3:
+	case loadFailed:
 		if f.unsupp {
 			emptyBlock(c, "shield", locales.EditAclDisabled(), "", 200)
 			return
 		}
 		errorLine(c, f.err)
-		ghostButton(c, iconOf("refresh-cw"), locales.CommonRetry(), locales.CommonRetry(), false).AlignSelf(ui.Start).OnClick(func() { f.state = 0 })
+		ghostButton(c, iconOf("refresh-cw"), locales.CommonRetry(), locales.CommonRetry(), false).AlignSelf(ui.Start).OnClick(func() { f.state = loadNone })
 		return
 	}
 	ui.Column(c).Gap(16).Children(func() {

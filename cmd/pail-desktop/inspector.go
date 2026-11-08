@@ -173,14 +173,14 @@ func (a *app) objectTabs(c *ui.Context) {
 	needsHead := a.inspTab <= 2
 	if needsHead {
 		switch a.headState {
-		case 1:
+		case loadBusy:
 			a.header(c, icons.NameFor(e.Key, false), e.Name, humanBytes(e.Size))
 			ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
 				ui.Spinner(c).Size(14, 14)
 				mutedText(c, locales.InspectorLoadingDetails())
 			})
 			return
-		case 3:
+		case loadFailed:
 			a.header(c, icons.NameFor(e.Key, false), e.Name, humanBytes(e.Size))
 			ui.Row(c).Gap(8).AlignItems(ui.Start).Children(func() {
 				ui.Icon(c, icons.Get("circle-alert")).FontSize(14).TextColor(k.Danger).Shrink(0).MarginY(1)
@@ -193,7 +193,7 @@ func (a *app) objectTabs(c *ui.Context) {
 		}
 	}
 	sub := humanBytes(e.Size)
-	if a.headState == 2 && a.head.ContentType != "" {
+	if a.headState == loadReady && a.head.ContentType != "" {
 		sub = a.head.ContentType
 	}
 	a.header(c, icons.NameFor(e.Key, false), e.Name, sub)
@@ -217,22 +217,22 @@ func (a *app) overviewTab(c *ui.Context, e Entry) {
 	uri, url := a.objectURI(e.Key), a.objectURL(e.Key)
 	info := a.head
 	size := e.Size
-	if a.headState == 2 {
+	if a.headState == loadReady {
 		size = info.Size
 	}
 	ui.Column(c).Gap(8).Children(func() {
 		kvRow(c, locales.CommonSize(), locales.InspectorSizeBytes(humanBytes(size), groupInt(int(size))), false, kvCopy{})
 		mod := e.Modified
-		if a.headState == 2 && !info.Modified.IsZero() {
+		if a.headState == loadReady && !info.Modified.IsZero() {
 			mod = info.Modified
 		}
 		kvRow(c, locales.InspectorModified(), formatTime(mod), false, kvCopy{})
 		cls := e.StorageClass
-		if a.headState == 2 && info.StorageClass != "" {
+		if a.headState == loadReady && info.StorageClass != "" {
 			cls = info.StorageClass
 		}
 		kvRow(c, locales.InspectorStorageClass(), storageLabel(cls), false, kvCopy{})
-		if a.headState == 2 {
+		if a.headState == loadReady {
 			if info.ContentType != "" {
 				kvRow(c, locales.InspectorContentType(), info.ContentType, false, kvCopy{})
 			}
@@ -257,11 +257,11 @@ func (a *app) overviewTab(c *ui.Context, e Entry) {
 			}
 		}
 		etag := e.ETag
-		if a.headState == 2 && info.ETag != "" {
+		if a.headState == loadReady && info.ETag != "" {
 			etag = info.ETag
 		}
 		kvRow(c, locales.InspectorEtag(), etag, true, kvCopy{})
-		if a.headState == 2 && info.VersionID != "" && info.VersionID != "null" {
+		if a.headState == loadReady && info.VersionID != "" && info.VersionID != "null" {
 			kvRow(c, locales.InspectorVersionId(), info.VersionID, true, kvCopy{locales.InspectorCopyVersionId(), locales.InspectorCopiedVersionId()})
 		}
 		kvRow(c, locales.CommonKey(), e.Key, true, kvCopy{locales.InspectorCopyKey(), locales.InspectorCopiedKey()})

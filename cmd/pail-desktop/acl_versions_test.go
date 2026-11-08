@@ -49,7 +49,7 @@ func TestCannedACLPublicNeedsConfirmation(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.mustClick("Permissions")
-	h.waitFor("acl loaded", func() bool { return h.a.mg.acl.state == 2 })
+	h.waitFor("acl loaded", func() bool { return h.a.mg.acl.state == loadReady })
 	h.mustHave("Owner", "Full control", "Private", "Canned ACL")
 	h.snap("permissions-light")
 
@@ -89,7 +89,7 @@ func TestACLUnsupportedShowsEmptyState(t *testing.T) {
 	h.env.Srv.SetUnsupported("acl")
 	h.mustClick("manifest.json")
 	h.mustClick("Permissions")
-	h.waitFor("acl answered", func() bool { return h.a.mg.acl.state == 3 })
+	h.waitFor("acl answered", func() bool { return h.a.mg.acl.state == loadFailed })
 	h.mustHave("ACLs are disabled for this bucket")
 	h.mustNotHave("Canned ACL")
 	h.snap("permissions-disabled-light")
@@ -102,7 +102,7 @@ func TestVersionsTabListsAndRestores(t *testing.T) {
 	h.openVersioned()
 	h.mustClick("notes.txt")
 	h.mustClick("Versions")
-	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == 2 })
+	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == loadReady })
 	vs := h.env.Srv.Versions(demoVersioned, "notes.txt")
 	if len(h.a.mg.vers.rows) != 3 || len(vs) != 3 {
 		t.Fatalf("rows %d, server %d", len(h.a.mg.vers.rows), len(vs))
@@ -123,7 +123,7 @@ func TestVersionsTabListsAndRestores(t *testing.T) {
 	if n := len(h.env.Srv.Versions(demoVersioned, "notes.txt")); n != 4 {
 		t.Errorf("%d versions after restore, want 4 (history is kept)", n)
 	}
-	h.waitFor("list refreshed", func() bool { return h.a.mg.vers.state == 2 && len(h.a.mg.vers.rows) == 4 })
+	h.waitFor("list refreshed", func() bool { return h.a.mg.vers.state == loadReady && len(h.a.mg.vers.rows) == 4 })
 }
 
 func TestVersionsDeletePermanentlyAsksFirst(t *testing.T) {
@@ -134,7 +134,7 @@ func TestVersionsDeletePermanentlyAsksFirst(t *testing.T) {
 	h.settle()
 	h.mustClick("app.yaml")
 	h.mustClick("Versions")
-	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == 2 })
+	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == loadReady })
 	vs := h.env.Srv.Versions(demoVersioned, "config/app.yaml")
 	if len(vs) != 2 {
 		t.Fatalf("seed has %d versions of app.yaml", len(vs))
@@ -166,7 +166,7 @@ func TestVersionsMultiSelectDeleteAndDownload(t *testing.T) {
 	h.openVersioned()
 	h.mustClick("notes.txt")
 	h.mustClick("Versions")
-	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == 2 })
+	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == loadReady })
 	vs := h.env.Srv.Versions(demoVersioned, "notes.txt")
 	h.mustClick(shortVersion(vs[1].VersionID))
 	h.mustClick(shortVersion(vs[2].VersionID))
@@ -205,7 +205,7 @@ func TestVersionsTabShowsDeleteMarkers(t *testing.T) {
 	// Someone deletes the key while it is open: its newest entry is a marker.
 	h.env.Srv.DeleteObject(demoVersioned, "report.pdf")
 	h.mustClick("Versions")
-	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == 2 })
+	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == loadReady })
 	rows := h.a.mg.vers.rows
 	if len(rows) != 2 || !rows[0].DeleteMarker || !rows[0].Latest || rows[1].DeleteMarker {
 		t.Fatalf("rows = %+v", rows)
@@ -224,11 +224,11 @@ func TestVersionsTabFailureHasRetry(t *testing.T) {
 	h.env.Srv.SetUnsupported("versions")
 	h.mustClick("report.pdf")
 	h.mustClick("Versions")
-	h.waitFor("versions failed", func() bool { return h.a.mg.vers.state == 3 })
+	h.waitFor("versions failed", func() bool { return h.a.mg.vers.state == loadFailed })
 	h.mustHave("Not supported by this provider", "Retry")
 	h.env.Srv.ClearUnsupported("")
 	h.mustClick("Retry")
-	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == 2 })
+	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == loadReady })
 	h.mustHave("Latest")
 }
 

@@ -205,7 +205,7 @@ func TestI18NObjects(t *testing.T) {
 	h4.chrome()
 	h4.mustClick("manifest.json")
 	h4.mustClick("Permissions")
-	h4.waitFor("acl loaded", func() bool { return h4.a.mg.acl.state == 2 })
+	h4.waitFor("acl loaded", func() bool { return h4.a.mg.acl.state == loadReady })
 	h4.pseudo("permissions")
 	h4.zh("预设 ACL", "私有", "所有者", "完全控制", "授权")
 	h4.helpTip("A canned ACL is a ready-made set of grants for this object. Private keeps it to the owner; the public options let anyone read it, or read and write it.")
@@ -258,7 +258,7 @@ func TestI18NObjectsVersions(t *testing.T) {
 	h.chrome()
 	h.mustClick("notes.txt")
 	h.mustClick("Versions")
-	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == 2 })
+	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == loadReady })
 	h.pseudo("versions")
 	h.zh("版本", "最新", "恢复此版本")
 	ask := func() {

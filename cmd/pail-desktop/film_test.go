@@ -422,7 +422,7 @@ func filmVersions(r *filmRec) {
 	r.until("inspector", 60, r.loaded)
 	r.hold(8)
 	r.click("Versions")
-	r.until("versions", 90, func() bool { return h.a.mg.vers.state == 2 })
+	r.until("versions", 90, func() bool { return h.a.mg.vers.state == loadReady })
 	r.hold(45)
 	r.click("Restore this version")
 	r.until("restored", 90, func() bool { return len(h.env.Srv.Versions(demoVersioned, "notes.txt")) == 4 })

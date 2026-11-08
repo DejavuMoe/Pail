@@ -576,7 +576,7 @@ func TestSignedURLVersionIDIsPrefilledFromTheVersionsTab(t *testing.T) {
 	h.openVersioned()
 	h.mustClick("notes.txt")
 	h.mustClick("Versions")
-	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == 2 })
+	h.waitFor("versions loaded", func() bool { return h.a.mg.vers.state == loadReady })
 	vs := h.env.Srv.Versions(demoVersioned, "notes.txt")
 	if len(vs) != 3 {
 		t.Fatalf("seed has %d versions", len(vs))

@@ -156,7 +156,7 @@ func previewLanguage(kind, key, contentType string) string {
 
 // ensurePreview loads the preview of the selected object once its tab is open.
 func (a *app) ensurePreview() {
-	if a.tool != "" || !a.inspectorOpen || a.inspTab != tabPreview || a.headKey == "" || a.headState == 1 {
+	if a.tool != "" || !a.inspectorOpen || a.inspTab != tabPreview || a.headKey == "" || a.headState == loadBusy {
 		return
 	}
 	if a.prev.key == a.headKey {
@@ -169,7 +169,7 @@ func (a *app) ensurePreview() {
 	}
 	size := a.rows[i].Size
 	ct := ""
-	if a.headState == 2 {
+	if a.headState == loadReady {
 		ct = a.head.ContentType
 	}
 	kind := previewKind(key, ct)
