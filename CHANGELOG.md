@@ -4,7 +4,11 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.5.2] - 2026-11-09
+
+### Changed
+
+- The window stays more responsive while many objects are selected, such as every object in a large folder.
 
 ### Fixed
 
