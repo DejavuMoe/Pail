@@ -108,6 +108,7 @@ type app struct {
 	bucketFilter string
 	filterH      ui.Handle
 	searchH      ui.Handle
+	crumbH       ui.Handle  // the last breadcrumb: where Esc in the filter goes
 	filter       pathFilter // the folder filter of a compact path bar (pathbar.go)
 	navSel       string     // sidebar choice: "b:<bucket>" or "t:<tool>"
 	tool         string     // "" when the object browser shows

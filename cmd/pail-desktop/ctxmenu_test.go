@@ -379,11 +379,11 @@ func TestMenuClosesOnResizeAndBlur(t *testing.T) {
 	if h.a.popup.open {
 		t.Error("losing the window's focus left the menu open")
 	}
-	// The menu would cover the row: the right-click goes beside it.
+	// The menu's modal layer is the input target, so click by position: a
+	// right-click outside the menu closes it and opens no second.
 	h.openTestMenu(40, 40, testItems(&log))
-	if err := h.tt.RightClick("manifest.json"); err != nil {
-		t.Fatal(err)
-	}
+	row := h.a.rowRects["manifest.json"]
+	h.tt.RightClickAt(row.X+row.W/2, row.Y+row.H/2)
 	h.settle()
 	if h.a.popup.open {
 		t.Error("a right-click outside the open menu must close it, not open a second")
