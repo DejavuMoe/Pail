@@ -21,6 +21,7 @@ func (a *app) view(c *ui.Context) {
 		c.DisableAnimations()
 	}
 	k := applyTheme(c, a.opts.theme)
+	a.sel.touch() // mygo may have changed the choice between frames
 	a.syncTheme()
 	a.drain()
 	if time.Since(a.vu.at) > time.Second {

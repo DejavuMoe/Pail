@@ -48,6 +48,58 @@ func TestSelectionSigDistinguishes(t *testing.T) {
 	}
 }
 
+// The shared selection summary follows every change: through sel, a search
+// that hides chosen rows, and a touch for what mygo's table does on its own.
+func TestSelectionSummaryFollowsChanges(t *testing.T) {
+	a := benchApp(6) // all six chosen; even sizes are 0, 2, 4
+	check := func(when string, files int, bytes int64) {
+		t.Helper()
+		if f, n, b := a.selectedInfo(); f != 0 || n != files || b != bytes || a.selectedCount() != files {
+			t.Fatalf("%s: info = %d folders, %d files, %d bytes, count %d; want %d files, %d bytes", when, f, n, b, a.selectedCount(), files, bytes)
+		}
+	}
+	check("all", 6, 15)
+	a.sel.Remove(a.rows[5].Key)
+	check("remove", 5, 10)
+	a.sel.Add(a.rows[5].Key)
+	check("add", 6, 15)
+	a.search = "0003"
+	a.rebuildRows()
+	check("search hides the rest", 1, 3)
+	a.search = ""
+	a.rebuildRows()
+	check("search cleared", 6, 15)
+	a.sel.Selection.Remove(a.rows[0].Key) // as mygo does, past the counter
+	a.sel.touch()
+	check("touched", 5, 15)
+	a.sel.Clear()
+	check("clear", 0, 0)
+}
+
+// One frame with every row chosen: the command states, the table, the
+// inspector, the selection bar and the status bar each ask.
+func BenchmarkSelectionFrameReads(b *testing.B) {
+	for _, n := range []int{10000, 1000000} {
+		b.Run(fmt.Sprint(n), func(b *testing.B) {
+			a := benchApp(n)
+			b.ReportAllocs()
+			for b.Loop() {
+				a.sel.touch() // the frame starts
+				for range 3 {
+					if a.selectedCount() != n {
+						b.Fatal("wrong count")
+					}
+				}
+				for range 3 {
+					if _, files, _ := a.selectedInfo(); files != n {
+						b.Fatal("wrong info")
+					}
+				}
+			}
+		})
+	}
+}
+
 func BenchmarkSoleSelected(b *testing.B) {
 	a := benchApp(10000)
 	b.ReportAllocs()
