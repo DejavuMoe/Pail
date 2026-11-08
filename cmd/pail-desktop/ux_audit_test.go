@@ -100,7 +100,7 @@ func bucketSettingsCase(section string) auditCase {
 				}
 			}
 			h.settle()
-			h.waitFor("section read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 || s.state == 3 })
+			h.waitFor("section read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadReady || s.state == loadFailed })
 			h.settle()
 		},
 		footer: []string{"Close"},
