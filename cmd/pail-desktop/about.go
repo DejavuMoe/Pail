@@ -41,7 +41,7 @@ func (a *app) aboutDialog(c *ui.Context) {
 				ui.Icon(c, icons.Get("database")).FontSize(32).TextColor(k.TextMuted)
 			}
 			ui.Column(c).Gap(2).Grow(1).MinWidth(0).Children(func() {
-				ui.Text(c, "Pail").FontSize(18).FontWeight(600).TextColor(k.Text)
+				ui.Text(c, "Pail").FontSize(sizeTitle).FontWeight(600).TextColor(k.Text)
 				mutedText(c, locales.AboutVersion(version))
 				mutedText(c, locales.AboutLicense())
 				a.authorLink(c, locales.AboutAuthorLink(authorName)).Margin(0, 0, 0, -8).AlignSelf(ui.Start)

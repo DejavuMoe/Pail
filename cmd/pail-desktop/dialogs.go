@@ -200,24 +200,13 @@ func (a *app) folderDialog(c *ui.Context) {
 			errText = a.folderDlg.err
 		}
 		ui.Column(c).Gap(4).Children(func() {
-			box := ui.Row(c).Height(28).Padding(0, 8).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface)
-			switch {
-			case errText != "":
-				box.Border(1, k.Danger)
-			case box.FocusWithin():
-				box.Border(1, k.Focus)
-			default:
-				box.Border(1, k.BorderStrong)
+			in := inputBox(c, &a.folderDlg.name, locales.DialogsFolderName(), locales.DialogsFolderName(), inputOpts{focus: true, invalid: errText != ""})
+			if in.Changed() {
+				a.folderDlg.err = ""
 			}
-			box.Children(func() {
-				in := ui.TextInputBase(c, &a.folderDlg.name).Placeholder(locales.DialogsFolderName()).AutoFocus().Label(locales.DialogsFolderName()).FontSize(sizeBody).Grow(1).MinWidth(0)
-				if in.Changed() {
-					a.folderDlg.err = ""
-				}
-				if in.Submitted() {
-					a.confirmNewFolder()
-				}
-			})
+			if in.Submitted() {
+				a.confirmNewFolder()
+			}
 			ui.Text(c, errText).FontSize(sizeSecondary).TextColor(k.Danger).Height(16)
 		})
 	}, func() {
