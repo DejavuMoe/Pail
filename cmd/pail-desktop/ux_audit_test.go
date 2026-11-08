@@ -372,7 +372,7 @@ func toolCases() []auditCase {
 			h.a.syncSelect(0)
 			h.settle()
 		}},
-		{name: "tool-sync-new", setup: func(h *harness) { h.openToolView("sync"); h.mustClick("New") }},
+		{name: "tool-sync-new", setup: func(h *harness) { h.openToolView("sync"); h.mustClick("New job") }},
 		{name: "sync-discard", footer: []string{"Cancel", "Discard"}, setup: func(h *harness) {
 			if _, err := h.a.svc.SaveSyncJob(core.SyncJob{Name: "Docs", LocalDir: h.t.TempDir(), Remote: Scope{AccountID: h.env.Account.ID, Bucket: "acme-website"}, Direction: "upload"}); err != nil {
 				h.t.Fatal(err)
