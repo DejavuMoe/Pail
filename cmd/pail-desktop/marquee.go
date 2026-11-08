@@ -95,6 +95,10 @@ func (a *app) dragSelInput(ev ui.InputEvent) bool {
 		if !d.on {
 			return false
 		}
+		if ev.Canceled {
+			a.dragSelCancel()
+			return true
+		}
 		if !d.moved {
 			a.dragSelClick()
 		}
@@ -187,7 +191,7 @@ func (a *app) dragSelApply() {
 	}
 }
 
-// dragSelCancel ends the drag with the choice it found (Esc).
+// dragSelCancel ends the drag with the choice it found (Esc, a cancelled press).
 func (a *app) dragSelCancel() {
 	a.sel.Clear()
 	for _, k := range a.drag.base {

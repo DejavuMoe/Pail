@@ -34,6 +34,9 @@ func (a *app) pathBar(c *ui.Context) {
 					shown, tip = a.bucketLabel(name), a.bucketTip(name)
 				}
 				seg := ui.ButtonBase(c.Key(i)).Label(shown).Height(24).Padding(0, 6).Radius(RadiusControl).Center().Shrink(1).MinWidth(0).Tooltip(tip).Transition(hoverFade())
+				if i == last {
+					seg = seg.Bind(&a.crumbH)
+				}
 				col, w := k.TextMuted, 400
 				// Rows dropped on a parent folder move there.
 				p := ""
@@ -76,10 +79,10 @@ func (a *app) pathBar(c *ui.Context) {
 // pathFilter remembers how the folder filter of a compact path bar is doing.
 // While the bar is wide the filter is always a box and this stays at rest.
 type pathFilter struct {
-	open bool // the box was asked for (the icon, Ctrl+F) and has not been given up
-	seen bool // it has held the keyboard since: losing it again, empty, closes it
-	want int  // frames left in which it still takes the keyboard it was asked for
-	esc  bool // Esc was pressed in it empty: it folds even though it still has the keyboard
+	open    bool // the box was asked for (the icon, Ctrl+F) and has not been given up
+	seen    bool // it has held the keyboard since: losing it again, empty, closes it
+	want    int  // frames left in which it still takes the keyboard it was asked for
+	closing bool // Esc folded it: stay folded until the keyboard leaves it
 }
 
 // filterWantFrames is how many frames an opened filter box asks for the
@@ -103,19 +106,20 @@ func (a *app) filterShown(c *ui.Context) bool {
 		*f = pathFilter{}
 		return true
 	}
-	if f.esc {
-		// The box that had the keyboard is gone this frame, and the keyboard with it.
-		*f = pathFilter{}
+	focused := a.searchH.FocusWithin(c)
+	if f.closing {
+		if !focused {
+			*f = pathFilter{}
+		}
 		return a.search != ""
 	}
-	focused := a.searchH.FocusWithin(c)
 	switch {
 	case focused:
-		f.seen, f.want = true, 0
+		f.open, f.seen, f.want = true, true, 0
 	case f.open && f.want == 0 && f.seen && a.search == "":
 		*f = pathFilter{}
 	}
-	return f.open || focused || a.search != ""
+	return f.open || a.search != ""
 }
 
 // folderFilter is the filter of the folder on the right of the path bar: a
@@ -140,7 +144,9 @@ func (a *app) folderFilter(c *ui.Context, width float32) {
 	// Esc in an empty box gives it up; while the bar is wide the box stays.
 	a.searchH.OnShortcut(c, 0, ui.KeyEscape, func() {
 		if a.lay.compact && a.search == "" {
-			f.esc = true
+			// The box goes; keep it gone until the keyboard moves to the breadcrumb.
+			f.open, f.closing = false, true
+			a.crumbH.Focus()
 		}
 	})
 }

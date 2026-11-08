@@ -154,6 +154,7 @@ func applyTheme(c *ui.Context, mode string) tokens {
 	t.Background, t.Surface, t.SurfaceHover, t.SurfacePressed = k.Background, k.Surface, k.SurfaceHover, k.SurfacePressed
 	t.Border, t.Text, t.TextMuted = k.Border, k.Text, k.TextMuted
 	t.Accent, t.AccentHover, t.AccentPressed, t.AccentText = k.Accent, k.AccentHover, k.AccentPressed, k.AccentText
+	t.InactiveAccent = k.Accent // keep the accent in an inactive window
 	t.Selection, t.Focus = k.Selection, k.Focus
 	t.Danger, t.Warning, t.Success = k.Danger, k.Warning, k.Success
 	// Tooltips (mygo's own, see overlay.go) and toasts take these two.
