@@ -19,6 +19,27 @@ func near(got color.Color, want ui.Color, tol int) bool {
 	return d(r, want.R) <= tol && d(g, want.G) <= tol && d(b, want.B) <= tol
 }
 
+// A chosen row keeps the Selection fill when the window goes inactive: the
+// dark text on it stays readable.
+func TestChosenRowKeepsSelectionInactive(t *testing.T) {
+	for _, theme := range []string{"light", "dark"} {
+		t.Run(theme, func(t *testing.T) {
+			h := newHarness(t, theme)
+			k := tokensFor(theme == "dark")
+			h.mustClick("manifest.json")
+			h.settle()
+			for _, active := range []bool{true, false} {
+				h.tt.SetWindowActive(active)
+				h.settle()
+				r := h.a.rowRects["manifest.json"]
+				if got := px(h.tt.Image(), r.X+r.W/2, r.Y+2); !near(got, k.Selection, 3) {
+					t.Errorf("active=%v: the chosen row is %v, want Selection %v", active, got, k.Selection)
+				}
+			}
+		})
+	}
+}
+
 // TestSwitchAndCheckboxStatesAreDistinct renders the switch and the check box
 // on and off in both themes and reads the pixels: the off switch track is
 // ControlOff, the on track Accent, a checked box is Accent filled and an

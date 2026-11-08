@@ -34,6 +34,9 @@ func tableThemeEdges(c *ui.Context, edges bool) (restore func()) {
 		rowTheme.Border = ui.Transparent
 	}
 	rowTheme.Accent, rowTheme.AccentText = k.Selection, k.Text
+	// mygo fills chosen rows with InactiveAccent while the window is inactive;
+	// left at the frame's Accent, they would turn solid under dark text.
+	rowTheme.InactiveAccent = k.Selection
 	rowTheme.Spacing = tableSpacing
 	rowTheme.FontSize = sizeSecondary
 	c.SetTheme(&rowTheme)
