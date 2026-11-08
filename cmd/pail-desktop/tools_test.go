@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"math"
 	"net/http"
 	"os"
 	"path/filepath"
@@ -11,8 +12,10 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/DejavuMoe/Pail/internal/cloud"
+	"github.com/egoist/mygo/ui"
 )
 
 func (h *harness) openToolView(id string) {
@@ -37,7 +40,9 @@ func TestToolsAreEnabledAndOpenFromTheSidebar(t *testing.T) {
 	if h.a.tool != "rules" {
 		t.Fatalf("clicking Upload rules opened %q", h.a.tool)
 	}
-	h.mustHave("Manage secrets…", "Save", "Test")
+	// No rule yet: one empty state, and no editor footer to manage secrets or save.
+	h.mustHave("No upload rules", "Add rule", "Test")
+	h.mustNotHave("Manage secrets…", "Save", "No rule selected")
 	h.mustClick("Back")
 	if h.a.tool != "" {
 		t.Fatal("Back did not close the tool")
@@ -462,8 +467,9 @@ func TestSyncJobPreviewRunAndMirrorWarning(t *testing.T) {
 
 	h.openToolView("sync")
 	s := &h.a.tl.sync
-	h.mustHave("No sync jobs", "Create a sync job")
-	h.mustClick("New")
+	h.mustHave("No sync jobs", "New job")
+	h.mustNotHave("Create a sync job", "No job selected")
+	h.mustClick("New job")
 	h.mustHave("Direction", "Local folder", "Excludes", "Preview", "Run sync", "Choose…")
 	s.f.name, s.f.dir = "Site", dir
 	s.f.acct, s.f.bucket, s.f.prefix = h.env.Account.ID, "acme-website", "sync-it/"
@@ -752,5 +758,107 @@ func TestRenameSelectsTheBaseName(t *testing.T) {
 	}
 	if got := renameStem(Entry{Name: "v1.2", Folder: true}); got != "v1.2" {
 		t.Errorf("stem = %q", got)
+	}
+}
+
+// ---- empty states and footers ----------------------------------------------------------------
+
+// A tool whose list is empty shows one empty state, centred over its whole
+// body: no list pane with an empty state of its own, no header with a second way
+// to create, and no detail pane with a third.
+func TestListToolsShowOneEmptyStateOverTheBody(t *testing.T) {
+	for _, tc := range []struct {
+		tool, title, sub, action string
+		gone                     []string
+	}{
+		{"sync", "No sync jobs", "Keep a local folder and a bucket in step.", "New job", []string{"Delete", "No job selected"}},
+		{"rules", "No upload rules", "Rules set headers, storage class and compression on upload.", "Add rule", []string{"Duplicate rule", "Delete rule", "No rule selected", "Manage secrets…", "Save"}},
+	} {
+		t.Run(tc.tool, func(t *testing.T) {
+			h := newHarness(t, "light")
+			h.openToolView(tc.tool)
+			h.mustHave(tc.title, tc.sub, tc.action)
+			h.mustNotHave(tc.gone...)
+			if h.hasExactText("New") {
+				t.Error("the list header's New button is still shown")
+			}
+			title, _ := h.tt.Find(tc.title)
+			sub, _ := h.tt.Find(tc.sub)
+			btn, _ := h.tt.Find(tc.action)
+			left, right := h.a.sidebarW+dividerW, float32(testW)
+			mid := (left + right) / 2
+			for name, r := range map[string]ui.Rect{"title": title, "subtitle": sub, "button": btn} {
+				if got := r.X + r.W/2; math.Abs(float64(got-mid)) > 2 {
+					t.Errorf("%s: the %s is centred at %.1f, the body at %.1f", tc.tool, name, got, mid)
+				}
+			}
+			if !(title.Y < sub.Y && sub.Y < btn.Y) {
+				t.Errorf("%s: title %v, subtitle %v and button %v are not stacked", tc.tool, title, sub, btn)
+			}
+			h.snap(tc.tool + "-empty-light")
+			// The button creates the first item.
+			h.mustClick(tc.action)
+			h.mustNotHave(tc.title)
+		})
+	}
+}
+
+// With no rule chosen there is nothing to manage or save, so the footer under
+// the editor is left out; it comes back for changes that still need saving.
+func TestRulesFooterOnlyWhenThereIsSomethingToDo(t *testing.T) {
+	h := newHarness(t, "light")
+	h.openToolView("rules")
+	h.mustClick("Add rule")
+	h.mustHave("Manage secrets…", "Save")
+	// The last rule deleted and not yet saved: Save and Revert stay reachable,
+	// Manage secrets does not.
+	h.a.rulesSave()
+	h.waitFor("saved", func() bool { return len(h.a.svc.UploadRules()) == 1 })
+	h.settle()
+	h.mustClick("Delete rule")
+	h.settle()
+	if n := len(h.a.tl.rules.draft); n != 0 {
+		t.Fatalf("%d rules left", n)
+	}
+	h.mustHave("No upload rules", "Save", "Revert")
+	h.mustNotHave("Manage secrets…")
+	h.mustClick("Save")
+	h.waitFor("deletion saved", func() bool { return len(h.a.svc.UploadRules()) == 0 })
+	h.settle()
+	h.mustNotHave("Save", "Revert", "Manage secrets…")
+}
+
+// The key of the rules' test strip takes the room the bucket leaves, to the
+// content padding.
+func TestRulesTestKeyFillsTheStrip(t *testing.T) {
+	h := newHarness(t, "light")
+	h.openToolView("rules")
+	bucket, ok1 := h.tt.Find(locales.RulesTestBucket())
+	key, ok2 := h.tt.Find(locales.RulesTestKey())
+	if !ok1 || !ok2 {
+		t.Fatalf("no test inputs; have %q", h.tt.Texts())
+	}
+	if bucket.W < 100 || bucket.W > 200 {
+		t.Errorf("the bucket input is %.1f wide, want it kept to a fixed width", bucket.W)
+	}
+	if end := key.X + key.W; end < float32(testW)-16-12 || end > float32(testW)-16 {
+		t.Errorf("the key input ends at %.1f, want the content padding at %d", end, testW-16)
+	}
+	if key.W < 2*bucket.W {
+		t.Errorf("the key input is %.1f wide next to a %.1f bucket", key.W, bucket.W)
+	}
+}
+
+// Segmented controls are as high as the inputs and selects beside them, and
+// their radii come from the control radius.
+func TestSegmentedControlMatchesTheControlHeight(t *testing.T) {
+	if controlH != 28 {
+		t.Errorf("controlH = %d, want 28 (design.md: controls are 28 high)", controlH)
+	}
+	if got := segmentH + 2*(segBorder+segPad); got != controlH {
+		t.Errorf("a segmented track is %d high, controls %d", got, controlH)
+	}
+	if segmentRadii != RadiusControl-segPad {
+		t.Errorf("segment radius %d, want %d", segmentRadii, RadiusControl-segPad)
 	}
 }

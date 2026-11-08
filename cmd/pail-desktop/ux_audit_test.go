@@ -416,6 +416,7 @@ func toolCases() []auditCase {
 		{name: "tool-rules", setup: func(h *harness) { h.openToolView("rules"); h.mustClick("Add rule"); h.settle() }},
 		{name: "rules-secrets", footer: []string{"Done"}, setup: func(h *harness) {
 			h.openToolView("rules")
+			h.mustClick("Add rule")
 			h.mustClick("Manage secrets…")
 			h.settle()
 		}},

@@ -64,11 +64,81 @@ func (a *app) pathBar(c *ui.Context) {
 				ui.Spinner(c).Size(14, 14).MarginX(6)
 			}
 		})
-		if searchBox(c, &a.search, &a.searchH, locales.PathbarFilterFolder(), locales.PathbarFilterThisFolder(), searchW, icons.Get("search"), icons.Get("x")).Changed() {
-			a.rebuildRows()
-		}
+		a.folderFilter(c, searchW)
 		a.flatToggle(c)
 		a.deletedToggle(c)
+	})
+}
+
+// pathFilter remembers how the folder filter of a compact path bar is doing.
+// While the bar is wide the filter is always a box and this stays at rest.
+type pathFilter struct {
+	open bool // the box was asked for (the icon, Ctrl+F) and has not been given up
+	seen bool // it has held the keyboard since: losing it again, empty, closes it
+	want int  // frames left in which it still takes the keyboard it was asked for
+	esc  bool // Esc was pressed in it empty: it folds even though it still has the keyboard
+}
+
+// filterWantFrames is how many frames an opened filter box asks for the
+// keyboard: the request lands a frame after the box is built.
+const filterWantFrames = 3
+
+// openFilter is the filter command: it shows the filter box, also when the
+// compact path bar had folded it into an icon, and gives it the keyboard.
+func (a *app) openFilter() {
+	a.filter = pathFilter{open: true, want: filterWantFrames}
+	a.searchH.Focus()
+}
+
+// filterShown works out whether the filter is a box in this frame. A compact
+// path bar folds it into an icon so that the breadcrumb keeps the room; the box
+// stays while it has the keyboard or holds text, and folds again once it has
+// lost the keyboard while empty.
+func (a *app) filterShown(c *ui.Context) bool {
+	f := &a.filter
+	if !a.lay.compact {
+		*f = pathFilter{}
+		return true
+	}
+	if f.esc {
+		// The box that had the keyboard is gone this frame, and the keyboard with it.
+		*f = pathFilter{}
+		return a.search != ""
+	}
+	focused := a.searchH.FocusWithin(c)
+	switch {
+	case focused:
+		f.seen, f.want = true, 0
+	case f.open && f.want == 0 && f.seen && a.search == "":
+		*f = pathFilter{}
+	}
+	return f.open || focused || a.search != ""
+}
+
+// folderFilter is the filter of the folder on the right of the path bar: a
+// search box, or, in a compact bar, a 28px icon button that unfolds it.
+func (a *app) folderFilter(c *ui.Context, width float32) {
+	if !a.filterShown(c) {
+		if ghostButton(c, icons.Get("search"), "", locales.PathbarFilterThisFolder(), false).Label(locales.PathbarFilterFolder()).Clicked() {
+			a.openFilter()
+		}
+		return
+	}
+	// A box the compact bar unfolded keeps its width; the breadcrumb gives way.
+	in := searchBoxFit(c, &a.search, &a.searchH, locales.PathbarFilterFolder(), locales.PathbarFilterThisFolder(), width, a.lay.compact, icons.Get("search"), icons.Get("x"))
+	if in.Changed() {
+		a.rebuildRows()
+	}
+	f := &a.filter
+	if f.want > 0 {
+		f.want--
+		a.searchH.Focus()
+	}
+	// Esc in an empty box gives it up; while the bar is wide the box stays.
+	a.searchH.OnShortcut(c, 0, ui.KeyEscape, func() {
+		if a.lay.compact && a.search == "" {
+			f.esc = true
+		}
 	})
 }
 

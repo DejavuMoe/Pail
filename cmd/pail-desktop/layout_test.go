@@ -6,6 +6,7 @@ import (
 	"time"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
+	"github.com/egoist/mygo/ui"
 )
 
 // ---- breakpoints with hysteresis -------------------------------------------------------------
@@ -135,7 +136,172 @@ func TestLayoutMetricsPartitionTheWindow(t *testing.T) {
 	}
 }
 
+// leastWidth is the narrowest a table of cols can be laid out: the columns with
+// a width as they are, the others at their least.
+func leastWidth(cols []ui.TableColumn) float32 {
+	var w float32
+	for _, c := range cols {
+		if c.Width > 0 {
+			w += max(c.Width, c.MinWidth)
+		} else {
+			w += c.MinWidth
+		}
+	}
+	return w
+}
+
+// Each table tier fits the width it is shown at, down to where the next tier
+// takes over, so that the table never scrolls sideways: a column that runs out
+// of room would clip its text, the date of the last one first.
+func TestObjectColumnsFitTheirTier(t *testing.T) {
+	s := newLayoutState()
+	min960 := s.metrics(layoutIn{winW: 960, sidebarW: 248, inspW: 320, inspector: true, barRight: 138}).centerW
+	// Tier 2 is shown below colsFourNeed-hysteresis; at 960 it gets min960.
+	if got := leastWidth(visibleColumns(2)); got > min960 {
+		t.Errorf("the three-column table needs %v, the 960 window leaves %v", got, min960)
+	}
+	// The last column of each tier keeps the room for its text (a date is about
+	// 100 wide) with the cell's padding on both sides and the scroll bar's slot.
+	const dateW = 100
+	for tier := 0; tier <= 2; tier++ {
+		cols := visibleColumns(tier)
+		last := cols[len(cols)-1]
+		if last.ID == "modified" && last.Width < dateW+2*cellPadX+lastColInset {
+			t.Errorf("tier %d: the Modified column is %v wide, too little for a date and its end gap", tier, last.Width)
+		}
+	}
+	// A tier is only shown where its columns fit: tier 1 below colsAllNeed,
+	// tier 0 above it, tier 2 below colsFourNeed.
+	if got := leastWidth(visibleColumns(1)); got > colsFourNeed-hysteresis {
+		t.Errorf("the four-column table needs %v, shown from %v", got, colsFourNeed-hysteresis)
+	}
+	if got := leastWidth(visibleColumns(0)); got > colsAllNeed+hysteresis {
+		t.Errorf("the five-column table needs %v, shown from %v", got, colsAllNeed+hysteresis)
+	}
+}
+
 // ---- in the app ------------------------------------------------------------------------------
+
+// At the smallest window the last cell of a row ends before the inspector's
+// divider with a gap, not at or under it, and the table does not scroll sideways.
+func TestObjectTableKeepsItsLastColumnClearAtTheMinimumWindow(t *testing.T) {
+	h := newHarness(t, "light")
+	h.a.inspectorOpen = true
+	h.resize(960, 600)
+	if h.a.lay.colTier != 2 {
+		t.Fatalf("column tier at 960 = %d, want 2", h.a.lay.colTier)
+	}
+	var date string
+	for i := range h.a.rows {
+		if !h.a.rows[i].Folder && !h.a.rows[i].Modified.IsZero() {
+			date = formatTime(h.a.rows[i].Modified)
+			break
+		}
+	}
+	if date == "" {
+		t.Fatal("no file with a date in the table")
+	}
+	r, ok := h.tt.Find(date)
+	if !ok {
+		t.Fatalf("the date %q is not shown; have %q", date, h.tt.Texts())
+	}
+	tbl := h.a.tblRect
+	if gap := tbl.X + tbl.W - (r.X + r.W); gap < scrollGutter {
+		t.Errorf("the date ends %.1f short of the table's end (%v), want at least %d", gap, tbl.X+tbl.W, scrollGutter)
+	}
+	if want := leastWidth(visibleColumns(2)); want > tbl.W {
+		t.Errorf("the table is %.1f wide but its columns need %.1f: it scrolls sideways", tbl.W, want)
+	}
+	h.snap("objects-narrow-light")
+}
+
+// With the path bar compact the folder filter is a 28px icon, so the
+// breadcrumb keeps the room; it unfolds when asked for (the icon, Ctrl+F),
+// stays while it has the keyboard or text, and folds again once it lost the
+// keyboard empty, or on Esc.
+func TestCompactPathBarFoldsTheFolderFilter(t *testing.T) {
+	h := newHarness(t, "light")
+	h.a.inspectorOpen = true
+	h.resize(960, 600)
+	if !h.a.lay.compact {
+		t.Fatalf("the path bar is not compact at 960 (centre %v)", h.a.lay.centerW)
+	}
+	label := locales.PathbarFilterFolder()
+	width := func() float32 {
+		t.Helper()
+		h.tt.Frame()
+		r, ok := h.tt.Find(label)
+		if !ok {
+			t.Fatalf("no %q in the path bar; have %q", label, h.tt.Texts())
+		}
+		return r.W
+	}
+	if w := width(); w != 28 {
+		t.Fatalf("a compact bar shows the filter %v wide, want the 28px icon", w)
+	}
+	h.snap("pathbar-compact-folded-light")
+
+	// The icon unfolds the box and gives it the keyboard.
+	h.mustClick(label)
+	h.settle()
+	// The input inside the box: its normal width (140 at this size) less the
+	// icon and the padding, not squeezed by the breadcrumb.
+	if w := width(); w < 60 {
+		t.Fatalf("the unfolded filter is %v wide", w)
+	}
+	if !h.a.filter.open || !h.a.filter.seen {
+		t.Fatalf("the unfolded filter did not take the keyboard: %+v", h.a.filter)
+	}
+	h.snap("pathbar-compact-open-light")
+	// Esc on the empty box folds it.
+	h.tt.Key(0, ui.KeyEscape)
+	h.settle()
+	if w := width(); w != 28 {
+		t.Errorf("Esc left the filter %v wide", w)
+	}
+
+	// It stays unfolded while it holds text, even without the keyboard.
+	h.a.openFilter()
+	h.settle()
+	h.tt.Type("man")
+	h.settle()
+	if h.a.search != "man" {
+		t.Fatalf("typed %q into the filter", h.a.search)
+	}
+	h.mustClick("manifest.json")
+	if w := width(); w < 60 {
+		t.Errorf("a filter with text folded: %v wide", w)
+	}
+	// Emptied and left, it folds.
+	h.a.search = ""
+	h.a.rebuildRows()
+	h.a.openFilter()
+	h.settle()
+	h.mustClick("manifest.json")
+	h.settle()
+	if w := width(); w != 28 {
+		t.Errorf("an empty filter without the keyboard stayed %v wide", w)
+	}
+
+	// The command opens it as well.
+	h.runCmd("search")
+	h.settle()
+	if w := width(); w < 60 || !h.a.filter.seen {
+		t.Errorf("Ctrl+F: the filter is %v wide, state %+v", w, h.a.filter)
+	}
+
+	// A wide bar always shows the box and forgets what was asked.
+	h.resize(1440, 900)
+	if h.a.lay.compact {
+		t.Fatal("the path bar is compact at 1440")
+	}
+	if w := width(); w < 60 {
+		t.Errorf("a wide path bar shows the filter %v wide", w)
+	}
+	if h.a.filter != (pathFilter{}) {
+		t.Errorf("a wide path bar keeps filter state %+v", h.a.filter)
+	}
+}
 
 // The panels keep the width they were given at the smallest window: there is no
 // one-time narrowing any more.

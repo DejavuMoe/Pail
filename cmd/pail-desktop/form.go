@@ -81,6 +81,17 @@ func segmented(c *ui.Context, sel *int, label string, labels ...string) bool {
 	return segmentedOff(c, sel, label, nil, labels...)
 }
 
+// The segmented track is as high as the inputs and selects beside it
+// (controlH, RadiusControl). Its 1px hairline and 2px padding sit inside that
+// height, so a segment is controlH - 2*(border + padding) high, and its radius
+// follows the track's by the padding.
+const (
+	segBorder    = 1
+	segPad       = 2
+	segmentH     = controlH - 2*(segBorder+segPad)
+	segmentRadii = RadiusControl - segPad
+)
+
 // segmentedOff is segmented with some segments switched off (dimmed, not
 // choosable); off may be shorter than labels.
 //
@@ -91,7 +102,7 @@ func segmented(c *ui.Context, sel *int, label string, labels ...string) bool {
 func segmentedOff(c *ui.Context, sel *int, label string, off []bool, labels ...string) bool {
 	k := tk(c)
 	seg := ui.SegmentedBase(c.Key("seg:"+label), sel, len(labels))
-	seg.Track.Height(30).Padding(2).Gap(2).Radius(7).Background(k.Track).Border(1, k.Border).Label(label).Shrink(0)
+	seg.Track.Height(controlH).Padding(segPad).Gap(segPad).Radius(RadiusControl).Background(k.Track).Border(segBorder, k.Border).Label(label).Shrink(0)
 	seg.Track.Children(func() {
 		for i, l := range labels {
 			disabled := i < len(off) && off[i]
@@ -118,7 +129,7 @@ func labelWidth(s string) float32 {
 // segmentFace styles one segment: see segmentedOff for the look.
 func segmentFace(c *ui.Context, s ui.Element, label string, on, disabled bool) {
 	k := tk(c)
-	s.Grow(1).Shrink(0).Height(24).Padding(0, 14).Radius(5).Center().Label(label).Disabled(disabled).Transition(hoverFade()).
+	s.Grow(1).Shrink(0).Height(segmentH).Padding(0, 14).Radius(segmentRadii).Center().Label(label).Disabled(disabled).Transition(hoverFade()).
 		MinWidth(labelWidth(label) + 34) // never ellipsize a short label (600 weight is wider)
 	w, col := 500, k.TextMuted
 	switch {
@@ -149,7 +160,7 @@ func segmentFace(c *ui.Context, s ui.Element, label string, on, disabled bool) {
 func segmentedAction(c *ui.Context, cur int, label string, labels ...string) (int, bool) {
 	k := tk(c)
 	chosen := -1
-	ui.Row(c.Key("segact:"+label)).Height(30).Padding(2).Gap(2).Radius(7).Background(k.Track).Border(1, k.Border).Label(label).Shrink(0).Children(func() {
+	ui.Row(c.Key("segact:"+label)).Height(controlH).Padding(segPad).Gap(segPad).Radius(RadiusControl).Background(k.Track).Border(segBorder, k.Border).Label(label).Shrink(0).Children(func() {
 		for i, l := range labels {
 			s := ui.ButtonBase(c.Key("segact:" + label + ":" + l))
 			segmentFace(c, s, l, i == cur, false)
@@ -228,18 +239,35 @@ func switchRow(c *ui.Context, label string, on *bool) bool {
 
 // emptyBlock is a centered empty state: 32px icon, 13px title, 12px subtitle.
 func emptyBlock(c *ui.Context, icon, title, sub string, height float32) {
-	k := tk(c)
 	col := ui.Column(c).Center().Gap(4)
 	if height > 0 {
 		col.Height(height)
 	} else {
 		col.Grow(1)
 	}
-	col.Children(func() {
-		ui.Icon(c, icons.Get(icon)).FontSize(32).TextColor(k.TextSubtle).MarginY(4)
-		ui.Text(c, title).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
-		if sub != "" {
-			ui.Text(c, sub).FontSize(sizeSecondary).TextColor(k.TextMuted).TextAlign(ui.Center)
+	col.Children(func() { emptyLines(c, icon, title, sub) })
+}
+
+// emptyLines is the content of an empty state: icon, title, subtitle.
+func emptyLines(c *ui.Context, icon, title, sub string) {
+	k := tk(c)
+	ui.Icon(c, icons.Get(icon)).FontSize(32).TextColor(k.TextSubtle).MarginY(4)
+	ui.Text(c, title).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
+	if sub != "" {
+		ui.Text(c, sub).FontSize(sizeSecondary).TextColor(k.TextMuted).TextAlign(ui.Center)
+	}
+}
+
+// emptyAction is the one empty state of a list-and-detail tool whose list has
+// no items yet: centred over the whole body (the list pane and the detail pane
+// together), with a secondary button that creates the first item. A tool shows
+// it instead of the split, so there is no list header and no second empty
+// state beside it.
+func emptyAction(c *ui.Context, icon, title, sub, action string, create func()) {
+	ui.Column(c.Key("empty-action")).Grow(1).MinHeight(0).Center().Gap(4).Children(func() {
+		emptyLines(c, icon, title, sub)
+		if secondaryButton(c, action, false).Margin(12, 0, 0, 0).Clicked() {
+			create()
 		}
 	})
 }

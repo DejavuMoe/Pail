@@ -32,6 +32,17 @@ func objectColumns() []ui.TableColumn {
 	}
 }
 
+// The three-column table is what fits beside the sidebar and the inspector at
+// the smallest window (960 wide: 390 left for the table). Size and Modified are
+// as wide as their text needs, which leaves Name enough to show a name, and the
+// last column still ends with a gap before the divider: the table must never
+// scroll sideways there, which would clip the date.
+const (
+	narrowNameMin = 120
+	narrowSizeW   = 76
+	narrowModW    = 128 // a date and time (about 100) with the cell's padding and lastColInset
+)
+
 // visibleColumns drops the least important columns when the table is too
 // narrow for all of them, so nothing runs off the right edge: Storage class
 // first, then Type (the inspector still shows both). tier is
@@ -44,9 +55,18 @@ func visibleColumns(tier int) []ui.TableColumn {
 	case tier == 1:
 		return all[:5]
 	default:
-		return []ui.TableColumn{all[0], all[1], all[2], all[4]}
+		narrow := []ui.TableColumn{all[0], all[1], all[2], all[4]}
+		narrow[1].MinWidth = narrowNameMin
+		narrow[2].Width, narrow[2].MinWidth = narrowSizeW, narrowSizeW
+		narrow[3].Width = narrowModW
+		return narrow
 	}
 }
+
+// lastColInset is the room the right-most column keeps at its end, beside the
+// cell's own padding, so that its text stays clear of the scroll bar's slot
+// (scrollGutter, design.md "滚动").
+const lastColInset = scrollGutter - cellPadX
 
 // objects is the object table with its loading, error and empty states.
 // Dropping OS files on it uploads them into the current prefix.
@@ -107,6 +127,7 @@ func (a *app) table(c *ui.Context) {
 	defer tableTheme(c)()
 
 	cols := visibleColumns(a.lay.colTier)
+	inset := func(col int) float32 { return lastColInset * b2f(col == len(cols)-1) }
 	chosen := a.selectedCount()
 	everyBox := chosen >= 2 // the selection bar is up: every row shows its box
 	cell := func(row, col int) {
@@ -153,14 +174,14 @@ func (a *app) table(c *ui.Context) {
 			if e.Folder {
 				a.folderSizeCell(c, e)
 			} else {
-				a.dataCell(c, e, "size", humanBytes(e.Size), true, ui.End)
+				a.dataCell(c, e, "size", humanBytes(e.Size), true, ui.End, 0)
 			}
 		case "type":
-			a.dataCell(c, e, "type", typeLabel(*e), true, ui.Start)
+			a.dataCell(c, e, "type", typeLabel(*e), true, ui.Start, inset(col))
 		case "modified":
-			a.dataCell(c, e, "modified", formatTime(e.Modified), !e.Folder, ui.Start)
+			a.dataCell(c, e, "modified", formatTime(e.Modified), !e.Folder, ui.Start, inset(col))
 		case "class":
-			a.dataCell(c, e, "class", storageLabel(e.StorageClass), !e.Folder, ui.Start)
+			a.dataCell(c, e, "class", storageLabel(e.StorageClass), !e.Folder, ui.Start, inset(col))
 		}
 	}
 	// The table and, over the empty header of its check box column, the
@@ -331,9 +352,10 @@ func (a *app) dropDest(e *Entry) *Scope {
 }
 
 // dataCell is a secondary table cell that, like the name, takes rows dropped
-// on its row.
-func (a *app) dataCell(c *ui.Context, e *Entry, id, text string, show bool, align ui.Align) {
-	box := ui.Row(c.Key(id)).FillWidth().Height(18).AlignItems(ui.Center)
+// on its row. tail is extra room kept at its end (lastColInset in the last
+// column).
+func (a *app) dataCell(c *ui.Context, e *Entry, id, text string, show bool, align ui.Align, tail float32) {
+	box := ui.Row(c.Key(id)).FillWidth().Height(18).Padding(0, tail, 0, 0).AlignItems(ui.Center)
 	if align == ui.End {
 		box.Justify(ui.End)
 	}

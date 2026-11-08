@@ -384,11 +384,18 @@ func (a *app) rulesSave() {
 // ---- view -------------------------------------------------------------------------------------
 
 func (a *app) rulesView(c *ui.Context) {
+	rs := &a.tl.rules
 	ui.Column(c).Grow(1).MinHeight(0).Children(func() {
-		ui.Row(c).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Children(func() {
-			a.rulesList(c)
-			a.ruleEditor(c)
-		})
+		if len(rs.draft) == 0 {
+			// No list and no editor: one empty state over the whole body.
+			emptyAction(c, "list-filter", locales.RulesNoRules(), locales.RulesNoRulesSub(), locales.RulesAddRule(), a.rulesAdd)
+			a.rulesFooter(c, false)
+		} else {
+			ui.Row(c).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Children(func() {
+				a.rulesList(c)
+				a.ruleEditor(c)
+			})
+		}
 		a.rulesTestStrip(c)
 	})
 }
@@ -417,10 +424,6 @@ func (a *app) rulesList(c *ui.Context) {
 				a.rulesMove(1)
 			}
 		})
-		if len(rs.draft) == 0 {
-			emptyBlock(c, "list-filter", locales.RulesNoRules(), "", 0)
-			return
-		}
 		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
 			ui.Column(c).Gap(2).Padding(0, 0, 8, 0).Children(func() {
 				for i := range rs.draft {
@@ -455,42 +458,56 @@ func (a *app) rulesList(c *ui.Context) {
 }
 
 func (a *app) ruleEditor(c *ui.Context) {
-	k := tk(c)
 	rs := &a.tl.rules
 	f := &rs.form
 	ui.Column(c).Grow(1).MinWidth(0).MinHeight(0).Children(func() {
 		if rs.sel < 0 || rs.sel >= len(rs.draft) {
 			emptyBlock(c, "list-filter", locales.RulesNoneSelected(), "", 0)
-		} else {
-			ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
-				ui.Column(c).MaxWidth(640).AlignSelf(ui.Start).Padding(20, 24, 24, 24).Gap(16).Children(func() {
-					a.ruleFields(c, f)
-				})
-			})
-			a.rulesCommit()
+			a.rulesFooter(c, false)
+			return
 		}
-		footerBar(c, "rules-foot", func() {
-			if secondaryButton(c, locales.RulesManageSecrets(), false).Clicked() {
-				a.openSecrets()
-			}
-			ui.Spacer(c)
-			msg := rs.err
-			if msg == "" {
-				msg = rs.problem()
-			}
-			if msg != "" {
-				ui.Row(c).Shrink(1).MinWidth(0).MaxWidth(420).Children(func() {
-					resultLine(c, "circle-alert", k.Danger, msg)
-				})
-			}
-			dirty := rs.dirty()
-			if dirty && ghostButton(c, nil, locales.CommonRevert(), locales.RulesDiscardTip(), rs.saving).Clicked() {
-				a.rulesRevert()
-			}
-			if primaryButton(c, locales.CommonSave(), !dirty || rs.saving).Clicked() {
-				a.rulesSave()
-			}
+		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+			ui.Column(c).MaxWidth(640).AlignSelf(ui.Start).Padding(20, 24, 24, 24).Gap(16).Children(func() {
+				a.ruleFields(c, f)
+			})
 		})
+		a.rulesCommit()
+		a.rulesFooter(c, true)
+	})
+}
+
+// rulesFooter is the strip under the editor: Manage secrets (only while a rule
+// is being edited, as it belongs to its fields), the problem with the draft,
+// Revert and Save. With no rule chosen there is nothing to manage, so the strip
+// is left out unless the draft holds changes that still need saving (a rule
+// switched off in the list, or the last rule deleted) or an error to show.
+func (a *app) rulesFooter(c *ui.Context, editing bool) {
+	k := tk(c)
+	rs := &a.tl.rules
+	dirty := rs.dirty()
+	if !editing && !dirty && rs.err == "" {
+		return
+	}
+	footerBar(c, "rules-foot", func() {
+		if editing && secondaryButton(c, locales.RulesManageSecrets(), false).Clicked() {
+			a.openSecrets()
+		}
+		ui.Spacer(c)
+		msg := rs.err
+		if msg == "" {
+			msg = rs.problem()
+		}
+		if msg != "" {
+			ui.Row(c).Shrink(1).MinWidth(0).MaxWidth(420).Children(func() {
+				resultLine(c, "circle-alert", k.Danger, msg)
+			})
+		}
+		if dirty && ghostButton(c, nil, locales.CommonRevert(), locales.RulesDiscardTip(), rs.saving).Clicked() {
+			a.rulesRevert()
+		}
+		if primaryButton(c, locales.CommonSave(), !dirty || rs.saving).Clicked() {
+			a.rulesSave()
+		}
 	})
 }
 
@@ -638,7 +655,11 @@ func (a *app) rulesTestStrip(c *ui.Context) {
 			return ui.Text(c, locales.RulesTest()).FontSize(sizeSecondary).FontWeight(600).TextColor(k.Text)
 		})
 		inputBox(c, &rs.testBucket, locales.RulesTestBucket(), locales.CommonBucket(), inputOpts{width: 180, mono: true})
-		inputBox(c, &rs.testKey, locales.RulesTestKey(), locales.RulesObjectKey(), inputOpts{width: 280, mono: true})
+		// The key takes what the bucket and the result leave, so that the strip
+		// ends at the content padding.
+		ui.Box(c.Key("test-key")).Grow(1).MinWidth(120).Children(func() {
+			inputBox(c, &rs.testKey, locales.RulesTestKey(), locales.RulesObjectKey(), inputOpts{mono: true})
+		})
 		if rs.testBucket == "" && rs.testKey == "" {
 			return
 		}
@@ -648,6 +669,6 @@ func (a *app) rulesTestStrip(c *ui.Context) {
 			col = k.Danger
 		}
 		ui.Text(c, locales.RulesDraftResult()).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().Shrink(0)
-		ui.Text(c, res).FontSize(sizeSecondary).TextColor(col).SingleLine().Grow(1).MinWidth(0).Tooltip(res)
+		ui.Text(c, res).FontSize(sizeSecondary).TextColor(col).SingleLine().Shrink(1).MinWidth(0).Tooltip(res)
 	})
 }

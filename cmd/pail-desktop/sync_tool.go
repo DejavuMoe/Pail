@@ -474,6 +474,11 @@ func (a *app) syncView(c *ui.Context) {
 	if s.hasDraft || s.sel >= 0 {
 		a.syncEnsureBuckets(s.f.acct)
 	}
+	if len(s.jobs) == 0 && !s.hasDraft {
+		// No list and no editor: one empty state over the whole body.
+		emptyAction(c, "refresh-ccw", locales.SyncEmpty(), locales.SyncEmptySub(), locales.SyncNewJob(), func() { a.syncGuard(a.syncNew) })
+		return
+	}
 	ui.Row(c).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Children(func() {
 		a.syncList(c)
 		a.syncEditor(c)
@@ -492,10 +497,6 @@ func (a *app) syncList(c *ui.Context) {
 				a.syncAskDelete()
 			}
 		})
-		if len(s.jobs) == 0 && !s.hasDraft {
-			emptyBlock(c, "refresh-ccw", locales.SyncEmpty(), "", 0)
-			return
-		}
 		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
 			ui.Column(c).Gap(2).Padding(0, 0, 8, 0).Children(func() {
 				for i := range s.jobs {
@@ -557,10 +558,7 @@ func (a *app) syncEditor(c *ui.Context) {
 	s := &a.tl.sync
 	ui.Column(c).Grow(1).MinWidth(0).MinHeight(0).Children(func() {
 		if s.sel < 0 && !s.hasDraft {
-			ui.Column(c).Grow(1).Center().Gap(12).Children(func() {
-				emptyBlock(c, "refresh-ccw", locales.SyncCreate(), "", 90)
-				secondaryButton(c, locales.SyncNewJob(), false).OnClick(func() { a.syncGuard(a.syncNew) })
-			})
+			emptyBlock(c, "refresh-ccw", locales.SyncNoneSelected(), "", 0)
 			return
 		}
 		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {

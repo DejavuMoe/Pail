@@ -7870,6 +7870,16 @@ func (msgs Messages) RulesNoRules() string {
 	return Catalog.Format(msgs.locale, "rulesNoRules", nil)
 }
 
+// RulesNoRulesSub says "Rules set headers, storage class and compression on upload."
+// in the language the app shows.
+func RulesNoRulesSub() string { return In(i18n.Locale()).RulesNoRulesSub() }
+
+// RulesNoRulesSub says "Rules set headers, storage class and compression on upload."
+// in the language of msgs.
+func (msgs Messages) RulesNoRulesSub() string {
+	return Catalog.Format(msgs.locale, "rulesNoRulesSub", nil)
+}
+
 // RulesNoneSelected says "No rule selected"
 // in the language the app shows.
 func RulesNoneSelected() string { return In(i18n.Locale()).RulesNoneSelected() }
@@ -10048,16 +10058,6 @@ func (msgs Messages) SyncComparing() string {
 	return Catalog.Format(msgs.locale, "syncComparing", nil)
 }
 
-// SyncCreate says "Create a sync job"
-// in the language the app shows.
-func SyncCreate() string { return In(i18n.Locale()).SyncCreate() }
-
-// SyncCreate says "Create a sync job"
-// in the language of msgs.
-func (msgs Messages) SyncCreate() string {
-	return Catalog.Format(msgs.locale, "syncCreate", nil)
-}
-
 // SyncDeleteAction says "Delete job"
 // in the language the app shows.
 func SyncDeleteAction() string { return In(i18n.Locale()).SyncDeleteAction() }
@@ -10196,6 +10196,16 @@ func SyncEmpty() string { return In(i18n.Locale()).SyncEmpty() }
 // in the language of msgs.
 func (msgs Messages) SyncEmpty() string {
 	return Catalog.Format(msgs.locale, "syncEmpty", nil)
+}
+
+// SyncEmptySub says "Keep a local folder and a bucket in step."
+// in the language the app shows.
+func SyncEmptySub() string { return In(i18n.Locale()).SyncEmptySub() }
+
+// SyncEmptySub says "Keep a local folder and a bucket in step."
+// in the language of msgs.
+func (msgs Messages) SyncEmptySub() string {
+	return Catalog.Format(msgs.locale, "syncEmptySub", nil)
 }
 
 // SyncExcludes says "Excludes"
@@ -10426,6 +10436,16 @@ func SyncNoActionsFilter() string { return In(i18n.Locale()).SyncNoActionsFilter
 // in the language of msgs.
 func (msgs Messages) SyncNoActionsFilter() string {
 	return Catalog.Format(msgs.locale, "syncNoActionsFilter", nil)
+}
+
+// SyncNoneSelected says "No job selected"
+// in the language the app shows.
+func SyncNoneSelected() string { return In(i18n.Locale()).SyncNoneSelected() }
+
+// SyncNoneSelected says "No job selected"
+// in the language of msgs.
+func (msgs Messages) SyncNoneSelected() string {
+	return Catalog.Format(msgs.locale, "syncNoneSelected", nil)
 }
 
 // SyncNothing says "Nothing to sync"

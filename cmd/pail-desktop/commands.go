@@ -294,7 +294,7 @@ func commandTable() []command {
 		{ID: "transfers", Label: locales.Messages.CmdTransfers, Icon: "panel-bottom", Chords: []chord{{ui.Cmd, ui.KeyJ, "Ctrl+J"}}, Accel: "CmdOrCtrl+J",
 			Run: func(a *app) { a.transfersOpen = !a.transfersOpen }},
 		{ID: "search", Label: locales.Messages.CmdSearch, Icon: "search", Chords: []chord{{ui.Cmd, ui.KeyF, "Ctrl+F"}}, Accel: "CmdOrCtrl+F",
-			Enabled: (*app).browsing, Run: func(a *app) { a.searchH.Focus() }},
+			Enabled: (*app).browsing, Run: (*app).openFilter},
 		{ID: "newbucket", Label: locales.Messages.CmdNewBucket, Icon: "plus", Enabled: (*app).hasAccount, Run: func(a *app) { a.openNewBucket() }},
 		{ID: "bucketsettings", Label: locales.Messages.CmdBucketSettings, Icon: "sliders-horizontal", Enabled: (*app).browsing,
 			Run: func(a *app) { a.openBucketSettings(a.scope.Bucket) }},
