@@ -87,6 +87,10 @@ type app struct {
 	// changes in Settings cannot overwrite each other.
 	settingsMu sync.Mutex
 
+	// collapseTools folds the sidebar's TOOLS group to its header (sidebar.go);
+	// it is kept in settings.json (collapseTools).
+	collapseTools bool
+
 	toasts []toastReq
 	clip   []string
 	// busyOps counts short background requests that have no region of their
@@ -237,6 +241,7 @@ func newApp(svc *core.Service, opts options) *app {
 	}
 	a.tray.on = !svc.Settings().HideTrayIcon
 	a.tray.quitIdle = svc.Settings().QuitWhenIdle
+	a.collapseTools = svc.Settings().CollapseTools
 	a.unsub = svc.Subscribe(a.onEvent)
 	a.setTasks(svc.Tasks())
 	a.accounts = svc.Accounts()

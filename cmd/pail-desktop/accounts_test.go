@@ -39,7 +39,7 @@ func TestWelcomeShownWithoutAccounts(t *testing.T) {
 		t.Fatal(err)
 	}
 	h := attach(t, env, "light")
-	h.mustHave("Connect an S3 account", "Add account", "No account")
+	h.mustHave("Connect an S3 account", "Add account")
 	h.mustNotHave("BUCKETS", "Name", "Transfers")
 	h.snap("welcome-light")
 	h.mustClick("Add account")

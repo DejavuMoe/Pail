@@ -5,6 +5,7 @@ import (
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
+	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -198,6 +199,7 @@ func (a *app) bucketList(c *ui.Context) {
 			ui.Column(c).Gap(0).Children(func() {
 				filter := strings.ToLower(strings.TrimSpace(a.bucketFilter))
 				shown := 0
+				accountRegion := a.account().Region
 				for _, b := range a.buckets {
 					label := a.bucketLabel(b.Name)
 					if filter != "" && !strings.Contains(strings.ToLower(b.Name), filter) && !strings.Contains(strings.ToLower(label), filter) {
@@ -208,7 +210,7 @@ func (a *app) bucketList(c *ui.Context) {
 					if b.Region != "" {
 						tip += " · " + b.Region
 					}
-					item := a.sidebarItem(c, "b:"+b.Name, icons.Get("database"), label, b.Region, false).Tooltip(tip)
+					item := a.sidebarItem(c, "b:"+b.Name, icons.Get("database"), label, rowRegion(b.Region, accountRegion), false).Tooltip(tip)
 					a.contextMenu(item, menuSpec{name: locales.MenuBucketActions(b.Name)}, func(m *menuBuilder) {
 						name := b.Name
 						m.Item(locales.SidebarOpen(), func() { a.openBucket(name) }).Icon("folder-open")
@@ -249,14 +251,62 @@ func (a *app) bucketList(c *ui.Context) {
 	})
 }
 
+// rowRegion is the region a bucket row shows on its right: only one that
+// differs from the account's own (which the account switcher already shows),
+// and none when the account names no region. The row's tooltip says the
+// region either way.
+func rowRegion(bucket, account string) string {
+	if account == "" || bucket == account {
+		return ""
+	}
+	return bucket
+}
+
+// toolList is the TOOLS group at the foot of the sidebar. Its header folds the
+// group (collapseTools in settings.json); folded, only the row of the tool
+// that is open stays, so that the sidebar still says where the user is.
 func (a *app) toolList(c *ui.Context) {
 	a.toolSync()
 	ui.Column(c).Padding(0, 0, 8, 0).Children(func() {
-		sidebarLabel(c, locales.SidebarTools(), 0, nil)
+		a.toolsHeader(c)
 		for _, id := range toolIDs {
+			if a.collapseTools && id != a.tool {
+				continue
+			}
 			cmd := a.cmd("tool." + id)
 			a.sidebarItem(c, "t:"+id, icons.Get(cmd.Icon), cmd.text(), "", !a.enabled(cmd))
 		}
+	})
+}
+
+// toolsHeader is the "TOOLS" label as a button: the label, then a 12px chevron
+// (down while the group shows, right while it is folded). The row is inset
+// like the list rows (8 and 8), so the label stays level with their icons.
+func (a *app) toolsHeader(c *ui.Context) {
+	k := tk(c)
+	tip, icon := locales.SidebarToolsCollapse(), "chevron-down"
+	if a.collapseTools {
+		tip, icon = locales.SidebarToolsExpand(), "chevron-right"
+	}
+	b := ui.ButtonBase(c.Key("tools-header")).Label(locales.SidebarTools()).Tooltip(tip).Expanded(!a.collapseTools).
+		Height(24).Margin(10, 8, 2, 8).Padding(0, 8).Gap(4).Radius(RadiusControl).AlignItems(ui.Center).AlignSelf(ui.Start).Transition(hoverFade())
+	if b.Hovered() {
+		b.Background(k.SurfaceHover)
+	}
+	b.Children(func() {
+		sectionLabel(c, locales.SidebarTools())
+		ui.Icon(c, icons.Get(icon)).FontSize(12).TextColor(k.TextSubtle)
+	})
+	if b.Clicked() {
+		a.setCollapseTools(!a.collapseTools)
+	}
+}
+
+// setCollapseTools folds or unfolds the TOOLS group and saves the choice.
+func (a *app) setCollapseTools(on bool) {
+	a.collapseTools = on
+	a.applySetting("collapseTools", func(st *core.Settings) { st.CollapseTools = on }, func() {
+		a.collapseTools = !on
 	})
 }
 

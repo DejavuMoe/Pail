@@ -24,11 +24,8 @@ func (a *app) statusBar(c *ui.Context) {
 			countText(c, key, s, k.TextMuted, rolling)
 		}
 		dot := func() { ui.Text(c, "·").FontSize(sizeSecondary).TextColor(k.TextSubtle) }
-		if ac := a.account(); ac.ID != "" {
-			part(ac.Name)
-		} else {
-			part(locales.StatusbarNoAccount())
-		}
+		// The left side is about the folder only: the account is in the sidebar's
+		// switcher and the region in the inspector. Tool views leave it empty.
 		if a.tool == "" {
 			a.statusBrowse(part, count, dot)
 		}
@@ -38,18 +35,38 @@ func (a *app) statusBar(c *ui.Context) {
 		if !a.hasAccount() && len(a.tasks) == 0 {
 			return
 		}
-		var up, down int
-		for _, t := range a.tasks {
-			if taskGroup(t) != 0 {
-				continue
-			}
-			switch t.Kind {
-			case core.KindUpload:
-				up++
-			case core.KindDownload:
-				down++
-			}
+		a.transferCounts(c, part)
+	})
+}
+
+// transferCounts is the running uploads and downloads at the right end of the
+// bar, as one small button that shows or hides the transfers panel (the
+// "transfers" command). It is the way to the panel while no task shows its
+// strip (transfersBar).
+func (a *app) transferCounts(c *ui.Context, part func(string)) {
+	k := tk(c)
+	var up, down int
+	for _, t := range a.tasks {
+		if taskGroup(t) != 0 {
+			continue
 		}
+		switch t.Kind {
+		case core.KindUpload:
+			up++
+		case core.KindDownload:
+			down++
+		}
+	}
+	cmd := a.cmd("transfers")
+	b := ui.ButtonBase(c.Key("transfers")).Label(cmd.text()).Tooltip(cmd.tooltip()).Expanded(a.transfersOpen).
+		Height(20).Padding(0, 6).Gap(6).Radius(RadiusKeycap).AlignItems(ui.Center).Transition(hoverFade())
+	switch {
+	case b.Pressed():
+		b.Background(k.SurfacePressed)
+	case b.Hovered():
+		b.Background(k.SurfaceHover)
+	}
+	b.Children(func() {
 		for i, n := range []struct {
 			icon  string
 			count int
@@ -60,6 +77,9 @@ func (a *app) statusBar(c *ui.Context) {
 			})
 		}
 	})
+	if b.Clicked() {
+		a.run("transfers", "statusbar")
+	}
 }
 
 // tookIndicator shows how long the last finished operation took, left of the
@@ -79,7 +99,7 @@ func (a *app) tookIndicator(c *ui.Context, count func(key, s string, rolling boo
 		text, tip = humanDuration(a.took.d), a.took.tip()
 	}
 	b := ui.ButtonBase(c.Key("took")).Label(tip).Tooltip(tip+" · "+locales.StatusbarRecentHint()).Expanded(a.opsOpen).
-		Height(20).Padding(0, 6).Gap(3).Radius(4).AlignItems(ui.Center).Transition(hoverFade())
+		Height(20).Padding(0, 6).Gap(3).Radius(RadiusKeycap).AlignItems(ui.Center).Transition(hoverFade())
 	switch {
 	case a.opsOpen:
 		b.Background(k.SurfacePressed) // pressed while its list shows
@@ -99,15 +119,9 @@ func (a *app) tookIndicator(c *ui.Context, count func(key, s string, rolling boo
 }
 
 func (a *app) statusBrowse(part func(string), count func(key, s string, rolling bool), dot func()) {
-	b, ok := a.bucket()
-	if !ok {
+	if _, ok := a.bucket(); !ok {
 		return
 	}
-	if b.Region != "" {
-		dot()
-		part(b.Region)
-	}
-	dot()
 	items := locales.CommonItems(len(a.rows))
 	if a.search != "" {
 		items = locales.StatusbarItemsOf(len(a.rows), groupInt(len(a.raw)))
