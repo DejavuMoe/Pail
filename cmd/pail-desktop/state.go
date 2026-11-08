@@ -134,8 +134,9 @@ type app struct {
 	sort        ui.SortOrder
 	sortSeen    ui.SortOrder
 	list        ui.ListState
-	sel         ui.Selection[string]
-	cursor      int // row last chosen, -1 for none
+	sel         selection
+	selSum      selSummary // selectedCount and selectedInfo, kept until sel.gen moves
+	cursor      int        // row last chosen, -1 for none
 	hoverKey    string
 	rowRects    map[string]ui.Rect
 	selBar      selBarSummary      // what the selection bar last showed, kept while it folds away
@@ -693,6 +694,7 @@ func (a *app) rebuildRows() {
 	for i, e := range rows {
 		a.byKey[e.Key] = i
 	}
+	a.sel.touch() // which chosen keys are listed, and their rows, may differ
 	a.rowsDirty = false
 	a.sortSeen = a.sort
 	a.rebuiltAt = time.Now()
@@ -737,33 +739,64 @@ func (a *app) soleSelected() (key string, ok bool) {
 	return key, n == 1
 }
 
-// selectedCount is how many listed rows are chosen: len(selectedKeys()),
-// without sorting them.
-func (a *app) selectedCount() int {
-	n := 0
-	for k := range a.sel.All() {
-		if _, ok := a.byKey[k]; ok {
-			n++
-		}
-	}
-	return n
+// selection is the object table's choice with a counter that moves on every
+// change made through it. mygo's table changes the embedded Selection without
+// it, so the frame (view), the table's build and ExtendTo call touch as well.
+type selection struct {
+	ui.Selection[string]
+	gen uint64
 }
 
-// selectedInfo summarises the selection: counts and total object bytes.
-func (a *app) selectedInfo() (folders, files int, bytes int64) {
+func (s *selection) Add(k string)    { s.Selection.Add(k); s.gen++ }
+func (s *selection) Remove(k string) { s.Selection.Remove(k); s.gen++ }
+func (s *selection) Clear()          { s.Selection.Clear(); s.gen++ }
+
+// touch marks the choice as possibly changed: by mygo, or by new rows.
+func (s *selection) touch() { s.gen++ }
+
+// selSummary is what one pass over the selection counts. A Ctrl+A over a
+// million rows makes that pass take a few hundred milliseconds, and the
+// command states, the table, the inspector, the selection bar and the status
+// bar all ask in one frame: they share one pass while sel.gen stays put.
+type selSummary struct {
+	gen            uint64
+	ok             bool
+	folders, files int
+	bytes          int64
+}
+
+func (a *app) selSummary() selSummary {
+	if s := a.selSum; s.ok && s.gen == a.sel.gen {
+		return s
+	}
+	s := selSummary{gen: a.sel.gen, ok: true}
 	for k := range a.sel.All() {
 		i, ok := a.byKey[k]
 		if !ok {
 			continue
 		}
 		if e := a.rows[i]; e.Folder {
-			folders++
+			s.folders++
 		} else {
-			files++
-			bytes += e.Size
+			s.files++
+			s.bytes += e.Size
 		}
 	}
-	return
+	a.selSum = s
+	return s
+}
+
+// selectedCount is how many listed rows are chosen: len(selectedKeys()),
+// without sorting them.
+func (a *app) selectedCount() int {
+	s := a.selSummary()
+	return s.folders + s.files
+}
+
+// selectedInfo summarises the selection: counts and total object bytes.
+func (a *app) selectedInfo() (folders, files int, bytes int64) {
+	s := a.selSummary()
+	return s.folders, s.files, s.bytes
 }
 
 // setSingle selects exactly one key.
