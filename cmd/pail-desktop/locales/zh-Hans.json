@@ -640,6 +640,7 @@
   "objectsSizeFailedTip": "无法计算大小：{reason}",
   "objectsSizeNotCalculated": "尚未计算。右键单击文件夹并选择“计算大小”。",
   "objectsSizeUnknown": "–",
+  "objectsDropHint": "拖放文件到这里上传",
   "objectsDropToUpload": "松开即可上传到 {prefix}",
   "objectsEmptySub": "上传文件或新建文件夹",
   "objectsEmptyTitle": "此文件夹为空",

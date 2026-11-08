@@ -51,7 +51,7 @@ func (a *app) accountButton(c *ui.Context) {
 		btn.Background(k.SurfaceHover)
 	}
 	btn.Children(func() {
-		ui.Box(c).Size(24, 24).Radius(6).Background(k.ActiveFill).Center().Shrink(0).Children(func() {
+		ui.Box(c).Size(24, 24).Radius(RadiusControl).Background(k.ActiveFill).Center().Shrink(0).Children(func() {
 			ui.Text(c, initialOf(name)).FontSize(sizeSecondary).FontWeight(600).TextColor(k.Text)
 		})
 		ui.Column(c).Grow(1).MinWidth(0).Children(func() {
@@ -84,7 +84,7 @@ func (a *app) accountButton(c *ui.Context) {
 // the Text color for contrast).
 func secretBadge(c *ui.Context) {
 	k := tk(c)
-	ui.Row(c).Height(16).Padding(0, 5).Gap(3).Radius(4).AlignItems(ui.Center).AlignSelf(ui.Start).
+	ui.Row(c).Height(16).Padding(0, 5).Gap(3).Radius(RadiusSmall).AlignItems(ui.Center).AlignSelf(ui.Start).
 		Background(k.Warning.Alpha(0.14)).Border(1, k.Warning.Alpha(0.45)).Children(func() {
 		ui.Icon(c, icons.Get("triangle-alert")).FontSize(10).TextColor(k.Warning)
 		ui.Text(c, locales.SidebarSecretMissing()).FontSize(sizeLabel).FontWeight(500).TextColor(k.Text).SingleLine()
@@ -120,7 +120,7 @@ func sidebarLabel(c *ui.Context, title string, count int, trailing func()) {
 func (a *app) sidebarItem(c *ui.Context, id string, icon *ui.SVG, name, region string, disabled bool) ui.Element {
 	k := tk(c)
 	on := a.navSel == id
-	row := ui.ButtonBase(c.Key(id)).Label(name).Height(28).Margin(0, 8).Padding(0, 8).Gap(8).Radius(6).AlignItems(ui.Center).Disabled(disabled).Transition(hoverFade())
+	row := ui.ButtonBase(c.Key(id)).Label(name).Height(28).Margin(0, 8).Padding(0, 8).Gap(8).Radius(RadiusControl).AlignItems(ui.Center).Disabled(disabled).Transition(hoverFade())
 	switch {
 	case disabled:
 		row.Opacity(0.4)
@@ -170,7 +170,7 @@ func (a *app) bucketList(c *ui.Context) {
 			searchBox(c, &a.bucketFilter, &a.filterH, locales.SidebarFilterBuckets(), locales.SidebarFilterBuckets(), 0, icons.Get("search"), icons.Get("x"))
 		})
 		if a.bucketsErr != "" {
-			ui.Column(c).Margin(0, 12, 8, 12).Padding(8, 10).Gap(6).Radius(6).
+			ui.Column(c).Margin(0, 12, 8, 12).Padding(8, 10).Gap(6).Radius(RadiusControl).
 				Background(k.Danger.Alpha(0.10)).Border(1, k.Danger.Alpha(0.35)).Children(func() {
 				ui.Row(c).Gap(6).AlignItems(ui.Start).Children(func() {
 					ui.Icon(c, icons.Get("circle-alert")).FontSize(14).TextColor(k.Danger).Shrink(0).MarginY(1)

@@ -200,12 +200,7 @@ func (a *app) mpView(c *ui.Context) {
 		case m.bucket == "":
 			emptyBlock(c, "layers", locales.MultipartChoose(), "", 0)
 		case m.err != "":
-			ui.Row(c).Margin(12).Padding(8, 12).Gap(10).AlignItems(ui.Center).Radius(6).Shrink(0).
-				Background(k.Danger.Alpha(0.10)).Border(1, k.Danger.Alpha(0.35)).Children(func() {
-				ui.Icon(c, icons.Get("circle-alert")).TextColor(k.Danger)
-				ui.Text(c, locales.MultipartListFailed(m.err)).Grow(1).MinWidth(0).TextColor(k.Text)
-				secondaryButton(c, locales.CommonRetry(), false).OnClick(a.mpLoad)
-			})
+			errorBanner(c, nil, locales.MultipartListFailed(m.err), false, a.mpLoad)
 		case m.loading && !m.loaded:
 			ui.Column(c).Grow(1).Center().Gap(10).Children(func() {
 				ui.Spinner(c).Size(22, 22)

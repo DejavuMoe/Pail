@@ -28,7 +28,7 @@ func (a *app) inspectorTabBar(c *ui.Context) {
 	tabs := ui.TabsBase(c, &a.inspTab, len(inspectorTabs))
 	tabs.List.Height(40).Gap(4).Padding(0, 12).AlignItems(ui.Center).Children(func() {
 		for i, t := range inspectorTabs {
-			tab := tabs.Tab(i).Size(28, 28).Radius(6).Label(t.label()).Tooltip(t.label()).Center().Transition(hoverFade())
+			tab := tabs.Tab(i).Size(28, 28).Radius(RadiusControl).Label(t.label()).Tooltip(t.label()).Center().Transition(hoverFade())
 			on := i == a.inspTab
 			if !on && tab.Hovered() {
 				tab.Background(k.SurfaceHover)
@@ -94,7 +94,7 @@ func (a *app) inspectorBody(c *ui.Context) {
 func (a *app) header(c *ui.Context, icon, title, sub string) {
 	k := tk(c)
 	ui.Row(c).Gap(12).AlignItems(ui.Center).Children(func() {
-		ui.Box(c).Size(40, 40).Radius(8).Background(k.Sidebar).Center().Shrink(0).Children(func() {
+		ui.Box(c).Size(40, 40).Radius(RadiusPopover).Background(k.Sidebar).Center().Shrink(0).Children(func() {
 			ui.Icon(c, icons.Get(icon)).FontSize(20).TextColor(k.TextMuted)
 		})
 		ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
@@ -278,6 +278,12 @@ func (a *app) overviewTab(c *ui.Context, e Entry) {
 	})
 }
 
+// inspectorLabel is a property label: 12px, weight 500, TextMuted (not
+// TextSubtle, so that it is not taken for a placeholder; design.md).
+func inspectorLabel(c *ui.Context, s string) ui.Element {
+	return ui.Text(c, s).FontSize(sizeSecondary).FontWeight(500).TextColor(tk(c).TextMuted)
+}
+
 // kvRow is one label/value line. Long identifiers (monospace) take a line
 // of their own with a copy button at the top right.
 func kvRow(c *ui.Context, label, value string, monospace bool, cp kvCopy) {
@@ -291,7 +297,7 @@ func kvRow(c *ui.Context, label, value string, monospace bool, cp kvCopy) {
 		return
 	}
 	ui.Row(c.Key(label)).Gap(8).AlignItems(ui.Start).Children(func() {
-		ui.Text(c, label).FontSize(sizeSecondary).TextColor(k.TextMuted).Width(96).Shrink(0)
+		inspectorLabel(c, label).Width(96).Shrink(0)
 		ui.Text(c, value).FontSize(sizeBody).TextColor(k.Text).Grow(1).MinWidth(0).Selectable()
 	})
 }
@@ -302,7 +308,7 @@ func kvLong(c *ui.Context, label, value string, actions func()) {
 	k := tk(c)
 	ui.Column(c.Key(label)).Gap(2).Children(func() {
 		ui.Row(c).Height(24).Gap(2).AlignItems(ui.Center).Children(func() {
-			ui.Text(c, label).FontSize(sizeSecondary).TextColor(k.TextMuted).Grow(1)
+			inspectorLabel(c, label).Grow(1)
 			actions()
 		})
 		mono(ui.Text(c, value).FontSize(sizeSecondary).TextColor(k.Text).Selectable())
@@ -347,7 +353,7 @@ func kvTable(c *ui.Context, rows []KV, monospaceValues bool, copies ...kvCopy) {
 					return
 				}
 				ui.Row(c).Gap(8).AlignItems(ui.Start).Children(func() {
-					ui.Text(c, kv.Key).FontSize(sizeSecondary).TextColor(k.TextMuted).Width(96).Shrink(0)
+					inspectorLabel(c, kv.Key).Width(96).Shrink(0)
 					v := ui.Text(c, kv.Value).FontSize(sizeBody).TextColor(k.Text).Grow(1).MinWidth(0).Selectable()
 					if monospaceValues {
 						mono(v.FontSize(sizeSecondary))

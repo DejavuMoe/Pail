@@ -269,11 +269,11 @@ func (a *app) signedResult(c *ui.Context) {
 	method := signedMethods[f.method]
 	if len(f.res) == 1 {
 		in := ui.TextAreaBase(c.Key("signed-url"), &f.res[0].URL).ReadOnly(true).Label(locales.SignedTitle()).FontSize(sizeSecondary).
-			Height(152).Padding(8, 10).Radius(6).Background(k.Sidebar).TextColor(k.Text)
+			Height(152).Padding(8, 10).Radius(RadiusControl).Background(k.Sidebar).TextColor(k.Text)
 		mono(in)
 	} else {
 		rows := len(f.res)
-		ui.Scroll(c).Height(float32(min(rows, 5))*44+8).Radius(6).Background(k.Sidebar).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		ui.Scroll(c).Height(float32(min(rows, 5))*44+8).Radius(RadiusControl).Background(k.Sidebar).ScrollbarInsets(0, 2, 0, 0).Children(func() {
 			ui.Column(c).Padding(4, scrollGutter+2, 4, 8).Children(func() {
 				for i, r := range f.res {
 					ui.Row(c.Key(i)).Height(44).Gap(8).AlignItems(ui.Center).Children(func() {

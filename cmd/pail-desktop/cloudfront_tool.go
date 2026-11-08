@@ -410,12 +410,7 @@ func (a *app) cfView(c *ui.Context) {
 		hairline(c)
 		switch {
 		case cf.err != "":
-			ui.Row(c).Margin(12).Padding(8, 12).Gap(10).AlignItems(ui.Center).Radius(6).Shrink(0).
-				Background(k.Danger.Alpha(0.10)).Border(1, k.Danger.Alpha(0.35)).Children(func() {
-				ui.Icon(c, icons.Get("circle-alert")).TextColor(k.Danger)
-				ui.Text(c, locales.CloudfrontListFailed(cf.err)).Grow(1).MinWidth(0).TextColor(k.Text)
-				secondaryButton(c, locales.CommonRetry(), false).OnClick(a.cfLoad)
-			})
+			errorBanner(c, nil, locales.CloudfrontListFailed(cf.err), false, a.cfLoad)
 		case cf.load && !cf.loaded:
 			ui.Column(c).Grow(1).Center().Gap(10).Children(func() {
 				ui.Spinner(c).Size(22, 22)
@@ -475,12 +470,7 @@ func (a *app) cfInvalidations(c *ui.Context) {
 		case cf.invFor == "":
 			emptyBlock(c, "cloud", locales.CloudfrontSelect(), "", 0)
 		case cf.invErr != "":
-			ui.Row(c).Margin(0, 12, 12, 12).Padding(8, 12).Gap(10).AlignItems(ui.Center).Radius(6).Shrink(0).
-				Background(k.Danger.Alpha(0.10)).Border(1, k.Danger.Alpha(0.35)).Children(func() {
-				ui.Icon(c, icons.Get("circle-alert")).TextColor(k.Danger)
-				ui.Text(c, locales.CloudfrontInvListFailed(cf.invErr)).Grow(1).MinWidth(0).TextColor(k.Text)
-				secondaryButton(c, locales.CommonRetry(), false).OnClick(func() { a.cfLoadInvs(false) })
-			})
+			errorBanner(c, []float32{0, 12, 12, 12}, locales.CloudfrontInvListFailed(cf.invErr), false, func() { a.cfLoadInvs(false) })
 		case len(cf.invs) == 0 && !cf.invLoad:
 			emptyBlock(c, "history", locales.CloudfrontNoInvs(), "", 0)
 		default:

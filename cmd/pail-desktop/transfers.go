@@ -220,8 +220,8 @@ func progressBar(c *ui.Context, frac float64, danger bool) {
 		fill = k.Danger
 	}
 	frac = max(0, min(1, frac))
-	ui.Box(c).Width(colProgress).Height(4).Radius(2).Background(k.Border).Shrink(0).Clip().Children(func() {
-		bar := ui.Box(c).Height(4).Radius(2)
+	ui.Box(c).Width(colProgress).Height(4).Radius(RadiusBar).Background(k.Border).Shrink(0).Clip().Children(func() {
+		bar := ui.Box(c).Height(4).Radius(RadiusBar)
 		bar.Width(bar.AnimateTo("w", float32(frac*colProgress), fadeAnim)).Background(bar.AnimateColor("fill", fill, colorAnim))
 	})
 }

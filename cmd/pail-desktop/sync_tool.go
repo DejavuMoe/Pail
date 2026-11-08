@@ -489,11 +489,11 @@ func (a *app) syncList(c *ui.Context) {
 	s := &a.tl.sync
 	toolPane(c, "sync-pane", 300, func() {
 		paneBar(c, "sync-bar", func() {
-			if ghostButton(c, icons.Get("plus"), locales.SyncNew(), locales.SyncNewTip(), false).Clicked() {
+			if paneCreate(c, locales.SyncNew(), locales.SyncNewTip()).Clicked() {
 				a.syncGuard(a.syncNew)
 			}
 			ui.Spacer(c)
-			if ghostButton(c, icons.Get("trash-2"), locales.CommonDelete(), locales.SyncDeleteJobTip(), s.sel < 0 && !s.hasDraft).Clicked() {
+			if paneIcon(c, "trash-2", locales.CommonDelete(), locales.SyncDeleteJobTip(), s.sel < 0 && !s.hasDraft).Clicked() {
 				a.syncAskDelete()
 			}
 		})

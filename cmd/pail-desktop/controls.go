@@ -70,7 +70,7 @@ const markFrom = 0.85
 // durStandard. ring draws the focus ring around it.
 func checkBox(c *ui.Context, st checkState, hover, ring bool) ui.Element {
 	k := tk(c)
-	box := ui.Box(c).Size(checkSize, checkSize).Radius(4).Shrink(0).Transition(hoverFade())
+	box := ui.Box(c).Size(checkSize, checkSize).Radius(RadiusSmall).Shrink(0).Transition(hoverFade())
 	if st != checkOff {
 		box.Background(k.Accent).Border(1.5, k.Accent)
 	} else {
@@ -129,7 +129,7 @@ func checkboxControl(c *ui.Context, checked *bool, label string) ui.Element {
 // rows of a list that share a group (not "") slide the bar from the row that
 // lost it to the one that has it; "" leaves it where it appears.
 func selectionBar(c *ui.Context, inset float32, group string) ui.Element {
-	bar := ui.Box(c).Absolute().Left(1).Top(inset).Bottom(inset).Width(2).Radius(1).Background(tk(c).Accent)
+	bar := ui.Box(c).Absolute().Left(1).Top(inset).Bottom(inset).Width(2).Radius(RadiusIndicator).Background(tk(c).Accent)
 	if group != "" {
 		bar.Transition(slideTransition(group))
 	}

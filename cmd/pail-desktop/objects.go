@@ -80,7 +80,7 @@ func (a *app) objects(c *ui.Context) {
 	zone.Children(func() {
 		switch {
 		case a.listErr != "" && len(a.rows) == 0:
-			a.errorBanner(c)
+			a.listErrorBanner(c)
 		case a.loading && len(a.raw) == 0:
 			ui.Column(c).Grow(1).Center().Gap(10).Children(func() {
 				ui.Spinner(c).Size(22, 22)
@@ -90,13 +90,16 @@ func (a *app) objects(c *ui.Context) {
 			a.emptyState(c)
 		default:
 			if a.listErr != "" { // a later page failed: keep what was loaded
-				a.errorBanner(c)
+				a.listErrorBanner(c)
 			}
 			a.table(c)
+			if !over && a.dropHintShown() {
+				a.dropHint(c)
+			}
 		}
 		if over {
 			ui.Column(c).Absolute().Top(4).Left(4).Right(4).Bottom(4).PassThrough().Center().Gap(8).
-				Background(k.Selection.Alpha(0.5)).Border(1.5, k.Accent).Radius(8).Children(func() {
+				Background(k.Selection.Alpha(0.5)).Border(1.5, k.Accent).Radius(RadiusPopover).Children(func() {
 				ui.Icon(c, icons.Get("upload")).FontSize(24).TextColor(k.Accent)
 				prefix := a.bucketLabel(a.scope.Bucket) + "/" + a.scope.Prefix
 				ui.Text(c, locales.ObjectsDropToUpload(prefix)).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
@@ -124,7 +127,7 @@ func (a *app) table(c *ui.Context) {
 	// the table the softer Selection token, so the rows are built under a
 	// theme whose Accent is that token; the rest of the frame keeps the real
 	// Accent.
-	defer tableTheme(c)()
+	defer tableThemeEdges(c, false)()
 
 	cols := visibleColumns(a.lay.colTier)
 	inset := func(col int) float32 { return lastColInset * b2f(col == len(cols)-1) }
@@ -167,21 +170,21 @@ func (a *app) table(c *ui.Context) {
 				}
 			})
 			if over {
-				cell.Background(k.ActiveFill).Radius(4)
+				cell.Background(k.ActiveFill).Radius(RadiusSmall)
 			}
 			a.rowRects[e.Key] = cell.Bounds()
 		case "size":
 			if e.Folder {
 				a.folderSizeCell(c, e)
 			} else {
-				a.dataCell(c, e, "size", humanBytes(e.Size), true, ui.End, 0)
+				a.dataCell(c, e, "size", humanBytes(e.Size), true, ui.End, 0, false)
 			}
 		case "type":
-			a.dataCell(c, e, "type", typeLabel(*e), true, ui.Start, inset(col))
+			a.dataCell(c, e, "type", typeLabel(*e), true, ui.Start, inset(col), false)
 		case "modified":
-			a.dataCell(c, e, "modified", formatTime(e.Modified), !e.Folder, ui.Start, inset(col))
+			a.dataCell(c, e, "modified", folderDash(e, formatTime(e.Modified)), true, ui.Start, inset(col), e.Folder)
 		case "class":
-			a.dataCell(c, e, "class", storageLabel(e.StorageClass), !e.Folder, ui.Start, inset(col))
+			a.dataCell(c, e, "class", folderDash(e, storageLabel(e.StorageClass)), true, ui.Start, inset(col), e.Folder)
 		}
 	}
 	// The table and, over the empty header of its check box column, the
@@ -190,6 +193,7 @@ func (a *app) table(c *ui.Context) {
 	ui.Column(c).Grow(1).MinHeight(0).MinWidth(0).Children(func() {
 		tbl = ui.Table(c, &a.list, cols, len(rows), cell).Grow(1).MinHeight(0).Label(locales.ObjectsTable())
 		a.selectAllBox(c, chosen)
+		tableHeaderLine(c)
 	})
 	a.tblRect = tbl.Bounds()
 	tbl.HandleInput(a.dragSelInput)
@@ -220,6 +224,47 @@ func (a *app) table(c *ui.Context) {
 	if tbl.Submitted() {
 		a.openSelected()
 	}
+}
+
+// dropHintMinRoom is the empty room below the last row that a short list needs
+// before it shows the drop hint.
+const dropHintMinRoom = 120
+
+// dropHintRoom is the height left empty below the last row, from this frame's
+// layout: the body above the status bar and the transfers panel (shell.go) less
+// the top bar, the path bar and, with two or more rows chosen, the selection
+// bar, then the header and the rows. It is not read from Element.Bounds, which
+// lags a frame behind a resize.
+func (a *app) dropHintRoom() float32 {
+	room := a.bodyH - topBarH - pathBarH - tableBodyTop - float32(len(a.rows))*tableRowH
+	if a.selectedCount() >= 2 {
+		room -= selBarH
+	}
+	return room
+}
+
+// dropHintShown reports whether a plain listing is short enough to show the
+// hint: nothing loading, no filter, no deleted view, a failed page leaves the
+// banner in the way, and uploads possible here.
+func (a *app) dropHintShown() bool {
+	if a.loading || a.search != "" || a.mg.del.on || a.listErr != "" || len(a.rows) == 0 {
+		return false
+	}
+	if cmd := a.cmd("upload.files"); cmd == nil || !a.enabled(cmd) {
+		return false
+	}
+	return a.dropHintRoom() >= dropHintMinRoom
+}
+
+// dropHint is the one line in the empty area below a short list. It is
+// pass-through: clicks, the rubber band and the context menu reach the table.
+func (a *app) dropHint(c *ui.Context) {
+	k := tk(c)
+	ui.Row(c.Key("drophint")).Absolute().Left(0).Right(0).Bottom(0).Top(tableBodyTop + float32(len(a.rows))*tableRowH).
+		PassThrough().Center().Gap(6).Children(func() {
+		ui.Icon(c, icons.Get("upload")).FontSize(14).TextColor(k.TextSubtle)
+		ui.Text(c, locales.ObjectsDropHint()).FontSize(sizeSecondary).TextColor(k.TextSubtle).SingleLine()
+	})
 }
 
 // rowCheck is the check box of row i, showing whether it is chosen. It shows
@@ -312,14 +357,8 @@ func (a *app) openSelected() {
 	}
 }
 
-func (a *app) errorBanner(c *ui.Context) {
-	k := tk(c)
-	ui.Row(c).Margin(12).Padding(8, 12).Gap(10).AlignItems(ui.Center).Radius(6).
-		Background(k.Danger.Alpha(0.10)).Border(1, k.Danger.Alpha(0.35)).Children(func() {
-		ui.Icon(c, icons.Get("circle-alert")).TextColor(k.Danger)
-		ui.Text(c, locales.ObjectsListFailed(a.scope.Bucket, a.listErr)).Grow(1).MinWidth(0).TextColor(k.Text)
-		secondaryButton(c, locales.CommonRetry(), a.loading).OnClick(a.reload)
-	})
+func (a *app) listErrorBanner(c *ui.Context) {
+	errorBanner(c, nil, locales.ObjectsListFailed(a.scope.Bucket, a.listErr), a.loading, a.reload)
 }
 
 func (a *app) emptyState(c *ui.Context) {
@@ -354,7 +393,7 @@ func (a *app) dropDest(e *Entry) *Scope {
 // dataCell is a secondary table cell that, like the name, takes rows dropped
 // on its row. tail is extra room kept at its end (lastColInset in the last
 // column).
-func (a *app) dataCell(c *ui.Context, e *Entry, id, text string, show bool, align ui.Align, tail float32) {
+func (a *app) dataCell(c *ui.Context, e *Entry, id, text string, show bool, align ui.Align, tail float32, dash bool) {
 	box := ui.Row(c.Key(id)).FillWidth().Height(18).Padding(0, tail, 0, 0).AlignItems(ui.Center)
 	if align == ui.End {
 		box.Justify(ui.End)
@@ -362,7 +401,21 @@ func (a *app) dataCell(c *ui.Context, e *Entry, id, text string, show bool, alig
 	if a.dropTarget(box, a.dropDest(e)) {
 		a.mg.dropKey = e.Key
 	}
-	box.Children(func() { secondaryCell(c, text, show, align) })
+	box.Children(func() {
+		if dash {
+			subtleText(c, text).SingleLine() // a folder has no value here
+			return
+		}
+		secondaryCell(c, text, show, align)
+	})
+}
+
+// folderDash is the text of a data cell a folder has no value for: "–".
+func folderDash(e *Entry, text string) string {
+	if e.Folder {
+		return "–"
+	}
+	return text
 }
 
 // secondaryCell is a 12px muted table cell, empty when show is false.

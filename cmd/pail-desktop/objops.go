@@ -134,7 +134,7 @@ func (a *app) selectionEstimate(keys []string) *core.Estimate {
 // lines and then "and N more".
 func keyListBlock(c *ui.Context, keys []string) {
 	k := tk(c)
-	ui.Column(c).Gap(2).Padding(8, 10).Radius(6).Background(k.Sidebar).Children(func() {
+	ui.Column(c).Gap(2).Padding(8, 10).Radius(RadiusControl).Background(k.Sidebar).Children(func() {
 		for i, key := range keys {
 			if i == 5 {
 				ui.Text(c, locales.ScopeCountMore(groupInt(len(keys)-5))).FontSize(sizeSecondary).TextColor(k.TextMuted)

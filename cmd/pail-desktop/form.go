@@ -31,7 +31,7 @@ type inputOpts struct {
 // Changed / Submitted.
 func inputBox(c *ui.Context, value *string, label, placeholder string, o inputOpts) ui.Element {
 	k := tk(c)
-	row := ui.Row(c.Key("box:"+label)).Height(28).Padding(0, 8).Radius(6).AlignItems(ui.Center).Background(k.Surface)
+	row := ui.Row(c.Key("box:"+label)).Height(28).Padding(0, 8).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface)
 	if o.width > 0 {
 		row.Width(o.width).Shrink(0)
 	}
@@ -186,7 +186,7 @@ func selectBox(c *ui.Context, label string, value *string, opts []choice, width 
 			shown = o.Label
 		}
 	}
-	sel.Trigger.Height(28).Padding(0, 8).Gap(6).Radius(6).AlignItems(ui.Center).Background(k.Surface).Label(label).Transition(hoverFade())
+	sel.Trigger.Height(28).Padding(0, 8).Gap(6).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface).Label(label).Transition(hoverFade())
 	if width > 0 {
 		sel.Trigger.Width(width).Shrink(0)
 	}

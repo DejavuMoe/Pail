@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	"github.com/egoist/mygo/ui"
 )
@@ -52,7 +53,32 @@ const (
 	RadiusPopover = 8
 	RadiusDialog  = 10
 	RadiusKeycap  = 4
+
+	// Small shapes that are not a control: badges, the check box, a drop-target
+	// highlight (4); the progress bar (2); the 2px indicator line (1); the About
+	// icon (12). Views name them here instead of writing a number.
+	RadiusSmall     = 4
+	RadiusBar       = 2
+	RadiusIndicator = 1
+	RadiusAbout     = 12
 )
+
+// errorBanner is the inline failure strip above a list or a tool body: a
+// Danger wash with a Danger hairline, 12px outside, 8/12 inside, an alert icon,
+// the message and a Retry button. margin overrides the outside margin (top,
+// right, bottom, left) when it has four values.
+func errorBanner(c *ui.Context, margin []float32, msg string, retryOff bool, retry func()) {
+	k := tk(c)
+	r := ui.Row(c).Margin(12).Padding(8, 12).Gap(10).AlignItems(ui.Center).Radius(RadiusControl).Shrink(0)
+	if len(margin) == 4 {
+		r.Margin(margin[0], margin[1], margin[2], margin[3])
+	}
+	r.Background(k.Danger.Alpha(0.10)).Border(1, k.Danger.Alpha(0.35)).Children(func() {
+		ui.Icon(c, icons.Get("circle-alert")).TextColor(k.Danger)
+		ui.Text(c, msg).Grow(1).MinWidth(0).TextColor(k.Text)
+		secondaryButton(c, locales.CommonRetry(), retryOff).OnClick(retry)
+	})
+}
 
 // controlH is the height of a control: input, select, button, segmented track.
 const controlH = 28
@@ -177,7 +203,7 @@ func iconButton(c *ui.Context, icon *ui.SVG, label string) ui.Element {
 // iconButtonOff is iconButton that can be disabled: 0.4 opacity and no hover.
 func iconButtonOff(c *ui.Context, icon *ui.SVG, label string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(6).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(RadiusControl).Center().Disabled(disabled).Transition(hoverFade())
 	switch {
 	case disabled:
 		b.Opacity(0.4)
@@ -204,7 +230,7 @@ func vline(c *ui.Context, h float32) ui.Element {
 // less button is square. Hover and pressed use the neutral surfaces.
 func ghostButton(c *ui.Context, icon *ui.SVG, label, tip string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Radius(6).Height(28).Gap(6).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Gap(6).Center().Disabled(disabled).Transition(hoverFade())
 	if label == "" {
 		b.Width(28)
 	} else {
@@ -232,7 +258,7 @@ func ghostButton(c *ui.Context, icon *ui.SVG, label, tip string, disabled bool) 
 // while on, a muted icon otherwise.
 func toggleIconButton(c *ui.Context, icon *ui.SVG, label, tip string, on bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Size(28, 28).Radius(6).Center().Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Size(28, 28).Radius(RadiusControl).Center().Transition(hoverFade())
 	switch {
 	case b.Pressed():
 		b.Background(k.SurfacePressed)
@@ -256,7 +282,7 @@ func toggleIconButton(c *ui.Context, icon *ui.SVG, label, tip string, on bool) u
 // buttonShell is the shared 28px, radius 6 frame of the outlined and solid
 // buttons.
 func buttonShell(c *ui.Context, label string, disabled bool) ui.Element {
-	b := ui.ButtonBase(c).Label(label).Height(28).Padding(0, 12).Radius(6).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Height(28).Padding(0, 12).Radius(RadiusControl).Center().Disabled(disabled).Transition(hoverFade())
 	if disabled {
 		b.Opacity(0.4)
 	}
@@ -334,7 +360,7 @@ func dangerOutlineButton(c *ui.Context, label string, disabled bool) ui.Element 
 // tabs of one strip share a group: the underline slides from the previous
 // tab to the current one (motion.go).
 func tabIndicator(c *ui.Context, group string) ui.Element {
-	return ui.Box(c).Absolute().Left(0).Right(0).Bottom(0).Height(2).Radius(1).Background(tk(c).Accent).Transition(slideTransition(group))
+	return ui.Box(c).Absolute().Left(0).Right(0).Bottom(0).Height(2).Radius(RadiusIndicator).Background(tk(c).Accent).Transition(slideTransition(group))
 }
 
 // searchBox is a 28px text field: Surface fill, BorderStrong outline (Focus

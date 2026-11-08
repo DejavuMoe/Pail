@@ -10,6 +10,9 @@ import (
 
 // pathBar is the breadcrumb trail on the left and the folder filter on the
 // right (40px high).
+// pathBarH is the height of the path bar.
+const pathBarH = 40
+
 func (a *app) pathBar(c *ui.Context) {
 	k := tk(c)
 	parts := splitPrefix(a.scope.Prefix)
@@ -17,7 +20,7 @@ func (a *app) pathBar(c *ui.Context) {
 	last := len(items) - 1
 	// The filter gives way to the breadcrumb: about a third of the bar, 140-240px.
 	searchW := min(240, max(140, a.lay.centerW*0.3))
-	ui.Row(c).Height(40).Padding(0, 12).Gap(12).AlignItems(ui.Center).
+	ui.Row(c).Height(pathBarH).Padding(0, 12).Gap(12).AlignItems(ui.Center).
 		BorderWidth(0, 0, 1, 0).BorderColor(k.Border).Label(locales.PathbarPath()).Children(func() {
 		ui.Row(c).Grow(1).MinWidth(0).Gap(2).AlignItems(ui.Center).Children(func() {
 			ui.Icon(c, icons.Get("database")).FontSize(14).TextColor(k.TextMuted).MarginX(4)
@@ -30,7 +33,7 @@ func (a *app) pathBar(c *ui.Context) {
 				if i == 0 {
 					shown, tip = a.bucketLabel(name), a.bucketTip(name)
 				}
-				seg := ui.ButtonBase(c.Key(i)).Label(shown).Height(24).Padding(0, 6).Radius(6).Center().Shrink(1).MinWidth(0).Tooltip(tip).Transition(hoverFade())
+				seg := ui.ButtonBase(c.Key(i)).Label(shown).Height(24).Padding(0, 6).Radius(RadiusControl).Center().Shrink(1).MinWidth(0).Tooltip(tip).Transition(hoverFade())
 				col, w := k.TextMuted, 400
 				// Rows dropped on a parent folder move there.
 				p := ""
