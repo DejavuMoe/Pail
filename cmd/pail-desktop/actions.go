@@ -377,11 +377,18 @@ type folderState struct {
 	name string
 	err  string // from the service
 	busy bool
+	gen  int
 }
 
 func (a *app) openNewFolder() {
-	a.folderDlg = folderState{}
+	a.folderDlg = folderState{gen: a.folderDlg.gen + 1}
 	a.newFolder = true
+}
+
+// closeNewFolder closes the dialog and drops any answer still on its way.
+func (a *app) closeNewFolder() {
+	a.newFolder = false
+	a.folderDlg.gen++
 }
 
 func (a *app) confirmNewFolder() {
@@ -390,25 +397,45 @@ func (a *app) confirmNewFolder() {
 		return
 	}
 	loc := a.scope
+	gen := a.folderDlg.gen
 	a.folderDlg.busy, a.folderDlg.err = true, ""
 	go func() {
 		ctx, cancel := a.timeout(30 * time.Second)
 		defer cancel()
 		err := a.svc.CreateFolder(ctx, loc, name)
-		a.post(func() {
-			a.folderDlg.busy = false
-			if err != nil {
-				a.folderDlg.err = humanError(err)
-				return
-			}
-			a.newFolder = false
-			if loc == a.scope {
-				a.selectAfter = loc.Prefix + name + "/"
-				a.reload()
-			}
-			a.toast(locales.ActionsCreatedFolder(name))
-		})
+		a.post(func() { a.folderCreated(gen, loc, name, err) })
 	}()
+}
+
+// folderCreated applies the answer of CreateFolder to the dialog that asked
+// for it, gen. An answer for a dialog that has since closed or reopened leaves
+// that dialog alone and only reports what is true on the server.
+func (a *app) folderCreated(gen int, loc Scope, name string, err error) {
+	if gen != a.folderDlg.gen {
+		if err != nil {
+			// Nothing was created; the toast is the only place left to say so.
+			a.toast(locales.ActionsCreateFolderFailed(name, a.noteErr(err, "newfolder", nil)))
+			return
+		}
+		if loc == a.scope {
+			// The folder exists, so the listing must show it; the reopened
+			// dialog keeps its own text and selection.
+			a.reload()
+		}
+		a.toast(locales.ActionsCreatedFolder(name))
+		return
+	}
+	a.folderDlg.busy = false
+	if err != nil {
+		a.folderDlg.err = humanError(err)
+		return
+	}
+	a.newFolder = false
+	if loc == a.scope {
+		a.selectAfter = loc.Prefix + name + "/"
+		a.reload()
+	}
+	a.toast(locales.ActionsCreatedFolder(name))
 }
 
 // folderError validates a new folder name; "" means valid.
