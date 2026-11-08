@@ -97,7 +97,9 @@ func (a *app) syncProgress() {
 	}
 }
 
-// transfersBar is the one-line strip shown when the panel is collapsed.
+// transfersBar is the one-line strip shown when the panel is collapsed and the
+// list has tasks; with no task at all it is not built (see view), and the
+// status bar's transfer counts are the way to the panel.
 func (a *app) transfersBar(c *ui.Context) {
 	k := tk(c)
 	n := countTasks(a.tasks)

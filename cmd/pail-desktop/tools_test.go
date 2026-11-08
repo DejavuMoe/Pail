@@ -623,8 +623,9 @@ func TestTransfersCollapseWithoutTasksAndExpandOnANewTask(t *testing.T) {
 	if h.a.transfersOpen {
 		t.Fatal("the panel is open with no tasks")
 	}
-	h.mustHave("Transfers", "0 active", "0 completed", "0 failed")
-	h.snap("transfers-collapsed-light")
+	// Nothing to show: no strip, so the table keeps the room.
+	h.mustNotHave("Transfers", "0 active", "0 completed", "0 failed")
+	h.snap("transfers-hidden-light")
 
 	upload := func(name string) {
 		_, err := h.a.svc.Upload(core.UploadRequest{Dest: h.a.scope, Paths: []string{writeTemp(t, name, []byte(name))}, Conflict: core.ConflictOverwrite})
@@ -647,6 +648,7 @@ func TestTransfersCollapseWithoutTasksAndExpandOnANewTask(t *testing.T) {
 	if h.a.transfersOpen {
 		t.Error("a new task re-opened a panel the user collapsed")
 	}
+	h.mustHave("Transfers", "0 active", "0 failed") // tasks are on the list: the collapsed strip shows
 
 	// Clearing the list collapses it; the next task opens it again.
 	h.a.transfersOpen = true
@@ -657,6 +659,7 @@ func TestTransfersCollapseWithoutTasksAndExpandOnANewTask(t *testing.T) {
 	if h.a.transfersOpen {
 		t.Error("the panel stayed open with no tasks")
 	}
+	h.mustNotHave("Transfers", "0 active") // and the strip goes with the last task
 	upload("three.txt")
 	h.waitFor("reopened", func() bool { return h.a.transfersOpen })
 }

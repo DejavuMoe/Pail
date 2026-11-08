@@ -182,10 +182,10 @@ func TestCancelButtonStopsRunningTransfer(t *testing.T) {
 	h.mustClick("Clear finished")
 	h.waitFor("tasks cleared", func() bool { return len(h.a.tasks) == 0 })
 	h.tt.Frame()
-	if h.a.transfersOpen { // no tasks left: the panel collapses to its header
+	if h.a.transfersOpen { // no tasks left: the panel closes, and the strip has nothing to say
 		t.Error("the panel stayed open with no tasks")
 	}
-	h.mustHave("0 active", "0 completed", "0 failed")
+	h.mustNotHave("Transfers", "0 active", "0 completed", "0 failed")
 }
 
 func TestTaskbarProgressOfActiveTasks(t *testing.T) {

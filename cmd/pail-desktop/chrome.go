@@ -77,12 +77,13 @@ func installMenu(a *app, goos string, set func(*mygo.Menu), redraw func()) bool 
 
 // barRight is the right end of the top bar: the panel toggles and the "more"
 // menu. The room of the system window buttons comes after it, from the bar's
-// right padding.
+// right padding. The inspector toggle, which only the object browser has, comes
+// first, so that the transfers toggle and "⋯" keep their place in every view.
 func (a *app) barRight(c *ui.Context) {
-	a.toggleButton(c, "transfers", a.transfersOpen)
 	if a.tool == "" {
 		a.toggleButton(c, "inspector", a.inspectorOpen)
 	}
+	a.toggleButton(c, "transfers", a.transfersOpen)
 	a.moreMenu(c)
 }
 

@@ -33,19 +33,33 @@ func (a *app) topBarRow(c *ui.Context, label string, left, right func()) {
 	})
 }
 
+// toolbarCommands is the left side of the browser's top bar: what always
+// applies (Upload, New folder), what is about the listing (folder sizes,
+// refresh), and last the commands on a selection or on the clipboard, which
+// come and go with them. The group being last, its appearing moves nothing.
 func (a *app) toolbarCommands(c *ui.Context) {
 	a.uploadMenu(c)
-	a.cmdButton(c, "download", true)
 	a.cmdButton(c, "newfolder", true)
-	toolbarGap(c)
-	a.cmdButton(c, "copy", false)
-	a.cmdButton(c, "cut", false)
-	a.cmdButton(c, "paste", false)
-	a.cmdButton(c, "rename", false)
-	a.cmdButton(c, "delete", false)
 	toolbarGap(c)
 	a.cmdButton(c, "foldersizes", false)
 	a.cmdButton(c, "refresh", false)
+	selected, pasteable := a.sel.Len() > 0, a.mg.clip.has()
+	if !selected && !pasteable {
+		return // no group, no separator
+	}
+	toolbarGap(c)
+	if selected {
+		a.cmdButton(c, "download", true)
+		a.cmdButton(c, "copy", false)
+		a.cmdButton(c, "cut", false)
+	}
+	if pasteable {
+		a.cmdButton(c, "paste", false)
+	}
+	if selected {
+		a.cmdButton(c, "rename", false)
+		a.cmdButton(c, "delete", false)
+	}
 }
 
 func toolbarGap(c *ui.Context) { vline(c, 16).Margin(0, 6) }

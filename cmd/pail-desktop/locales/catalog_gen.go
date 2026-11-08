@@ -9390,6 +9390,26 @@ func (msgs Messages) SidebarTools() string {
 	return Catalog.Format(msgs.locale, "sidebarTools", nil)
 }
 
+// SidebarToolsCollapse says "Collapse tools"
+// in the language the app shows.
+func SidebarToolsCollapse() string { return In(i18n.Locale()).SidebarToolsCollapse() }
+
+// SidebarToolsCollapse says "Collapse tools"
+// in the language of msgs.
+func (msgs Messages) SidebarToolsCollapse() string {
+	return Catalog.Format(msgs.locale, "sidebarToolsCollapse", nil)
+}
+
+// SidebarToolsExpand says "Expand tools"
+// in the language the app shows.
+func SidebarToolsExpand() string { return In(i18n.Locale()).SidebarToolsExpand() }
+
+// SidebarToolsExpand says "Expand tools"
+// in the language of msgs.
+func (msgs Messages) SidebarToolsExpand() string {
+	return Catalog.Format(msgs.locale, "sidebarToolsExpand", nil)
+}
+
 // SidebarUnlock says "Unlock…"
 // in the language the app shows.
 func SidebarUnlock() string { return In(i18n.Locale()).SidebarUnlock() }
@@ -9862,16 +9882,6 @@ func StatusbarLoading(text string) string { return In(i18n.Locale()).StatusbarLo
 // in the language of msgs.
 func (msgs Messages) StatusbarLoading(text string) string {
 	return Catalog.Format(msgs.locale, "statusbarLoading", map[string]any{"text": text})
-}
-
-// StatusbarNoAccount says "No account"
-// in the language the app shows.
-func StatusbarNoAccount() string { return In(i18n.Locale()).StatusbarNoAccount() }
-
-// StatusbarNoAccount says "No account"
-// in the language of msgs.
-func (msgs Messages) StatusbarNoAccount() string {
-	return Catalog.Format(msgs.locale, "statusbarNoAccount", nil)
 }
 
 // StatusbarRecentHint says "Click for recent operations"

@@ -15,7 +15,7 @@ func TestSettingsSaveLoadRoundTrip(t *testing.T) {
 	s, dir := newTestServiceDir(t, "", nil)
 	want := Settings{Theme: "dark", Limits: Limits{3, 4, 5}, BulkWorkers: 6, PartSizeMiB: 32,
 		DefaultDownloadDir: t.TempDir(), Conflict: ConflictSkip, ShowVersions: true, LogToFile: true,
-		SecretBackend: SecretBackendKeyring, VaultAutoLockMinutes: 20, RecentOps: 250, KeepRecentOps: true}
+		SecretBackend: SecretBackendKeyring, VaultAutoLockMinutes: 20, RecentOps: 250, KeepRecentOps: true, CollapseTools: true}
 	if err := s.SaveSettings(want); err != nil {
 		t.Fatal(err)
 	}
@@ -60,6 +60,38 @@ func TestSaveSettingsFillsZeroValuesAndValidates(t *testing.T) {
 	}
 	if s.Settings() != d {
 		t.Fatal("rejected settings must not change the current ones")
+	}
+}
+
+// CollapseTools is additive: a file from before it existed unfolds the group,
+// and an unfolded group leaves no key in the file.
+func TestCollapseToolsSettingIsAdditive(t *testing.T) {
+	if DefaultSettings().CollapseTools {
+		t.Fatal("the group starts folded")
+	}
+	dir := t.TempDir()
+	if err := os.WriteFile(filepath.Join(dir, "settings.json"), []byte(`{"theme":"dark","hideTrayIcon":true}`), 0o600); err != nil {
+		t.Fatal(err)
+	}
+	s, _ := newTestServiceDir(t, dir, nil)
+	st := s.Settings()
+	if st.CollapseTools || !st.HideTrayIcon || st.Theme != "dark" {
+		t.Fatalf("old file: %+v", st)
+	}
+	st.CollapseTools = true
+	if err := s.SaveSettings(st); err != nil {
+		t.Fatal(err)
+	}
+	raw, err := os.ReadFile(filepath.Join(dir, "settings.json"))
+	if err != nil || !strings.Contains(string(raw), `"collapseTools": true`) && !strings.Contains(string(raw), `"collapseTools":true`) {
+		t.Fatalf("saved file lacks the field: err=%v %s", err, raw)
+	}
+	st.CollapseTools = false
+	if err := s.SaveSettings(st); err != nil {
+		t.Fatal(err)
+	}
+	if raw, _ = os.ReadFile(filepath.Join(dir, "settings.json")); strings.Contains(string(raw), "collapseTools") {
+		t.Fatalf("an unfolded group writes the key: %s", raw)
 	}
 }
 

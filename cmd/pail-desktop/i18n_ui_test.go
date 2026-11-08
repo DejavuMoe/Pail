@@ -9,18 +9,18 @@ import (
 
 func TestLanguageSwitchChangesTextsWithoutRestart(t *testing.T) {
 	h := newHarness(t, "light")
-	h.mustHave("Upload", "Download", "Transfers", "Settings")
+	h.mustHave("Upload", "New folder", "Settings")
 	h.a.setLanguage("zh-Hans")
 	h.settle()
-	h.mustHave("上传", "下载", "传输", "设置", "存储桶")
-	h.mustNotHave("Upload", "Download", "BUCKETS")
+	h.mustHave("上传", "新建文件夹", "设置", "存储桶")
+	h.mustNotHave("Upload", "New folder", "BUCKETS")
 	if h.a.lang != "zh-Hans" {
 		t.Fatalf("lang = %q", h.a.lang)
 	}
 	// Back to following the system, which in a test is English.
 	h.a.setLanguage("")
 	h.settle()
-	h.mustHave("Upload", "Download", "Transfers")
+	h.mustHave("Upload", "New folder")
 	h.mustNotHave("上传")
 }
 
