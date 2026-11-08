@@ -85,6 +85,7 @@
   "actionsCopyCdnLink": "Copy CDN link",
   "actionsCountUnavailable": "Count unavailable",
   "actionsCounting": "Counting…",
+  "actionsCreateFolderFailed": "Could not create folder {name}: {detail}",
   "actionsCreatedFolder": "Created folder {name}",
   "actionsDeleteCanceled": "Delete canceled",
   "actionsDeleteFailed": "Delete failed: {detail}",

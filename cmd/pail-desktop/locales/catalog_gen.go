@@ -884,6 +884,18 @@ func (msgs Messages) ActionsCounting() string {
 	return Catalog.Format(msgs.locale, "actionsCounting", nil)
 }
 
+// ActionsCreateFolderFailed says "Could not create folder {name}: {detail}"
+// in the language the app shows.
+func ActionsCreateFolderFailed(name string, detail string) string {
+	return In(i18n.Locale()).ActionsCreateFolderFailed(name, detail)
+}
+
+// ActionsCreateFolderFailed says "Could not create folder {name}: {detail}"
+// in the language of msgs.
+func (msgs Messages) ActionsCreateFolderFailed(name string, detail string) string {
+	return Catalog.Format(msgs.locale, "actionsCreateFolderFailed", map[string]any{"name": name, "detail": detail})
+}
+
 // ActionsCreatedFolder says "Created folder {name}"
 // in the language the app shows.
 func ActionsCreatedFolder(name string) string { return In(i18n.Locale()).ActionsCreatedFolder(name) }
