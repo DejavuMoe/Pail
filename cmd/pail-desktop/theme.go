@@ -54,6 +54,9 @@ const (
 	RadiusKeycap  = 4
 )
 
+// controlH is the height of a control: input, select, button, segmented track.
+const controlH = 28
+
 var lightTokens = tokens{
 	Background: ui.Hex("#FBFAF8"), Sidebar: ui.Hex("#F3F1EC"), Surface: ui.Hex("#FFFFFF"),
 	SurfaceHover: ui.Hex("#EFEDE8"), SurfacePressed: ui.Hex("#E6E3DD"), ActiveFill: ui.Hex("#E3DFD6"),
@@ -338,9 +341,18 @@ func tabIndicator(c *ui.Context, group string) ui.Element {
 // when the text has the keyboard), a leading icon and an inline clear
 // button. It returns the input element for Changed / Submitted.
 func searchBox(c *ui.Context, value *string, h *ui.Handle, label, placeholder string, width float32, icon *ui.SVG, clearIcon *ui.SVG) ui.Element {
+	return searchBoxFit(c, value, h, label, placeholder, width, false, icon, clearIcon)
+}
+
+// searchBoxFit is searchBox that can keep its width: with fixed, the box does
+// not give way to its neighbours (the filter someone just asked for).
+func searchBoxFit(c *ui.Context, value *string, h *ui.Handle, label, placeholder string, width float32, fixed bool, icon *ui.SVG, clearIcon *ui.SVG) ui.Element {
 	k := tk(c)
-	row := ui.Row(c).Height(28).Padding(0, 4, 0, 8).Gap(6).Radius(6).AlignItems(ui.Center).Background(k.Surface)
-	if width > 0 {
+	row := ui.Row(c).Height(controlH).Padding(0, 4, 0, 8).Gap(6).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface)
+	switch {
+	case width > 0 && fixed:
+		row.Width(width).Shrink(0)
+	case width > 0:
 		// A preferred width that gives way in a narrow window.
 		row.Basis(width).Shrink(1).MinWidth(min(width, 120))
 	}

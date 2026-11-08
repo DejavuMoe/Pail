@@ -234,7 +234,7 @@ func TestI18NTools(t *testing.T) {
 		h.openToolView("sync")
 		h.mustBeTranslated("sync, no jobs")
 		h.setLocale("zh-Hans")
-		h.mustHave("没有同步任务", "创建同步任务", "新建任务")
+		h.mustHave("没有同步任务", "让本地文件夹与存储桶保持一致。", "新建任务")
 		h.setLocale("en")
 
 		if _, err := h.a.svc.SaveSyncJob(core.SyncJob{Name: "Site", LocalDir: dir, Direction: "upload", Mode: "mirror",
