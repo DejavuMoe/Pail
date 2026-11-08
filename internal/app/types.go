@@ -70,6 +70,10 @@ type Settings struct {
 	// KeepRecentOps keeps that list when another account is chosen. The zero
 	// value clears it, so that the list shows what was done with this account.
 	KeepRecentOps bool `json:"keepRecentOps,omitempty"`
+	// CollapseTools folds the desktop app's TOOLS group in the sidebar down to
+	// its header (the row of an open tool stays). The zero value shows the
+	// group, so settings saved before it existed show it too.
+	CollapseTools bool `json:"collapseTools,omitempty"`
 }
 
 // SecretBackend values.

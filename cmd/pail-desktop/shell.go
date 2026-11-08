@@ -60,7 +60,9 @@ func (a *app) view(c *ui.Context) {
 			}
 		default:
 			ui.Column(c).Grow(1).MinHeight(0).Children(func() { a.body(c, winW) })
-			a.transfersBar(c)
+			if len(a.tasks) > 0 {
+				a.transfersBar(c)
+			}
 		}
 		a.statusBar(c)
 	})
@@ -72,16 +74,20 @@ func (a *app) view(c *ui.Context) {
 
 // transfersExtent is the height of the transfers panel in this frame: the
 // height the user gave it (a.transH) while open, the collapsed bar's while
-// closed, and between them, eased over durSlow, as it is toggled (the button,
-// the toolbar toggle, the palette, or a new task opening it). host is an
-// element that lives as long as the window, which keeps the value. moving
-// says it is on its way. A divider being dragged moves the value at once, and
-// so does a window resize, which changes nothing here: only what the user does
-// to the panel is animated.
+// closed with tasks on the list, nothing while closed with none (the strip has
+// nothing to say then), and between them, eased over durSlow, as it is toggled
+// (the button, the toolbar toggle, the palette, or a new task opening it, or
+// the last one leaving). host is an element that lives as long as the window,
+// which keeps the value. moving says it is on its way. A divider being dragged
+// moves the value at once, and so does a window resize, which changes nothing
+// here: only what the user does to the panel is animated.
 func (a *app) transfersExtent(c *ui.Context, host ui.Element) (h float32, moving bool) {
-	want := float32(collapsedBar)
-	if a.transfersOpen {
+	want := float32(0)
+	switch {
+	case a.transfersOpen:
 		want = a.transH
+	case len(a.tasks) > 0:
+		want = collapsedBar
 	}
 	if c.Now().Sub(a.transDragAt) < splitDragHold {
 		h = host.Jump("transfers", want)
