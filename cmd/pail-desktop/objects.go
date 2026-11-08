@@ -115,7 +115,7 @@ func (a *app) table(c *ui.Context) {
 	clear(a.rowTops)
 	a.list.Key = func(i int) any { return rows[i].Key }
 	a.list.Label = func(i int) string { return rows[i].Name }
-	a.list.Selection = &a.sel
+	a.list.Selection = &a.sel.Selection
 	a.list.Selected = &a.cursor
 	a.list.Sort = &a.sort
 	// Reorder switches on dragging rows; what a drop on the table itself would
@@ -192,6 +192,7 @@ func (a *app) table(c *ui.Context) {
 	var tbl ui.Element
 	ui.Column(c).Grow(1).MinHeight(0).MinWidth(0).Children(func() {
 		tbl = ui.Table(c, &a.list, cols, len(rows), cell).Grow(1).MinHeight(0).Label(locales.ObjectsTable())
+		a.sel.touch() // the table's keys, clicks and Ctrl+A change the choice in mygo
 		a.selectAllBox(c, chosen)
 		tableHeaderLine(c)
 	})
@@ -208,6 +209,7 @@ func (a *app) table(c *ui.Context) {
 		a.extendKey = ""
 		if i, ok := a.byKey[key]; ok {
 			a.list.ExtendTo(i)
+			a.sel.touch()
 		}
 	}
 	// Esc gives up a drag selecting rows, or clears the choice.
