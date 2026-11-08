@@ -18,10 +18,21 @@ func toolTable(c *ui.Context, st *ui.ListState, cols []ui.TableColumn, n int, ce
 // tableTheme makes the theme under which table rows are built: the Selection
 // token as Accent, 8 spacing units (30px) per row, table font size. Call the
 // returned func to restore the frame's real theme.
-func tableTheme(c *ui.Context) (restore func()) {
+func tableTheme(c *ui.Context) (restore func()) { return tableThemeEdges(c, true) }
+
+// tableThemeEdges is tableTheme that can leave the column edges out: mygo draws
+// the resize edge of every resizable header cell in the theme's Border, at rest,
+// and the anti-aliasing makes some of them look fainter than others. The object
+// table (quiet) makes Border transparent so that no edge shows at rest, and draws
+// the header's own 1px line itself (tableHeaderLine). The resize cursor and the
+// drag stay; while the pointer is on an edge it shows in Selection.
+func tableThemeEdges(c *ui.Context, edges bool) (restore func()) {
 	k := tk(c)
 	full := c.Theme()
 	rowTheme := *full
+	if !edges {
+		rowTheme.Border = ui.Transparent
+	}
 	rowTheme.Accent, rowTheme.AccentText = k.Selection, k.Text
 	rowTheme.Spacing = tableSpacing
 	rowTheme.FontSize = sizeSecondary
@@ -29,10 +40,16 @@ func tableTheme(c *ui.Context) (restore func()) {
 	return func() { c.SetTheme(full) }
 }
 
+// tableHeaderLine is the 1px line under a table's header, for a table built
+// without the theme's Border (tableThemeEdges): it spans the table's width.
+func tableHeaderLine(c *ui.Context) {
+	ui.Box(c.Key("headline")).Absolute().Top(tableRowH).Left(0).Right(0).Height(1).Background(tk(c).Border).PassThrough()
+}
+
 // textAreaBox is a multi-line field styled like inputBox.
 func textAreaBox(c *ui.Context, value *string, label, placeholder string, height float32, o inputOpts) ui.Element {
 	k := tk(c)
-	box := ui.Column(c.Key("tabox:"+label)).Height(height).Padding(6, 8).Radius(6).Background(k.Surface)
+	box := ui.Column(c.Key("tabox:"+label)).Height(height).Padding(6, 8).Radius(RadiusControl).Background(k.Surface)
 	switch {
 	case o.invalid:
 		box.Border(1, k.Danger)
@@ -81,6 +98,18 @@ func paneBar(c *ui.Context, key string, children func()) {
 	ui.Row(c.Key(key)).Height(40).Padding(0, 8).Gap(2).AlignItems(ui.Center).Shrink(0).Children(children)
 }
 
+// paneCreate is the create action of a list header: a ghost button with the
+// plus icon and a visible label. Every tool's list header starts with one.
+func paneCreate(c *ui.Context, label, tip string) ui.Element {
+	return ghostButton(c, icons.Get("plus"), label, tip, false)
+}
+
+// paneIcon is any other action of a list header: an icon-only ghost button
+// (28x28) with a Tooltip; label is its name for assistive technology.
+func paneIcon(c *ui.Context, icon, label, tip string, disabled bool) ui.Element {
+	return ghostButton(c, icons.Get(icon), "", tip, disabled).Label(label)
+}
+
 // footerBar is the 48px action strip under a form, with a hairline above it.
 func footerBar(c *ui.Context, key string, children func()) {
 	k := tk(c)
@@ -97,7 +126,7 @@ func cell(c *ui.Context, key string, children func()) {
 // fill is Sidebar, or a Danger wash when danger is set.
 func chip(c *ui.Context, icon, text string, col ui.Color, danger bool) {
 	k := tk(c)
-	r := ui.Row(c.Key("chip:"+icon+text)).Height(24).Padding(0, 8).Gap(6).Radius(6).AlignItems(ui.Center).Shrink(0)
+	r := ui.Row(c.Key("chip:"+icon+text)).Height(24).Padding(0, 8).Gap(6).Radius(RadiusControl).AlignItems(ui.Center).Shrink(0)
 	if danger {
 		r.Background(k.Danger.Alpha(0.10))
 	} else {
@@ -113,7 +142,7 @@ func chip(c *ui.Context, icon, text string, col ui.Color, danger bool) {
 // inside, Selection when chosen. It returns the row for Clicked.
 func toolListRow(c *ui.Context, key string, on bool) ui.Element {
 	k := tk(c)
-	r := ui.Row(c.Key(key)).Margin(0, 8).Padding(8, 12).Gap(8).Radius(6).AlignItems(ui.Center).Transition(hoverFade())
+	r := ui.Row(c.Key(key)).Margin(0, 8).Padding(8, 12).Gap(8).Radius(RadiusControl).AlignItems(ui.Center).Transition(hoverFade())
 	switch {
 	case on:
 		r.Background(k.Selection)

@@ -148,7 +148,7 @@ func (a *app) deleteDialog(c *ui.Context) {
 			}
 			fieldRow(c, locales.CommonPrefix(), prefix, d.loc.Prefix != "")
 		})
-		ui.Column(c).Gap(2).Padding(8, 10).Radius(6).Background(k.Sidebar).Children(func() {
+		ui.Column(c).Gap(2).Padding(8, 10).Radius(RadiusControl).Background(k.Sidebar).Children(func() {
 			for i, key := range d.keys {
 				if i == 5 {
 					ui.Text(c, locales.DialogsMore(groupInt(len(d.keys)-5))).FontSize(sizeSecondary).TextColor(k.TextMuted)
@@ -199,7 +199,7 @@ func (a *app) folderDialog(c *ui.Context) {
 			errText = a.folderDlg.err
 		}
 		ui.Column(c).Gap(4).Children(func() {
-			box := ui.Row(c).Height(28).Padding(0, 8).Radius(6).AlignItems(ui.Center).Background(k.Surface)
+			box := ui.Row(c).Height(28).Padding(0, 8).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface)
 			switch {
 			case errText != "":
 				box.Border(1, k.Danger)

@@ -86,7 +86,7 @@ func (a *app) secretsDialog(c *ui.Context) {
 	}
 	refs := a.svc.SecretRefs()
 	dialog(c, &s.open, locales.SecretsTitle(), func() {
-		ui.Column(c).Gap(2).Padding(8, 10).Radius(6).Background(k.Sidebar).MaxHeight(168).Children(func() {
+		ui.Column(c).Gap(2).Padding(8, 10).Radius(RadiusControl).Background(k.Sidebar).MaxHeight(168).Children(func() {
 			if len(refs) == 0 {
 				ui.Text(c, locales.SecretsNone()).FontSize(sizeSecondary).TextColor(k.TextMuted)
 				return

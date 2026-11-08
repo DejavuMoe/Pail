@@ -223,7 +223,7 @@ func valueButton(c *ui.Context, key, text string, subtle, monospace, editable bo
 	if !editable {
 		label = text
 	}
-	b := ui.ButtonBase(c.Key(key)).Label(label).Height(24).Padding(0, 6).Margin(0, 0, 0, -6).Radius(6).AlignItems(ui.Center).Justify(ui.Start).MinWidth(0).Disabled(!editable).Transition(hoverFade())
+	b := ui.ButtonBase(c.Key(key)).Label(label).Height(24).Padding(0, 6).Margin(0, 0, 0, -6).Radius(RadiusControl).AlignItems(ui.Center).Justify(ui.Start).MinWidth(0).Disabled(!editable).Transition(hoverFade())
 	if tip != "" && editable {
 		b.Tooltip(tip)
 	}
@@ -245,7 +245,7 @@ func valueButton(c *ui.Context, key, text string, subtle, monospace, editable bo
 // badge is a small neutral pill ("Latest", "Deleted").
 func badge(c *ui.Context, label string) ui.Element {
 	k := tk(c)
-	return ui.Box(c.Key("badge:"+label)).Padding(1, 6).Radius(4).Background(k.ActiveFill).Shrink(0).Center().Children(func() {
+	return ui.Box(c.Key("badge:"+label)).Padding(1, 6).Radius(RadiusSmall).Background(k.ActiveFill).Shrink(0).Center().Children(func() {
 		ui.Text(c, label).FontSize(sizeLabel).FontWeight(500).TextColor(k.TextMuted).SingleLine()
 	})
 }

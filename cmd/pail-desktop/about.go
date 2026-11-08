@@ -36,7 +36,7 @@ func (a *app) aboutDialog(c *ui.Context) {
 	dialog(c, &a.about.open, locales.AboutTitle(), func() {
 		ui.Row(c).Gap(16).AlignItems(ui.Center).Children(func() {
 			if b := appIconBitmap(); b != nil {
-				ui.Image(c, b).Size(56, 56).Radius(12).Shrink(0)
+				ui.Image(c, b).Size(56, 56).Radius(RadiusAbout).Shrink(0)
 			} else {
 				ui.Icon(c, icons.Get("database")).FontSize(32).TextColor(k.TextMuted)
 			}

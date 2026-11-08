@@ -39,6 +39,7 @@ func (a *app) view(c *ui.Context) {
 	winW, winH := c.Size()
 	root := ui.Column(c).Fill().Background(k.Background)
 	panelH, panelMoving := a.transfersExtent(c, root)
+	a.bodyH = winH - statusBarH - panelH
 	root.Children(func() {
 		switch {
 		case !a.hasAccount():

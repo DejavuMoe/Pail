@@ -489,7 +489,7 @@ func settingsNote(c *ui.Context, lines ...string) {
 // Text color so it reads at full contrast.
 func warnNotice(c *ui.Context, msg string) {
 	k := tk(c)
-	ui.Row(c).Gap(8).Padding(8, 10).Radius(6).AlignItems(ui.Start).
+	ui.Row(c).Gap(8).Padding(8, 10).Radius(RadiusControl).AlignItems(ui.Start).
 		Background(k.Warning.Alpha(0.10)).Border(1, k.Warning.Alpha(0.40)).Children(func() {
 		ui.Icon(c, icons.Get("triangle-alert")).FontSize(14).TextColor(k.Warning).Shrink(0).MarginY(1)
 		ui.Text(c, msg).FontSize(sizeSecondary).TextColor(k.Text).Grow(1).MinWidth(0)
@@ -616,7 +616,7 @@ func (a *app) lockIndicator(c *ui.Context) {
 	if unlocked {
 		icon, text, tip = "lock-open", locales.VaultUnlocked(), locales.VaultUnlockedTip()
 	}
-	b := ui.ButtonBase(c.Key("vaultlock")).Label(text).Tooltip(tip).Height(20).Padding(0, 6).Gap(5).Radius(4).AlignItems(ui.Center).Transition(hoverFade())
+	b := ui.ButtonBase(c.Key("vaultlock")).Label(text).Tooltip(tip).Height(20).Padding(0, 6).Gap(5).Radius(RadiusSmall).AlignItems(ui.Center).Transition(hoverFade())
 	if b.Hovered() {
 		b.Background(k.SurfaceHover)
 	}
@@ -799,7 +799,7 @@ func (a *app) unlockDialog(c *ui.Context) {
 // "and N more".
 func nameList(c *ui.Context, names []string) {
 	k := tk(c)
-	ui.Column(c).Gap(2).Padding(8, 10).Radius(6).Background(k.Sidebar).Children(func() {
+	ui.Column(c).Gap(2).Padding(8, 10).Radius(RadiusControl).Background(k.Sidebar).Children(func() {
 		for i, n := range names {
 			if i == 5 {
 				ui.Text(c, locales.VaultAndMore(groupInt(len(names)-5))).FontSize(sizeSecondary).TextColor(k.TextMuted)

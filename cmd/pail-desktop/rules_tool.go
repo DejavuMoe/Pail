@@ -405,22 +405,22 @@ func (a *app) rulesList(c *ui.Context) {
 	rs := &a.tl.rules
 	toolPane(c, "rules-pane", 300, func() {
 		paneBar(c, "rules-bar", func() {
-			if ghostButton(c, icons.Get("plus"), "", locales.RulesAddRule(), false).Label(locales.RulesAddRule()).Clicked() {
+			if paneCreate(c, locales.RulesAddRule(), locales.RulesAddRule()).Clicked() {
 				a.rulesAdd()
 			}
 			has := rs.sel >= 0 && rs.sel < len(rs.draft)
-			if ghostButton(c, icons.Get("copy"), "", locales.RulesDuplicateRule(), !has).Label(locales.RulesDuplicateRule()).Clicked() {
+			if paneIcon(c, "copy", locales.RulesDuplicateRule(), locales.RulesDuplicateRule(), !has).Clicked() {
 				a.rulesDuplicate()
 			}
-			if ghostButton(c, icons.Get("trash-2"), "", locales.RulesDeleteRule(), !has).Label(locales.RulesDeleteRule()).Clicked() {
+			if paneIcon(c, "trash-2", locales.RulesDeleteRule(), locales.RulesDeleteRule(), !has).Clicked() {
 				a.rulesDelete()
 			}
 			ui.Spacer(c)
 			helpIcon(c, locales.RulesOrderHelp())
-			if ghostButton(c, icons.Get("arrow-up"), "", locales.RulesMoveUp(), !has || rs.sel == 0).Label(locales.RulesMoveRuleUp()).Clicked() {
+			if paneIcon(c, "arrow-up", locales.RulesMoveRuleUp(), locales.RulesMoveUp(), !has || rs.sel == 0).Clicked() {
 				a.rulesMove(-1)
 			}
-			if ghostButton(c, icons.Get("arrow-down"), "", locales.RulesMoveDown(), !has || rs.sel == len(rs.draft)-1).Label(locales.RulesMoveRuleDown()).Clicked() {
+			if paneIcon(c, "arrow-down", locales.RulesMoveRuleDown(), locales.RulesMoveDown(), !has || rs.sel == len(rs.draft)-1).Clicked() {
 				a.rulesMove(1)
 			}
 		})
