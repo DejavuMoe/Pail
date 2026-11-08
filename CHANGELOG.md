@@ -9,6 +9,20 @@ All notable changes to this project are documented in this file. The format foll
 ### Added
 
 - Quit when closed and idle. With the tray icon showing, turn on **Settings › Appearance › Quit when closed and idle** (or `pail settings quit-when-idle on`) and closing the window quits Pail when no transfer is running. While a transfer runs, closing the window still keeps Pail in the tray. It is off by default.
+- A drop hint under short folder listings. When a folder's items leave empty space below the list, "Drop files here to upload" shows there.
+
+### Changed
+
+- In a narrow window, the folder filter folds into a search button so that the folder path stays readable. Click it or press `Ctrl+F` to open it; it folds again when you leave it empty.
+- In a narrow window, the object list shows Name, Size and Modified in full without scrolling sideways.
+- The toolbar shows Download, Copy, Cut, Rename and Delete only while something is selected, and Paste only while there is something to paste. These buttons now come after Refresh.
+- The transfers strip at the bottom of the window appears with the first transfer. The upload and download counts in the status bar open the transfers panel.
+- The status bar shows the item count and the selection. The account name stays in the sidebar and the region in the inspector.
+- The bucket list shows a bucket's region only when it differs from the account's region. Hover a bucket to see its region.
+- The TOOLS group in the sidebar can be folded by clicking its heading. Pail remembers the choice; the tool that is open stays visible.
+- Sync jobs and upload rules show one empty page with a single button to create the first item.
+- Upload rules hide Save and Manage secrets while no rule is selected and nothing is left to save. The object key field of the rule test fills the width of the window.
+- Folders show a dash in the Modified and Storage class columns, as they already did in Size.
 
 ## [0.5.0] - 2026-11-06
 
