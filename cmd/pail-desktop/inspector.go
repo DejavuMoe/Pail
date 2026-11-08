@@ -98,7 +98,7 @@ func (a *app) header(c *ui.Context, icon, title, sub string) {
 			ui.Icon(c, icons.Get(icon)).FontSize(20).TextColor(k.TextMuted)
 		})
 		ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
-			ui.Text(c, title).FontSize(14).FontWeight(600).SingleLine()
+			ui.Text(c, title).FontSize(14).FontWeight(600).TextColor(k.Text).SingleLine()
 			mutedText(c, sub).SingleLine()
 		})
 	})
