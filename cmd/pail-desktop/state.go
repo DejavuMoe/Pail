@@ -104,8 +104,9 @@ type app struct {
 	bucketFilter string
 	filterH      ui.Handle
 	searchH      ui.Handle
-	navSel       string // sidebar choice: "b:<bucket>" or "t:<tool>"
-	tool         string // "" when the object browser shows
+	filter       pathFilter // the folder filter of a compact path bar (pathbar.go)
+	navSel       string     // sidebar choice: "b:<bucket>" or "t:<tool>"
+	tool         string     // "" when the object browser shows
 	scope        Scope
 	sizes        folderSizes // the folder sizes asked for (foldersize.go)
 
