@@ -6508,6 +6508,16 @@ func (msgs Messages) ObjectsSizeUnknown() string {
 	return Catalog.Format(msgs.locale, "objectsSizeUnknown", nil)
 }
 
+// ObjectsDropHint says "Drop files here to upload"
+// in the language the app shows.
+func ObjectsDropHint() string { return In(i18n.Locale()).ObjectsDropHint() }
+
+// ObjectsDropHint says "Drop files here to upload"
+// in the language of msgs.
+func (msgs Messages) ObjectsDropHint() string {
+	return Catalog.Format(msgs.locale, "objectsDropHint", nil)
+}
+
 // ObjectsDropToUpload says "Drop to upload to {prefix}"
 // in the language the app shows.
 func ObjectsDropToUpload(prefix string) string { return In(i18n.Locale()).ObjectsDropToUpload(prefix) }

@@ -156,6 +156,7 @@ type app struct {
 	sidebarW                        float32
 	lay                             layoutMetrics // this frame's widths and breakpoint tiers
 	layMem                          layoutState   // what the breakpoints remember between frames
+	bodyH                           float32       // this frame's height above the status bar and the transfers panel
 	fxSide                          splitFx       // divider styles of the three Splits
 	fxInsp                          splitFx
 	fxTrans                         splitFx

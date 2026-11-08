@@ -184,7 +184,7 @@ func (a *app) versionRow(c *ui.Context, loc Scope, v core.Version) {
 	f := &a.mg.vers
 	on := f.sel[v.VersionID]
 	ref := core.ObjectRef{Key: v.Key, VersionID: v.VersionID}
-	row := ui.ButtonBase(c.Key("ver:"+v.VersionID)).Label(locales.VersionsVersionLabel(shortVersion(v.VersionID))).Padding(4, 8).Radius(6).Gap(6).AlignItems(ui.Center).Shrink(0).Transition(hoverFade())
+	row := ui.ButtonBase(c.Key("ver:"+v.VersionID)).Label(locales.VersionsVersionLabel(shortVersion(v.VersionID))).Padding(4, 8).Radius(RadiusControl).Gap(6).AlignItems(ui.Center).Shrink(0).Transition(hoverFade())
 	switch {
 	case on:
 		row.Background(k.Selection)
@@ -556,7 +556,7 @@ func (a *app) submitRestore(sel core.Selection, loc Scope) {
 // ghostToggle is a ghost button with a label that rests on ActiveFill while on.
 func ghostToggle(c *ui.Context, icon *ui.SVG, label, tip string, on, disabled, iconOnly bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c.Key("toggle:"+label)).Label(label).Tooltip(tip).Radius(6).Height(28).Gap(6).Padding(0, 8).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c.Key("toggle:"+label)).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Gap(6).Padding(0, 8).Center().Disabled(disabled).Transition(hoverFade())
 	if iconOnly {
 		b.Width(28).Padding(0)
 	}

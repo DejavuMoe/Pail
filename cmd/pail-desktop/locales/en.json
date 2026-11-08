@@ -640,6 +640,7 @@
   "objectsSizeFailedTip": "Couldn't calculate the size: {reason}",
   "objectsSizeNotCalculated": "Not calculated. Right-click the folder and choose Calculate size.",
   "objectsSizeUnknown": "–",
+  "objectsDropHint": "Drop files here to upload",
   "objectsDropToUpload": "Drop to upload to {prefix}",
   "objectsEmptySub": "Upload files or create a folder",
   "objectsEmptyTitle": "This folder is empty",

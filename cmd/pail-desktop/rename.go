@@ -127,7 +127,7 @@ func (a *app) renameInput(c *ui.Context, e Entry) {
 	k := tk(c)
 	r := &a.mg.ren
 	invalid := r.err != "" || (strings.TrimSpace(r.name) != e.Name && a.renameError(e, strings.TrimSpace(r.name)) != "")
-	box := ui.Row(c.Key("rename")).Height(24).Padding(0, 6).Radius(6).AlignItems(ui.Center).Background(k.Surface).Grow(1).MinWidth(0).Margin(-3, 0)
+	box := ui.Row(c.Key("rename")).Height(24).Padding(0, 6).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface).Grow(1).MinWidth(0).Margin(-3, 0)
 	if invalid {
 		box.Border(1, k.Danger)
 	} else {
