@@ -259,6 +259,9 @@ func TestCompactPathBarFoldsTheFolderFilter(t *testing.T) {
 	if w := width(); w != 28 {
 		t.Errorf("Esc left the filter %v wide", w)
 	}
+	if h.a.filter != (pathFilter{}) {
+		t.Errorf("Esc left the filter state %+v", h.a.filter)
+	}
 
 	// It stays unfolded while it holds text, even without the keyboard.
 	h.a.openFilter()

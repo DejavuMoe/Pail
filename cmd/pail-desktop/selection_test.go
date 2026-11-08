@@ -305,6 +305,38 @@ func TestEscGivesUpADrag(t *testing.T) {
 	h.expectChosen("README.txt")
 }
 
+// A press the system cancels commits nothing: no box toggles, no click in
+// blank space clears the choice, and a drag gives back the choice it found.
+func TestCanceledPressCommitsNothing(t *testing.T) {
+	h := newHarness(t, "light")
+	h.mustClick("README.txt")
+	x, y := h.rowMid("assets")
+	h.tt.Move(x, y)
+	h.tt.Press(x, y)
+	h.tt.CancelPress()
+	h.settle()
+	h.expectChosen("README.txt")
+
+	_, last := h.rowMid("README.txt")
+	x, blank := h.a.tblRect.X+h.a.tblRect.W/2, last+tableRowH*2
+	h.tt.Move(x, blank)
+	h.tt.Press(x, blank)
+	h.tt.CancelPress()
+	h.settle()
+	h.expectChosen("README.txt")
+
+	x, y0 := h.rowMid("assets")
+	_, y1 := h.rowMid("logs")
+	h.tt.Move(x, y0)
+	h.tt.Press(x, y0)
+	h.tt.Move(x, y1)
+	h.tt.Frame()
+	h.expectChosen("README.txt", "assets/", "backups/", "logs/")
+	h.tt.CancelPress()
+	h.settle()
+	h.expectChosen("README.txt")
+}
+
 // Held below the list, a drag scrolls it and goes on choosing the rows that
 // come into view.
 func TestDragSelectScrolls(t *testing.T) {
