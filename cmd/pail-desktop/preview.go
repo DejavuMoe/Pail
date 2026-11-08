@@ -557,15 +557,15 @@ func (p *previewState) zoomInput(ev ui.InputEvent, fw, fh float32) bool {
 }
 
 // previewTable is the CSV table: the header row in weight 600 over a hairline,
-// 26px rows, scrolling both ways.
+// 28px rows, scrolling both ways.
 func (a *app) previewTable(c *ui.Context) {
 	k := tk(c)
 	p := &a.prev
-	h := min(360, float32(len(p.rows))*26+12)
+	h := min(360, float32(len(p.rows))*controlH+12)
 	ui.ScrollBoth(c.Key("csvscroll")).Height(h).Radius(RadiusControl).Background(k.Sidebar).Border(1, k.Border).Children(func() {
 		ui.Column(c).Padding(6, 0).Children(func() {
 			for i, row := range p.rows {
-				r := ui.Row(c.Key(i)).Height(26).Padding(0, 10).AlignItems(ui.Center).Shrink(0)
+				r := ui.Row(c.Key(i)).Height(controlH).Padding(0, 10).AlignItems(ui.Center).Shrink(0)
 				if i == 0 {
 					r.BorderWidth(0, 0, 1, 0).BorderColor(k.Border)
 				}

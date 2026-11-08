@@ -3,7 +3,6 @@ package main
 import (
 	"time"
 
-	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	"github.com/egoist/mygo/ui"
 )
@@ -101,12 +100,9 @@ func (a *app) transfersExtent(c *ui.Context, host ui.Element) (h float32, moving
 
 // welcome is the empty state shown until the first account exists.
 func (a *app) welcome(c *ui.Context) {
-	k := tk(c)
 	ui.Column(c).Grow(1).MinHeight(0).Center().Gap(4).Children(func() {
-		ui.Icon(c, icons.Get("database")).FontSize(32).TextColor(k.TextSubtle).MarginY(4)
-		ui.Text(c, locales.ShellWelcomeTitle()).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
-		ui.Text(c, locales.ShellWelcomeSub()).FontSize(sizeSecondary).TextColor(k.TextMuted)
-		primaryButton(c, locales.ShellAddAccount(), false).Margin(16, 0, 0, 0).OnClick(func() { a.openAccountForm(false) })
+		emptyLines(c, "database", locales.ShellWelcomeTitle(), locales.ShellWelcomeSub())
+		primaryButton(c, locales.ShellAddAccount(), false).Margin(12, 0, 0, 0).OnClick(func() { a.openAccountForm(false) })
 	})
 }
 

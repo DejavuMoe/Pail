@@ -94,7 +94,7 @@ func (a *app) secretsDialog(c *ui.Context) {
 			ui.Scroll(c).MaxHeight(152).ScrollbarInsets(0, 0, 0, 0).Children(func() {
 				ui.Column(c).Padding(0, scrollGutter, 0, 0).Children(func() {
 					for i, r := range refs {
-						ui.Row(c.Key("sref:" + strconv.Itoa(i))).Height(26).Gap(8).AlignItems(ui.Center).Children(func() {
+						ui.Row(c.Key("sref:" + strconv.Itoa(i))).Height(controlH).Gap(8).AlignItems(ui.Center).Children(func() {
 							ui.Icon(c, icons.Get("key-round")).FontSize(14).TextColor(k.TextMuted).Shrink(0)
 							mono(ui.Text(c, r).FontSize(sizeSecondary).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0))
 							if iconButton(c, icons.Get("trash-2"), locales.SecretsDeleteLabel(r)).Clicked() {

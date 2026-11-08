@@ -364,7 +364,6 @@ func (a *app) listErrorBanner(c *ui.Context) {
 }
 
 func (a *app) emptyState(c *ui.Context) {
-	k := tk(c)
 	ui.Column(c).Grow(1).Center().Gap(4).Children(func() {
 		name, title, sub := "folder-open", locales.ObjectsEmptyTitle(), locales.ObjectsEmptySub()
 		if a.mg.del.on {
@@ -373,11 +372,9 @@ func (a *app) emptyState(c *ui.Context) {
 		if a.search != "" {
 			name, title, sub = "search", locales.ObjectsNoMatchesTitle(), locales.ObjectsNoMatchesSub(a.search)
 		}
-		ui.Icon(c, icons.Get(name)).FontSize(32).TextColor(k.TextSubtle).MarginY(4)
-		ui.Text(c, title).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
-		ui.Text(c, sub).FontSize(sizeSecondary).TextColor(k.TextMuted)
+		emptyLines(c, name, title, sub)
 		if a.search != "" {
-			ghostButton(c, nil, locales.ObjectsClearFilter(), locales.ObjectsClearFilter(), false).Margin(8, 0, 0, 0).OnClick(func() { a.search = ""; a.rebuildRows() })
+			ghostButton(c, nil, locales.ObjectsClearFilter(), locales.ObjectsClearFilter(), false).Margin(12, 0, 0, 0).OnClick(func() { a.search = ""; a.rebuildRows() })
 		}
 	})
 }
