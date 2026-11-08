@@ -433,6 +433,74 @@ func TestNewFolderValidationAndCreate(t *testing.T) {
 	}
 }
 
+// A create folder answer belongs to the dialog that asked for it. When the
+// user cancels, reopens and types again, the old answer may not close the new
+// dialog or write its error into it.
+func TestNewFolderStaleAnswerKeepsReopenedDialog(t *testing.T) {
+	for _, fail := range []bool{false, true} {
+		name := "success"
+		if fail {
+			name = "failure"
+		}
+		t.Run(name, func(t *testing.T) {
+			h := newHarness(t, "light")
+			gate, arrived := make(chan struct{}), make(chan struct{}, 1)
+			h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
+				if r.Method != http.MethodPut || !strings.HasSuffix(r.URL.Path, "/stale/") {
+					return nil
+				}
+				select {
+				case arrived <- struct{}{}:
+				default:
+				}
+				<-gate
+				if fail {
+					return &s3test.Fault{Status: http.StatusForbidden, Code: "AccessDenied", Message: "no"}
+				}
+				return nil
+			})
+			h.a.run("newfolder", "test")
+			h.settle()
+			h.tt.Type("stale")
+			h.settle()
+			h.a.confirmNewFolder()
+			select {
+			case <-arrived:
+			case <-time.After(5 * time.Second):
+				t.Fatal("the create request never reached the server")
+			}
+			h.tt.Key(0, ui.KeyEscape)
+			if h.a.newFolder {
+				t.Fatal("Escape left the dialog open")
+			}
+			h.a.run("newfolder", "test")
+			h.settle()
+			h.tt.Type("draft")
+			h.settle()
+			close(gate)
+			if fail {
+				h.waitFor("the failed create is reported", func() bool {
+					return h.tt.HasText("Could not create folder stale")
+				})
+			} else {
+				h.waitFor("the created folder is listed", func() bool { return h.has("stale/") })
+			}
+			if !h.a.newFolder {
+				t.Error("the stale answer closed the reopened dialog")
+			}
+			if h.a.folderDlg.name != "draft" || h.a.folderDlg.busy || h.a.folderDlg.err != "" {
+				t.Errorf("reopened dialog = %+v", h.a.folderDlg)
+			}
+			if fail && h.has("stale/") {
+				t.Error("the failed folder is in the listing")
+			}
+			if !fail && h.a.selectAfter != "" {
+				t.Errorf("stale success selected %q in the reopened dialog", h.a.selectAfter)
+			}
+		})
+	}
+}
+
 // ---- copying ----------------------------------------------------------------------------------------------
 
 func TestCopyKeyURIURLAndSigned(t *testing.T) {

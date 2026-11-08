@@ -4,6 +4,12 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Closing the New Folder dialog while a folder was still being created, then opening it again, could close the new dialog or show the earlier error in it. The reopened dialog now stays as you left it, and the earlier result shows as a notification.
+
 ## [0.5.1] - 2026-11-08
 
 ### Added

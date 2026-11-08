@@ -188,6 +188,7 @@ func (a *app) deleteDialog(c *ui.Context) {
 // folderDialog creates a folder with inline validation.
 func (a *app) folderDialog(c *ui.Context) {
 	k := tk(c)
+	was := a.newFolder
 	dialog(c, &a.newFolder, locales.DialogsNewFolder(), func() {
 		fieldRow(c, locales.DialogsIn(), a.scope.Bucket+"/"+a.scope.Prefix, true)
 		name := strings.TrimSpace(a.folderDlg.name)
@@ -223,13 +224,16 @@ func (a *app) folderDialog(c *ui.Context) {
 		name := strings.TrimSpace(a.folderDlg.name)
 		buttonRow(c, func() {
 			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				a.newFolder = false
+				a.closeNewFolder()
 			}
 			if primaryButton(c, locales.CommonCreate(), a.folderError(name) != "" || a.folderDlg.busy).Clicked() {
 				a.confirmNewFolder()
 			}
 		})
 	})
+	if was && !a.newFolder { // closed by Escape or a click outside
+		a.closeNewFolder()
+	}
 }
 
 // confirmDialog is the generic confirmation: scope grid, a message and a

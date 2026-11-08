@@ -85,6 +85,7 @@
   "actionsCopyCdnLink": "复制 CDN 链接",
   "actionsCountUnavailable": "无法统计数量",
   "actionsCounting": "正在统计…",
+  "actionsCreateFolderFailed": "无法创建文件夹 {name}：{detail}",
   "actionsCreatedFolder": "已创建文件夹 {name}",
   "actionsDeleteCanceled": "已取消删除",
   "actionsDeleteFailed": "删除失败：{detail}",
