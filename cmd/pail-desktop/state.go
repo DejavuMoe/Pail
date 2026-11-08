@@ -14,6 +14,16 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
+// loadPhase is how far a background read has got.
+type loadPhase uint8
+
+const (
+	loadNone loadPhase = iota
+	loadBusy
+	loadReady
+	loadFailed
+)
+
 // options are the command-line settings.
 type options struct {
 	theme         string // system | light | dark; "" takes the saved setting
@@ -164,7 +174,7 @@ type app struct {
 	fxTrans                         splitFx
 	head                            core.ObjectInfo
 	headKey                         string
-	headState                       int // 0 none, 1 loading, 2 ready, 3 failed
+	headState                       loadPhase
 	headErr                         string
 	headGen                         int
 	cancelHead                      context.CancelFunc
@@ -565,8 +575,6 @@ func (a *app) listScope() {
 					a.raw = append(a.raw, page.Entries...)
 				}
 				a.rowsDirty = true
-				if isFirst {
-				}
 				if page.NextToken == "" {
 					a.loading = false
 					if !quiet {
@@ -831,7 +839,7 @@ func (a *app) resetHead() {
 		a.cancelHead = nil
 	}
 	a.headGen++
-	a.headKey, a.headState, a.headErr = "", 0, ""
+	a.headKey, a.headState, a.headErr = "", loadNone, ""
 	a.resetPreview()
 }
 
@@ -848,7 +856,7 @@ func (a *app) ensureHead() {
 		return
 	}
 	a.resetHead()
-	a.headKey, a.headState = key, 1
+	a.headKey, a.headState = key, loadBusy
 	gen, scope := a.headGen, a.scope
 	ctx, cancel := context.WithTimeout(a.ctx, 30*time.Second)
 	a.cancelHead = cancel
@@ -860,14 +868,14 @@ func (a *app) ensureHead() {
 				return
 			}
 			if err != nil {
-				a.headState, a.headErr = 3, a.noteErr(err, "head", func() {
+				a.headState, a.headErr = loadFailed, a.noteErr(err, "head", func() {
 					if gen == a.headGen {
 						a.resetHead() // the next frame asks again
 					}
 				})
 				return
 			}
-			a.head, a.headState = info, 2
+			a.head, a.headState = info, loadReady
 		})
 	}()
 }

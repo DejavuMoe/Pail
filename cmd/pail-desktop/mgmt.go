@@ -128,7 +128,7 @@ func (a *app) mgTyping() bool {
 // ---- cached bucket versioning ----------------------------------------------------------
 
 type verInfo struct {
-	state  int // 1 loading, 2 ready, 3 unknown (could not be read)
+	state  loadPhase // loadFailed: could not be read, so the status is unknown
 	status string
 }
 
@@ -137,7 +137,7 @@ func verKey(acct, bucket string) string { return acct + "|" + bucket }
 // versioningOf returns the cached versioning status of a bucket ("Enabled",
 // "Suspended" or "") and whether it is known.
 func (a *app) versioningOf(acct, bucket string) (string, bool) {
-	if v := a.mg.ver[verKey(acct, bucket)]; v != nil && v.state == 2 {
+	if v := a.mg.ver[verKey(acct, bucket)]; v != nil && v.state == loadReady {
 		return v.status, true
 	}
 	return "", false
@@ -160,17 +160,17 @@ func (a *app) ensureVersioning(acct, bucket string) {
 	if a.mg.ver[k] != nil {
 		return
 	}
-	a.mg.ver[k] = &verInfo{state: 1}
+	a.mg.ver[k] = &verInfo{state: loadBusy}
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(30 * time.Second)
 		defer cancel()
 		js, err := a.svc.GetBucketConfig(ctx, acct, bucket, core.ConfigVersioning)
 		return func() {
 			if err != nil {
-				a.mg.ver[k] = &verInfo{state: 3}
+				a.mg.ver[k] = &verInfo{state: loadFailed}
 				return
 			}
-			a.mg.ver[k] = &verInfo{state: 2, status: parseVersioning(js)}
+			a.mg.ver[k] = &verInfo{state: loadReady, status: parseVersioning(js)}
 		}
 	})
 }

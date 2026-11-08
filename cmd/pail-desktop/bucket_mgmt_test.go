@@ -242,7 +242,7 @@ func TestBucketSettingsVersioningForm(t *testing.T) {
 	h.settle()
 	h.mustHave("Bucket settings", bkt, "Versioning", "Encryption", "Public access", "Object ownership", "Policy", "CORS",
 		"Lifecycle", "Logging", "Tags", "Website", "Object Lock", "Replication", "Requester pays", "Transfer acceleration", "Close")
-	h.waitFor("versioning read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 })
+	h.waitFor("versioning read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadReady })
 	h.mustHave("Versioning has never been enabled for this bucket.", "Enable")
 	h.mustNotHave("Suspended")
 	h.snap("bucket-settings-versioning-off-light")
@@ -250,7 +250,7 @@ func TestBucketSettingsVersioningForm(t *testing.T) {
 	h.mustClick("Enable")
 	h.waitFor("versioning on", func() bool {
 		_, s := h.a.mg.bs.cur()
-		return s.state == 2 && s.server != "" && h.tt.HasText("Suspended")
+		return s.state == loadReady && s.server != "" && h.tt.HasText("Suspended")
 	})
 	if !strings.Contains(h.bucketConfig(bkt, core.ConfigVersioning), "Enabled") {
 		t.Fatal("versioning is not enabled on the server")
@@ -273,7 +273,7 @@ func TestBucketSettingsPolicyJSON(t *testing.T) {
 	h.a.run("bucketsettings", "test")
 	h.settle()
 	h.mustClick("Policy")
-	h.waitFor("policy read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 })
+	h.waitFor("policy read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadReady })
 	h.mustHave("Not configured", "Configure")
 	h.mustClick("Configure")
 	h.mustHave("Validate", "Save")
@@ -299,7 +299,10 @@ func TestBucketSettingsPolicyJSON(t *testing.T) {
 	h.settle()
 	h.mustClick("Save")
 	h.waitFor("policy saved", func() bool { return strings.Contains(h.bucketConfig(bkt, core.ConfigPolicy), "AllowRead") })
-	h.waitFor("saved shown", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 && s.server != "" && h.tt.HasText("Saved") })
+	h.waitFor("saved shown", func() bool {
+		_, s := h.a.mg.bs.cur()
+		return s.state == loadReady && s.server != "" && h.tt.HasText("Saved")
+	})
 	h.mustHave("Remove configuration")
 	h.snap("bucket-settings-policy-remove-light")
 
@@ -328,15 +331,15 @@ func TestBucketSettingsUnsupportedAndDenied(t *testing.T) {
 	h.a.openBucketSettings(bkt)
 	h.settle()
 	h.mustClick("CORS")
-	h.waitFor("cors answered", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 3 })
+	h.waitFor("cors answered", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadFailed })
 	h.mustHave("Not supported by this provider")
 	h.snap("bucket-settings-unsupported-light")
 	h.mustClick("Lifecycle")
-	h.waitFor("lifecycle answered", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 3 })
+	h.waitFor("lifecycle answered", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadFailed })
 	h.mustHave("You don't have permission to read this setting", "Retry")
 	h.env.Srv.Inject(nil)
 	h.mustClick("Retry")
-	h.waitFor("lifecycle read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 })
+	h.waitFor("lifecycle read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadReady })
 	h.mustHave("Not configured")
 }
 
@@ -346,19 +349,22 @@ func TestBucketSettingsSimpleForms(t *testing.T) {
 	h.settle()
 
 	h.mustClick("Encryption")
-	h.waitFor("encryption read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 })
+	h.waitFor("encryption read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadReady })
 	h.mustClick("None")
 	h.mustClick("AES-256 (SSE-S3)")
 	h.mustClick("Save")
 	h.waitFor("encryption set", func() bool { return strings.Contains(h.bucketConfig(bkt, core.ConfigEncryption), "AES256") })
-	h.waitFor("encryption reread", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 && s.sse == "AES256" && s.msg == "Saved" })
+	h.waitFor("encryption reread", func() bool {
+		_, s := h.a.mg.bs.cur()
+		return s.state == loadReady && s.sse == "AES256" && s.msg == "Saved"
+	})
 	h.mustClick("AES-256 (SSE-S3)")
 	h.mustClick("None")
 	h.mustClick("Save")
 	h.waitFor("encryption removed", func() bool { return h.bucketConfig(bkt, core.ConfigEncryption) == "" })
 
 	h.mustClick("Public access")
-	h.waitFor("public access read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 })
+	h.waitFor("public access read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadReady })
 	h.mustHave("Block public ACLs", "Ignore public ACLs", "Block public bucket policies", "Restrict public buckets")
 	_, s := h.a.mg.bs.cur()
 	s.pab[0], s.pab[2] = true, true
@@ -370,7 +376,7 @@ func TestBucketSettingsSimpleForms(t *testing.T) {
 	h.snap("bucket-settings-public-access-light")
 
 	h.mustClick("Object ownership")
-	h.waitFor("ownership read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 })
+	h.waitFor("ownership read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadReady })
 	h.mustHave("Bucket owner enforced")
 	h.mustClick("Bucket owner enforced")
 	h.mustClick("Object writer")
@@ -378,7 +384,7 @@ func TestBucketSettingsSimpleForms(t *testing.T) {
 	h.waitFor("ownership set", func() bool { return strings.Contains(h.bucketConfig(bkt, core.ConfigOwnership), "ObjectWriter") })
 
 	h.mustClick("Requester pays")
-	h.waitFor("payer read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == 2 })
+	h.waitFor("payer read", func() bool { _, s := h.a.mg.bs.cur(); return s.state == loadReady })
 	_, s = h.a.mg.bs.cur()
 	s.requester = true
 	h.mustClick("Save")

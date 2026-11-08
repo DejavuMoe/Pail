@@ -97,7 +97,7 @@ func (t *tagsForm) valid() bool {
 func (a *app) ensureTags() {
 	t := &a.mg.tags
 	keys := a.selectedKeys()
-	if len(keys) != 1 || strings.HasSuffix(keys[0], "/") || a.headState != 2 || a.headKey != keys[0] {
+	if len(keys) != 1 || strings.HasSuffix(keys[0], "/") || a.headState != loadReady || a.headKey != keys[0] {
 		return
 	}
 	if t.ready && t.key == keys[0] && t.gen == a.headGen {

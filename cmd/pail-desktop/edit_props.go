@@ -262,7 +262,7 @@ func (a *app) ensureProps() {
 	}
 	sig := a.selectionSig()
 	if one, _ := a.soleSelected(); n == 1 && !strings.HasSuffix(one, "/") {
-		if a.headState != 2 || a.headKey != one {
+		if a.headState != loadReady || a.headKey != one {
 			return
 		}
 		if p.sig == sig && p.ready && p.gen == a.headGen {

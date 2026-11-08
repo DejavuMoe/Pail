@@ -16,7 +16,7 @@ import (
 type versionsForm struct {
 	key   string
 	gen   int
-	state int // 0 none, 1 loading, 2 ready, 3 failed
+	state loadPhase
 	rows  []core.Version
 	err   string
 	sel   map[string]bool // version IDs chosen for a group action
@@ -85,10 +85,10 @@ func (a *app) ensureVersions() {
 		return
 	}
 	key := keys[0]
-	if f.key == key && f.state != 0 {
+	if f.key == key && f.state != loadNone {
 		return
 	}
-	*f = versionsForm{key: key, state: 1, gen: f.gen + 1}
+	*f = versionsForm{key: key, state: loadBusy, gen: f.gen + 1}
 	gen, loc := f.gen, a.scope
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(60 * time.Second)
@@ -100,15 +100,15 @@ func (a *app) ensureVersions() {
 				return
 			}
 			if err != nil {
-				f.state, f.err = 3, plainError(err, locales.VersionsListWhat())
+				f.state, f.err = loadFailed, plainError(err, locales.VersionsListWhat())
 				return
 			}
-			f.state, f.rows = 2, rows
+			f.state, f.rows = loadReady, rows
 		}
 	})
 }
 
-func (a *app) refreshVersions() { a.mg.vers.state = 0 }
+func (a *app) refreshVersions() { a.mg.vers.state = loadNone }
 
 // versionsTab lists every version of the selected object.
 func (a *app) versionsTab(c *ui.Context) {
@@ -116,13 +116,13 @@ func (a *app) versionsTab(c *ui.Context) {
 	f := &a.mg.vers
 	k := tk(c)
 	switch f.state {
-	case 0, 1:
+	case loadNone, loadBusy:
 		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
 			ui.Spinner(c).Size(14, 14)
 			mutedText(c, locales.VersionsLoading())
 		})
 		return
-	case 3:
+	case loadFailed:
 		errorLine(c, f.err)
 		ghostButton(c, iconOf("refresh-cw"), locales.CommonRetry(), locales.CommonRetry(), false).AlignSelf(ui.Start).OnClick(a.refreshVersions)
 		return
