@@ -234,6 +234,36 @@ func (msgs Messages) AcctAllBuckets() string {
 	return Catalog.Format(msgs.locale, "acctAllBuckets", nil)
 }
 
+// AcctBuckets says "Buckets"
+// in the language the app shows.
+func AcctBuckets() string { return In(i18n.Locale()).AcctBuckets() }
+
+// AcctBuckets says "Buckets"
+// in the language of msgs.
+func (msgs Messages) AcctBuckets() string {
+	return Catalog.Format(msgs.locale, "acctBuckets", nil)
+}
+
+// AcctBucketsAll says "All buckets the service lists"
+// in the language the app shows.
+func AcctBucketsAll() string { return In(i18n.Locale()).AcctBucketsAll() }
+
+// AcctBucketsAll says "All buckets the service lists"
+// in the language of msgs.
+func (msgs Messages) AcctBucketsAll() string {
+	return Catalog.Format(msgs.locale, "acctBucketsAll", nil)
+}
+
+// AcctBucketsHelp says "Optional. Leave empty to show every bucket the service lists. If the access key may not list buckets, or may only use…"
+// in the language the app shows.
+func AcctBucketsHelp() string { return In(i18n.Locale()).AcctBucketsHelp() }
+
+// AcctBucketsHelp says "Optional. Leave empty to show every bucket the service lists. If the access key may not list buckets, or may only use…"
+// in the language of msgs.
+func (msgs Messages) AcctBucketsHelp() string {
+	return Catalog.Format(msgs.locale, "acctBucketsHelp", nil)
+}
+
 // AcctCDNBuckets says "CDN buckets"
 // in the language the app shows.
 func AcctCDNBuckets() string { return In(i18n.Locale()).AcctCDNBuckets() }
@@ -812,6 +842,16 @@ func AcctTestConnection() string { return In(i18n.Locale()).AcctTestConnection()
 // in the language of msgs.
 func (msgs Messages) AcctTestConnection() string {
 	return Catalog.Format(msgs.locale, "acctTestConnection", nil)
+}
+
+// AcctTestDeniedHint says "If the key may not list buckets, name them under Buckets."
+// in the language the app shows.
+func AcctTestDeniedHint() string { return In(i18n.Locale()).AcctTestDeniedHint() }
+
+// AcctTestDeniedHint says "If the key may not list buckets, name them under Buckets."
+// in the language of msgs.
+func (msgs Messages) AcctTestDeniedHint() string {
+	return Catalog.Format(msgs.locale, "acctTestDeniedHint", nil)
 }
 
 // AcctTesting says "Testing connection…"
@@ -9310,6 +9350,16 @@ func SidebarMoveContents() string { return In(i18n.Locale()).SidebarMoveContents
 // in the language of msgs.
 func (msgs Messages) SidebarMoveContents() string {
 	return Catalog.Format(msgs.locale, "sidebarMoveContents", nil)
+}
+
+// SidebarNameBuckets says "Name buckets…"
+// in the language the app shows.
+func SidebarNameBuckets() string { return In(i18n.Locale()).SidebarNameBuckets() }
+
+// SidebarNameBuckets says "Name buckets…"
+// in the language of msgs.
+func (msgs Messages) SidebarNameBuckets() string {
+	return Catalog.Format(msgs.locale, "sidebarNameBuckets", nil)
 }
 
 // SidebarNewBucket says "New bucket"

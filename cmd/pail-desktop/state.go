@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"errors"
 	"slices"
 	"strings"
 	"sync"
@@ -441,8 +442,11 @@ func (a *app) loadBuckets(openFirst bool) {
 						a.loadBuckets(openFirst)
 					}
 				})
-				if isLocked(err) {
+				switch {
+				case isLocked(err):
 					a.bucketsFix = "unlock"
+				case cannotListBuckets(err) && len(acct.Buckets) == 0:
+					a.bucketsFix = "buckets" // the key may not list buckets: offer to name them
 				}
 				op.state, op.err = opFailed, a.bucketsErr
 				a.noteOp(op)
@@ -470,11 +474,30 @@ func (a *app) clearListing() {
 	a.resetHead()
 }
 
+// cannotListBuckets reports the refusal a key without s3:ListAllMyBuckets gets
+// from ListBuckets. Other refusals (a wrong key, an expired token) carry their
+// own codes, and naming buckets would not help them.
+func cannotListBuckets(err error) bool {
+	var oe *core.OpError
+	return errors.As(err, &oe) && oe.Code == "AccessDenied"
+}
+
+// namedFolder is the folder the account names for a bucket (Account.Buckets):
+// where the bucket opens. "" is the root, as for every bucket the service lists.
+func (a *app) namedFolder(name string) string {
+	for _, b := range a.account().Buckets {
+		if b.Name == name {
+			return b.Prefix
+		}
+	}
+	return ""
+}
+
 func (a *app) openBucket(name string) {
 	a.tool = ""
 	a.objOps.flat = false
 	a.navSel = "b:" + name
-	a.openScope(Scope{AccountID: a.accountID, Bucket: name})
+	a.openScope(Scope{AccountID: a.accountID, Bucket: name, Prefix: a.namedFolder(name)})
 }
 
 // openScope navigates to scope (a folder or the bucket root).
