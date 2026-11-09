@@ -31,16 +31,26 @@ func setupBuckets(c *cli, fs *flag.FlagSet) runner {
 	}
 }
 
+// printBuckets prints one line per bucket. A bucket the account names with a
+// folder is printed as bucket/folder/, the path to give ls.
 func (c *cli) printBuckets(bs []app.Bucket) {
 	if c.g.json {
 		for _, b := range bs {
-			c.emit(map[string]any{"type": "bucket", "name": b.Name, "region": b.Region, "created": b.Created})
+			o := map[string]any{"type": "bucket", "name": b.Name, "region": b.Region, "created": b.Created}
+			if b.Prefix != "" {
+				o["prefix"] = b.Prefix
+			}
+			c.emit(o)
 		}
 		c.emit(map[string]any{"type": "summary", "command": "buckets", "ok": true, "count": len(bs)})
 		return
 	}
 	for _, b := range bs {
-		fmt.Fprintf(c.io.Stdout, "%s  %-14s %s\n", fmtTime(b.Created), orDash(b.Region), b.Name)
+		name := b.Name
+		if b.Prefix != "" {
+			name += "/" + b.Prefix
+		}
+		fmt.Fprintf(c.io.Stdout, "%s  %-14s %s\n", fmtTime(b.Created), orDash(b.Region), name)
 	}
 }
 
