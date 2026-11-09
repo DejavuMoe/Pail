@@ -139,7 +139,7 @@ The key is percent-encoded like the public URL, keeping `/`. The CDN URL is set 
 ```text
 pail account ls
 pail account show [NAME]
-pail account add NAME --endpoint URL --access-key-id ID [--region R] [--path-style] [--secret-stdin]
+pail account add NAME --endpoint URL --access-key-id ID [--region R] [--path-style] [--bucket B] [--secret-stdin]
 pail account edit [NAME] [--region R] [--set-secret [--secret-stdin]]
 pail account test [NAME]
 pail account rm [NAME]
@@ -147,10 +147,10 @@ pail account rm [NAME]
 
 `NAME` is an account name or ID. Without it, the command uses `--account`, or the only account. `account ls` is the same as `accounts`.
 
-- `add` takes the new account's name. Before saving it lists the buckets once to test the connection. A failed test saves nothing. `--no-test` saves without testing; anonymous accounts cannot list buckets, so they need it.
+- `add` takes the new account's name. Before saving it lists the buckets once to test the connection, or with `--bucket` the named folders. A failed test saves nothing. `--no-test` saves without testing; anonymous accounts cannot list buckets, so they need it or `--bucket`.
 - `edit` changes only the flags you give. `--rename NEW` renames the account. A switch is turned off with `--path-style=false`. An empty value, such as `--cdn-url ""`, clears a field.
 - `show` prints the settings without secrets. For a static account it says whether the secret key is stored or missing.
-- `test` lists the buckets of a saved account.
+- `test` lists the buckets of a saved account, or the folders of its named buckets.
 - `rm` asks for confirmation, then deletes the account and its saved secret. Buckets and objects are not touched. Saved sync jobs of the account stay and stop working.
 
 The account flags are the fields of the desktop app's account dialog:
@@ -171,6 +171,7 @@ The account flags are the fields of the desktop app's account dialog:
 | `--checksum-mode` | `auto`, `when_required` or `when_supported`. |
 | `--cdn-url` | CDN base URL or template, see CDN URLs. |
 | `--cdn-bucket` | A bucket the CDN serves. Repeat it for several buckets. |
+| `--bucket` | A bucket the account shows instead of listing them, as `NAME` or `NAME/folder/`, for a key that may not list buckets. Repeat it for several buckets. The bucket opens in that folder, and `buckets` prints it as `NAME/folder/`. |
 
 The secret access key and the session token are never read from a flag or an environment variable, and they are not printed, not even with `--json`. `add` and `edit --set-secret` ask for the secret key on the terminal without echo. With `--secret-stdin` they read it from one line of stdin instead. `--ask-session-token` also reads a session token, from a second prompt or the next line of stdin. `edit` replaces the stored secret only with `--set-secret`. If the secret backend is the encrypted vault, its master password is asked first, so with `--vault-password-stdin` it is the first line.
 

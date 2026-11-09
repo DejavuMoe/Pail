@@ -27,7 +27,7 @@
 
 ## Features
 
-- **Accounts.** Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. A custom endpoint, region and path-style addressing for other services, with a connection test. One proxy (HTTP, HTTPS or SOCKS5) for all accounts.
+- **Accounts.** Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. A custom endpoint, region and path-style addressing for other services, with a connection test. A key that may not list buckets names them, each with the folder it may use. One proxy (HTTP, HTTPS or SOCKS5) for all accounts.
 - **Browsing.** A sortable, multi-select object table that pages by itself, with breadcrumbs, filter, flat view and inspector. Preview text, images and hex. Copy keys, URIs and presigned URLs. Folder sizes on request.
 - **Transfers.** Upload and download files, folders, versions and whole buckets, or drag files into the window. Separate queues with progress, speed, cancel and retry. Five policies for files that already exist. Large files go up in parts with checksums; downloads replace the target only after they are verified.
 - **Object properties.** Headers, metadata, tags, ACL, storage class and server-side encryption (SSE-S3, SSE-KMS, SSE-C) for one object or a selection.

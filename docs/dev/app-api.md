@@ -122,7 +122,9 @@ type Account struct {
 	CDNURL             string   // optional base URL or template; see CDN below
 	CDNBuckets         []string // buckets served by the CDN; empty = all
 	BucketAliases      map[string]string // bucket name -> display name; only SetBucketAlias changes it
+	Buckets            []AccountBucket   // named buckets; non-empty replaces the service's list, see below
 }
+type AccountBucket struct{ Name, Prefix string } // Prefix "" or ends with "/": the folder the bucket opens in
 type Secrets struct{ SecretAccessKey, SessionToken string }
 
 func (s *Service) Accounts() []Account
@@ -130,13 +132,17 @@ func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error)
 // sec == nil 表示保留已有机密。先写新机密，再更新账户记录，最后删除旧机密。
 func ValidateAccount(a Account) (Account, error) // the checks of SaveAccount without saving; returns the normalised account
 func (s *Service) DeleteAccount(id string) error // also deletes its keyring entries
-func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) error // ListBuckets with a throwaway client
+func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) error // ListBuckets with a throwaway client, or one listing per named bucket's folder
+func ParseAccountBuckets(list []string) ([]AccountBucket, error)                  // "name" or "name/folder/" per element, then NormalizeAccountBuckets
+func NormalizeAccountBuckets(list []AccountBucket) ([]AccountBucket, error)
 func (s *Service) BucketAlias(accountID, bucket string) string                      // "" = none
 func (s *Service) SetBucketAlias(accountID, bucket, alias string) error                // "" or the bucket name removes it
 const MaxAliasRunes = 64
 ```
 
 **CDN。** `CDNURL` 是基础 URL 或模板。含 `{key}` 时替换 `{bucket}`（原桶名）与 `{key}`（按 `PublicURL` 同样的规则转义，保留 `/`）；不含占位符时为 `<base>/<bucket>/<key>`；只有 `{bucket}` 没有 `{key}` 的模板无效。只允许 http(s)，要求 host，不含用户信息、query、fragment。`CDNBuckets` 去空、去重，每项须是合法桶名。`CDNURL(loc, key)` 不发请求，账户无 CDN、桶不在 `CDNBuckets`、桶名为空、key 为空或以 `/` 结尾时返回 `""`。
+
+**指定存储桶。** `Buckets` 非空时账户不再依赖 `s3:ListAllMyBuckets`：`Buckets()` 不发 ListBuckets，直接返回这些条目（`Region` 为空，`Prefix` 为其文件夹），但仍先构建客户端，使保险库锁定与机密缺失照常在这里报告；`TestAccount` 对每个条目发一次 `ListObjectsV2`（MaxKeys 1、Delimiter `/`、Prefix 为该文件夹，单次尝试），失败消息以 `name/folder/` 开头说明是哪一个。`ParseAccountBuckets` 读文本形式 `name` 或 `name/folder/`（缺尾部 `/` 则补上），`NormalizeAccountBuckets` 去空白、校验桶名与文件夹段（不含空段、`.`、`..`）；同一桶名只能出现一次，因为侧栏、别名和 CDN 列表都按桶名索引。界面按条目显示并在其文件夹中打开；向上导航不受限制，越过权限范围时显示服务返回的拒绝。
 
 客户端缓存按 accountID 保存 `*storage.Client` 和 `*cloud.Client`，惰性构建，账户变更时失效。`SaveProxy` 改动代理时所有账户的缓存同样失效（连同正在构建的条目，靠 `acctEpoch` 丢弃）；已在运行的传输沿用旧连接。代理只改传输层：`Service` 把 `ProxySettings` 和密码拼成地址放进 `storage.Config.ProxyURL`，进入 `NewHTTPClient`，S3、STS 和 CloudFront 共用同一个 HTTP 客户端。`Scheme` 为空时用 `http.ProxyFromEnvironment`；非空时用 `httpproxy` 按该地址选路，本机地址（localhost 与回环地址）和 `NO_PROXY` 里的主机仍直连。地址不合法时请求直接失败，不退回直连。
 
@@ -151,8 +157,9 @@ type Location struct{ AccountID, Bucket, Prefix string } // Prefix "" or ends wi
 type Bucket struct {
 	Name, Region string
 	Created      time.Time
+	Prefix       string // the folder a named bucket opens in; "" = root
 }
-func (s *Service) Buckets(ctx context.Context, accountID string) ([]Bucket, error)
+func (s *Service) Buckets(ctx context.Context, accountID string) ([]Bucket, error) // the service's list, or the account's named buckets without a request
 
 type Entry struct {
 	Key, Name     string // Name = last path segment (folders keep trailing "/" stripped)

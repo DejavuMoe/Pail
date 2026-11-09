@@ -139,7 +139,7 @@ https://{bucket}.cdn.example.com/{key}
 ```text
 pail account ls
 pail account show [NAME]
-pail account add NAME --endpoint URL --access-key-id ID [--region R] [--path-style] [--secret-stdin]
+pail account add NAME --endpoint URL --access-key-id ID [--region R] [--path-style] [--bucket B] [--secret-stdin]
 pail account edit [NAME] [--region R] [--set-secret [--secret-stdin]]
 pail account test [NAME]
 pail account rm [NAME]
@@ -147,10 +147,10 @@ pail account rm [NAME]
 
 `NAME` 是账户名称或 ID。省略时，命令使用 `--account` 指定的账户，或唯一的账户。`account ls` 与 `accounts` 相同。
 
-- `add` 的参数是新账户的名称。保存前会列一次存储桶来测试连接，测试失败就不保存。`--no-test` 跳过测试；匿名账户不能列出存储桶，所以需要它。
+- `add` 的参数是新账户的名称。保存前会列一次存储桶来测试连接；给出 `--bucket` 时改为列出指定的文件夹。测试失败就不保存。`--no-test` 跳过测试；匿名账户不能列出存储桶，所以需要它或 `--bucket`。
 - `edit` 只修改给出的参数。`--rename NEW` 重命名账户。开关用 `--path-style=false` 关闭。给出空值，例如 `--cdn-url ""`，会清空该字段。
 - `show` 输出账户设置，不含机密。静态账户还会说明私有访问密钥是已保存还是缺失。
-- `test` 列出已保存账户的存储桶。
+- `test` 列出已保存账户的存储桶，或它指定的存储桶的文件夹。
 - `rm` 先要求确认，再删除账户及其保存的机密。存储桶和对象不受影响。该账户已保存的同步作业会保留，但无法再运行。
 
 账户参数对应桌面应用账户对话框中的字段：
@@ -171,6 +171,7 @@ pail account rm [NAME]
 | `--checksum-mode` | `auto`、`when_required` 或 `when_supported`。 |
 | `--cdn-url` | CDN 基础 URL 或模板，见"CDN URL"。 |
 | `--cdn-bucket` | CDN 所服务的存储桶，多个存储桶就重复使用。 |
+| `--bucket` | 不经列出、直接显示的存储桶，写成 `NAME` 或 `NAME/folder/`，用于没有列出存储桶权限的密钥。多个存储桶就重复使用。该存储桶在这个文件夹中打开，`buckets` 也按 `NAME/folder/` 输出。 |
 
 私有访问密钥和会话令牌不会从参数或环境变量读取，也不会输出，`--json` 也一样。`add` 和 `edit --set-secret` 在终端中以不回显的方式询问私有访问密钥；加上 `--secret-stdin` 则改为从 stdin 的一行读取。`--ask-session-token` 还会读取会话令牌，来自第二次提示或 stdin 的下一行。`edit` 只有在给出 `--set-secret` 时才替换已保存的机密。如果机密后端是加密保险库，会先询问它的主密码，因此使用 `--vault-password-stdin` 时主密码是第一行。
 

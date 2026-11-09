@@ -39,6 +39,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | 账户增删改、测试连接（静态密钥、profile、默认凭据、匿名、AssumeRole） | ✅ | ✅ 账户对话框 | ✅ AssumeRole 只在 `httptest` STS 上验证 | ⚠️ 每个服务端一个账户 | 测试连接单次尝试，15 秒上限，连接被拒约 0.03 秒内报 Network |
+| 指定存储桶：密钥没有列桶权限或只能用某个文件夹时，账户填写 `bucket` 或 `bucket/folder/`，侧栏与命令行只显示这些并在该文件夹中打开 | ✅ `Account.Buckets`、`ParseAccountBuckets`；`Buckets()` 不发 ListBuckets，`TestAccount` 逐个列出指定的文件夹 | ✅ 账户对话框"存储桶"字段、测试被拒时的提示；侧栏列桶被拒时的"填写存储桶…"按钮；`--bucket` 参数、`account show` / `account test`、`buckets` 输出 | ✅ `internal/app/account_buckets_test.go`、`cmd/pail/named_buckets_test.go`、`cmd/pail-desktop/named_buckets_test.go`（headless）：内存 S3 注入 AccessDenied，拒绝 ListBuckets 与桶根目录、允许指定文件夹；每条断言做过缺陷注入 | ❌ 没有对真实的受限 IAM 密钥运行 | 未在原生窗口实机操作。向上导航到权限之外的目录时显示服务返回的拒绝，不做限制；同一桶只能指定一个文件夹 |
 | 机密存入系统钥匙串 | ✅ | ✅ | ✅ 用内存 Keyring 验证配置文件不含机密 | ❌ | 系统钥匙串由第三方库提供 |
 | 加密保险库（Argon2id + XChaCha20-Poly1305） | ✅ | ✅ 设置 → 安全、解锁对话框、状态栏锁标识 | ✅ 迁移与回滚、自动锁定、并发写入合并、参数范围检查 | n/a | 本地功能，无服务端参与；加密代码经人工复核 |
 | 每账户 CDN 域名 | ✅ | ✅ 账户字段、检查器、命令、上传后提示 | ✅ | ✅ VersityGW：运行中上传的对象经 CDN 返回 200 且内容一致 | 测试桶本身非公开时 CDN 返回 403，会被记录为"非公开"而不是失败 |
