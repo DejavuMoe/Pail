@@ -493,11 +493,22 @@ func (a *app) namedFolder(name string) string {
 	return ""
 }
 
+// homeFolder is the top of what the window shows of the current bucket: the
+// folder the account names for it while the scope is in or below that folder,
+// else the bucket root. The key may not see above it, so the breadcrumb starts
+// there and Up stops there.
+func (a *app) homeFolder() string {
+	if h := a.namedFolder(a.scope.Bucket); h != "" && strings.HasPrefix(a.scope.Prefix, h) {
+		return h
+	}
+	return ""
+}
+
 func (a *app) openBucket(name string) {
 	a.tool = ""
 	a.objOps.flat = false
 	a.navSel = "b:" + name
-	a.openScope(Scope{AccountID: a.accountID, Bucket: name, Prefix: a.namedFolder(name)})
+	a.openScope(a.bucketRoot(name))
 }
 
 // openScope navigates to scope (a folder or the bucket root).
@@ -514,12 +525,16 @@ func (a *app) openPrefix(prefix string) {
 	a.openScope(s)
 }
 
-// up goes to the parent folder; false at the bucket root.
+// canGoUp reports whether there is a parent folder to go to: false at the
+// bucket root, and at the folder the account names for the bucket.
+func (a *app) canGoUp() bool { return a.scope.Prefix != a.homeFolder() }
+
+// up goes to the parent folder; false where canGoUp is false.
 func (a *app) up() bool {
-	parts := splitPrefix(a.scope.Prefix)
-	if len(parts) == 0 {
+	if !a.canGoUp() {
 		return false
 	}
+	parts := splitPrefix(a.scope.Prefix)
 	p := strings.Join(parts[:len(parts)-1], "/")
 	if p != "" {
 		p += "/"
