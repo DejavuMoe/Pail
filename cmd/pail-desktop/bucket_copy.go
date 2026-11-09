@@ -16,12 +16,18 @@ import (
 // ---- download ------------------------------------------------------------------------------------
 
 // downloadBucket asks for a folder and downloads every object of the bucket
-// into a sub-folder of it named after the bucket.
+// into a sub-folder of it named after the bucket. For a bucket the account
+// names with a folder, that folder is downloaded, keeping its path, without
+// listing the bucket root the key may not see.
 func (a *app) downloadBucket(name string) {
 	if !a.hasAccount() || name == "" {
 		return
 	}
 	loc := a.bucketRoot(name)
+	req := core.DownloadRequest{Source: loc, WholeBucket: true}
+	if loc.Prefix != "" {
+		req = core.DownloadRequest{Source: Scope{AccountID: loc.AccountID, Bucket: name}, Keys: []string{loc.Prefix}}
+	}
 	go func() {
 		ds := a.pick(true)
 		if len(ds) == 0 {
@@ -30,7 +36,8 @@ func (a *app) downloadBucket(name string) {
 		dest := filepath.Join(ds[0], name)
 		a.post(func() {
 			a.bg(func() func() {
-				gid, err := a.svc.Download(core.DownloadRequest{Source: loc, WholeBucket: true, DestDir: dest, Conflict: a.svc.Settings().Conflict})
+				req.DestDir, req.Conflict = dest, a.svc.Settings().Conflict
+				gid, err := a.svc.Download(req)
 				return func() {
 					if err != nil {
 						a.toast(locales.BucketCopyDownloadFailed(humanError(err)))

@@ -155,5 +155,9 @@ func endpointHTTPS(ac Account) bool {
 	return strings.HasPrefix(strings.ToLower(ep), "https://")
 }
 
-// bucketRoot is the scope of a whole bucket of the current account.
-func (a *app) bucketRoot(name string) Scope { return Scope{AccountID: a.accountID, Bucket: name} }
+// bucketRoot is where a bucket opens and what its whole-bucket actions cover:
+// the bucket root, or the folder the account names for it, since the key may
+// not see the rest of the bucket.
+func (a *app) bucketRoot(name string) Scope {
+	return Scope{AccountID: a.accountID, Bucket: name, Prefix: a.namedFolder(name)}
+}

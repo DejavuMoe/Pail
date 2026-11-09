@@ -10,20 +10,23 @@ import (
 )
 
 // restrictKey makes the demo server behave like a key whose policy allows
-// only the folder dir/ of the bucket data: ListBuckets and a listing of the
-// bucket root are denied, a listing of dir/ is allowed.
+// only the folder dir/ of the bucket data (s3:ListBucket on that prefix,
+// object actions below it): every other request, ListBuckets and the
+// bucket-level reads the window makes when it opens a bucket included, is
+// denied.
 func (h *harness) restrictKey() {
 	h.env.Srv.CreateBucket("data", false)
 	h.env.Srv.PutObject("data", "dir/a.txt", []byte("a"), "text/plain", nil)
-	denied := &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "Access Denied"}
+	h.env.Srv.PutObject("data", "dir/sub/b.txt", []byte("b"), "text/plain", nil)
 	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
-		if r.URL.Path == "/" {
-			return denied
+		q := r.URL.Query()
+		switch {
+		case r.URL.Path == "/data" && q.Get("list-type") == "2" && strings.HasPrefix(q.Get("prefix"), "dir/"):
+			return nil
+		case strings.HasPrefix(r.URL.Path, "/data/dir/") && r.URL.RawQuery == "":
+			return nil
 		}
-		if q := r.URL.Query(); r.URL.Path == "/data" && q.Get("list-type") == "2" && !strings.HasPrefix(q.Get("prefix"), "dir/") {
-			return denied
-		}
-		return nil
+		return &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "Access Denied"}
 	})
 }
 
@@ -65,7 +68,34 @@ func TestNamedBucketsConnectAndOpenTheirFolder(t *testing.T) {
 	if h.a.listErr != "" {
 		t.Fatalf("listing the named folder: %s", h.a.listErr)
 	}
-	h.mustHave("data", "a.txt")
+	h.mustHave("a.txt", "sub")
+	// The sidebar and the breadcrumb name the folder, and the window does not
+	// offer what is above it: the key may not list it.
+	h.mustHave("data/dir/", "data/dir")
+	if h.a.canGoUp() {
+		t.Fatal("Up is offered above the named folder")
+	}
+	h.runCmd("up")
+	if h.a.scope.Prefix != "dir/" {
+		t.Fatalf("Up left the named folder for %q", h.a.scope.Prefix)
+	}
+	// Below it, Up works as usual and comes back to it.
+	h.a.openPrefix("dir/sub/")
+	h.waitFor("sub folder", func() bool { return !h.a.loading && h.a.listErr == "" && h.a.scope.Prefix == "dir/sub/" })
+	h.mustHave("b.txt")
+	h.snap("named-bucket-subfolder-light")
+	if !h.a.canGoUp() {
+		t.Fatal("Up is not offered below the named folder")
+	}
+	h.runCmd("up")
+	h.waitFor("back in the named folder", func() bool { return !h.a.loading && h.a.scope.Prefix == "dir/" })
+	if h.a.listErr != "" {
+		t.Fatalf("listing after Up: %s", h.a.listErr)
+	}
+	// Whole-bucket actions cover the named folder, not the bucket root.
+	if r := h.a.bucketRoot("data"); r.Prefix != "dir/" {
+		t.Fatalf("bucketRoot = %+v", r)
+	}
 
 	// Editing shows the named buckets in their text form.
 	h.a.openAccountForm(true)

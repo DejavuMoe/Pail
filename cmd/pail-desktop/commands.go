@@ -270,7 +270,7 @@ func commandTable() []command {
 		{ID: "selectnone", Label: locales.Messages.CmdSelectNone, Icon: "x",
 			Enabled: func(a *app) bool { return a.browsing() && a.selectedCount() > 0 }, Run: func(a *app) { a.clearSelection() }},
 		{ID: "up", Label: locales.Messages.CmdUp, Icon: "arrow-up", Chords: []chord{{0, ui.KeyBackspace, "Backspace"}, {ui.Alt, ui.KeyUp, "Alt+Up"}},
-			Enabled: func(a *app) bool { return a.browsing() && a.scope.Prefix != "" }, Run: func(a *app) { a.up() }},
+			Enabled: func(a *app) bool { return a.browsing() && a.canGoUp() }, Run: func(a *app) { a.up() }},
 		{ID: "copykey", Label: locales.Messages.CmdCopyKey, Icon: "key-round", Enabled: oneSelected,
 			Run: func(a *app) { a.copyText(a.selectedKeys()[0]); a.toast(locales.CmdKeyCopied()) }},
 		{ID: "copyuri", Label: locales.Messages.CmdCopyUri, Icon: "link", Enabled: oneSelected,

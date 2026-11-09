@@ -16,8 +16,18 @@ const pathBarH = 40
 func (a *app) pathBar(c *ui.Context) {
 	k := tk(c)
 	parts := splitPrefix(a.scope.Prefix)
-	items := append([]string{a.scope.Bucket}, parts...)
+	// The first crumb is the bucket, or the folder the account names for it:
+	// the key may not see what is above, so that is not offered.
+	home := len(splitPrefix(a.homeFolder()))
+	items := append([]string{a.scope.Bucket}, parts[home:]...)
 	last := len(items) - 1
+	// prefixAt is the folder crumb i opens.
+	prefixAt := func(i int) string {
+		if i+home == 0 {
+			return ""
+		}
+		return strings.Join(parts[:i+home], "/") + "/"
+	}
 	// The filter gives way to the breadcrumb: about a third of the bar, 140-240px.
 	searchW := min(240, max(140, a.lay.centerW*0.3))
 	ui.Row(c).Height(pathBarH).Padding(0, 12).Gap(12).AlignItems(ui.Center).
@@ -28,10 +38,15 @@ func (a *app) pathBar(c *ui.Context) {
 				if i > 0 {
 					ui.Icon(c, icons.Get("chevron-right")).FontSize(12).TextColor(k.TextSubtle)
 				}
-				// The first part is the bucket: it shows its alias when it has one.
+				// The first part is the bucket: it shows its alias when it has
+				// one, and the named folder it starts at.
 				shown, tip := name, name
 				if i == 0 {
 					shown, tip = a.bucketLabel(name), a.bucketTip(name)
+					if home > 0 {
+						shown += "/" + strings.Join(parts[:home], "/")
+						tip += " · " + prefixAt(0)
+					}
 				}
 				seg := ui.ButtonBase(c.Key(i)).Label(shown).Height(24).Padding(0, 6).Radius(RadiusControl).Center().Shrink(1).MinWidth(0).Tooltip(tip).Transition(hoverFade())
 				if i == last {
@@ -39,12 +54,8 @@ func (a *app) pathBar(c *ui.Context) {
 				}
 				col, w := k.TextMuted, 400
 				// Rows dropped on a parent folder move there.
-				p := ""
-				if i > 0 {
-					p = strings.Join(parts[:i], "/") + "/"
-				}
 				dest := a.scope
-				dest.Prefix = p
+				dest.Prefix = prefixAt(i)
 				over := i != last && !a.mg.del.on && !a.objOps.flat && a.dropTarget(seg, &dest)
 				switch {
 				case over:
@@ -59,11 +70,7 @@ func (a *app) pathBar(c *ui.Context) {
 					ui.Text(c, shown).FontSize(sizeBody).FontWeight(w).TextColor(col).SingleLine()
 				})
 				if i != last && seg.Clicked() {
-					p := ""
-					if i > 0 {
-						p = strings.Join(parts[:i], "/") + "/"
-					}
-					a.openPrefix(p)
+					a.openPrefix(prefixAt(i))
 				}
 			}
 			if a.loading && len(a.raw) > 0 {

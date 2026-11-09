@@ -207,6 +207,11 @@ func (a *app) bucketList(c *ui.Context) {
 				accountRegion := a.account().Region
 				for _, b := range a.buckets {
 					label := a.bucketLabel(b.Name)
+					if b.Prefix != "" && label == b.Name {
+						// Several folders of buckets tell apart by their paths; an
+						// alias the user gave stands for both.
+						label = b.Name + "/" + b.Prefix
+					}
 					if filter != "" && !strings.Contains(strings.ToLower(b.Name), filter) && !strings.Contains(strings.ToLower(label), filter) {
 						continue
 					}
