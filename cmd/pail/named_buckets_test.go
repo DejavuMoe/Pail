@@ -9,20 +9,20 @@ import (
 )
 
 // restrictKey makes the server behave like a key whose policy allows only the
-// folder dir/ of the bucket data: ListBuckets and a listing of the bucket root
-// are denied, a listing of dir/ is allowed.
+// folder dir/ of the bucket data (s3:ListBucket on that prefix, object actions
+// below it): every other request, ListBuckets included, is denied.
 func (h *harness) restrictKey() {
 	h.srv.CreateBucket("data", false)
 	h.srv.PutObject("data", "dir/a.txt", []byte("a"), "text/plain", nil)
-	denied := &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "Access Denied"}
 	h.srv.Inject(func(r *http.Request) *s3test.Fault {
-		if r.URL.Path == "/" {
-			return denied
+		q := r.URL.Query()
+		switch {
+		case r.URL.Path == "/data" && q.Get("list-type") == "2" && strings.HasPrefix(q.Get("prefix"), "dir/"):
+			return nil
+		case strings.HasPrefix(r.URL.Path, "/data/dir/") && r.URL.RawQuery == "":
+			return nil
 		}
-		if q := r.URL.Query(); r.URL.Path == "/data" && q.Get("list-type") == "2" && !strings.HasPrefix(q.Get("prefix"), "dir/") {
-			return denied
-		}
-		return nil
+		return &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "Access Denied"}
 	})
 }
 
