@@ -4,6 +4,12 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Accounts can name their buckets. When an access key may not list the buckets of the account, or may only use one folder of a bucket, enter the buckets in **Buckets** of the account dialog, as `my-bucket` or `my-bucket/reports/`, or pass `--bucket` to `pail account add`. The connection test then lists those folders instead of the buckets, the sidebar and `pail buckets` show the named buckets, and each opens in its folder. When the service refuses to list the buckets, the sidebar offers **Name buckets…**.
+
 ## [0.5.2] - 2026-11-09
 
 ### Changed
