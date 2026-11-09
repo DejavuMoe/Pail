@@ -113,6 +113,12 @@ type Account struct {
 	// using the real name. Only SetBucketAlias changes it; SaveAccount keeps the
 	// saved aliases whatever the caller passes.
 	BucketAliases map[string]string `json:"bucketAliases,omitempty"`
+	// Buckets, when set, are the buckets the account shows in place of the
+	// service's list: Buckets() returns them without a request and TestAccount
+	// lists each one's folder instead of calling ListBuckets. It is for
+	// credentials that may not list buckets (no s3:ListAllMyBuckets) or that
+	// may only see one folder of a bucket. Empty: the service lists them.
+	Buckets []AccountBucket `json:"buckets,omitempty"`
 	// SecretMissing is derived by Accounts(), never persisted or read back: a
 	// static account whose secret is not stored (after ResetVault). The UI asks
 	// the user to enter it again; SaveAccount with new secrets clears it.
@@ -145,10 +151,14 @@ type Location struct {
 	Prefix    string `json:"prefix"` // "" or ends with "/"
 }
 
-// Bucket is one ListBuckets entry. Region is empty when the provider does not report it.
+// Bucket is one entry of Buckets: a ListBuckets result, or a bucket the account
+// names (Account.Buckets). Region is empty when the provider does not report
+// it, and for named buckets. Prefix is the folder a named bucket opens in ("" =
+// the bucket root).
 type Bucket struct {
 	Name, Region string
 	Created      time.Time
+	Prefix       string
 }
 
 // Entry is one row of a listing.

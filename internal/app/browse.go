@@ -51,15 +51,26 @@ func (s *Service) bucketClient(ctx context.Context, op string, loc Location) (*s
 }
 
 // Buckets lists the account's buckets with their regions where the provider
-// reports them. Regions are remembered for PublicURL.
+// reports them. Regions are remembered for PublicURL. An account that names
+// its buckets (Account.Buckets) gets exactly those, without a request.
 func (s *Service) Buckets(ctx context.Context, accountID string) ([]Bucket, error) {
 	const op = "Buckets"
 	if err := checkLocation(op, Location{AccountID: accountID}, false); err != nil {
 		return nil, err
 	}
+	// The client is built before the named buckets are looked at, so that a
+	// locked vault or a missing secret is reported here, as for a listed
+	// account, and not only when a bucket is opened.
 	c, err := s.storageClient(ctx, accountID)
 	if err != nil {
 		return nil, classify(op, err)
+	}
+	if rec, ok := s.account(accountID); ok && len(rec.Buckets) > 0 {
+		out := make([]Bucket, len(rec.Buckets))
+		for i, b := range rec.Buckets {
+			out[i] = Bucket{Name: b.Name, Prefix: b.Prefix}
+		}
+		return out, nil
 	}
 	bs, err := c.ListBuckets(ctx)
 	if err != nil {
