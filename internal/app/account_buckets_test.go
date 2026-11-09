@@ -4,6 +4,7 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/DejavuMoe/Pail/internal/s3test"
 )
@@ -62,26 +63,61 @@ func TestAccountBucketString(t *testing.T) {
 }
 
 // restrictedServer is an s3test server behaving like a key whose policy
-// allows only the folder dir/ of the bucket data: ListBuckets and a listing of
-// the bucket root are denied, a listing of dir/ is allowed.
+// allows only the folder dir/ of the bucket data, as an IAM policy with
+// s3:ListBucket conditioned on s3:prefix and object actions on data/dir/*
+// does: everything else, ListBuckets and every bucket-level request included,
+// is denied.
 func restrictedServer(t *testing.T) *s3test.Server {
 	t.Helper()
 	srv := s3test.New()
 	t.Cleanup(srv.Close)
 	srv.CreateBucket("data", false)
 	srv.PutObject("data", "dir/a.txt", []byte("a"), "text/plain", nil)
-	denied := &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "Access Denied"}
-	srv.Inject(func(r *http.Request) *s3test.Fault {
-		if r.URL.Path == "/" {
-			return denied // ListBuckets
-		}
-		q := r.URL.Query()
-		if q.Get("list-type") == "2" && !strings.HasPrefix(q.Get("prefix"), "dir/") {
-			return denied
-		}
-		return nil
-	})
+	srv.Inject(folderPolicy("data", "dir/"))
 	return srv
+}
+
+// folderPolicy denies every request except listings of prefix in bucket and
+// plain object requests below it.
+func folderPolicy(bucket, prefix string) func(r *http.Request) *s3test.Fault {
+	return func(r *http.Request) *s3test.Fault {
+		q := r.URL.Query()
+		switch {
+		case r.URL.Path == "/"+bucket && q.Get("list-type") == "2" && strings.HasPrefix(q.Get("prefix"), prefix):
+			return nil
+		case strings.HasPrefix(r.URL.Path, "/"+bucket+"/"+prefix) && r.URL.RawQuery == "":
+			return nil
+		}
+		return &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "Access Denied"}
+	}
+}
+
+func TestNamedBucketsAreTestedSideBySide(t *testing.T) {
+	srv := s3test.New()
+	t.Cleanup(srv.Close)
+	for _, b := range []string{"bkt1", "bkt2", "bkt3", "bkt4"} {
+		srv.CreateBucket(b, false)
+	}
+	// Each listing takes a while; bkt2 and bkt4 are refused.
+	srv.Inject(func(r *http.Request) *s3test.Fault {
+		switch r.URL.Path {
+		case "/bkt2", "/bkt4":
+			return &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "Access Denied", Delay: 600 * time.Millisecond}
+		}
+		return &s3test.Fault{Delay: 600 * time.Millisecond}
+	})
+	s := newTestService(t, newTestKeyring())
+	a := staticAccount("many", srv.URL)
+	a.Buckets = []AccountBucket{{Name: "bkt1"}, {Name: "bkt2", Prefix: "x/"}, {Name: "bkt3"}, {Name: "bkt4"}}
+	start := time.Now()
+	err := s.TestAccount(testCtx(t), a, &Secrets{SecretAccessKey: "sk"})
+	if took := time.Since(start); took > 1500*time.Millisecond {
+		t.Errorf("four named buckets took %v; they should be listed side by side", took)
+	}
+	// The first refusal in the given order is the one reported, with its bucket.
+	if !IsKind(err, ErrAccessDenied) || !strings.Contains(err.Error(), "bkt2/x/: ") || strings.Contains(err.Error(), "bkt4") {
+		t.Fatalf("err = %v, want bkt2's refusal", err)
+	}
 }
 
 func listBucketsCalls(srv *s3test.Server) int {

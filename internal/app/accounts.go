@@ -10,6 +10,7 @@ import (
 	"net/url"
 	"regexp"
 	"strings"
+	"sync"
 	"time"
 	"unicode"
 	"unicode/utf8"
@@ -486,25 +487,44 @@ func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) erro
 		_, err = c.S3().ListBuckets(ctx, &s3.ListBucketsInput{}, once)
 		return classify(op, err)
 	}
-	for _, b := range a.Buckets {
-		in := &s3.ListObjectsV2Input{Bucket: aws.String(b.Name), MaxKeys: aws.Int32(1), Delimiter: aws.String("/")}
-		if b.Prefix != "" {
-			in.Prefix = aws.String(b.Prefix)
-		}
-		if _, err := c.S3().ListObjectsV2(ctx, in, once); err != nil {
-			// Several buckets are tested in turn; the message says which one failed.
-			var oe *OpError
-			if errors.As(classify(op, err), &oe) {
-				cp := *oe
-				cp.Message = b.String() + ": " + cp.Message
-				return &cp
+	// The named buckets are tested side by side, so that each has the whole
+	// timeout and many buckets take no longer than one. The first failure in
+	// the order the user gave them is reported, saying which bucket it was.
+	errs := make([]error, len(a.Buckets))
+	sem := make(chan struct{}, testAccountParallel)
+	var wg sync.WaitGroup
+	for i, b := range a.Buckets {
+		wg.Add(1)
+		sem <- struct{}{}
+		go func() {
+			defer func() { <-sem; wg.Done() }()
+			in := &s3.ListObjectsV2Input{Bucket: aws.String(b.Name), MaxKeys: aws.Int32(1), Delimiter: aws.String("/")}
+			if b.Prefix != "" {
+				in.Prefix = aws.String(b.Prefix)
 			}
-			return classify(op, err)
+			if _, err := c.S3().ListObjectsV2(ctx, in, once); err != nil {
+				errs[i] = classify(op, err)
+				var oe *OpError
+				if errors.As(errs[i], &oe) {
+					cp := *oe
+					cp.Message = b.String() + ": " + cp.Message
+					errs[i] = &cp
+				}
+			}
+		}()
+	}
+	wg.Wait()
+	for _, err := range errs {
+		if err != nil {
+			return err
 		}
 	}
 	return nil
 }
 
-// testAccountTimeout bounds TestAccount's attempts: one ListBuckets, or one
-// listing per named bucket.
+// testAccountParallel is how many named buckets TestAccount lists at once.
+const testAccountParallel = 8
+
+// testAccountTimeout bounds TestAccount's attempts: one ListBuckets, or the
+// listings of the named buckets, which run side by side.
 const testAccountTimeout = 15 * time.Second
