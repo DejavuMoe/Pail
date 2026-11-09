@@ -15,6 +15,7 @@ import (
 	"unicode/utf8"
 
 	"github.com/DejavuMoe/Pail/internal/storage"
+	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -53,6 +54,7 @@ func (s *Service) Accounts() []Account {
 	for i, r := range s.accounts {
 		out[i] = r.Account
 		out[i].CDNBuckets = append([]string(nil), r.CDNBuckets...) // nil stays nil
+		out[i].Buckets = append([]AccountBucket(nil), r.Buckets...)
 		out[i].BucketAliases = maps.Clone(r.BucketAliases)
 		out[i].SecretMissing = r.Credentials == CredStatic && !r.HasSecret
 	}
@@ -153,6 +155,11 @@ func normalizeAccount(a Account) (Account, error) {
 	if err := normalizeCDN(&a); err != nil {
 		return a, err
 	}
+	buckets, err := NormalizeAccountBuckets(a.Buckets)
+	if err != nil {
+		return a, err
+	}
+	a.Buckets = buckets
 	return a, nil
 }
 
@@ -433,9 +440,11 @@ func (s *Service) SetBucketAlias(accountID, bucket, alias string) error {
 }
 
 // TestAccount builds a throwaway client from a (and sec, or the stored secrets
-// of an existing a.ID when sec is nil) and lists buckets. Nothing is cached or
-// saved. Note that anonymous accounts cannot list buckets, so they fail here
-// with AccessDenied by design of S3.
+// of an existing a.ID when sec is nil) and asks the service what browsing the
+// account asks first: ListBuckets, or with a.Buckets one listing of each named
+// bucket's folder. Nothing is cached or saved. Anonymous accounts cannot list
+// buckets by design of S3, so without named buckets they fail here with
+// AccessDenied.
 func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) error {
 	const op = "TestAccount"
 	a, err := normalizeAccount(a)
@@ -472,9 +481,30 @@ func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) erro
 	// for several seconds before the dialog can show the error.
 	ctx, cancel := context.WithTimeout(ctx, testAccountTimeout)
 	defer cancel()
-	_, err = c.S3().ListBuckets(ctx, &s3.ListBucketsInput{}, func(o *s3.Options) { o.RetryMaxAttempts = 1 })
-	return classify(op, err)
+	once := func(o *s3.Options) { o.RetryMaxAttempts = 1 }
+	if len(a.Buckets) == 0 {
+		_, err = c.S3().ListBuckets(ctx, &s3.ListBucketsInput{}, once)
+		return classify(op, err)
+	}
+	for _, b := range a.Buckets {
+		in := &s3.ListObjectsV2Input{Bucket: aws.String(b.Name), MaxKeys: aws.Int32(1), Delimiter: aws.String("/")}
+		if b.Prefix != "" {
+			in.Prefix = aws.String(b.Prefix)
+		}
+		if _, err := c.S3().ListObjectsV2(ctx, in, once); err != nil {
+			// Several buckets are tested in turn; the message says which one failed.
+			var oe *OpError
+			if errors.As(classify(op, err), &oe) {
+				cp := *oe
+				cp.Message = b.String() + ": " + cp.Message
+				return &cp
+			}
+			return classify(op, err)
+		}
+	}
+	return nil
 }
 
-// testAccountTimeout bounds TestAccount's single ListBuckets attempt.
+// testAccountTimeout bounds TestAccount's attempts: one ListBuckets, or one
+// listing per named bucket.
 const testAccountTimeout = 15 * time.Second

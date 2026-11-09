@@ -28,6 +28,7 @@ type acctForm struct {
 	path       bool
 	cdnURL     string // optional CDN base URL or template
 	cdnBuckets string // comma-separated; empty = all buckets
+	buckets    string // comma-separated "bucket" or "bucket/folder/"; empty = the service lists them
 	creds      string // core.Cred*
 	access     string
 	secret     string
@@ -99,6 +100,7 @@ func (a *app) openAccountForm(edit bool) {
 	}
 	f.name, f.endpoint, f.region, f.path = ac.Name, ac.Endpoint, ac.Region, ac.PathStyle
 	f.cdnURL, f.cdnBuckets = ac.CDNURL, strings.Join(ac.CDNBuckets, ", ")
+	f.buckets = bucketsText(ac.Buckets)
 	f.creds, f.access, f.profile = ac.Credentials, ac.AccessKeyID, ac.Profile
 	f.hasSec = ac.Credentials == core.CredStatic && !ac.SecretMissing
 	f.missing = ac.SecretMissing
@@ -149,6 +151,9 @@ func (f *acctForm) fieldErrors() map[string]string {
 	if _, err := core.NormalizeCDNBuckets(splitList(f.cdnBuckets)); err != nil {
 		e["cdnBuckets"] = strings.TrimPrefix(err.Error(), "CDN buckets: ")
 	}
+	if _, err := core.ParseAccountBuckets(splitEntries(f.buckets)); err != nil {
+		e["buckets"] = strings.TrimPrefix(err.Error(), "buckets: ")
+	}
 	if r := strings.TrimSpace(f.roleARN); r != "" && !strings.HasPrefix(r, "arn:") {
 		e["role"] = locales.AcctErrRole()
 	}
@@ -183,6 +188,8 @@ func (f *acctForm) build() (core.Account, *core.Secrets) {
 		RoleSessionName: strings.TrimSpace(f.roleName), InsecureSkipVerify: f.skipTLS, ChecksumMode: f.checksum,
 		CDNURL: strings.TrimSpace(f.cdnURL), CDNBuckets: splitList(f.cdnBuckets),
 	}
+	// Both callers run fieldErrors first, which refuses entries that do not parse.
+	ac.Buckets, _ = core.ParseAccountBuckets(splitEntries(f.buckets))
 	if f.provider == 1 {
 		ac.Provider = core.ProviderS3
 		ac.Endpoint = strings.TrimSpace(f.endpoint)
@@ -204,6 +211,21 @@ func (f *acctForm) build() (core.Account, *core.Secrets) {
 // splitList splits a comma, semicolon or whitespace separated list.
 func splitList(s string) []string {
 	return strings.FieldsFunc(s, func(r rune) bool { return r == ',' || r == ';' || r == ' ' || r == '\t' || r == '\n' })
+}
+
+// splitEntries splits a comma, semicolon or newline separated list whose
+// entries may contain spaces, such as "data/my reports/".
+func splitEntries(s string) []string {
+	return strings.FieldsFunc(s, func(r rune) bool { return r == ',' || r == ';' || r == '\n' })
+}
+
+// bucketsText is the form's text of an account's named buckets.
+func bucketsText(bs []core.AccountBucket) string {
+	parts := make([]string, len(bs))
+	for i, b := range bs {
+		parts[i] = b.String()
+	}
+	return strings.Join(parts, ", ")
 }
 
 // testAccount checks the form's connection in the background.
@@ -234,6 +256,9 @@ func (a *app) testAccount() {
 						a.testAccount()
 					}
 				})
+				if cannotListBuckets(err) && strings.TrimSpace(a.af.buckets) == "" {
+					a.af.testMsg += " " + locales.AcctTestDeniedHint()
+				}
 				return
 			}
 			a.af.test, a.af.testMsg = testOK, ""
@@ -369,6 +394,9 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 	if f.provider == 1 {
 		switchRowHelp(c, locales.AcctPathStyle(), locales.AcctPathStyleHelp(), &f.path)
 	}
+	formFieldHelp(c, locales.AcctBuckets(), locales.AcctBucketsHelp(), errs["buckets"], func() {
+		inputBox(c, &f.buckets, locales.AcctBuckets(), locales.AcctBucketsAll(), inputOpts{invalid: errs["buckets"] != "", mono: true})
+	})
 	formFieldHelp(c, locales.AcctCDNURL(), locales.AcctCDNURLHelp(), errs["cdn"], func() {
 		inputBox(c, &f.cdnURL, locales.AcctCDNURL(), "https://cdn.example.com", inputOpts{invalid: errs["cdn"] != "", mono: true})
 	})

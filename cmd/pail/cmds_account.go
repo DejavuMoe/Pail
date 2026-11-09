@@ -15,7 +15,7 @@ import (
 // accountFieldFlags are the flags that describe an account. They are given to
 // "account add" and "account edit" only.
 var accountFieldFlags = []string{"provider", "endpoint", "region", "path-style", "credentials", "access-key-id", "profile",
-	"role-arn", "external-id", "role-session-name", "insecure-skip-verify", "checksum-mode", "cdn-url", "cdn-bucket"}
+	"role-arn", "external-id", "role-session-name", "insecure-skip-verify", "checksum-mode", "cdn-url", "cdn-bucket", "bucket"}
 
 // secretFlags control how an account's secret is read; none of them carries it.
 var secretFlags = []string{"secret-stdin", "ask-session-token"}
@@ -24,7 +24,7 @@ type accountFlags struct {
 	provider, endpoint, region, credentials, accessKeyID, profile      string
 	roleARN, externalID, roleSessionName, checksumMode, cdnURL, rename string
 	pathStyle, insecure                                                bool
-	cdnBuckets                                                         multiFlag
+	cdnBuckets, buckets                                                multiFlag
 	noTest, secretStdin, setSecret, askSession                         bool
 }
 
@@ -43,6 +43,7 @@ func (f *accountFlags) register(fs *flag.FlagSet) {
 	fs.StringVar(&f.checksumMode, "checksum-mode", "", "auto, when_required or when_supported")
 	fs.StringVar(&f.cdnURL, "cdn-url", "", "CDN base URL or template (empty removes it)")
 	fs.Var(&f.cdnBuckets, "cdn-bucket", "bucket served by the CDN (repeatable; add an empty value to clear the list)")
+	fs.Var(&f.buckets, "bucket", "a bucket the account shows instead of listing them, as NAME or NAME/folder/, for keys that cannot list buckets (repeatable; add an empty value to clear the list)")
 	fs.BoolVar(&f.noTest, "no-test", false, "add: save without testing the connection first")
 	fs.BoolVar(&f.secretStdin, "secret-stdin", false, "read the secret access key from one line of stdin instead of asking on the terminal")
 	fs.BoolVar(&f.setSecret, "set-secret", false, "edit: replace the stored secret access key (asked on the terminal or read with --secret-stdin)")
@@ -244,7 +245,9 @@ func (c *cli) accountAdd(ctx context.Context, fs *flag.FlagSet, f *accountFlags,
 		}
 	}
 	a := app.Account{Name: name}
-	applyAccountFlags(fs, f, &a)
+	if err := applyAccountFlags(fs, f, &a); err != nil {
+		return err
+	}
 	if a.Credentials == "" {
 		a.Credentials = app.CredStatic
 		if a.Profile != "" {
@@ -271,7 +274,7 @@ func (c *cli) accountAdd(ctx context.Context, fs *flag.FlagSet, f *accountFlags,
 	if !f.noTest {
 		c.infof("testing the connection ...")
 		if err := c.svc.TestAccount(ctx, a, sec); err != nil {
-			c.infof("nothing was saved; fix the settings, or add --no-test to save without testing (anonymous accounts cannot list buckets)")
+			c.infof("nothing was saved; fix the settings, name the buckets of a key that cannot list them with --bucket, or add --no-test to save without testing")
 			return scrubErr(err, sec)
 		}
 	}
@@ -286,8 +289,11 @@ func (c *cli) accountAdd(ctx context.Context, fs *flag.FlagSet, f *accountFlags,
 		map[string]any{"id": saved.ID, "name": saved.Name})
 }
 
-// applyAccountFlags copies the account flags that were given onto a.
-func applyAccountFlags(fs *flag.FlagSet, f *accountFlags, a *app.Account) {
+// applyAccountFlags copies the account flags that were given onto a. Only
+// --bucket can fail here, on an entry that does not parse; the other values
+// are checked by ValidateAccount.
+func applyAccountFlags(fs *flag.FlagSet, f *accountFlags, a *app.Account) error {
+	var bad error
 	fs.Visit(func(fl *flag.Flag) {
 		switch fl.Name {
 		case "provider":
@@ -323,8 +329,23 @@ func applyAccountFlags(fs *flag.FlagSet, f *accountFlags, a *app.Account) {
 					a.CDNBuckets = append(a.CDNBuckets, b)
 				}
 			}
+		case "bucket":
+			var err error
+			if a.Buckets, err = app.ParseAccountBuckets(f.buckets); err != nil {
+				bad = usagef("--bucket: %s", strings.TrimPrefix(err.Error(), "buckets: "))
+			}
 		}
 	})
+	return bad
+}
+
+// bucketTexts are named buckets in the form --bucket takes.
+func bucketTexts(bs []app.AccountBucket) []string {
+	out := make([]string, len(bs))
+	for i, b := range bs {
+		out[i] = b.String()
+	}
+	return out
 }
 
 func (c *cli) accountEdit(fs *flag.FlagSet, f *accountFlags) error {
@@ -336,7 +357,9 @@ func (c *cli) accountEdit(fs *flag.FlagSet, f *accountFlags) error {
 			changed = true
 		}
 	})
-	applyAccountFlags(fs, f, &a)
+	if err := applyAccountFlags(fs, f, &a); err != nil {
+		return err
+	}
 	if f.rename != "" {
 		a.Name = f.rename
 		for _, o := range c.svc.Accounts() {
@@ -397,7 +420,7 @@ func (c *cli) accountShow() error {
 			"region": a.Region, "pathStyle": a.PathStyle, "credentials": a.Credentials, "accessKeyId": a.AccessKeyID,
 			"profile": a.Profile, "roleArn": a.RoleARN, "externalId": a.ExternalID, "roleSessionName": a.RoleSessionName,
 			"insecureSkipVerify": a.InsecureSkipVerify, "checksumMode": a.ChecksumMode, "cdnUrl": a.CDNURL,
-			"cdnBuckets": a.CDNBuckets, "bucketAliases": a.BucketAliases}
+			"cdnBuckets": a.CDNBuckets, "buckets": a.Buckets, "bucketAliases": a.BucketAliases}
 		if a.Credentials == app.CredStatic {
 			o["secretStored"] = !a.SecretMissing
 		}
@@ -435,6 +458,9 @@ func (c *cli) accountShow() error {
 	if len(a.CDNBuckets) > 0 {
 		row("CDN buckets", strings.Join(a.CDNBuckets, ", "))
 	}
+	if len(a.Buckets) > 0 {
+		row("buckets", strings.Join(bucketTexts(a.Buckets), ", "))
+	}
 	if len(a.BucketAliases) > 0 {
 		names := make([]string, 0, len(a.BucketAliases))
 		for b, al := range a.BucketAliases {
@@ -455,8 +481,11 @@ func (c *cli) accountTest(ctx context.Context) error {
 	if err := c.svc.TestAccount(ctx, *c.acct, nil); err != nil {
 		return err
 	}
-	return c.single("account test", fmt.Sprintf("ok: account %s can list its buckets", c.acct.Name),
-		map[string]any{"id": c.acct.ID, "name": c.acct.Name})
+	msg := fmt.Sprintf("ok: account %s can list its buckets", c.acct.Name)
+	if len(c.acct.Buckets) > 0 {
+		msg = fmt.Sprintf("ok: account %s can list %s", c.acct.Name, strings.Join(bucketTexts(c.acct.Buckets), ", "))
+	}
+	return c.single("account test", msg, map[string]any{"id": c.acct.ID, "name": c.acct.Name})
 }
 
 func (c *cli) accountRemove() error {
