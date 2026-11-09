@@ -8,7 +8,7 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Added
 
-- Accounts can name their buckets. When an access key may not list the buckets of the account, or may only use one folder of a bucket, enter the buckets in **Buckets** of the account dialog, as `my-bucket` or `my-bucket/reports/`, or pass `--bucket` to `pail account add`. The connection test then lists those folders instead of the buckets, the sidebar and `pail buckets` show the named buckets, and each opens in its folder. When the service refuses to list the buckets, the sidebar offers **Name buckets…**.
+- Accounts can name their buckets. When an access key may not list the buckets of the account, or may only use one folder of a bucket, enter the buckets in **Buckets** of the account dialog, as `my-bucket` or `my-bucket/reports/`, or pass `--bucket` to `pail account add`. The connection test then lists those folders instead of the buckets, the sidebar and `pail buckets` show the named buckets, and each opens in its folder. The path bar starts at that folder, and **Download bucket…**, **Copy contents to…** and the other whole-bucket actions of the sidebar cover only that folder. When the service refuses to list the buckets, the sidebar offers **Name buckets…**.
 
 ## [0.5.2] - 2026-11-09
 
