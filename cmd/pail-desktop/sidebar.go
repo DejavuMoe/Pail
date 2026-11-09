@@ -176,7 +176,7 @@ func (a *app) bucketList(c *ui.Context) {
 					ui.Icon(c, icons.Get("circle-alert")).FontSize(14).TextColor(k.Danger).Shrink(0).MarginY(1)
 					ui.Text(c, a.bucketsErrText()).FontSize(sizeSecondary).TextColor(k.Text).Grow(1).MinWidth(0)
 				})
-				ui.Row(c).Justify(ui.End).Children(func() {
+				ui.Row(c).Justify(ui.End).Gap(8).Children(func() {
 					switch a.bucketsFix {
 					case "unlock":
 						secondaryButton(c, locales.SidebarUnlock(), a.bucketsLoad).OnClick(func() {
@@ -189,6 +189,11 @@ func (a *app) bucketList(c *ui.Context) {
 						})
 					case "secret":
 						secondaryButton(c, locales.SidebarEnterSecret(), false).OnClick(func() { a.openAccountForm(true) })
+					case "buckets":
+						// A refused list keeps Retry (the policy may just have been
+						// granted) and adds the way out for a key that may not list.
+						secondaryButton(c, locales.CommonRetry(), a.bucketsLoad).OnClick(func() { a.loadBuckets(true) })
+						secondaryButton(c, locales.SidebarNameBuckets(), false).OnClick(func() { a.openAccountForm(true) })
 					default:
 						secondaryButton(c, locales.CommonRetry(), a.bucketsLoad).OnClick(func() { a.loadBuckets(true) })
 					}
@@ -209,6 +214,9 @@ func (a *app) bucketList(c *ui.Context) {
 					tip := a.bucketTip(b.Name)
 					if b.Region != "" {
 						tip += " · " + b.Region
+					}
+					if b.Prefix != "" { // a named bucket opens in this folder
+						tip += " · " + b.Prefix
 					}
 					item := a.sidebarItem(c, "b:"+b.Name, icons.Get("database"), label, rowRegion(b.Region, accountRegion), false).Tooltip(tip)
 					a.contextMenu(item, menuSpec{name: locales.MenuBucketActions(b.Name)}, func(m *menuBuilder) {
