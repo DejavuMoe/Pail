@@ -391,6 +391,7 @@ func (a *app) selectAccount(id string) {
 	a.scope = Scope{AccountID: id}
 	a.navSel, a.tool = "", ""
 	a.buckets, a.bucketsErr = nil, ""
+	a.mg.del = deletedMode{} // deleted items are of a bucket of the account left
 	a.accountSwitched()
 	a.clearListing()
 	a.bucketsGen++
@@ -411,7 +412,7 @@ func (a *app) loadBuckets(openFirst bool) {
 	gen := a.bucketsGen
 	a.bucketsLoad, a.bucketsErr, a.bucketsFix = true, "", fixRetry
 	if a.account().SecretMissing { // nothing to connect with until the secret is entered
-		a.bucketsLoad = false
+		a.bucketsLoad, a.buckets = false, nil // none of them can be opened without it
 		a.bucketsErr, a.bucketsFix = locales.StateBucketsSecretMissing(), fixSecret
 		return
 	}

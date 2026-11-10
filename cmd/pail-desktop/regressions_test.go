@@ -68,3 +68,37 @@ func TestVersionsTabFollowsANewVersion(t *testing.T) {
 	h.a.headKey = "" // what a save of the headers does
 	h.waitFor("one more version", func() bool { return h.a.mg.vers.state == loadReady && len(h.a.mg.vers.rows) == n+1 })
 }
+// "Show deleted" stayed on after a switch of accounts, for a bucket of the same
+// name on the other account.
+func TestShowDeletedEndsWithTheAccount(t *testing.T) {
+	h := newHarness(t, "light")
+	id := h.a.accountID
+	h.a.openBucket("acme-analytics")
+	h.settle()
+	h.a.mg.del = deletedMode{on: true, bucket: "acme-analytics", keys: map[string]bool{}}
+	h.a.selectAccount("")
+	h.a.selectAccount(id)
+	h.waitFor("first bucket", func() bool { return h.a.scope.Bucket == "acme-analytics" })
+	if h.a.mg.del.on {
+		t.Error("the other account's bucket opened showing deleted items")
+	}
+}
+
+// An account that lost its secret kept showing its bucket list beside the
+// "enter the secret" message.
+func TestMissingSecretClearsTheBucketList(t *testing.T) {
+	h := newHarness(t, "light")
+	if len(h.a.buckets) == 0 {
+		t.Fatal("no buckets to begin with")
+	}
+	for i := range h.a.accounts {
+		if h.a.accounts[i].ID == h.a.accountID {
+			h.a.accounts[i].SecretMissing = true
+		}
+	}
+	h.a.loadBuckets(false)
+	h.settle()
+	if h.a.bucketsFix != fixSecret || len(h.a.buckets) != 0 {
+		t.Errorf("fix %d, %d buckets still listed", h.a.bucketsFix, len(h.a.buckets))
+	}
+}
