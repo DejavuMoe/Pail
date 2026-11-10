@@ -4,13 +4,13 @@ The public website lives in this repository next to the application. It is a sta
 
 | Path | Contents | State |
 | --- | --- | --- |
-| `designs/pail-site/` | Reviewable prototype (landing page `index.html`, `styles.css`, `i18n.js`, `app.js`; docs pages `docs*.html`, `changelog*.html`, `license*.html` with `docs.css`, `docs.js`; `social-preview.html`, the composition of the social card) plus the prototype-first-ui records (`_d_meta.json`, `ui-contract.json`, `content-inventory.json`, `design-sources.json`) | landing page revision 2 and docs pages approved 2026-10-21; social preview approved 2026-10-21 |
+| `designs/pail-site/` | Reviewable prototype (landing page `index.html`, `styles.css`, `i18n.js`, `app.js`; docs pages `docs*.html`, `changelog*.html`, `license*.html` with `docs.css`, `docs.js`; `social-preview.html`, the composition of the social card) plus the design records (`_d_meta.json`, `ui-contract.json`, `content-inventory.json`, `design-sources.json`) | landing page revision 2 and docs pages approved 2026-10-21; social preview approved 2026-10-21 |
 | `site/` | Production templates, locale files and static assets | implemented |
 | `tools/site/` | Go generator: `go run ./tools/site -out <dir> -version <x.y.z>` | implemented, tested |
 | `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | deployed on netcup-vps500 |
 | `docs/product/constraints.md` | Content and UX rules for the site | current |
 
-Only the site uses the `prototype-first-ui` and `baoyu-design` skills (see `AGENTS.md`). A visible change starts in `designs/pail-site/`, is approved, and is then implemented in `site/` in a separate commit.
+A visible change starts in `designs/pail-site/`, is approved, and is then implemented in `site/` in a separate commit.
 
 ## Why one repository and a Go generator
 
