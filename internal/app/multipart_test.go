@@ -135,6 +135,36 @@ func TestMultipartListFolderPrefixIgnoredByServer(t *testing.T) {
 	}
 }
 
+// A key scoped to one folder may list that folder but not the whole bucket. An
+// empty folder must then read as empty, not as AccessDenied from the MinIO
+// workaround's bucket-wide listing.
+func TestMultipartListEmptyFolderWhenBucketListingDenied(t *testing.T) {
+	e := newS3Env(t)
+	ctx := testCtx(t)
+	e.srv.CreateBucket("mp", false)
+	if _, err := e.sdk().CreateMultipartUpload(ctx, &s3.CreateMultipartUploadInput{Bucket: aws.String("mp"), Key: aws.String("other/c.bin")}); err != nil {
+		t.Fatal(err)
+	}
+	e.srv.Inject(func(r *http.Request) *s3test.Fault {
+		q := r.URL.Query()
+		if q.Has("uploads") && q.Get("prefix") == "" {
+			return &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "outside the folder"}
+		}
+		return nil
+	})
+	ups, err := e.s.MultipartUploads(ctx, e.loc("mp", "mine/"))
+	if err != nil || len(ups) != 0 {
+		t.Fatalf("got %+v err=%v, want an empty list", ups, err)
+	}
+	// A real denial of the prefixed listing is still reported.
+	e.srv.Inject(func(r *http.Request) *s3test.Fault {
+		return &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "no"}
+	})
+	if _, err := e.s.MultipartUploads(ctx, e.loc("mp", "mine/")); !IsKind(err, ErrAccessDenied) {
+		t.Fatalf("prefixed denial: %v", err)
+	}
+}
+
 func TestMultipartListPagesAndKeysNeedingEncoding(t *testing.T) {
 	e := newS3Env(t)
 	ctx := testCtx(t)

@@ -27,6 +27,11 @@ func (s *Service) MultipartUploads(ctx context.Context, loc Location) ([]Multipa
 	// answer for a folder is not trusted: list the bucket and filter here.
 	all, err := listMultipart(ctx, c, loc.Bucket, "")
 	if err != nil {
+		if IsKind(classify(op, err), ErrAccessDenied) {
+			// A key scoped to this folder cannot list the bucket; the folder's
+			// own answer (empty) stands.
+			return out, nil
+		}
 		return nil, classify(op, err)
 	}
 	for _, u := range all {
