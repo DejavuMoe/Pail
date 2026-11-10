@@ -103,6 +103,13 @@ func release(version, targetList, outDir string, cliOnly bool) error {
 	if err := goRun(root, runtime.GOOS, runtime.GOARCH, "build", "-o", packer, "./tools/pack"); err != nil {
 		return err
 	}
+	if !cliOnly && slices.ContainsFunc(ts, func(t string) bool { return strings.HasPrefix(t, "windows/") }) {
+		restore, err := versionSyso(root, stage, version)
+		if err != nil {
+			return err
+		}
+		defer restore()
+	}
 	var sums strings.Builder
 	for _, target := range ts {
 		osName, arch, _ := strings.Cut(target, "/")
@@ -292,4 +299,35 @@ func publish(parent, version, source string) error {
 		return err
 	}
 	return renameInRoot(r, rel, version)
+}
+
+// versionSyso writes the Windows resources of the desktop app with version in
+// their version block, so that the release's .exe reports it, and returns a
+// function that puts the committed files back.
+func versionSyso(root, stage, version string) (func(), error) {
+	files, err := filepath.Glob(filepath.Join(root, "cmd", "pail-desktop", "rsrc_windows_*.syso"))
+	if err != nil {
+		return nil, err
+	}
+	saved := map[string][]byte{}
+	for _, f := range files {
+		b, err := os.ReadFile(f)
+		if err != nil {
+			return nil, err
+		}
+		saved[f] = b
+	}
+	restore := func() {
+		for f, b := range saved {
+			_ = os.WriteFile(f, b, 0o644)
+		}
+	}
+	core, _, _ := strings.Cut(version, "-") // 1.2.3-rc.1: the resource takes 1.2.3
+	core, _, _ = strings.Cut(core, "+")
+	icons := filepath.Join(stage, "icons")
+	if err := goRun(root, runtime.GOOS, runtime.GOARCH, "run", "./tools/genicons", "-version", core, "-out", icons, "-syso", filepath.Join(root, "cmd", "pail-desktop")); err != nil {
+		restore()
+		return nil, fmt.Errorf("windows version resource: %w", err)
+	}
+	return restore, nil
 }
