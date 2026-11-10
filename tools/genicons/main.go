@@ -5,12 +5,13 @@
 // here directly with analytic edge coverage (antialiased) instead of pulling
 // in a general SVG renderer. If the SVG changes, update drawIcon to match.
 //
-// Run from the repository root: go run ./tools/genicons
+// Run from anywhere inside the repository: go run ./tools/genicons -version X
 package main
 
 import (
 	"bytes"
 	"encoding/binary"
+	"errors"
 	"flag"
 	"fmt"
 	"image"
@@ -19,6 +20,8 @@ import (
 	"math"
 	"os"
 	"path/filepath"
+	"strconv"
+	"strings"
 
 	"github.com/tc-hib/winres"
 	"github.com/tc-hib/winres/version"
@@ -260,12 +263,74 @@ func write(path string, data []byte) error {
 	return os.WriteFile(path, data, 0o644)
 }
 
-func main() {
-	out := flag.String("out", "assets/brand/generated", "output directory for PNG, ICO and ICNS files")
-	sysoDir := flag.String("syso", "cmd/pail-desktop", "directory for rsrc_windows_*.syso (empty: skip)")
-	flag.Parse()
-	ver := [4]uint16{0, 1, 0, 0}
+// findRoot returns the repository root: the nearest directory at or above
+// start that holds the Pail go.mod.
+func findRoot(start string) (string, error) {
+	dir, err := filepath.Abs(start)
+	if err != nil {
+		return "", err
+	}
+	for {
+		b, err := os.ReadFile(filepath.Join(dir, "go.mod"))
+		if err == nil && strings.HasPrefix(string(b), "module github.com/DejavuMoe/Pail\n") {
+			return dir, nil
+		}
+		parent := filepath.Dir(dir)
+		if parent == dir {
+			return "", errors.New("run inside the Pail repository")
+		}
+		dir = parent
+	}
+}
 
+// parseVersion turns a SemVer string into the numeric Windows version
+// MAJOR.MINOR.PATCH.0. Pre-release and build suffixes are ignored.
+func parseVersion(s string) ([4]uint16, error) {
+	core, _, _ := strings.Cut(s, "+")
+	core, _, _ = strings.Cut(core, "-")
+	parts := strings.Split(core, ".")
+	if len(parts) != 3 {
+		return [4]uint16{}, fmt.Errorf("invalid -version %q: expected MAJOR.MINOR.PATCH", s)
+	}
+	var v [4]uint16
+	for i, p := range parts {
+		n, err := strconv.ParseUint(p, 10, 16)
+		if err != nil || p != strconv.FormatUint(n, 10) {
+			return [4]uint16{}, fmt.Errorf("invalid -version %q: %q is not a number from 0 to 65535", s, p)
+		}
+		v[i] = uint16(n)
+	}
+	return v, nil
+}
+
+func main() {
+	out := flag.String("out", "", "output directory for PNG, ICO and ICNS files (default <repo>/assets/brand/generated)")
+	sysoDir := flag.String("syso", "", "directory for rsrc_windows_*.syso (default <repo>/cmd/pail-desktop; empty: skip)")
+	versionFlag := flag.String("version", "0.0.0", "SemVer recorded in the Windows version resource")
+	flag.Parse()
+	ver, err := parseVersion(*versionFlag)
+	if err != nil {
+		fatal(err)
+	}
+	given := map[string]bool{}
+	flag.Visit(func(f *flag.Flag) { given[f.Name] = true })
+	if !given["out"] || !given["syso"] {
+		// Defaults live in the repository, wherever the command is run from.
+		wd, err := os.Getwd()
+		if err != nil {
+			fatal(err)
+		}
+		root, err := findRoot(wd)
+		if err != nil {
+			fatal(err)
+		}
+		if !given["out"] {
+			*out = filepath.Join(root, "assets", "brand", "generated")
+		}
+		if !given["syso"] {
+			*sysoDir = filepath.Join(root, "cmd", "pail-desktop")
+		}
+	}
 	pngs := map[int][]byte{}
 	for _, s := range pngSizes {
 		pngs[s] = encodePNG(drawIcon(s))
