@@ -255,7 +255,7 @@ func commandTable() []command {
 		{ID: "delete", Label: locales.Messages.CmdDelete, Icon: "trash-2", Chords: []chord{{0, ui.KeyDelete, "Del"}},
 			Enabled: liveSelection, Run: func(a *app) { a.askDelete() }},
 		{ID: "restore", Label: locales.Messages.CmdRestore, Icon: "undo-2", Visible: deletedOn,
-			Enabled: func(a *app) bool { return deletedOn(a) && a.sel.Len() > 0 }, Run: func(a *app) { a.restoreSelected() }},
+			Enabled: func(a *app) bool { return deletedOn(a) && a.selectedCount() > 0 }, Run: func(a *app) { a.restoreSelected() }},
 		{ID: "restoreall", Label: locales.Messages.CmdRestoreAll, Icon: "undo-2", Visible: deletedOn,
 			Enabled: func(a *app) bool { return deletedOn(a) && len(a.rows) > 0 }, Run: func(a *app) { a.restoreAll() }},
 		{ID: "refresh", Label: locales.Messages.CmdRefresh, Icon: "refresh-cw", Chords: []chord{{0, ui.KeyF5, "F5"}, {ui.Cmd, ui.KeyR, "Ctrl+R"}}, Accel: "F5",

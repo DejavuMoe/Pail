@@ -17,8 +17,9 @@ type clipData struct {
 
 func (c clipData) has() bool { return len(c.keys) > 0 }
 
-// liveSelection is a selection of listed objects (not the deleted view).
-func liveSelection(a *app) bool { return a.browsing() && a.sel.Len() > 0 && !a.mg.del.on }
+// liveSelection is a selection of listed objects (not the deleted view) that
+// the table shows: chosen rows the folder filter hides do not count.
+func liveSelection(a *app) bool { return a.browsing() && a.selectedCount() > 0 && !a.mg.del.on }
 
 func canPaste(a *app) bool { return a.browsing() && a.mg.clip.has() && !a.mg.del.on }
 

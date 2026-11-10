@@ -43,7 +43,7 @@ func (a *app) toolbarCommands(c *ui.Context) {
 	toolbarGap(c)
 	a.cmdButton(c, "foldersizes", false)
 	a.cmdButton(c, "refresh", false)
-	selected, pasteable := a.sel.Len() > 0, a.mg.clip.has()
+	selected, pasteable := a.selectedCount() > 0, a.mg.clip.has()
 	if !selected && !pasteable {
 		return // no group, no separator
 	}
