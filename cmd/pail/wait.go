@@ -240,7 +240,7 @@ func (c *cli) finish(o outcome, what string, ctx context.Context) error {
 		code = exitFailure
 		o.TimedOut = true
 	case !bad:
-	case o.Succeeded == 0:
+	case o.Succeeded+o.Skipped == 0: // skipped items count as success
 		code = exitFailure
 	default:
 		code = exitPartial
