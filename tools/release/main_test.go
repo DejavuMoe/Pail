@@ -1,6 +1,7 @@
 package main
 
 import (
+	"errors"
 	"os"
 	"path/filepath"
 	"strings"
@@ -96,6 +97,78 @@ func TestPublishReplacesOnlyCompletedRelease(t *testing.T) {
 	}
 }
 
+// A -cli-only or subset run must not swap out a complete release of the same
+// version: the directory would silently lose the archives the new run lacks.
+func TestPublishRefusesToDropFilesOfExistingRelease(t *testing.T) {
+	parent := t.TempDir()
+	old := filepath.Join(parent, "0.2.0")
+	writeFixture(t, filepath.Join(old, "SHA256SUMS"), "old sums")
+	writeFixture(t, filepath.Join(old, "Pail-v0.2.0-windows-amd64.zip"), "old windows")
+	writeFixture(t, filepath.Join(old, "Pail-v0.2.0-linux-amd64.tar.gz"), "old linux")
+	source := filepath.Join(parent, "stage", "archives")
+	writeFixture(t, filepath.Join(source, "SHA256SUMS"), "new sums")
+	writeFixture(t, filepath.Join(source, "Pail-v0.2.0-windows-amd64.zip"), "new windows")
+	err := publish(parent, "0.2.0", source)
+	if err == nil || !strings.Contains(err.Error(), "Pail-v0.2.0-linux-amd64.tar.gz") {
+		t.Fatalf("replaced a complete release with a subset: %v", err)
+	}
+	for name, want := range map[string]string{"SHA256SUMS": "old sums", "Pail-v0.2.0-windows-amd64.zip": "old windows", "Pail-v0.2.0-linux-amd64.tar.gz": "old linux"} {
+		if b, err := os.ReadFile(filepath.Join(old, name)); err != nil || string(b) != want {
+			t.Fatalf("%s changed: %q %v", name, b, err)
+		}
+	}
+}
+
+// If the new release cannot be moved into place, the previous one must still
+// be there, and no backup may be left behind.
+func TestPublishKeepsPreviousReleaseWhenInstallFails(t *testing.T) {
+	parent := t.TempDir()
+	writeFixture(t, filepath.Join(parent, "0.2.0", "SHA256SUMS"), "old")
+	source := filepath.Join(parent, "stage", "archives")
+	writeFixture(t, filepath.Join(source, "SHA256SUMS"), "new")
+	real := renameInRoot
+	t.Cleanup(func() { renameInRoot = real })
+	renameInRoot = func(r *os.Root, oldname, newname string) error {
+		if oldname == "stage/archives" || oldname == filepath.Join("stage", "archives") {
+			return errors.New("injected failure")
+		}
+		return real(r, oldname, newname)
+	}
+	if err := publish(parent, "0.2.0", source); err == nil {
+		t.Fatal("publish ignored the failed install")
+	}
+	if b, err := os.ReadFile(filepath.Join(parent, "0.2.0", "SHA256SUMS")); err != nil || string(b) != "old" {
+		t.Fatalf("previous release lost: %q %v", b, err)
+	}
+	entries, err := os.ReadDir(parent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range entries {
+		if e.Name() != "0.2.0" && e.Name() != "stage" {
+			t.Errorf("leftover %s", e.Name())
+		}
+	}
+}
+
+func TestPublishLeavesNoBackupOnSuccess(t *testing.T) {
+	parent := t.TempDir()
+	writeFixture(t, filepath.Join(parent, "0.2.0", "SHA256SUMS"), "old")
+	source := filepath.Join(parent, "stage", "archives")
+	writeFixture(t, filepath.Join(source, "SHA256SUMS"), "new")
+	if err := publish(parent, "0.2.0", source); err != nil {
+		t.Fatal(err)
+	}
+	entries, err := os.ReadDir(parent)
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, e := range entries {
+		if e.Name() != "0.2.0" && e.Name() != "stage" {
+			t.Errorf("leftover %s", e.Name())
+		}
+	}
+}
 func TestLaunchAssets(t *testing.T) {
 	root := t.TempDir()
 	writeFixture(t, filepath.Join(root, "assets", "brand", "generated", "pail.icns"), "icns")
