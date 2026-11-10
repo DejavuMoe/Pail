@@ -536,6 +536,49 @@ func TestSyncSavedJob(t *testing.T) {
 	h.want(h.run("sync", "--job", "missing"), 2)
 }
 
+// A download into a folder that does not exist yet is previewed as an empty
+// folder and creates the folder only when it actually downloads something.
+func TestSyncDownloadIntoMissingFolder(t *testing.T) {
+	h := newHarness(t)
+	h.srv.PutObject("bkt", "pull/a.txt", []byte("aaa"), "", nil)
+	base := t.TempDir()
+
+	dry := filepath.Join(base, "dry")
+	r := h.want(h.run("sync", "s3://bkt/pull/", dry, "--dry-run"), 0)
+	if !strings.Contains(r.out, "download") || !strings.Contains(r.out, "a.txt") || !strings.Contains(r.out, "dry run") {
+		t.Fatalf("dry-run output: %s", r.out)
+	}
+	if _, err := os.Stat(dry); !os.IsNotExist(err) {
+		t.Fatalf("dry run created the folder: %v", err)
+	}
+	r = h.want(h.run("sync", "s3://bkt/pull/", dry, "--dry-run", "--json"), 0)
+	if s := lastSummary(t, r.out); s["dryRun"] != true || s["downloads"] != float64(1) {
+		t.Fatalf("summary %v", s)
+	}
+
+	// Nothing to download: the folder is not created either.
+	none := filepath.Join(base, "none")
+	h.want(h.run("sync", "s3://bkt/empty/", none), 0)
+	if _, err := os.Stat(none); !os.IsNotExist(err) {
+		t.Fatalf("an empty sync created the folder: %v", err)
+	}
+
+	// A failing preview leaves nothing behind.
+	bad := filepath.Join(base, "bad")
+	if r := h.run("sync", "s3://no-such-bucket/pull/", bad); r.code == 0 {
+		t.Fatalf("missing bucket succeeded: %s", r.out)
+	}
+	if _, err := os.Stat(bad); !os.IsNotExist(err) {
+		t.Fatalf("a failed sync created the folder: %v", err)
+	}
+
+	real := filepath.Join(base, "real", "deeper")
+	h.want(h.run("sync", "s3://bkt/pull/", real), 0)
+	if readFile(t, filepath.Join(real, "a.txt")) != "aaa" {
+		t.Fatal("sync did not download")
+	}
+}
+
 // --no-rules applies to a saved job too: the ZIP rule below would otherwise
 // turn jobs/j.txt into jobs/j.txt.zip.
 func TestSyncSavedJobNoRules(t *testing.T) {

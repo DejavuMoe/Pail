@@ -37,7 +37,7 @@ func setupSync(c *cli, fs *flag.FlagSet) runner {
 				return err
 			}
 		}
-		pv, err := c.svc.PreviewSync(ctx, job)
+		pv, err := c.previewSync(ctx, job)
 		if err != nil {
 			return err
 		}
@@ -65,6 +65,9 @@ func setupSync(c *cli, fs *flag.FlagSet) runner {
 				return err
 			}
 		}
+		if err := os.MkdirAll(pv.Job.LocalDir, 0o755); err != nil {
+			return err
+		}
 		w := c.watch()
 		defer w.close()
 		id, err := c.svc.RunSync(pv)
@@ -73,6 +76,28 @@ func setupSync(c *cli, fs *flag.FlagSet) runner {
 		}
 		return c.finish(w.wait(ctx, id), "sync", ctx)
 	}
+}
+
+// previewSync plans job. A download target that does not exist yet is planned
+// against an empty scratch folder, so nothing is created on disk before the
+// sync is confirmed and run.
+func (c *cli) previewSync(ctx context.Context, job app.SyncJob) (app.SyncPreview, error) {
+	if _, err := os.Stat(job.LocalDir); err == nil || job.Direction != "download" || !os.IsNotExist(err) {
+		return c.svc.PreviewSync(ctx, job)
+	}
+	scratch, err := os.MkdirTemp("", "pail-sync-preview-")
+	if err != nil {
+		return app.SyncPreview{}, err
+	}
+	defer os.RemoveAll(scratch)
+	planned := job
+	planned.LocalDir = scratch
+	pv, err := c.svc.PreviewSync(ctx, planned)
+	if err != nil {
+		return app.SyncPreview{}, err
+	}
+	pv.Job.LocalDir = job.LocalDir
+	return pv, nil
 }
 
 func (c *cli) syncJob(pos []string, jobName, mode, compare string, excludes []string, noRules, dry bool) (app.SyncJob, error) {
@@ -126,11 +151,9 @@ func (c *cli) syncJob(pos []string, jobName, mode, compare string, excludes []st
 		return app.SyncJob{}, usagef("%v", err)
 	}
 	if _, err := os.Stat(abs); err != nil {
-		if dir == "download" && !dry && os.IsNotExist(err) {
-			if err := os.MkdirAll(abs, 0o755); err != nil {
-				return app.SyncJob{}, err
-			}
-		} else {
+		// A download may target a folder that does not exist yet: it is
+		// previewed as empty and created only when files are downloaded.
+		if !(dir == "download" && os.IsNotExist(err)) {
 			return app.SyncJob{}, usagef("%v", err)
 		}
 	}
