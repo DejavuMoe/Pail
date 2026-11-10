@@ -12,6 +12,7 @@ import (
 	"time"
 
 	"github.com/DejavuMoe/Pail/internal/app"
+	"github.com/DejavuMoe/Pail/internal/rules"
 	"github.com/DejavuMoe/Pail/internal/s3test"
 )
 
@@ -533,6 +534,34 @@ func TestSyncSavedJob(t *testing.T) {
 		t.Fatal("job did not run")
 	}
 	h.want(h.run("sync", "--job", "missing"), 2)
+}
+
+// --no-rules applies to a saved job too: the ZIP rule below would otherwise
+// turn jobs/j.txt into jobs/j.txt.zip.
+func TestSyncSavedJobNoRules(t *testing.T) {
+	h := newHarness(t)
+	local := t.TempDir()
+	writeFile(t, filepath.Join(local, "j.txt"), "job")
+	svc, err := app.New(app.Options{ConfigDir: h.dir, Keyring: h.kr})
+	if err != nil {
+		t.Fatal(err)
+	}
+	if err := svc.SaveUploadRules([]rules.UploadRule{{Name: "zip", KeyPattern: "*.txt", Compression: &rules.Compression{Method: "zip", Level: 5}}}); err != nil {
+		t.Fatal(err)
+	}
+	if _, err := svc.SaveSyncJob(app.SyncJob{Name: "nightly", LocalDir: local, Remote: app.Location{AccountID: h.acct.ID, Bucket: "bkt", Prefix: "jobs/"},
+		Direction: "upload", Mode: "new_changed", Compare: "size_time"}); err != nil {
+		t.Fatal(err)
+	}
+	svc.Shutdown(context.Background())
+
+	h.want(h.run("sync", "--job", "nightly", "--no-rules"), 0)
+	if v, ok := h.obj("bkt", "jobs/j.txt"); !ok || v != "job" {
+		t.Fatalf("--no-rules was ignored: plain object missing (%q, %v)", v, ok)
+	}
+	if _, ok := h.obj("bkt", "jobs/j.txt.zip"); ok {
+		t.Fatal("--no-rules was ignored: object was zipped")
+	}
 }
 
 func TestExitCodes(t *testing.T) {

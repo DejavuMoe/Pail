@@ -95,6 +95,7 @@ func (c *cli) syncJob(pos []string, jobName, mode, compare string, excludes []st
 				if j.Remote.AccountID != c.acct.ID {
 					return app.SyncJob{}, usagef("job %q belongs to another account", j.Name)
 				}
+				j.NoRules = j.NoRules || noRules
 				return j, nil
 			}
 		}
