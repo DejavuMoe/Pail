@@ -870,6 +870,12 @@ func (a *app) resetHead() {
 	a.headGen++
 	a.headKey, a.headState, a.headErr = "", loadNone, ""
 	a.resetPreview()
+	// The Permissions and Versions tabs describe the same object as the head:
+	// another object (perhaps of the same name in another bucket) or a new
+	// version of this one loads them again. The generations move on, so a
+	// reply still on its way is dropped.
+	a.mg.acl = aclForm{gen: a.mg.acl.gen + 1}
+	a.mg.vers = versionsForm{gen: a.mg.vers.gen + 1}
 }
 
 // ensureHead starts loading the details of the single selected object.
