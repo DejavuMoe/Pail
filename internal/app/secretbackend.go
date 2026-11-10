@@ -151,6 +151,13 @@ func (s *Service) autoLockIfIdle() {
 	if last == 0 || !s.vlt.unlocked() {
 		return
 	}
+	if s.tasksActive() {
+		// Running and queued tasks need the vault: they read credentials as
+		// they start, and a lock would fail them with "vault is locked". The
+		// idle time counts from the moment the last of them ends.
+		s.vaultTouch()
+		return
+	}
 	if s.now().Sub(time.Unix(0, last)) >= time.Duration(min)*time.Minute {
 		s.lockVault("idle")
 	}

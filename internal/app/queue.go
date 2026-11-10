@@ -358,6 +358,19 @@ func (s *Service) submit(spec taskSpec) string {
 	return t.pub.ID
 }
 
+// tasksActive reports whether any task is running or waiting in a queue.
+func (s *Service) tasksActive() bool {
+	q := &s.q
+	q.mu.Lock()
+	defer q.mu.Unlock()
+	for k := 0; k < 3; k++ {
+		if q.running[k] > 0 || len(q.queued[k]) > 0 {
+			return true
+		}
+	}
+	return false
+}
+
 // dispatchLocked starts queued tasks while slots are free.
 func (s *Service) dispatchLocked() {
 	q := &s.q
