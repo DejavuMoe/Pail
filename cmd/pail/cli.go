@@ -116,7 +116,7 @@ func init() {
 		{"stat", "stat s3://bucket/key [--version-id V]", "show the properties of an object", true, setupStat},
 		{"cat", "cat s3://bucket/key [--version-id V]", "write an object to stdout", true, setupCat},
 		{"mkdir", "mkdir s3://bucket/prefix/", "create a folder placeholder", true, setupMkdir},
-		{"du", "du [s3://bucket/prefix/]", "total size of the objects below a prefix", true, setupDu},
+		{"du", "du s3://bucket[/prefix/]", "total size of the objects below a prefix", true, setupDu},
 		{"tags", "tags get s3://bucket/key [--version-id V]\ntags set s3://bucket/key K=V... [--merge] [--version-id V]\ntags set s3://bucket/key --clear", "read or replace object tags", true, setupTags},
 		{"acl", "acl get s3://bucket/key [--version-id V]\nacl set s3://bucket/key CANNED [--version-id V]", "read or set an object's ACL", true, setupACL},
 		{"props", "props get s3://bucket/key\nprops set s3://bucket/key [--content-type T] [--cache-control V] [--content-disposition V] [--content-encoding V] [--content-language V] [--expires DATE] [--metadata K=V] [--delete-header NAME] [--delete-metadata K] [-r]", "show or change object properties", true, setupProps},

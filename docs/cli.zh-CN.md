@@ -57,7 +57,7 @@ pail restore s3://bucket/prefix/ --deleted [-r]     # 恢复已删除的对象�
 pail stat s3://bucket/key [--version-id V]          # 对象的属性
 pail cat s3://bucket/key [--version-id V]           # 把对象写到 stdout
 pail mkdir s3://bucket/prefix/                      # 创建文件夹
-pail du [s3://bucket/prefix/]                       # 前缀下的对象数和大小
+pail du s3://bucket[/prefix/]                       # 前缀下的对象数和大小
 pail tags get|set s3://bucket/key ...               # 对象标签，见"对象"
 pail acl get|set s3://bucket/key ...                # 对象 ACL
 pail props get|set s3://bucket/key ...              # 标头和元数据

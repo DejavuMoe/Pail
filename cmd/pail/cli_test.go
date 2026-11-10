@@ -636,6 +636,35 @@ func TestSyncSavedJobNoRules(t *testing.T) {
 	}
 }
 
+// du needs a bucket; only the prefix is optional. The usage text and both
+// language versions of the CLI reference must say so.
+func TestDuSynopsisRequiresBucket(t *testing.T) {
+	const synopsis = "du s3://bucket[/prefix/]"
+	found := false
+	for _, c := range commands {
+		if c.name == "du" {
+			found = true
+			if c.synopsis != synopsis {
+				t.Errorf("du synopsis = %q, want %q", c.synopsis, synopsis)
+			}
+		}
+	}
+	if !found {
+		t.Fatal("no du command")
+	}
+	for _, doc := range []string{"cli.md", "cli.zh-CN.md"} {
+		b, err := os.ReadFile(filepath.Join("..", "..", "docs", doc))
+		if err != nil {
+			t.Fatal(err)
+		}
+		if !strings.Contains(string(b), "pail "+synopsis+" ") || strings.Contains(string(b), "pail du [s3://") {
+			t.Errorf("docs/%s does not show %q", doc, "pail "+synopsis)
+		}
+	}
+	h := newHarness(t)
+	h.want(h.run("du"), 2)
+}
+
 // Skipped items count as success, so skipped items next to failed ones make
 // the run partial (3), not a total failure (1).
 func TestFinishCountsSkippedAsSuccess(t *testing.T) {
