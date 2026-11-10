@@ -24,9 +24,8 @@
 - 脚本不得绑定本机路径：仓库根目录从脚本自身位置解析，输出目录可用参数改写；本机专用工具（如 `linux-task.ps1`）只能是可选分支，Linux 上要能直接运行。
 - 测试、CodeQL 与发布在 GitHub Actions，工具版本由 `mise.toml` 锁定，Woodpecker 只部署网站。命令、输入输出和哪些任务不能无人值守运行，见 `docs/dev/ci.md`；改脚本时同步更新它。
 
-## Landing Page 与 prototype-first-ui
-- 项目级技能 `prototype-first-ui`（及其依赖 `baoyu-design`）只用于 Landing Page：`designs/pail-site/`、`site/`、`tools/site/`。桌面应用和命令行的界面改动不使用这两个技能，按 `docs/dev/design.md` 直接实现。
-- 网站改动先改原型并经用户明确批准，再实现到 `site/`；设计提交与实现提交分开。内容与产品约束见 `docs/product/constraints.md`。
+## Landing Page
+- 网站改动先改原型（`designs/pail-site/`）并经用户明确批准，再实现到 `site/`；设计提交与实现提交分开。内容与产品约束见 `docs/product/constraints.md`。桌面应用和命令行的界面改动按 `docs/dev/design.md` 直接实现。
 - 网站不加载第三方资源（字体、脚本、统计），配色沿用 `theme.go` 的 Graphite & Paper，中英双语，跟随系统亮暗并可手动切换。
 
 ## 云资源安全
