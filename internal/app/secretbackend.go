@@ -361,9 +361,13 @@ func (s *Service) SetSecretBackend(ctx context.Context, backend, password string
 			}
 			createdVault = true
 		case password != "" || !s.vlt.unlocked():
+			wasLocked := !s.vlt.unlocked()
 			if err := s.vlt.unlock(password); err != nil {
 				return failSource(err)
 			}
+			// A vault this call opened is locked again if the switch fails:
+			// vaultLast is still 0, so nothing else would ever lock it.
+			unlockedHere = unlockedHere || wasLocked
 		}
 		dst = s.vlt
 		if err := s.vlt.setMany(entries); err != nil {
