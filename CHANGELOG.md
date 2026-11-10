@@ -14,6 +14,34 @@ All notable changes to this project are documented in this file. The format foll
 - The context menu of objects is shorter. It lists only what applies to the selected items, groups the copy commands for keys, URIs, URLs and signed URLs under **Copy link**, and shows **Upload files…**, **New folder**, **Refresh** and **Select all** only when you right-click the empty space below the rows.
 - Fewer questions before acting. Dragging items onto a folder moves them at once, as cut and paste do. **Restore all in this folder** restores at once. Saving headers for several objects happens when you press **Update N items**. A sync whose preview deletes nothing runs when you press **Run sync**; a sync that deletes files still asks first.
 - The divider above the transfers panel is grey while you point at it or drag it, like the other dividers, instead of blue.
+
+### Fixed
+
+- Retrying a move or rename whose copy succeeded but whose source could not be deleted now finishes it. Before, the source stayed, a "name (1)" copy appeared, or the rename failed with "already exists".
+- The Permissions and Versions tabs could show the previous bucket's data for an object of the same name, and Versions did not show the version a header save had just made.
+- Leaving Sync jobs or Upload rules by the sidebar, the command palette or an account switch threw away unsaved edits. They are now kept until you come back.
+- Changing only the proxy password took effect only after a restart.
+- With the encrypted vault, a long transfer could let the vault lock itself, and the transfers queued behind it failed with "the encrypted vault is locked". The vault no longer locks while transfers run or wait.
+- CloudFront invalidation from the browser now escapes object keys, so keys with `%`, `?`, `#` or `*` invalidate the right object instead of another one or an error.
+- In Chinese, moving a bucket's contents said "copied", and a failed move said "copy failed".
+- A signed URL generated just before its dialog was closed could show up in the dialog opened next, for another object.
+- With every selected row hidden by the folder filter, Delete, Copy, Cut and Download looked enabled and did nothing.
+- In the account dialog, Test connection showed no progress or result after a failed save, and its result stayed after the tested settings were changed.
+- After switching accounts, a bucket with the same name opened showing deleted items.
+- An account that lost its secret kept its old bucket list beside the "enter the secret" message.
+- An object whose name starts or ends with a space was renamed without that space when its name field was left unchanged.
+- A failed switch of the secret storage could leave the vault unlocked with no automatic lock.
+- Moving local files with long Chinese or other non-ASCII paths to the Recycle Bin was refused as too long.
+- Error messages written to the log are redacted before they are shortened, so a secret at the cut can no longer leak in part.
+- ZIP files made by upload compression rules carry the files' own dates instead of 1979-11-30.
+- `pail sync --job NAME --no-rules` ignored `--no-rules`.
+- Listing unfinished multipart uploads of an empty folder failed with "access denied" for a key limited to that folder.
+- `pail versions s3://bucket/key` printed nothing; it now lists the versions of that key.
+- With stdin redirected from NUL or `/dev/null`, a command that needs confirmation exited 1 after printing a question instead of exiting 2.
+- `pail sync` into a local folder that does not exist created it before the plan was shown, and `--dry-run` failed on it.
+- A run whose items were all skipped or failed exited 1; skipped items count as success, so it now exits 3.
+- The usage of `pail du` showed the path as optional; it needs a bucket.
+- The Windows desktop app showed version 0.1.0.0 in its file properties.
 ## [0.5.3] - 2026-11-10
 
 ### Added
