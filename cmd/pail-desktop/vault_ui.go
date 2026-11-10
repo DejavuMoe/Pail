@@ -77,10 +77,6 @@ type resetState struct {
 	proxy      bool // the proxy password is stored and will be lost
 }
 
-func (v *vaultUI) busyNow() bool {
-	return v.create.busy || v.unlock.busy || v.change.busy || v.toKeychain.busy || v.reset.busy
-}
-
 func (v *vaultUI) modal() bool {
 	return v.create.open || v.unlock.open || v.change.open || v.toKeychain.open || v.reset.open
 }
@@ -616,7 +612,7 @@ func (a *app) lockIndicator(c *ui.Context) {
 	if unlocked {
 		icon, text, tip = "lock-open", locales.VaultUnlocked(), locales.VaultUnlockedTip()
 	}
-	b := ui.ButtonBase(c.Key("vaultlock")).Label(text).Tooltip(tip).Height(20).Padding(0, 6).Gap(5).Radius(RadiusSmall).AlignItems(ui.Center).Transition(hoverFade())
+	b := ui.ButtonBase(c.Key("vaultlock")).Label(text).Tooltip(tip).Height(20).Padding(0, 6).Gap(5).Radius(RadiusSmall).AlignItems(ui.Center)
 	if b.Hovered() {
 		b.Background(k.SurfaceHover)
 	}
@@ -799,7 +795,7 @@ func (a *app) unlockDialog(c *ui.Context) {
 // "and N more".
 func nameList(c *ui.Context, names []string) {
 	k := tk(c)
-	ui.Column(c).Gap(2).Padding(8, 10).Radius(RadiusControl).Background(k.Sidebar).Children(func() {
+	well(c, ui.Column(c).Gap(2).Padding(8, 10)).Children(func() {
 		for i, n := range names {
 			if i == 5 {
 				ui.Text(c, locales.VaultAndMore(groupInt(len(names)-5))).FontSize(sizeSecondary).TextColor(k.TextMuted)

@@ -26,9 +26,11 @@ const tabPreview = 5
 func (a *app) inspectorTabBar(c *ui.Context) {
 	k := tk(c)
 	tabs := ui.TabsBase(c, &a.inspTab, len(inspectorTabs))
-	tabs.List.Height(40).Gap(4).Padding(0, 12).AlignItems(ui.Center).Children(func() {
+	// 9 in, so the first 14px icon (7 inside its 28px tab) stands on the body's
+	// 16px edge.
+	tabs.List.Height(40).Gap(4).Padding(0, 9).AlignItems(ui.Center).Children(func() {
 		for i, t := range inspectorTabs {
-			tab := tabs.Tab(i).Size(28, 28).Radius(RadiusControl).Label(t.label()).Tooltip(t.label()).Center().Transition(hoverFade())
+			tab := tabs.Tab(i).Size(28, 28).Radius(RadiusControl).Label(t.label()).Tooltip(t.label()).Center()
 			on := i == a.inspTab
 			if !on && tab.Hovered() {
 				tab.Background(k.SurfaceHover)
@@ -40,7 +42,7 @@ func (a *app) inspectorTabBar(c *ui.Context) {
 				}
 				ui.Icon(c, icons.Get(t.icon)).FontSize(14).TextColor(col)
 				if on {
-					tabIndicator(c, "inspector-tabs")
+					tabIndicator(c)
 				}
 			})
 		}
@@ -51,15 +53,6 @@ func (a *app) inspectorTabBar(c *ui.Context) {
 func (a *app) inspector(c *ui.Context) {
 	k := tk(c)
 	root := ui.Column(c).Fill().MinWidth(0).MinHeight(0).Background(k.Background).BorderWidth(0, 0, 0, 1).BorderColor(k.Border)
-	// The panel itself does not slide or grow (its width is the Split's, which
-	// the user drags); only its content fades in as the user opens it. Shown
-	// again because the window grew wide enough, it is there at once.
-	if a.inspFade || mounted(root) {
-		fadeIn(c, root)
-	}
-	if mounted(root) {
-		a.inspFade = false
-	}
 	root.Children(func() {
 		a.inspectorTabBar(c)
 		hairline(c)
@@ -94,9 +87,7 @@ func (a *app) inspectorBody(c *ui.Context) {
 func (a *app) header(c *ui.Context, icon, title, sub string) {
 	k := tk(c)
 	ui.Row(c).Gap(12).AlignItems(ui.Center).Children(func() {
-		ui.Box(c).Size(40, 40).Radius(RadiusPopover).Background(k.Sidebar).Center().Shrink(0).Children(func() {
-			ui.Icon(c, icons.Get(icon)).FontSize(20).TextColor(k.TextMuted)
-		})
+		ui.Icon(c, icons.Get(icon)).FontSize(24).TextColor(k.TextMuted).Shrink(0)
 		ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
 			ui.Text(c, title).FontSize(14).FontWeight(600).TextColor(k.Text).SingleLine()
 			mutedText(c, sub).SingleLine()

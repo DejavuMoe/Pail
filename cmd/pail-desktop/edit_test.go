@@ -153,7 +153,8 @@ func TestVersionedBucketSaveNote(t *testing.T) {
 	h.mustNotHave("Saving creates a new version.")
 }
 
-func TestMultiSelectEditShowsMixedAndAsksFirst(t *testing.T) {
+func TestMultiSelectEditShowsMixedAndSaysHowMany(t *testing.T) {
+
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.tt.ClickWith(ui.Shift, "manifest.json")
@@ -169,14 +170,14 @@ func TestMultiSelectEditShowsMixedAndAsksFirst(t *testing.T) {
 
 	h.mustClick("Edit Cache-Control")
 	h.typeAndEnter("no-cache")
-	h.mustClick("Save")
-	// Several objects are rewritten: the standard confirmation comes first.
-	h.mustHave("Update 2 items?", "2 objects", demoAccountName, bkt, "set Cache-Control")
-	if headerOf(h.head(bkt, "README.txt"), "Cache-Control") != "" {
-		t.Fatal("saved without confirming")
-	}
-	h.snap("headers-multi-confirm-light")
+	// Several objects are rewritten: the button says how many, and pressing
+	// it is the decision (no second question).
+	h.mustNotHave("Save")
+	h.snap("headers-multi-save-light")
 	h.mustClick("Update 2 items")
+	if h.a.confirm.open {
+		t.Fatal("the multi-object save asked again")
+	}
 	h.waitToast("Saved")
 	for _, k := range []string{"README.txt", "manifest.json"} {
 		if got := headerOf(h.head(bkt, k), "Cache-Control"); got != "no-cache" {
@@ -203,7 +204,7 @@ func TestMultiSelectClearsAMixedField(t *testing.T) {
 	h.mustClick("Headers")
 	h.waitFor("fields loaded", func() bool { return h.a.mg.props.ready })
 	h.mustClick("Clear Content-Type")
-	h.mustHave("Undo Content-Type", "Save")
+	h.mustHave("Undo Content-Type", "Update 2 items")
 	pt, msg := h.a.mg.props.patch()
 	if msg != "" || len(pt.DelHeaders) != 1 || pt.DelHeaders[0] != "Content-Type" {
 		t.Fatalf("patch = %+v %q", pt, msg)

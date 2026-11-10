@@ -125,15 +125,15 @@ func cell(c *ui.Context, key string, children func()) {
 	ui.Box(c.Key(key)).Grow(1).Basis(0).MinWidth(0).Children(children)
 }
 
-// chip is a small summary tag: an icon and a 12px label. col tints both; the
-// fill is Sidebar, or a Danger wash when danger is set.
+// chip is a small summary tag: an icon and a 12px label. col tints both; it
+// has a 1px Border outline, or a Danger wash when danger is set.
 func chip(c *ui.Context, icon, text string, col ui.Color, danger bool) {
 	k := tk(c)
 	r := ui.Row(c.Key("chip:"+icon+text)).Height(24).Padding(0, 8).Gap(6).Radius(RadiusControl).AlignItems(ui.Center).Shrink(0)
 	if danger {
 		r.Background(k.Danger.Alpha(0.10))
 	} else {
-		r.Background(k.Sidebar)
+		r.Border(1, k.Border)
 	}
 	r.Children(func() {
 		ui.Icon(c, icons.Get(icon)).FontSize(12).TextColor(col)
@@ -142,14 +142,14 @@ func chip(c *ui.Context, icon, text string, col ui.Color, danger bool) {
 }
 
 // toolListRow is the frame of a row in a tool's left-hand list: 8px outside, 12px
-// inside, Selection when chosen. It returns the row for Clicked.
+// inside, the Selection tint when chosen (the hue is the cue a neutral fill
+// lacks, as in the object table). It returns the row for Clicked.
 func toolListRow(c *ui.Context, key string, on bool) ui.Element {
 	k := tk(c)
-	r := ui.Row(c.Key(key)).Margin(0, 8).Padding(8, 12).Gap(8).Radius(RadiusControl).AlignItems(ui.Center).Transition(hoverFade())
+	r := ui.Row(c.Key(key)).Margin(0, 8).Padding(8, 12).Gap(8).Radius(RadiusControl).AlignItems(ui.Center)
 	switch {
 	case on:
 		r.Background(k.Selection)
-		markSelected(c, r, 8)
 	case r.Hovered():
 		r.Background(k.SurfaceHover)
 	}

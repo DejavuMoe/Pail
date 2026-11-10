@@ -5,7 +5,6 @@ import (
 	"fmt"
 	"hash/maphash"
 	"math/bits"
-	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -217,36 +216,6 @@ func (p *propsForm) patch() (core.PropertiesPatch, string) {
 		}
 	}
 	return out, ""
-}
-
-// summary words the patch for the confirmation of a multi-object save.
-func (p propsForm) summary() string {
-	pt, _ := p.patch()
-	var parts []string
-	for _, h := range stdHeaders {
-		if _, ok := pt.SetHeaders[h]; ok {
-			parts = append(parts, locales.EditPropsSet(h))
-		}
-		if slices.Contains(pt.DelHeaders, h) {
-			parts = append(parts, locales.EditPropsRemove(h))
-		}
-	}
-	for _, k := range sortedKeys(pt.SetMetadata) {
-		parts = append(parts, locales.EditPropsSet(k))
-	}
-	for _, k := range pt.DelMetadata {
-		parts = append(parts, locales.EditPropsRemove(k))
-	}
-	return strings.Join(parts, locales.EditPropsSeparator())
-}
-
-func sortedKeys(m map[string]string) []string {
-	out := make([]string, 0, len(m))
-	for k := range m {
-		out = append(out, k)
-	}
-	sort.Strings(out)
-	return out
 }
 
 // ---- loading ---------------------------------------------------------------------------
@@ -464,23 +433,19 @@ func (a *app) saveProps() {
 	if !p.dirty() {
 		return
 	}
-	keys := a.selectedKeys()
-	loc := a.scope
-	if p.multi || p.count > 1 {
-		n := p.count
-		if n < len(keys) {
-			n = len(keys)
-		}
-		rows := a.scopeRows(loc)
-		rows = append(rows, KV{locales.EditPropsScope(), locales.CommonObjects(n)}, KV{locales.EditPropsChanges(), p.summary()})
-		a.confirm = confirmState{
-			open: true, title: locales.EditPropsUpdateTitle(len(keys)), rows: rows,
-			action: locales.EditPropsUpdateAction(len(keys)), message: locales.EditPropsUpdateMessage(),
-			run: func() { a.submitProps(loc, keys, pt) },
-		}
-		return
+	// Saving several objects is decided where it is pressed: the button says
+	// how many it rewrites (propsSaveLabel), so no second question follows.
+	a.submitProps(a.scope, a.selectedKeys(), pt)
+}
+
+// propsSaveLabel is the Save button of the Headers tab: "Save" for one object,
+// "Update N items" when the save rewrites several.
+func (a *app) propsSaveLabel() string {
+	p := &a.mg.props
+	if n := len(a.selectedKeys()); p.multi || p.count > 1 || n > 1 {
+		return locales.EditPropsUpdateAction(max(n, p.count))
 	}
-	a.submitProps(loc, keys, pt)
+	return locales.CommonSave()
 }
 
 // commitInlineEdit applies a text field that is still open to its form.
@@ -588,12 +553,14 @@ func (a *app) inspectorFooter(c *ui.Context) {
 	var saving bool
 	var errText string
 	var revert, save func()
+	saveLabel := locales.CommonSave()
 	versionNote := false
 	switch a.inspTab {
 	case 1:
 		p := &a.mg.props
 		dirty, saving, errText = p.ready && p.dirty(), p.saving, p.err
 		revert, save = func() { p.revert() }, a.saveProps
+		saveLabel = a.propsSaveLabel()
 		versionNote = a.versioningOn()
 	case 2:
 		t := &a.mg.tags
@@ -619,7 +586,7 @@ func (a *app) inspectorFooter(c *ui.Context) {
 			if ghostButton(c, nil, locales.CommonRevert(), locales.EditPropsRevertTip(), saving).Clicked() {
 				revert()
 			}
-			if primaryButton(c, locales.CommonSave(), saving || !dirty).Clicked() {
+			if primaryButton(c, saveLabel, saving || !dirty).Clicked() {
 				save()
 			}
 		})

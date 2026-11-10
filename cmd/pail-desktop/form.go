@@ -84,21 +84,21 @@ func segmented(c *ui.Context, sel *int, label string, labels ...string) bool {
 // The segmented track is as high as the inputs and selects beside it
 // (controlH, RadiusControl). Its 1px hairline and 2px padding sit inside that
 // height, so a segment is controlH - 2*(border + padding) high, and its radius
-// follows the track's by the padding.
+// is the track's less that inset: the two corners are concentric.
 const (
 	segBorder    = 1
 	segPad       = 2
 	segmentH     = controlH - 2*(segBorder+segPad)
-	segmentRadii = RadiusControl - segPad
+	segmentRadii = RadiusControl - segBorder - segPad
 )
 
 // segmentedOff is segmented with some segments switched off (dimmed, not
 // choosable); off may be shorter than labels.
 //
 // The track is a recessed Track well with a hairline; the current segment is
-// lifted out of it: Raised fill, BorderStrong outline, a soft shadow, Text at
-// weight 600. Fill alone would differ by about 1.2:1, so the outline, shadow
-// and weight carry the state (DESIGN.md "States").
+// lifted out of it: Raised fill, BorderStrong outline, Text at weight 600.
+// Fill alone would differ by about 1.2:1, so the outline and the weight carry
+// the state (DESIGN.md "States").
 func segmentedOff(c *ui.Context, sel *int, label string, off []bool, labels ...string) bool {
 	k := tk(c)
 	seg := ui.SegmentedBase(c.Key("seg:"+label), sel, len(labels))
@@ -129,14 +129,14 @@ func labelWidth(s string) float32 {
 // segmentFace styles one segment: see segmentedOff for the look.
 func segmentFace(c *ui.Context, s ui.Element, label string, on, disabled bool) {
 	k := tk(c)
-	s.Grow(1).Shrink(0).Height(segmentH).Padding(0, 14).Radius(segmentRadii).Center().Label(label).Disabled(disabled).Transition(hoverFade()).
+	s.Grow(1).Shrink(0).Height(segmentH).Padding(0, 14).Radius(segmentRadii).Center().Label(label).Disabled(disabled).
 		MinWidth(labelWidth(label) + 34) // never ellipsize a short label (600 weight is wider)
 	w, col := 500, k.TextMuted
 	switch {
 	case disabled:
 		s.Opacity(0.4)
 	case on:
-		s.Background(k.Raised).Border(1, k.BorderStrong).Shadow(0, 1, 2, 0, k.Shadow)
+		s.Background(k.Raised).Border(1, k.BorderStrong)
 		w, col = 600, k.Text
 	case s.Hovered():
 		s.Background(k.SurfaceHover)
@@ -186,7 +186,7 @@ func selectBox(c *ui.Context, label string, value *string, opts []choice, width 
 			shown = o.Label
 		}
 	}
-	sel.Trigger.Height(28).Padding(0, 8).Gap(6).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface).Label(label).Transition(hoverFade())
+	sel.Trigger.Height(28).Padding(0, 8).Gap(6).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface).Label(label)
 	if width > 0 {
 		sel.Trigger.Width(width).Shrink(0)
 	}
@@ -203,19 +203,9 @@ func selectBox(c *ui.Context, label string, value *string, opts []choice, width 
 		ui.Icon(c, icons.Get("chevron-down")).FontSize(14).TextColor(k.TextMuted)
 	})
 	sel.Popup(func(panel ui.Element) {
-		panel.Margin(4, 0, 0, 0).Padding(4)
+		panel.Margin(4, 0, 0, 0).Padding(popoverPad)
 		overlayPanel(c, panel, overlayPopover)
-		// It grows out of the trigger's edge on the overlay spring and fades out
-		// as it goes; below the trigger unless the window has no room.
-		_, winH := c.Size()
-		b, h := sel.Trigger.Bounds(), float32(len(opts))*listRowH+8
-		above := flips(b.Y+b.H+4, b.Y-h-4, h, winH)
-		dy := float32(-popRise)
-		if above {
-			dy = popRise
-		}
-		overlayEnter(c, panel, 0, dy, 0, b2f(above))
-		panel.Transition(overlayExit())
+		fadeIn(c, panel)
 		for _, o := range opts {
 			// The row under the pointer or the arrows is highlighted (SurfaceHover);
 			// the current option is a different cue: an Accent check and weight 600.

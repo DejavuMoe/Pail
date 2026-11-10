@@ -179,10 +179,9 @@ func TestI18NObjects(t *testing.T) {
 	h2.helpTip("A change is applied to every selected object, and to everything inside selected folders. Fields where the objects differ keep each object's own value until you edit them.")
 	h2.mustClick("Edit Cache-Control")
 	h2.typeAndEnter("no-cache")
-	h2.pseudoDialog("update confirmation", h2.a.saveProps)
-	h2.zhDialog(h2.a.saveProps, "更新 2 项？", "更新 2 项", "设置 Cache-Control", "2 个对象", "将就地重写所选的每个对象")
-	h2.mustClick("Save")
-	h2.mustHave("Update 2 items?", "set Cache-Control")
+	h2.pseudo("multi headers, edited")
+	h2.zh("更新 2 项")
+	h2.mustHave("Update 2 items")
 
 	// Tags.
 	h3 := newHarness(t, "light")
@@ -277,8 +276,6 @@ func TestI18NObjectsVersions(t *testing.T) {
 	h.mustClick("old-plan.txt")
 	h.pseudo("deleted item")
 	h.zh("已删除", "恢复")
-	h.pseudoDialog("restore all", h.a.askRestoreAll)
-	h.zhDialog(h.a.askRestoreAll, "恢复已删除的项？", "此文件夹下每个已删除的项都将恢复为最新版本。", "存储桶根目录")
 }
 
 func TestI18NObjectsSigned(t *testing.T) {

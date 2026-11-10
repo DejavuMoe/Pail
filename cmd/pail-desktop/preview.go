@@ -434,7 +434,7 @@ func (a *app) previewTab(c *ui.Context, e Entry) {
 		default:
 			ui.Column(c).Gap(6).Children(func() {
 				p.ed.Theme = codeTheme(c)
-				box := ui.Column(c.Key("previewbox")).Height(360).Radius(RadiusControl).Background(k.Sidebar).Clip()
+				box := ui.Column(c.Key("previewbox")).Height(360).Radius(RadiusControl).Background(k.Background).Clip()
 				if p.ed.Focused() {
 					box.Border(1, k.Focus)
 				} else {
@@ -562,7 +562,7 @@ func (a *app) previewTable(c *ui.Context) {
 	k := tk(c)
 	p := &a.prev
 	h := min(360, float32(len(p.rows))*controlH+12)
-	ui.ScrollBoth(c.Key("csvscroll")).Height(h).Radius(RadiusControl).Background(k.Sidebar).Border(1, k.Border).Children(func() {
+	well(c, ui.ScrollBoth(c.Key("csvscroll")).Height(h)).Children(func() {
 		ui.Column(c).Padding(6, 0).Children(func() {
 			for i, row := range p.rows {
 				r := ui.Row(c.Key(i)).Height(controlH).Padding(0, 10).AlignItems(ui.Center).Shrink(0)

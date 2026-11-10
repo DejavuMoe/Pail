@@ -168,16 +168,7 @@ func (a *app) recentOpsPopover(c *ui.Context, anchor ui.Element) {
 	ui.PopoverBase(c, anchor, &a.opsOpen, func(panel ui.Element) {
 		panel.Width(min(opsPanelW, winW-16)).Height(h).Margin(4, 0, 0, 0).Label(locales.RecentOpsTitle())
 		overlayPanel(c, panel, overlayPopover)
-		// It grows out of the time, upward: the status bar is the window's bottom
-		// edge, so mygo puts it above its anchor.
-		b := anchor.Bounds()
-		above := flips(b.Y+b.H+4, b.Y-h-4, h, winH)
-		dy := float32(-popRise)
-		if above {
-			dy = popRise
-		}
-		overlayEnter(c, panel, 0, dy, 1, b2f(above))
-		panel.Transition(overlayExit())
+		fadeIn(c, panel)
 
 		ui.Row(c.Key("ops-head")).Height(opsHeadH).Padding(0, 8, 0, 12).Gap(8).AlignItems(ui.Center).Shrink(0).Children(func() {
 			ui.Text(c, locales.RecentOpsTitle()).FontSize(sizeBody).FontWeight(600).TextColor(k.Text).SingleLine()

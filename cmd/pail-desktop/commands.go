@@ -257,7 +257,7 @@ func commandTable() []command {
 		{ID: "restore", Label: locales.Messages.CmdRestore, Icon: "undo-2", Visible: deletedOn,
 			Enabled: func(a *app) bool { return deletedOn(a) && a.sel.Len() > 0 }, Run: func(a *app) { a.restoreSelected() }},
 		{ID: "restoreall", Label: locales.Messages.CmdRestoreAll, Icon: "undo-2", Visible: deletedOn,
-			Enabled: func(a *app) bool { return deletedOn(a) && len(a.rows) > 0 }, Run: func(a *app) { a.askRestoreAll() }},
+			Enabled: func(a *app) bool { return deletedOn(a) && len(a.rows) > 0 }, Run: func(a *app) { a.restoreAll() }},
 		{ID: "refresh", Label: locales.Messages.CmdRefresh, Icon: "refresh-cw", Chords: []chord{{0, ui.KeyF5, "F5"}, {ui.Cmd, ui.KeyR, "Ctrl+R"}}, Accel: "F5",
 			Enabled: (*app).browsing, Run: func(a *app) { a.reload() }},
 		{ID: "foldersize", Label: locales.Messages.CmdFolderSize, Icon: "calculator", Visible: liveBrowsing, Enabled: canSizeSelection,
@@ -333,18 +333,35 @@ func commandTable() []command {
 	return cmds
 }
 
-// contextLayout is the order of the context menu: groups of command ids.
-var contextLayout = [][]string{
-	{"open", "download", "foldersize"},
-	{"copy", "cut", "paste", "rename"},
-	{"restore", "restoreall"},
-	{"storageclass", "encryption"},
-	{"copykey", "copyuri", "copyurl", "copycdn", "opencdn", "copysigned", "invalidate"},
-	{"upload.files", "newfolder", "refresh", "selectall"},
-	{"delete"},
+// menuGroup is one group of the object table's context menu. A group with a
+// label folds its commands into a submenu of that name; a blank group is for
+// the folder itself and shows only when no row is chosen (a right click on the
+// space under the rows).
+type menuGroup struct {
+	ids   []string
+	label func() string
+	icon  string
+	blank bool
 }
 
-// buildMenu fills the object table's context menu from the command table.
+// contextLayout is the order of the context menu: what the chosen rows are
+// (open, download), what to do with them (edit, change, links), then the
+// folder's own commands, then Delete apart at the end.
+var contextLayout = []menuGroup{
+	{ids: []string{"open", "download", "foldersize"}},
+	{ids: []string{"copy", "cut", "paste", "rename"}},
+	{ids: []string{"restore", "restoreall"}},
+	{ids: []string{"storageclass", "encryption"}},
+	{ids: []string{"copykey", "copyuri", "copyurl", "copycdn", "copysigned"}, label: locales.MenuCopyLink, icon: "link"},
+	{ids: []string{"opencdn", "invalidate"}},
+	{ids: []string{"upload.files", "newfolder", "refresh", "selectall"}, blank: true},
+	{ids: []string{"delete"}},
+}
+
+// buildMenu fills the object table's context menu from the command table. It
+// lists what can be done now and leaves out the rest: a command that does not
+// apply to the rows chosen is not shown greyed (the toolbar and the palette
+// still list it), so the menu stays short and every row in it works.
 func (a *app) buildMenu(m *menuBuilder) {
 	// A right click on a row outside the selection selects it first, as file
 	// managers do (hoverKey is the row under the pointer, "" over blank space).
@@ -352,11 +369,15 @@ func (a *app) buildMenu(m *menuBuilder) {
 	if !m.keyboard && a.hoverKey != "" && !a.sel.Has(a.hoverKey) {
 		a.setSingle(a.hoverKey)
 	}
+	chosen := a.selectedCount() > 0
 	shown := 0
-	for _, group := range contextLayout {
+	for _, g := range contextLayout {
+		if g.blank && chosen {
+			continue
+		}
 		var ids []string
-		for _, id := range group {
-			if cmd := a.cmd(id); cmd.Visible == nil || cmd.Visible(a) {
+		for _, id := range g.ids {
+			if cmd := a.cmd(id); (cmd.Visible == nil || cmd.Visible(a)) && a.enabled(cmd) {
 				ids = append(ids, id)
 			}
 		}
@@ -367,6 +388,14 @@ func (a *app) buildMenu(m *menuBuilder) {
 			m.Separator()
 		}
 		shown++
+		if g.label != nil && len(ids) > 1 {
+			m.Submenu(g.label(), func(sm *menuBuilder) {
+				for _, id := range ids {
+					sm.Command(a, id, "context")
+				}
+			}).Icon(g.icon)
+			continue
+		}
 		for _, id := range ids {
 			m.Command(a, id, "context")
 		}

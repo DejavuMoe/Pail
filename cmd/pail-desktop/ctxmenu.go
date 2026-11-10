@@ -420,10 +420,8 @@ func (a *app) chooseMenuItem(li, i int, keyboard bool) {
 // so the window's shortcuts wait and screen readers see only the menu.
 func (a *app) menuLayer(c *ui.Context) {
 	m := &a.popup
-	a.menuGhostLayer(c)
 	if !m.open {
 		if m.levels != nil {
-			a.menuLeaves(c)
 			*m = menuState{}
 		}
 		return
@@ -591,7 +589,7 @@ func (a *app) menuPanel(c *ui.Context, panel ui.Element, li int, winH float32) [
 	maxH := winH - 2*menuWindowMargin
 	panel.Role(ui.RoleMenu).Label(name).MinWidth(menuMinW).MaxWidth(menuMaxW).MaxHeight(maxH)
 	overlayPanel(c, panel, overlayPopover)
-	a.menuEnter(c, panel, li)
+	fadeIn(c, panel)
 	panel.Clicked() // a press on the panel's padding stays in it
 	tall := menuHeight(lv.items) > maxH
 	if tall {

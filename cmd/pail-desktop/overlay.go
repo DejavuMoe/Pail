@@ -92,11 +92,11 @@ type rowSpec struct {
 // listRow styles row as a list row and fills it. row is an element the caller
 // made, with its own key and behaviour: a ui.ButtonBase for a command or menu
 // item, or sel.Item(value) for a select option. The row is 28px high with 8px
-// side padding, radius 6, and from left to right shows the icon, the label,
+// side padding, radius RadiusRow (concentric with a popover), and from left to right shows the icon, the label,
 // the secondary text, the keycaps, the check and the submenu chevron.
 func listRow(c *ui.Context, row ui.Element, s rowSpec) ui.Element {
 	k := tk(c)
-	row.Height(listRowH).Padding(0, 8).Gap(8).Radius(RadiusControl).AlignItems(ui.Center).Shrink(0).Disabled(s.Disabled).Transition(hoverFade())
+	row.Height(listRowH).Padding(0, 8).Gap(8).Radius(RadiusRow).AlignItems(ui.Center).Shrink(0).Disabled(s.Disabled)
 	switch {
 	case s.Disabled:
 		row.Opacity(0.4)
@@ -202,12 +202,7 @@ func toastViewport(c *ui.Context) {
 			toast := ui.ToastBase(c, t)
 			toast.Root.Row().AlignItems(ui.Center).Gap(16).Padding(8, 16).MaxWidth(max(240, winW-48))
 			overlayPanel(c, toast.Root, overlayTip)
-			// It rises a little as it fades in, on the overlay spring, and fades
-			// out in durExit. The rise is a pose, not the transition's Enter:
-			// mygo lays the overlays out again after their transitions, which
-			// would put the toast back in its place at once (motion.go).
-			enterPose(c, toast.Root, ui.Pose{Y: toastRise, Fade: 1}, overlaySpring)
-			toast.Root.Transition(overlayExit())
+			fadeIn(c, toast.Root) // where it rests; it goes at once
 			toast.Root.Children(func() {
 				if t.Description == "" {
 					ui.Text(c, t.Title).FontSize(sizeBody).TextColor(k.InverseText).Shrink(1).MinWidth(0)
@@ -220,7 +215,7 @@ func toastViewport(c *ui.Context) {
 				if t.Action == "" {
 					return
 				}
-				b := toast.ActionButton().Height(24).Padding(0, 8).Radius(RadiusControl).Center().Shrink(0).Margin(0, -8, 0, 0).Transition(hoverFade())
+				b := toast.ActionButton().Height(24).Padding(0, 8).Radius(RadiusControl).Center().Shrink(0).Margin(0, -8, 0, 0)
 				if b.Hovered() {
 					b.Background(k.InverseText.Alpha(0.14))
 				}

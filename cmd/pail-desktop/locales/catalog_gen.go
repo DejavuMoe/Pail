@@ -2692,16 +2692,6 @@ func (msgs Messages) ChromeTheme() string {
 	return Catalog.Format(msgs.locale, "chromeTheme", nil)
 }
 
-// ClipboardBucketRoot says "(bucket root)"
-// in the language the app shows.
-func ClipboardBucketRoot() string { return In(i18n.Locale()).ClipboardBucketRoot() }
-
-// ClipboardBucketRoot says "(bucket root)"
-// in the language of msgs.
-func (msgs Messages) ClipboardBucketRoot() string {
-	return Catalog.Format(msgs.locale, "clipboardBucketRoot", nil)
-}
-
 // ClipboardCopied says "Copied {items}"
 // in the language the app shows.
 func ClipboardCopied(items string) string { return In(i18n.Locale()).ClipboardCopied(items) }
@@ -2756,26 +2746,6 @@ func (msgs Messages) ClipboardCrossAccount() string {
 	return Catalog.Format(msgs.locale, "clipboardCrossAccount", nil)
 }
 
-// ClipboardFrom says "From"
-// in the language the app shows.
-func ClipboardFrom() string { return In(i18n.Locale()).ClipboardFrom() }
-
-// ClipboardFrom says "From"
-// in the language of msgs.
-func (msgs Messages) ClipboardFrom() string {
-	return Catalog.Format(msgs.locale, "clipboardFrom", nil)
-}
-
-// ClipboardItems says "Items"
-// in the language the app shows.
-func ClipboardItems() string { return In(i18n.Locale()).ClipboardItems() }
-
-// ClipboardItems says "Items"
-// in the language of msgs.
-func (msgs Messages) ClipboardItems() string {
-	return Catalog.Format(msgs.locale, "clipboardItems", nil)
-}
-
 // ClipboardMoveFailed says "Move failed: {detail}"
 // in the language the app shows.
 func ClipboardMoveFailed(detail string) string { return In(i18n.Locale()).ClipboardMoveFailed(detail) }
@@ -2784,16 +2754,6 @@ func ClipboardMoveFailed(detail string) string { return In(i18n.Locale()).Clipbo
 // in the language of msgs.
 func (msgs Messages) ClipboardMoveFailed(detail string) string {
 	return Catalog.Format(msgs.locale, "clipboardMoveFailed", map[string]any{"detail": detail})
-}
-
-// ClipboardMoveTitle says "Move {items}?"
-// in the language the app shows.
-func ClipboardMoveTitle(items string) string { return In(i18n.Locale()).ClipboardMoveTitle(items) }
-
-// ClipboardMoveTitle says "Move {items}?"
-// in the language of msgs.
-func (msgs Messages) ClipboardMoveTitle(items string) string {
-	return Catalog.Format(msgs.locale, "clipboardMoveTitle", map[string]any{"items": items})
 }
 
 // ClipboardMoved says "Moved {items}"
@@ -2840,16 +2800,6 @@ func ClipboardSkippedExisting(items string) string {
 // in the language of msgs.
 func (msgs Messages) ClipboardSkippedExisting(items string) string {
 	return Catalog.Format(msgs.locale, "clipboardSkippedExisting", map[string]any{"items": items})
-}
-
-// ClipboardTo says "To"
-// in the language the app shows.
-func ClipboardTo() string { return In(i18n.Locale()).ClipboardTo() }
-
-// ClipboardTo says "To"
-// in the language of msgs.
-func (msgs Messages) ClipboardTo() string {
-	return Catalog.Format(msgs.locale, "clipboardTo", nil)
 }
 
 // CloudfrontAliases says "Aliases"
@@ -3870,16 +3820,6 @@ func (msgs Messages) CommonLoading() string {
 	return Catalog.Format(msgs.locale, "commonLoading", nil)
 }
 
-// CommonMove says "Move"
-// in the language the app shows.
-func CommonMove() string { return In(i18n.Locale()).CommonMove() }
-
-// CommonMove says "Move"
-// in the language of msgs.
-func (msgs Messages) CommonMove() string {
-	return Catalog.Format(msgs.locale, "commonMove", nil)
-}
-
 // CommonName says "Name"
 // in the language the app shows.
 func CommonName() string { return In(i18n.Locale()).CommonName() }
@@ -4450,16 +4390,6 @@ func (msgs Messages) EditPropsAdd() string {
 	return Catalog.Format(msgs.locale, "editPropsAdd", nil)
 }
 
-// EditPropsChanges says "Changes"
-// in the language the app shows.
-func EditPropsChanges() string { return In(i18n.Locale()).EditPropsChanges() }
-
-// EditPropsChanges says "Changes"
-// in the language of msgs.
-func (msgs Messages) EditPropsChanges() string {
-	return Catalog.Format(msgs.locale, "editPropsChanges", nil)
-}
-
 // EditPropsClear says "Clear {name}"
 // in the language the app shows.
 func EditPropsClear(name string) string { return In(i18n.Locale()).EditPropsClear(name) }
@@ -4662,16 +4592,6 @@ func (msgs Messages) EditPropsReadOnly(reason string) string {
 	return Catalog.Format(msgs.locale, "editPropsReadOnly", map[string]any{"reason": reason})
 }
 
-// EditPropsRemove says "remove {name}"
-// in the language the app shows.
-func EditPropsRemove(name string) string { return In(i18n.Locale()).EditPropsRemove(name) }
-
-// EditPropsRemove says "remove {name}"
-// in the language of msgs.
-func (msgs Messages) EditPropsRemove(name string) string {
-	return Catalog.Format(msgs.locale, "editPropsRemove", map[string]any{"name": name})
-}
-
 // EditPropsRevertTip says "Discard the edits"
 // in the language the app shows.
 func EditPropsRevertTip() string { return In(i18n.Locale()).EditPropsRevertTip() }
@@ -4692,36 +4612,6 @@ func (msgs Messages) EditPropsSaveFailed(error string) string {
 	return Catalog.Format(msgs.locale, "editPropsSaveFailed", map[string]any{"error": error})
 }
 
-// EditPropsScope says "Scope"
-// in the language the app shows.
-func EditPropsScope() string { return In(i18n.Locale()).EditPropsScope() }
-
-// EditPropsScope says "Scope"
-// in the language of msgs.
-func (msgs Messages) EditPropsScope() string {
-	return Catalog.Format(msgs.locale, "editPropsScope", nil)
-}
-
-// EditPropsSeparator says ", "
-// in the language the app shows.
-func EditPropsSeparator() string { return In(i18n.Locale()).EditPropsSeparator() }
-
-// EditPropsSeparator says ", "
-// in the language of msgs.
-func (msgs Messages) EditPropsSeparator() string {
-	return Catalog.Format(msgs.locale, "editPropsSeparator", nil)
-}
-
-// EditPropsSet says "set {name}"
-// in the language the app shows.
-func EditPropsSet(name string) string { return In(i18n.Locale()).EditPropsSet(name) }
-
-// EditPropsSet says "set {name}"
-// in the language of msgs.
-func (msgs Messages) EditPropsSet(name string) string {
-	return Catalog.Format(msgs.locale, "editPropsSet", map[string]any{"name": name})
-}
-
 // EditPropsUndo says "Undo {name}"
 // in the language the app shows.
 func EditPropsUndo(name string) string { return In(i18n.Locale()).EditPropsUndo(name) }
@@ -4740,26 +4630,6 @@ func EditPropsUpdateAction(n int) string { return In(i18n.Locale()).EditPropsUpd
 // in the language of msgs.
 func (msgs Messages) EditPropsUpdateAction(n int) string {
 	return Catalog.Format(msgs.locale, "editPropsUpdateAction", map[string]any{"n": n})
-}
-
-// EditPropsUpdateMessage says "Every selected object is rewritten in place."
-// in the language the app shows.
-func EditPropsUpdateMessage() string { return In(i18n.Locale()).EditPropsUpdateMessage() }
-
-// EditPropsUpdateMessage says "Every selected object is rewritten in place."
-// in the language of msgs.
-func (msgs Messages) EditPropsUpdateMessage() string {
-	return Catalog.Format(msgs.locale, "editPropsUpdateMessage", nil)
-}
-
-// EditPropsUpdateTitle says "{n, plural, one {Update # item?} other {Update # items?}}"
-// in the language the app shows.
-func EditPropsUpdateTitle(n int) string { return In(i18n.Locale()).EditPropsUpdateTitle(n) }
-
-// EditPropsUpdateTitle says "{n, plural, one {Update # item?} other {Update # items?}}"
-// in the language of msgs.
-func (msgs Messages) EditPropsUpdateTitle(n int) string {
-	return Catalog.Format(msgs.locale, "editPropsUpdateTitle", map[string]any{"n": n})
 }
 
 // EditTagsAdd says "Add tag"
@@ -5994,6 +5864,16 @@ func MenuLanguage() string { return In(i18n.Locale()).MenuLanguage() }
 // in the language of msgs.
 func (msgs Messages) MenuLanguage() string {
 	return Catalog.Format(msgs.locale, "menuLanguage", nil)
+}
+
+// MenuCopyLink says "Copy link"
+// in the language the app shows.
+func MenuCopyLink() string { return In(i18n.Locale()).MenuCopyLink() }
+
+// MenuCopyLink says "Copy link"
+// in the language of msgs.
+func (msgs Messages) MenuCopyLink() string {
+	return Catalog.Format(msgs.locale, "menuCopyLink", nil)
 }
 
 // MenuObjectActions says "Object actions"
@@ -12172,16 +12052,6 @@ func (msgs Messages) VaultWrongPassword() string {
 	return Catalog.Format(msgs.locale, "vaultWrongPassword", nil)
 }
 
-// VersionsBucketRoot says "(bucket root)"
-// in the language the app shows.
-func VersionsBucketRoot() string { return In(i18n.Locale()).VersionsBucketRoot() }
-
-// VersionsBucketRoot says "(bucket root)"
-// in the language of msgs.
-func (msgs Messages) VersionsBucketRoot() string {
-	return Catalog.Format(msgs.locale, "versionsBucketRoot", nil)
-}
-
 // VersionsDeleteChosen says "Delete chosen versions permanently"
 // in the language the app shows.
 func VersionsDeleteChosen() string { return In(i18n.Locale()).VersionsDeleteChosen() }
@@ -12424,26 +12294,6 @@ func VersionsObject() string { return In(i18n.Locale()).VersionsObject() }
 // in the language of msgs.
 func (msgs Messages) VersionsObject() string {
 	return Catalog.Format(msgs.locale, "versionsObject", nil)
-}
-
-// VersionsRestoreAllMsg says "Every deleted item below this folder gets its latest version back."
-// in the language the app shows.
-func VersionsRestoreAllMsg() string { return In(i18n.Locale()).VersionsRestoreAllMsg() }
-
-// VersionsRestoreAllMsg says "Every deleted item below this folder gets its latest version back."
-// in the language of msgs.
-func (msgs Messages) VersionsRestoreAllMsg() string {
-	return Catalog.Format(msgs.locale, "versionsRestoreAllMsg", nil)
-}
-
-// VersionsRestoreAllTitle says "Restore deleted items?"
-// in the language the app shows.
-func VersionsRestoreAllTitle() string { return In(i18n.Locale()).VersionsRestoreAllTitle() }
-
-// VersionsRestoreAllTitle says "Restore deleted items?"
-// in the language of msgs.
-func (msgs Messages) VersionsRestoreAllTitle() string {
-	return Catalog.Format(msgs.locale, "versionsRestoreAllTitle", nil)
 }
 
 // VersionsRestoreFailed says "Could not restore: {error}"

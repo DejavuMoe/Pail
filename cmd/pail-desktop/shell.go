@@ -38,8 +38,7 @@ func (a *app) view(c *ui.Context) {
 
 	winW, winH := c.Size()
 	root := ui.Column(c).Fill().Background(k.Background)
-	panelH, panelMoving := a.transfersExtent(c, root)
-	a.bodyH = winH - statusBarH - panelH
+	a.bodyH = winH - statusBarH - a.transfersExtent()
 	root.Children(func() {
 		switch {
 		case !a.hasAccount():
@@ -47,17 +46,12 @@ func (a *app) view(c *ui.Context) {
 				a.topBarRow(c, locales.ShellWindow(), nil, func() { a.moreMenu(c) })
 				a.welcome(c)
 			})
-		case panelMoving:
-			// The panel opens or closes: its height eases between the bar's and
-			// its own (durSlow). No divider to drag while it moves.
-			ui.Column(c).Grow(1).MinHeight(0).Children(func() { a.body(c, winW) })
-			ui.Box(c).Height(dividerW * clampF((panelH-collapsedBar)/max(1, a.transH-collapsedBar), 0, 1)).Shrink(0)
-			ui.Column(c.Key("transfers-host")).Height(panelH).Shrink(0).Clip().Children(func() { a.transfersPanel(c) })
 		case a.transfersOpen:
+			// Through a.split like the other two dividers, so it takes their
+			// neutral colours, not the Accent.
 			topH := winH - statusBarH - a.transH
-			if ui.SplitVertical(c, &topH, func() { a.body(c, winW) }, func() { a.transfersPanel(c) }).Grow(1).MinHeight(0).Changed() {
+			if a.split(c, &a.fxTrans, true, &topH, func() { a.body(c, winW) }, func() { a.transfersPanel(c) }) {
 				a.transH = clampF(winH-statusBarH-topH, 96, max(96, winH-statusBarH-200))
-				a.transDragAt = c.Now()
 			}
 		default:
 			ui.Column(c).Grow(1).MinHeight(0).Children(func() { a.body(c, winW) })
@@ -73,29 +67,18 @@ func (a *app) view(c *ui.Context) {
 	toastViewport(c) // last, so a toast floats above the dialogs
 }
 
-// transfersExtent is the height of the transfers panel in this frame: the
-// height the user gave it (a.transH) while open, the collapsed bar's while
-// closed with tasks on the list, nothing while closed with none (the strip has
-// nothing to say then), and between them, eased over durSlow, as it is toggled
-// (the button, the toolbar toggle, the palette, or a new task opening it, or
-// the last one leaving). host is an element that lives as long as the window,
-// which keeps the value. moving says it is on its way. A divider being dragged
-// moves the value at once, and so does a window resize, which changes nothing
-// here: only what the user does to the panel is animated.
-func (a *app) transfersExtent(c *ui.Context, host ui.Element) (h float32, moving bool) {
-	want := float32(0)
+// transfersExtent is the height of the transfers panel: the height the user
+// gave it (a.transH) while open, the collapsed bar's while closed with tasks on
+// the list, nothing while closed with none (the strip has nothing to say then).
+// It changes in the frame the panel is toggled.
+func (a *app) transfersExtent() float32 {
 	switch {
 	case a.transfersOpen:
-		want = a.transH
+		return a.transH
 	case len(a.tasks) > 0:
-		want = collapsedBar
+		return collapsedBar
 	}
-	if c.Now().Sub(a.transDragAt) < splitDragHold {
-		h = host.Jump("transfers", want)
-	} else {
-		h = host.AnimateTo("transfers", want, panelAnim)
-	}
-	return h, !host.Settled("transfers")
+	return 0
 }
 
 // welcome is the empty state shown until the first account exists.
@@ -119,11 +102,6 @@ func (a *app) body(c *ui.Context, winW float32) {
 // mainColumn is everything right of the sidebar: the full-width top bar, and
 // below it the center column next to the inspector.
 func (a *app) mainColumn(c *ui.Context) {
-	wanted := a.inspectorOpen && a.tool == ""
-	if wanted && !a.inspWanted && a.inspKnown {
-		a.inspFade = true // the user opened it: it fades in (inspector)
-	}
-	a.inspWanted, a.inspKnown = wanted, true
 	ui.Column(c).Fill().MinWidth(0).MinHeight(0).Children(func() {
 		a.topBar(c)
 		if a.lay.inspW > 0 {
@@ -133,7 +111,6 @@ func (a *app) mainColumn(c *ui.Context) {
 			}
 			return
 		}
-		a.inspFade = false // no room: once the window makes some, it shows at once
 		ui.Column(c).Grow(1).MinHeight(0).Children(func() { a.mainArea(c) })
 	})
 }

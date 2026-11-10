@@ -123,8 +123,8 @@ func TestDeniedBucketListOffersNamingBuckets(t *testing.T) {
 	h.a.refreshAccounts()
 	h.a.selectAccount(second.ID)
 	h.waitFor("bucket list refused", func() bool { return h.a.bucketsErr != "" && !h.a.bucketsLoad })
-	if h.a.bucketsFix != "buckets" {
-		t.Fatalf("bucketsFix = %q, want the offer to name the buckets", h.a.bucketsFix)
+	if h.a.bucketsFix != fixNameBuckets {
+		t.Fatalf("bucketsFix = %d, want the offer to name the buckets", h.a.bucketsFix)
 	}
 	h.mustHave("(AccessDenied)", "Retry", "Name buckets…")
 	h.snap("buckets-denied-light")

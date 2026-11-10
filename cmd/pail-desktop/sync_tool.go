@@ -411,12 +411,23 @@ func trashName() string {
 	return locales.SyncTrashTrash()
 }
 
+// syncAskRun runs the previewed plan. The preview beside the button already
+// says what will happen, so Run is the decision; only a plan that deletes
+// files asks once more, with the deletes in Danger.
 func (a *app) syncAskRun() {
 	s := &a.tl.sync
 	if s.pv == nil {
 		return
 	}
 	pv := *s.pv
+	if pv.Uploads+pv.Downloads+pv.Deletes == 0 {
+		a.toast(locales.SyncNothingToDo())
+		return
+	}
+	if pv.Deletes == 0 {
+		a.runSync(pv)
+		return
+	}
 	job := pv.Job
 	rows := []KV{{locales.SyncRowJob(), job.Name}}
 	if job.Name == "" {
@@ -424,37 +435,33 @@ func (a *app) syncAskRun() {
 	}
 	rows = append(rows, KV{locales.SyncRowLocal(), job.LocalDir}, KV{locales.SyncRowRemote(), remoteText(job.Remote)})
 	rows = append(rows, KV{locales.SyncRowUploads(), locales.CommonFiles(pv.Uploads)}, KV{locales.SyncRowDownloads(), locales.CommonFiles(pv.Downloads)})
-	delText := locales.CommonFiles(pv.Deletes)
-	if pv.Deletes > 0 {
-		delText = locales.SyncDeleteWill(pv.Deletes)
-	}
 	rowDeletes := locales.SyncRowDeletes()
-	rows = append(rows, KV{rowDeletes, delText}, KV{locales.CommonSize(), humanBytes(pv.Bytes)})
+	rows = append(rows, KV{rowDeletes, locales.SyncDeleteWill(pv.Deletes)}, KV{locales.CommonSize(), humanBytes(pv.Bytes)})
 	msg := ""
-	if pv.Deletes > 0 && job.Direction == "download" {
+	if job.Direction == "download" {
 		msg = locales.SyncTrashNote(trashName())
-	}
-	if pv.Uploads+pv.Downloads+pv.Deletes == 0 {
-		msg = locales.SyncNothingToDo()
 	}
 	a.confirm = confirmState{
 		open: true, title: locales.SyncRunTitle(), rows: rows, message: msg,
-		action: locales.SyncRun(), danger: pv.Deletes > 0, dangerRows: dangerIf(pv.Deletes > 0, rowDeletes),
-		run: func() {
-			a.bg(func() func() {
-				_, err := a.svc.RunSync(pv)
-				return func() {
-					if err != nil {
-						a.toast(locales.SyncStartFailed(humanError(err)))
-						return
-					}
-					a.transfersOpen, a.transTab = true, 0
-					a.syncClearPreview()
-					a.toast(locales.SyncStarted())
-				}
-			})
-		},
+		action: locales.SyncRun(), danger: true, dangerRows: []string{rowDeletes},
+		run: func() { a.runSync(pv) },
 	}
+}
+
+// runSync starts the plan pv.
+func (a *app) runSync(pv core.SyncPreview) {
+	a.bg(func() func() {
+		_, err := a.svc.RunSync(pv)
+		return func() {
+			if err != nil {
+				a.toast(locales.SyncStartFailed(humanError(err)))
+				return
+			}
+			a.transfersOpen, a.transTab = true, 0
+			a.syncClearPreview()
+			a.toast(locales.SyncStarted())
+		}
+	})
 }
 
 // ---- view -------------------------------------------------------------------------------------

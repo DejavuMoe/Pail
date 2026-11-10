@@ -16,8 +16,8 @@ import (
 //
 // State discipline (DESIGN.md "States"): a selected or "on" state never relies
 // on a fill alone. Neutral fills differ by too little (about 1.2:1), so every
-// on-state adds a second cue: a raised segment with border and shadow, an
-// Accent indicator bar, or a heavier weight with Text instead of TextMuted.
+// on-state adds a second cue: a raised segment with a border, an Accent icon,
+// the Selection hue, or a heavier weight with Text instead of TextMuted.
 // theme_test.go enforces the contrast floors below.
 type tokens struct {
 	Background, Sidebar, Surface         ui.Color // canvas, source list, raised cards/inputs
@@ -32,7 +32,6 @@ type tokens struct {
 	Selection, Focus, FolderIcon         ui.Color
 	Danger, DangerText, Warning, Success ui.Color
 	Scrim, ScrimSoft                     ui.Color // modal backdrop; the lighter one behind the command palette
-	Shadow                               ui.Color // raised segment shadow
 
 	// Overlay surfaces (docs/dev/design.md "Overlays", overlay.go). A shadow token
 	// is the colour of the shadow; its geometry lives in overlay.go. Where the
@@ -47,20 +46,27 @@ type tokens struct {
 }
 
 // Radii (docs/dev/design.md principle 5): 6 controls, 8 panels (select popups,
-// menus, toasts), 10 dialogs; 4 for the small keycap.
+// menus, toasts), 10 dialogs; 4 for the small keycap. A shape nested close
+// inside a rounded one is concentric: its radius is the outer radius less the
+// inset, so the two curves run parallel (RadiusRow in a popover).
 const (
 	RadiusControl = 6
 	RadiusPopover = 8
 	RadiusDialog  = 10
 	RadiusKeycap  = 4
 
+	// popoverPad is the inset of the rows of a popover (menu, select popup,
+	// recent operations), and RadiusRow the radius of those rows: concentric
+	// with the panel. The command palette's rows take it too.
+	popoverPad = 4
+	RadiusRow  = RadiusPopover - popoverPad
+
 	// Small shapes that are not a control: badges, the check box, a drop-target
-	// highlight (4); the progress bar (2); the 2px indicator line (1); the About
-	// icon (12). Views name them here instead of writing a number.
-	RadiusSmall     = 4
-	RadiusBar       = 2
-	RadiusIndicator = 1
-	RadiusAbout     = 12
+	// highlight (4); the progress bar (2); the About icon (12). Views name them
+	// here instead of writing a number. A 2px indicator line is square.
+	RadiusSmall = 4
+	RadiusBar   = 2
+	RadiusAbout = 12
 )
 
 // errorBanner is the inline failure strip above a list or a tool body: a
@@ -95,7 +101,6 @@ var lightTokens = tokens{
 	Danger: ui.Hex("#B3402E"), DangerText: ui.Hex("#FFFFFF"),
 	Warning: ui.Hex("#A0691A"), Success: ui.Hex("#3B7653"),
 	Scrim: ui.Hex("#141311").Alpha(0.32), ScrimSoft: ui.Hex("#141311").Alpha(0.12),
-	Shadow:        ui.RGBA(20, 19, 17, 0.12),
 	ShadowPopover: ui.RGBA(0, 0, 0, 0.14), ShadowDialog: ui.RGBA(0, 0, 0, 0.18),
 	Inverse: ui.Hex("#2A2926"), InverseText: ui.Hex("#F5F3EE"),
 	Knob: ui.Hex("#FFFFFF"), KnobShadow: ui.RGBA(0, 0, 0, 0.3),
@@ -113,7 +118,6 @@ var darkTokens = tokens{
 	Danger: ui.Hex("#E0806C"), DangerText: ui.Hex("#1A1A18"),
 	Warning: ui.Hex("#D7A955"), Success: ui.Hex("#82BE98"),
 	Scrim: ui.Hex("#000000").Alpha(0.5), ScrimSoft: ui.Hex("#000000").Alpha(0.28),
-	Shadow:        ui.RGBA(0, 0, 0, 0.4),
 	ShadowPopover: ui.Transparent, ShadowDialog: ui.Transparent,
 	Inverse: ui.Hex("#EAE8E3"), InverseText: ui.Hex("#1A1A18"),
 	Knob: ui.Hex("#FFFFFF"), KnobShadow: ui.RGBA(0, 0, 0, 0.3),
@@ -204,7 +208,7 @@ func iconButton(c *ui.Context, icon *ui.SVG, label string) ui.Element {
 // iconButtonOff is iconButton that can be disabled: 0.4 opacity and no hover.
 func iconButtonOff(c *ui.Context, icon *ui.SVG, label string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(RadiusControl).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(RadiusControl).Center().Disabled(disabled)
 	switch {
 	case disabled:
 		b.Opacity(0.4)
@@ -231,7 +235,7 @@ func vline(c *ui.Context, h float32) ui.Element {
 // less button is square. Hover and pressed use the neutral surfaces.
 func ghostButton(c *ui.Context, icon *ui.SVG, label, tip string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Gap(6).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Gap(6).Center().Disabled(disabled)
 	if label == "" {
 		b.Width(28)
 	} else {
@@ -259,7 +263,7 @@ func ghostButton(c *ui.Context, icon *ui.SVG, label, tip string, disabled bool) 
 // while on, a muted icon otherwise.
 func toggleIconButton(c *ui.Context, icon *ui.SVG, label, tip string, on bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Size(28, 28).Radius(RadiusControl).Center().Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Size(28, 28).Radius(RadiusControl).Center()
 	switch {
 	case b.Pressed():
 		b.Background(k.SurfacePressed)
@@ -283,7 +287,7 @@ func toggleIconButton(c *ui.Context, icon *ui.SVG, label, tip string, on bool) u
 // buttonShell is the shared 28px, radius 6 frame of the outlined and solid
 // buttons.
 func buttonShell(c *ui.Context, label string, disabled bool) ui.Element {
-	b := ui.ButtonBase(c).Label(label).Height(28).Padding(0, 12).Radius(RadiusControl).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c).Label(label).Height(28).Padding(0, 12).Radius(RadiusControl).Center().Disabled(disabled)
 	if disabled {
 		b.Opacity(0.4)
 	}
@@ -357,11 +361,17 @@ func dangerOutlineButton(c *ui.Context, label string, disabled bool) ui.Element 
 }
 
 // tabIndicator is the 2px Accent underline pinned to the bottom of its
-// parent, which must be a positioned element (a tab or a tab strip item). The
-// tabs of one strip share a group: the underline slides from the previous
-// tab to the current one (motion.go).
-func tabIndicator(c *ui.Context, group string) ui.Element {
-	return ui.Box(c).Absolute().Left(0).Right(0).Bottom(0).Height(2).Radius(RadiusIndicator).Background(tk(c).Accent).Transition(slideTransition(group))
+// parent, which must be a positioned element (a tab or a tab strip item).
+func tabIndicator(c *ui.Context) ui.Element {
+	return ui.Box(c).Absolute().Left(0).Right(0).Bottom(0).Height(2).Background(tk(c).Accent)
+}
+
+// well styles el as a block of read-only content set into a surface (a list
+// of keys, a URL, a preview): the surface's own fill and a 1px Border outline
+// at RadiusControl. It never takes the Sidebar fill: a second neutral inside a
+// card splits it into two tones.
+func well(c *ui.Context, el ui.Element) ui.Element {
+	return el.Radius(RadiusControl).Border(1, tk(c).Border)
 }
 
 // searchBox is a 28px text field: Surface fill, BorderStrong outline (Focus

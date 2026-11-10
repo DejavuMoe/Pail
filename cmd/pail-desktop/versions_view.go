@@ -184,7 +184,7 @@ func (a *app) versionRow(c *ui.Context, loc Scope, v core.Version) {
 	f := &a.mg.vers
 	on := f.sel[v.VersionID]
 	ref := core.ObjectRef{Key: v.Key, VersionID: v.VersionID}
-	row := ui.ButtonBase(c.Key("ver:"+v.VersionID)).Label(locales.VersionsVersionLabel(shortVersion(v.VersionID))).Padding(4, 8).Radius(RadiusControl).Gap(6).AlignItems(ui.Center).Shrink(0).Transition(hoverFade())
+	row := ui.ButtonBase(c.Key("ver:"+v.VersionID)).Label(locales.VersionsVersionLabel(shortVersion(v.VersionID))).Padding(4, 8).Radius(RadiusControl).Gap(6).AlignItems(ui.Center).Shrink(0)
 	switch {
 	case on:
 		row.Background(k.Selection)
@@ -192,9 +192,7 @@ func (a *app) versionRow(c *ui.Context, loc Scope, v core.Version) {
 		row.Background(k.SurfaceHover)
 	}
 	row.Children(func() {
-		if on {
-			selectionBar(c, 6, "")
-		}
+
 		ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
 			ui.Row(c).Gap(6).AlignItems(ui.Center).Children(func() {
 				col := k.Text
@@ -511,19 +509,12 @@ func (a *app) restoreSelected() {
 	a.submitRestore(core.Selection{Location: a.scope, Keys: keys}, a.scope)
 }
 
-// askRestoreAll confirms restoring every deleted item below the open folder.
-func (a *app) askRestoreAll() {
+// restoreAll restores every deleted item below the open folder. Restoring
+// deletes nothing (each item gets its latest version back, which deleting it
+// again undoes), so the command itself is the decision.
+func (a *app) restoreAll() {
 	loc := a.scope
-	prefix := loc.Prefix
-	if prefix == "" {
-		prefix = locales.VersionsBucketRoot()
-	}
-	rows := append(a.scopeRows(loc), KV{locales.CommonPrefix(), prefix})
-	a.confirm = confirmState{
-		open: true, title: locales.VersionsRestoreAllTitle(), rows: rows, action: locales.CommonRestore(),
-		message: locales.VersionsRestoreAllMsg(),
-		run:     func() { a.submitRestore(core.Selection{Location: loc, All: true}, loc) },
-	}
+	a.submitRestore(core.Selection{Location: loc, All: true}, loc)
 }
 
 func (a *app) submitRestore(sel core.Selection, loc Scope) {
@@ -556,7 +547,7 @@ func (a *app) submitRestore(sel core.Selection, loc Scope) {
 // ghostToggle is a ghost button with a label that rests on ActiveFill while on.
 func ghostToggle(c *ui.Context, icon *ui.SVG, label, tip string, on, disabled, iconOnly bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c.Key("toggle:"+label)).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Gap(6).Padding(0, 8).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c.Key("toggle:"+label)).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Gap(6).Padding(0, 8).Center().Disabled(disabled)
 	if iconOnly {
 		b.Width(28).Padding(0)
 	}
