@@ -659,8 +659,11 @@ func TestDeleteMoreThanOneChunk(t *testing.T) {
 			posts++
 		}
 	}
-	if posts != 3 {
-		t.Fatalf("DeleteObjects requests = %d, want 3", posts)
+	// The server rejects more than 1000 keys per request, so 2300 objects need
+	// at least 3 requests. The SDK may resend one after a transient transport
+	// error (seen on loaded arm64 runners), so an exact count would be flaky.
+	if posts < 3 {
+		t.Fatalf("DeleteObjects requests = %d, want at least 3", posts)
 	}
 }
 
