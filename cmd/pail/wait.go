@@ -145,7 +145,9 @@ func (w *watcher) drain(id string, listed []app.Task) bool {
 		return false
 	}
 	for _, t := range listed {
-		if r := w.recs[t.ID]; r == nil || !r.done {
+		// A running task may have submitted more group members since this
+		// snapshot, even if its completion event has already arrived.
+		if r := w.recs[t.ID]; !t.Status.Finished() || r == nil || !r.done {
 			return false
 		}
 	}
