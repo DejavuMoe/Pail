@@ -9,6 +9,7 @@ import (
 	"io"
 	"strings"
 	"testing"
+	"time"
 )
 
 func TestValidateAllRules(t *testing.T) {
@@ -36,7 +37,7 @@ func TestZIPLevels(t *testing.T) {
 	for level := -2; level <= 9; level++ {
 		t.Run(fmt.Sprint(level), func(t *testing.T) {
 			var out bytes.Buffer
-			n, err := CompressZIP(context.Background(), &out, bytes.NewReader(data), "文件.txt", level)
+			n, err := CompressZIP(context.Background(), &out, bytes.NewReader(data), "文件.txt", time.Time{}, level)
 			if err != nil || n != int64(len(data)) {
 				t.Fatalf("compress n=%d err=%v", n, err)
 			}
@@ -69,30 +70,30 @@ func TestZIPLevels(t *testing.T) {
 func TestZIPFailures(t *testing.T) {
 	for _, name := range []string{"", ".", "..", "../file", "a/b", "a\\b", "C:file", "nul\x00x"} {
 		var out bytes.Buffer
-		if _, err := CompressZIP(context.Background(), &out, strings.NewReader("x"), name, 1); err == nil || out.Len() != 0 {
+		if _, err := CompressZIP(context.Background(), &out, strings.NewReader("x"), name, time.Time{}, 1); err == nil || out.Len() != 0 {
 			t.Errorf("unsafe name %q accepted", name)
 		}
 	}
 	for _, level := range []int{-3, 10} {
-		if _, err := CompressZIP(context.Background(), io.Discard, strings.NewReader("x"), "x", level); err == nil {
+		if _, err := CompressZIP(context.Background(), io.Discard, strings.NewReader("x"), "x", time.Time{}, level); err == nil {
 			t.Fatal("invalid level")
 		}
 	}
-	if _, err := CompressZIP(context.Background(), failedWriter{}, strings.NewReader("x"), "x", 1); !errors.Is(err, errInjected) {
+	if _, err := CompressZIP(context.Background(), failedWriter{}, strings.NewReader("x"), "x", time.Time{}, 1); !errors.Is(err, errInjected) {
 		t.Fatalf("lost writer error: %v", err)
 	}
-	if _, err := CompressZIP(context.Background(), io.Discard, failedReader{}, "x", 1); !errors.Is(err, errInjected) {
+	if _, err := CompressZIP(context.Background(), io.Discard, failedReader{}, "x", time.Time{}, 1); !errors.Is(err, errInjected) {
 		t.Fatalf("lost reader error: %v", err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
 	var out bytes.Buffer
-	if _, err := CompressZIP(ctx, &out, strings.NewReader("x"), "x", 1); !errors.Is(err, context.Canceled) || out.Len() != 0 {
+	if _, err := CompressZIP(ctx, &out, strings.NewReader("x"), "x", time.Time{}, 1); !errors.Is(err, context.Canceled) || out.Len() != 0 {
 		t.Fatal("pre-cancel wrote output")
 	}
 	ctx, cancel = context.WithCancel(context.Background())
 	defer cancel()
-	if _, err := CompressZIP(ctx, io.Discard, &cancellingReader{cancel: cancel}, "x", 1); !errors.Is(err, context.Canceled) {
+	if _, err := CompressZIP(ctx, io.Discard, &cancellingReader{cancel: cancel}, "x", time.Time{}, 1); !errors.Is(err, context.Canceled) {
 		t.Fatalf("cancellation lost: %v", err)
 	}
 }

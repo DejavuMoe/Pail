@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/DejavuMoe/Pail/internal/rules"
 )
@@ -42,7 +43,7 @@ func trZip(t testing.TB, name, s string) []byte {
 func trAESZip(t testing.TB, name, s, password string) []byte {
 	t.Helper()
 	var b bytes.Buffer
-	if _, err := rules.CompressAES256ZIP(context.Background(), &b, strings.NewReader(s), name, -1, "ref", trResolver(password)); err != nil {
+	if _, err := rules.CompressAES256ZIP(context.Background(), &b, strings.NewReader(s), name, time.Time{}, -1, "ref", trResolver(password)); err != nil {
 		t.Fatal(err)
 	}
 	return b.Bytes()
