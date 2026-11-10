@@ -5,6 +5,7 @@ package trash
 import (
 	"fmt"
 	"path/filepath"
+	"unicode/utf16"
 	"unsafe"
 
 	"golang.org/x/sys/windows"
@@ -49,7 +50,8 @@ var procSHFileOperation = windows.NewLazySystemDLL("shell32.dll").NewProc("SHFil
 // permanent deletion instead of doing it; declining leaves the item in place,
 // which the caller reports as an error.
 func moveToTrash(path string) error {
-	if len(path) >= maxPath {
+	// MAX_PATH counts UTF-16 code units, not the bytes of the UTF-8 string.
+	if len(utf16.Encode([]rune(path))) >= maxPath {
 		return fmt.Errorf("%w: the path is too long for the Recycle Bin", ErrUnavailable)
 	}
 	vol := filepath.VolumeName(path)
