@@ -72,7 +72,7 @@ func (a *app) commitRename(fromEnter bool) {
 	}
 	e := a.rows[i]
 	name := strings.TrimSpace(r.name)
-	if name == e.Name {
+	if r.name == e.Name || name == e.Name { // untouched, or only the spaces typed around it
 		a.cancelRename()
 		return
 	}
