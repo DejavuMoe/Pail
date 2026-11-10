@@ -764,26 +764,6 @@ func (s *Service) ClearFinished() {
 	q.finished = nil
 }
 
-// waitTask blocks until task id is final or ctx ends and returns its last
-// snapshot. For tests and for operations that expand into follow-up tasks.
-func (s *Service) waitTask(ctx context.Context, id string) (Task, error) {
-	q := &s.q
-	q.mu.Lock()
-	t := q.tasks[id]
-	q.mu.Unlock()
-	if t == nil {
-		return Task{}, opErr("Wait", ErrNotFound, "no task %q", id)
-	}
-	select {
-	case <-t.done:
-	case <-ctx.Done():
-		return Task{}, ctx.Err()
-	}
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	return t.snapshot(), nil
-}
-
 // shutdownQueue implements Service.Shutdown.
 func (s *Service) shutdownQueue(ctx context.Context) error {
 	q := &s.q

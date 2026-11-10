@@ -252,7 +252,7 @@ func TestLogBlockedWriterNeverBlocksTasks(t *testing.T) {
 		close(w.release)
 		t.Fatal("tasks blocked by the slow log writer")
 	}
-	if k.dropped() == 0 {
+	if k.drops.Load() == 0 {
 		t.Error("expected dropped records")
 	}
 	close(w.release)
