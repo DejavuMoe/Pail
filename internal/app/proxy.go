@@ -216,9 +216,11 @@ func (s *Service) SaveProxy(p ProxySettings, password *string) error {
 	}
 	s.mu.Lock()
 	s.settings = st
-	if cur != p {
-		// Clients are built with the proxy: drop them (and the builds under way,
-		// by their epoch) so that the next request uses the new one.
+	if cur != p || newPassword {
+		// Clients are built with the proxy URL, which carries the password: drop
+		// them (and the builds under way, by their epoch) so that the next
+		// request uses the new one. A password written counts as a change even
+		// when the settings struct is equal.
 		for _, r := range s.accounts {
 			s.invalidateLocked(r.ID)
 		}
