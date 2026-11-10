@@ -678,6 +678,7 @@ func (a *app) rowsDue() bool {
 
 // rebuildRows filters and sorts raw into rows: folders always first.
 func (a *app) rebuildRows() {
+	a.selSum.ok = false // which chosen rows show depends on the rows
 	q := strings.ToLower(strings.TrimSpace(a.search))
 	rows := make([]Entry, 0, len(a.raw))
 	for _, e := range a.raw {
