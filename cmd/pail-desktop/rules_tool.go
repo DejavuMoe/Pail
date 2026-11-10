@@ -284,6 +284,12 @@ func (rs *rulesState) problem() string {
 
 func (a *app) rulesEnter() {
 	rs := &a.tl.rules
+	if rs.saved != nil || len(rs.draft) > 0 {
+		a.rulesCommit()
+		if rs.dirty() {
+			return // unsaved rules wait where the user left them
+		}
+	}
 	*rs = rulesState{saved: a.svc.UploadRules()}
 	rs.draft = cloneRuleList(rs.saved)
 	rs.sel = -1
