@@ -29,6 +29,7 @@ import (
 	"sync"
 	"sync/atomic"
 	"time"
+	"unicode/utf8"
 
 	"github.com/aws/smithy-go"
 )
@@ -427,6 +428,21 @@ func lgAccountAttrs(a Account) []any {
 	return []any{"account", a.ID, "name", a.Name, "provider", a.Provider, "endpoint_host", host}
 }
 
+// lgShorten redacts msg and then cuts it to logMaxMessage bytes at a character
+// boundary. Redacting first matters: a secret that straddles the cut would no
+// longer match as a whole and its first bytes would reach the log.
+func lgShorten(msg string) string {
+	msg = redact(msg)
+	if len(msg) <= logMaxMessage {
+		return msg
+	}
+	cut := logMaxMessage
+	for cut > 0 && !utf8.RuneStart(msg[cut]) {
+		cut--
+	}
+	return msg[:cut] + "..."
+}
+
 // lgErrFields extracts kind, code, status and request id from err.
 func lgErrFields(err error) []any {
 	if err == nil {
@@ -467,10 +483,7 @@ func lgErrFields(err error) []any {
 			kind = ErrNetwork
 		}
 	}
-	msg := err.Error()
-	if len(msg) > logMaxMessage {
-		msg = msg[:logMaxMessage] + "..."
-	}
+	msg := lgShorten(err.Error())
 	return []any{"error_kind", kind.String(), "error_code", code, "http_status", status, "request_id", rid, "error", msg}
 }
 
@@ -479,10 +492,7 @@ func lgOpError(oe *OpError, status int) {
 	if oe.Kind == ErrCanceled || oe.Kind == ErrNotFound || oe.Kind == ErrInvalid || oe.Kind == ErrLocked {
 		return // expected outcomes, not diagnostics
 	}
-	msg := oe.Message
-	if len(msg) > logMaxMessage {
-		msg = msg[:logMaxMessage] + "..."
-	}
+	msg := lgShorten(oe.Message)
 	lgActive.Lock()
 	hs := append([]*lgHolder(nil), lgActive.list...)
 	lgActive.Unlock()
