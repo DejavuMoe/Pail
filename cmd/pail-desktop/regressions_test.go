@@ -149,3 +149,18 @@ func TestLateSignedURLStaysOutOfANewDialog(t *testing.T) {
 		t.Errorf("the manifest.json dialog shows %+v (busy %v)", f.res, f.busy)
 	}
 }
+// After a failed save, Test connection's progress and result never showed,
+// and a result stayed on screen after the fields it tested were changed.
+func TestAccountTestResultFollowsTheForm(t *testing.T) {
+	h := newHarness(t, "light")
+	h.a.openAccountForm(true)
+	h.settle()
+	h.a.af.saveErr = "the keychain refused" // as a failed save leaves it
+	h.a.testAccount()
+	h.waitFor("test done", func() bool { return h.a.af.test == testOK })
+	h.settle()
+	h.mustHave("Connected")
+	h.a.af.endpoint = "http://elsewhere.invalid:9000"
+	h.settle()
+	h.mustNotHave("Connected")
+}
