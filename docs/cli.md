@@ -57,7 +57,7 @@ pail restore s3://bucket/prefix/ --deleted [-r]     # undelete keys
 pail stat s3://bucket/key [--version-id V]          # properties of an object
 pail cat s3://bucket/key [--version-id V]           # write an object to stdout
 pail mkdir s3://bucket/prefix/                      # create a folder
-pail du [s3://bucket/prefix/]                       # object count and size below a prefix
+pail du s3://bucket[/prefix/]                       # object count and size below a prefix
 pail tags get|set s3://bucket/key ...               # object tags, see Objects
 pail acl get|set s3://bucket/key ...                # object ACL
 pail props get|set s3://bucket/key ...              # headers and metadata
