@@ -46,7 +46,7 @@ func (a *app) accountButton(c *ui.Context) {
 	if ac.ID == "" {
 		name, sub = locales.SidebarNoAccount(), locales.SidebarAddOneToStart()
 	}
-	btn := ui.ButtonBase(c.Key("account")).Label(locales.CommonAccount()).Tooltip(locales.SidebarSwitchAccount()).Height(topBarH).Grow(1).MinWidth(0).Padding(0, 12).Gap(8).AlignItems(ui.Center).Transition(hoverFade())
+	btn := ui.ButtonBase(c.Key("account")).Label(locales.CommonAccount()).Tooltip(locales.SidebarSwitchAccount()).Height(topBarH).Grow(1).MinWidth(0).Padding(0, 16).Gap(8).AlignItems(ui.Center)
 	if btn.Hovered() {
 		btn.Background(k.SurfaceHover)
 	}
@@ -120,7 +120,7 @@ func sidebarLabel(c *ui.Context, title string, count int, trailing func()) {
 func (a *app) sidebarItem(c *ui.Context, id string, icon *ui.SVG, name, region string, disabled bool) ui.Element {
 	k := tk(c)
 	on := a.navSel == id
-	row := ui.ButtonBase(c.Key(id)).Label(name).Height(28).Margin(0, 8).Padding(0, 8).Gap(8).Radius(RadiusControl).AlignItems(ui.Center).Disabled(disabled).Transition(hoverFade())
+	row := ui.ButtonBase(c.Key(id)).Label(name).Height(28).Margin(0, 8).Padding(0, 8).Gap(8).Radius(RadiusControl).AlignItems(ui.Center).Disabled(disabled)
 	switch {
 	case disabled:
 		row.Opacity(0.4)
@@ -134,7 +134,6 @@ func (a *app) sidebarItem(c *ui.Context, id string, icon *ui.SVG, name, region s
 		w := 400
 		if on && !disabled {
 			ic, w = k.Accent, 600
-			selectionBar(c, 6, "sidebar")
 		}
 		ui.Icon(c, icon).FontSize(14).TextColor(ic)
 		ui.Text(c, name).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)
@@ -166,11 +165,12 @@ func (a *app) bucketList(c *ui.Context) {
 				}
 			}
 		})
-		ui.Box(c).Margin(0, 12, 8, 12).Children(func() {
+		// Its edge on the rows' fills (8), its icon on their icons (16).
+		ui.Box(c).Margin(0, 8, 8, 8).Children(func() {
 			searchBox(c, &a.bucketFilter, &a.filterH, locales.SidebarFilterBuckets(), locales.SidebarFilterBuckets(), 0, icons.Get("search"), icons.Get("x"))
 		})
 		if a.bucketsErr != "" {
-			ui.Column(c).Margin(0, 12, 8, 12).Padding(8, 10).Gap(6).Radius(RadiusControl).
+			ui.Column(c).Margin(0, 8, 8, 8).Padding(8).Gap(6).Radius(RadiusControl).
 				Background(k.Danger.Alpha(0.10)).Border(1, k.Danger.Alpha(0.35)).Children(func() {
 				ui.Row(c).Gap(6).AlignItems(ui.Start).Children(func() {
 					ui.Icon(c, icons.Get("circle-alert")).FontSize(14).TextColor(k.Danger).Shrink(0).MarginY(1)
@@ -178,7 +178,7 @@ func (a *app) bucketList(c *ui.Context) {
 				})
 				ui.Row(c).Justify(ui.End).Gap(8).Children(func() {
 					switch a.bucketsFix {
-					case "unlock":
+					case fixUnlock:
 						secondaryButton(c, locales.SidebarUnlock(), a.bucketsLoad).OnClick(func() {
 							id := a.accountID
 							a.askUnlock("buckets", func() {
@@ -187,9 +187,9 @@ func (a *app) bucketList(c *ui.Context) {
 								}
 							})
 						})
-					case "secret":
+					case fixSecret:
 						secondaryButton(c, locales.SidebarEnterSecret(), false).OnClick(func() { a.openAccountForm(true) })
-					case "buckets":
+					case fixNameBuckets:
 						// A refused list keeps Retry (the policy may just have been
 						// granted) and adds the way out for a key that may not list.
 						secondaryButton(c, locales.CommonRetry(), a.bucketsLoad).OnClick(func() { a.loadBuckets(true) })
@@ -302,7 +302,7 @@ func (a *app) toolsHeader(c *ui.Context) {
 		tip, icon = locales.SidebarToolsExpand(), "chevron-right"
 	}
 	b := ui.ButtonBase(c.Key("tools-header")).Label(locales.SidebarTools()).Tooltip(tip).Expanded(!a.collapseTools).
-		Height(24).Margin(10, 8, 2, 8).Padding(0, 8).Gap(4).Radius(RadiusControl).AlignItems(ui.Center).AlignSelf(ui.Start).Transition(hoverFade())
+		Height(24).Margin(10, 8, 2, 8).Padding(0, 8).Gap(4).Radius(RadiusControl).AlignItems(ui.Center).AlignSelf(ui.Start)
 	if b.Hovered() {
 		b.Background(k.SurfaceHover)
 	}
@@ -333,10 +333,20 @@ func (a *app) navigate() {
 	}
 }
 
+// bucketsFix is what the error of the bucket list offers besides its text.
+type bucketsFix uint8
+
+const (
+	fixRetry       bucketsFix = iota // Retry: a network or service error
+	fixUnlock                        // Unlock: the encrypted vault is locked
+	fixSecret                        // Enter secret: the account lost its secret
+	fixNameBuckets                   // Retry, and Name buckets: the key may not list buckets
+)
+
 // bucketsErrText is the error line of the bucket list. The missing-secret
 // message is said again every frame, so it follows a language change.
 func (a *app) bucketsErrText() string {
-	if a.bucketsFix == "secret" {
+	if a.bucketsFix == fixSecret {
 		return locales.StateBucketsSecretMissing()
 	}
 	return a.bucketsErr

@@ -304,11 +304,10 @@ func (a *app) rowCheck(c *ui.Context, i int, e *Entry, every bool) (extend bool)
 	}
 	shown := on || every || a.hoverKey == e.Key || hit.Hovered()
 	hit.Children(func() {
-		fade := float32(1)
-		if shown {
-			fade = 0
+		box := checkBox(c, st, hit.Hovered(), false)
+		if !shown {
+			box.Opacity(0) // its column stays, so the names do not move
 		}
-		checkBox(c, st, hit.Hovered(), false).AnimatePose(ui.Pose{Fade: fade}, colorAnim)
 	})
 	return extend
 }
@@ -443,4 +442,12 @@ func (a *app) rowUnderPointer(tbl ui.Element) string {
 		}
 	}
 	return ""
+}
+
+// b2f is 1 for true and 0 for false.
+func b2f(b bool) float32 {
+	if b {
+		return 1
+	}
+	return 0
 }

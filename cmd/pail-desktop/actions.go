@@ -481,10 +481,3 @@ type confirmState struct {
 	// dangerRows are the keys of rows shown in the Danger color.
 	dangerRows []string
 }
-
-func dangerIf(on bool, keys ...string) []string {
-	if on {
-		return keys
-	}
-	return nil
-}

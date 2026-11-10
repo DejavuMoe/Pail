@@ -4,6 +4,16 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- The bucket settings dialog is one sheet in one colour: the section list sits on the dialog's own background, separated from the form by a line, and its names line up with the title.
+- Selected items in the sidebar, the bucket settings list, the version list and the sync job and upload rule lists no longer have a coloured bar on their left edge.
+- The interface no longer animates hovers, selections, switches, check boxes, panels and counts; they change at once. Dialogs, menus and notifications only fade in where they appear, and close at once.
+- The context menu of objects is shorter. It lists only what applies to the selected items, groups the copy commands for keys, URIs, URLs and signed URLs under **Copy link**, and shows **Upload files…**, **New folder**, **Refresh** and **Select all** only when you right-click the empty space below the rows.
+- Fewer questions before acting. Dragging items onto a folder moves them at once, as cut and paste do. **Restore all in this folder** restores at once. Saving headers for several objects happens when you press **Update N items**. A sync whose preview deletes nothing runs when you press **Run sync**; a sync that deletes files still asks first.
+- The divider above the transfers panel is grey while you point at it or drag it, like the other dividers, instead of blue.
 ## [0.5.3] - 2026-11-10
 
 ### Added

@@ -39,6 +39,24 @@ func (h *harness) menu() []string {
 	return out
 }
 
+// menuAll is menu followed by the items of each submenu of the open menu,
+// written "Parent > Item".
+func (h *harness) menuAll() []string {
+	h.t.Helper()
+	out := h.menu()
+	if nativeMenus || !h.a.popup.open {
+		return out
+	}
+	for _, it := range h.a.popup.levels[0].items {
+		for _, s := range it.sub {
+			if !s.separator {
+				out = append(out, it.label+" > "+s.label)
+			}
+		}
+	}
+	return out
+}
+
 // chooseMenu clicks the item labelled with the last of path in the open menu,
 // clicking the submenus the others label on the way, as a user would.
 func (h *harness) chooseMenu(path ...string) error {
@@ -617,7 +635,7 @@ func TestNativeMenusOnMacOS(t *testing.T) {
 	}
 	h.tt.Frame()
 	menu := h.tt.Menu()
-	for _, want := range []string{"Download", "Copy key", "Delete", "Select all"} {
+	for _, want := range []string{"Download", "Copy link", "Delete"} {
 		if !contains(menu, want) {
 			t.Errorf("native context menu %q lacks %q", menu, want)
 		}
@@ -625,7 +643,7 @@ func TestNativeMenusOnMacOS(t *testing.T) {
 	if h.a.popup.open {
 		t.Error("an in-window menu opened next to the native one")
 	}
-	if err := h.tt.ChooseMenuItem("Copy key"); err != nil {
+	if err := h.tt.ChooseMenuItem("Copy link", "Copy key"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()

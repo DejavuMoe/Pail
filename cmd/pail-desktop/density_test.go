@@ -35,7 +35,7 @@ func TestStatusBarLeftIsTheListingOnly(t *testing.T) {
 	h.a.inspectorOpen = false
 	h.tt.Frame()
 	items := h.rectOf("8 items")
-	if !near32(items.X, 12, 1) {
+	if !near32(items.X, 16, 1) { // the sidebar's content edge
 		t.Errorf("the item count starts at %.1f: something comes before it (account, region)", items.X)
 	}
 	// The account name shows once (the switcher) and so does the region.
@@ -263,12 +263,11 @@ func TestTransfersStripIsHiddenWithoutTasksAndTheCountsOpenThePanel(t *testing.T
 	h.mustNotHave("Transfers", "0 active")
 }
 
-// The strip grows from nothing with the panel's own easing when the first task
-// arrives, and a resize moves nothing.
-func TestTransfersStripGrowsFromNothingWithTheFirstTask(t *testing.T) {
+// The first task brings the panel in the frame it arrives (two: the Split is
+// new, and its boxes are known one frame on), with nothing left to animate.
+func TestTransfersPanelComesWithTheFirstTaskAtOnce(t *testing.T) {
 	h := newMotionHarness(t, "light")
-	h.tt.Advance(time.Second)
-	h.tt.Frame()
+	h.rest()
 	if h.tt.HasText("Transfers") {
 		t.Fatal("the strip shows with no task")
 	}
@@ -276,31 +275,14 @@ func TestTransfersStripGrowsFromNothingWithTheFirstTask(t *testing.T) {
 	rest := tableBottom()
 	h.a.setTasks([]Task{{ID: "x", Kind: core.KindUpload, Title: "Upload x", Status: core.StatusRunning, BytesTotal: 100, BytesDone: 10, Created: time.Now(), Started: time.Now()}})
 	h.tt.Frame()
-	h.step(60 * time.Millisecond)
-	mid := tableBottom()
-	h.tt.Advance(time.Second)
 	h.tt.Frame()
-	end := tableBottom()
-	if !(end < mid && mid < rest) {
-		t.Errorf("the table's bottom goes %.1f, %.1f, %.1f: the panel did not grow from nothing, eased", rest, mid, end)
+	first := tableBottom()
+	h.rest()
+	if end := tableBottom(); first != end || end >= rest {
+		t.Errorf("the table's bottom goes %.1f, %.1f, then %.1f: the panel did not come at once", rest, first, end)
 	}
 	if !h.a.transfersOpen {
 		t.Error("the first task did not open the panel")
-	}
-
-	// Under reduced motion it is where it ends at once.
-	h2 := newMotionHarness(t, "light")
-	h2.tt.SetPreferences(ui.Preferences{ReduceMotion: true})
-	h2.tt.Advance(time.Second)
-	h2.tt.Frame()
-	h2.a.setTasks([]Task{{ID: "x", Kind: core.KindUpload, Title: "Upload x", Status: core.StatusRunning, Created: time.Now(), Started: time.Now()}})
-	h2.tt.Frame()
-	h2.tt.Frame() // the Split is new: its boxes are known one frame on
-	first := h2.a.tblRect.Y + h2.a.tblRect.H
-	h2.tt.Advance(time.Second)
-	h2.tt.Frame()
-	if last := h2.a.tblRect.Y + h2.a.tblRect.H; first != last {
-		t.Errorf("reduced motion: %.1f then %.1f", first, last)
 	}
 }
 

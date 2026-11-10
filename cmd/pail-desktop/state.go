@@ -88,12 +88,11 @@ type app struct {
 	localeSet func(tag string)
 	langSave  func(tag string)
 
-	tray     trayUI       // the notification area / menu bar icon (tray.go)
-	popup    menuState    // the in-window menu (ctxmenu.go)
-	popGhost *menuGhost   // the menu that just closed, fading out (menumotion.go)
-	pal      paletteState // the command palette (palette.go)
-	about    aboutState   // the About dialog (about.go)
-	keys     keysState    // the keyboard shortcuts dialog (about.go)
+	tray  trayUI       // the notification area / menu bar icon (tray.go)
+	popup menuState    // the in-window menu (ctxmenu.go)
+	pal   paletteState // the command palette (palette.go)
+	about aboutState   // the About dialog (about.go)
+	keys  keysState    // the keyboard shortcuts dialog (about.go)
 	// settingsMu orders the read-modify-write cycles of Settings, so two quick
 	// changes in Settings cannot overwrite each other.
 	settingsMu sync.Mutex
@@ -114,7 +113,7 @@ type app struct {
 	buckets      []Bucket
 	bucketsLoad  bool
 	bucketsErr   string
-	bucketsFix   string // what fixes bucketsErr: "unlock", "secret" or "" (Retry)
+	bucketsFix   bucketsFix // what the bucket list error offers (sidebar.go)
 	bucketsGen   int
 	bucketFilter string
 	filterH      ui.Handle
@@ -151,7 +150,6 @@ type app struct {
 	cursor      int        // row last chosen, -1 for none
 	hoverKey    string
 	rowRects    map[string]ui.Rect
-	selBar      selBarSummary      // what the selection bar last showed, kept while it folds away
 	rowTops     map[string]float32 // top of each row built, in the window, by key (marquee.go)
 	tblRect     ui.Rect            // the object table, in the window, as last laid out
 	drag        dragSel            // a drag selecting rows (marquee.go)
@@ -159,33 +157,26 @@ type app struct {
 
 	inspectorOpen bool
 	inspTab       int
-	// inspWanted is whether the inspector was asked for in the frame before,
-	// once a frame has been built (inspKnown). inspFade is set as the user
-	// asks for it anew and holds until it has been laid out: its content fades
-	// in then; shown because the window made room for it (a resize), it does
-	// not.
-	inspWanted, inspKnown, inspFade bool
-	inspW                           float32
-	sidebarW                        float32
-	lay                             layoutMetrics // this frame's widths and breakpoint tiers
-	layMem                          layoutState   // what the breakpoints remember between frames
-	bodyH                           float32       // this frame's height above the status bar and the transfers panel
-	fxSide                          splitFx       // divider styles of the three Splits
-	fxInsp                          splitFx
-	fxTrans                         splitFx
-	head                            core.ObjectInfo
-	headKey                         string
-	headState                       loadPhase
-	headErr                         string
-	headGen                         int
-	cancelHead                      context.CancelFunc
-	prev                            previewState
+	inspW         float32
+	sidebarW      float32
+	lay           layoutMetrics // this frame's widths and breakpoint tiers
+	layMem        layoutState   // what the breakpoints remember between frames
+	bodyH         float32       // this frame's height above the status bar and the transfers panel
+	fxSide        splitFx       // divider styles of the three Splits
+	fxInsp        splitFx
+	fxTrans       splitFx
+	head          core.ObjectInfo
+	headKey       string
+	headState     loadPhase
+	headErr       string
+	headGen       int
+	cancelHead    context.CancelFunc
+	prev          previewState
 
 	transfersOpen bool
 	transTab      int
 	transH        float32
-	transDragAt   time.Time // the last frame the transfers divider moved: it is dragged, not animated
-	tasks         []Task    // submission order; the panel shows newest first
+	tasks         []Task // submission order; the panel shows newest first
 	taskIdx       map[string]int
 	inbox         eventInbox
 	unsub         func()
@@ -418,10 +409,10 @@ func (a *app) loadBuckets(openFirst bool) {
 	}
 	a.bucketsGen++
 	gen := a.bucketsGen
-	a.bucketsLoad, a.bucketsErr, a.bucketsFix = true, "", ""
+	a.bucketsLoad, a.bucketsErr, a.bucketsFix = true, "", fixRetry
 	if a.account().SecretMissing { // nothing to connect with until the secret is entered
 		a.bucketsLoad = false
-		a.bucketsErr, a.bucketsFix = locales.StateBucketsSecretMissing(), "secret"
+		a.bucketsErr, a.bucketsFix = locales.StateBucketsSecretMissing(), fixSecret
 		return
 	}
 	ctx, cancel := context.WithTimeout(a.ctx, 30*time.Second)
@@ -444,9 +435,9 @@ func (a *app) loadBuckets(openFirst bool) {
 				})
 				switch {
 				case isLocked(err):
-					a.bucketsFix = "unlock"
+					a.bucketsFix = fixUnlock
 				case cannotListBuckets(err) && len(acct.Buckets) == 0:
-					a.bucketsFix = "buckets" // the key may not list buckets: offer to name them
+					a.bucketsFix = fixNameBuckets // the key may not list buckets: offer to name them
 				}
 				op.state, op.err = opFailed, a.bucketsErr
 				a.noteOp(op)
@@ -957,7 +948,6 @@ func (a *app) applyInbox() {
 		return
 	}
 	touched := map[string]bool{}
-	stateChanged := false
 	for _, e := range evs {
 		t := e.Task
 		touched[t.ID] = true
@@ -965,7 +955,6 @@ func (a *app) applyInbox() {
 			touched[t.GroupID] = true
 		}
 		i, ok := a.taskIdx[t.ID]
-		stateChanged = stateChanged || e.Removed || !ok || a.tasks[i].Status != t.Status
 		switch {
 		case e.Removed:
 			if ok {
@@ -983,8 +972,6 @@ func (a *app) applyInbox() {
 		if a.watches[k] != nil {
 			a.checkWatch(k)
 		}
-	}
-	if stateChanged {
 	}
 }
 

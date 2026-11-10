@@ -22,14 +22,12 @@ func switchControl(c *ui.Context, on *bool, label string) ui.Element {
 	if *on {
 		target = 1
 	}
-	// The knob moves on the slide spring (it may overshoot a hair); the track
-	// changes colour by a fade of its own, which stays under reduced motion.
-	pos := sw.AnimateTo("knob", target, slideSpring)
+	pos := target // the knob's place: 0 left, 1 right
 	track := k.ControlOff
 	if *on {
 		track = k.Accent
 	}
-	sw.Background(sw.AnimateColor("track", track, fadeAnim))
+	sw.Background(track)
 	if sw.Hovered() {
 		sw.Border(1, k.BorderStrong.Alpha(0.5))
 	}
@@ -40,8 +38,9 @@ func switchControl(c *ui.Context, on *bool, label string) ui.Element {
 		p.Shadow(knob, d/2, 0, 1, 3, 0, k.KnobShadow)
 		p.Fill(knob, k.Knob, d/2)
 	})
-	// Read before drawing: a frame that only paints (a pose moving, motion.go)
-	// draws again without building, when an Element handle no longer holds.
+	// Read before drawing: a frame that only paints (an overlay fading in,
+	// motion.go) draws again without building, when an Element handle no longer
+	// holds.
 	focused := sw.FocusVisible()
 	sw.DrawOver(func(p *ui.Painter, r ui.Rect) {
 		if focused {
@@ -60,17 +59,13 @@ const (
 	checkMixed // some of what it stands for: the select-all header
 )
 
-// markFrom is the scale the check mark or dash grows from as a box is checked.
-const markFrom = 0.85
-
 // checkBox is the 16px box of a check box in state st: a 1.5px BorderStrong
 // outline on Surface while off (TextMuted under the pointer), an Accent fill
-// with an AccentText check mark, or a dash while mixed, otherwise. The fill
-// fades in durFast; the mark grows from markFrom and fades in over
-// durStandard. ring draws the focus ring around it.
+// with an AccentText check mark, or a dash while mixed, otherwise. ring draws
+// the focus ring around it.
 func checkBox(c *ui.Context, st checkState, hover, ring bool) ui.Element {
 	k := tk(c)
-	box := ui.Box(c).Size(checkSize, checkSize).Radius(RadiusSmall).Shrink(0).Transition(hoverFade())
+	box := ui.Box(c).Size(checkSize, checkSize).Radius(RadiusSmall).Shrink(0)
 	if st != checkOff {
 		box.Background(k.Accent).Border(1.5, k.Accent)
 	} else {
@@ -79,27 +74,16 @@ func checkBox(c *ui.Context, st checkState, hover, ring bool) ui.Element {
 			box.Border(1.5, k.TextMuted)
 		}
 	}
-	// The value starts where it is first asked for, so a row scrolled into
-	// view shows its mark at rest; only a change of state animates.
-	shown := float32(0)
-	if st != checkOff {
-		shown = 1
-	}
-	m := box.AnimateTo("mark", shown, fadeAnim)
 	box.DrawOver(func(p *ui.Painter, r ui.Rect) {
-		if m > 0 {
-			s := markFrom + (1-markFrom)*m
-			cx, cy := r.X+r.W/2, r.Y+r.H/2
-			at := func(fx, fy float32) (float32, float32) {
-				return cx + (r.X+r.W*fx-cx)*s, cy + (r.Y+r.H*fy-cy)*s
-			}
+		if st != checkOff {
+			at := func(fx, fy float32) (float32, float32) { return r.X + r.W*fx, r.Y + r.H*fy }
 			var path ui.Path
 			if st == checkMixed {
 				path.MoveTo(at(0.27, 0.5)).LineTo(at(0.73, 0.5))
 			} else {
 				path.MoveTo(at(0.24, 0.52)).LineTo(at(0.43, 0.71)).LineTo(at(0.77, 0.31))
 			}
-			p.StrokePath(&path, 1.75, k.AccentText.Alpha(m))
+			p.StrokePath(&path, 1.75, k.AccentText)
 		}
 		if ring {
 			p.FocusRing(r, [4]float32{4, 4, 4, 4})
@@ -121,28 +105,6 @@ func checkboxControl(c *ui.Context, checked *bool, label string) ui.Element {
 		ui.Text(c, label).FontSize(sizeBody).TextColor(k.Text)
 	})
 	return row
-}
-
-// selectionBar is the 2px Accent bar on the left edge of a selected row, the
-// second cue next to the fill. inset keeps it clear of the row's top and
-// bottom. The row must be a positioned element (any button or row is). The
-// rows of a list that share a group (not "") slide the bar from the row that
-// lost it to the one that has it; "" leaves it where it appears.
-func selectionBar(c *ui.Context, inset float32, group string) ui.Element {
-	bar := ui.Box(c).Absolute().Left(1).Top(inset).Bottom(inset).Width(2).Radius(RadiusIndicator).Background(tk(c).Accent)
-	if group != "" {
-		bar.Transition(slideTransition(group))
-	}
-	return bar
-}
-
-// markSelected paints the same bar over a selected row from outside, for rows
-// whose children are added by the caller (toolListRow).
-func markSelected(c *ui.Context, row ui.Element, inset float32) {
-	acc := tk(c).Accent
-	row.DrawOver(func(p *ui.Painter, r ui.Rect) {
-		p.Fill(ui.Rect{X: r.X + 1, Y: r.Y + inset, W: 2, H: r.H - 2*inset}, acc, 1)
-	})
 }
 
 // buttonRow is the right-aligned row of dialog buttons.

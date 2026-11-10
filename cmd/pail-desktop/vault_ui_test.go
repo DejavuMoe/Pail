@@ -160,8 +160,8 @@ func TestVaultOperationHittingLockOpensUnlockWrongPasswordThenRetries(t *testing
 	h.waitFor("unlock dialog", func() bool { return h.a.vu.unlock.open })
 	h.settle()
 	h.mustHave("Unlock vault", "Master password", "Unlock", "Cancel", "Unlock…")
-	if h.a.bucketsFix != "unlock" || !strings.Contains(h.a.bucketsErr, "locked") {
-		t.Fatalf("buckets error = %q (%s)", h.a.bucketsErr, h.a.bucketsFix)
+	if h.a.bucketsFix != fixUnlock || !strings.Contains(h.a.bucketsErr, "locked") {
+		t.Fatalf("buckets error = %q (%d)", h.a.bucketsErr, h.a.bucketsFix)
 	}
 
 	// A wrong password is explained inline; the dialog and its focus stay.

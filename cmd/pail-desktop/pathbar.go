@@ -48,7 +48,7 @@ func (a *app) pathBar(c *ui.Context) {
 						tip += " · " + prefixAt(0)
 					}
 				}
-				seg := ui.ButtonBase(c.Key(i)).Label(shown).Height(24).Padding(0, 6).Radius(RadiusControl).Center().Shrink(1).MinWidth(0).Tooltip(tip).Transition(hoverFade())
+				seg := ui.ButtonBase(c.Key(i)).Label(shown).Height(24).Padding(0, 6).Radius(RadiusControl).Center().Shrink(1).MinWidth(0).Tooltip(tip)
 				if i == last {
 					seg = seg.Bind(&a.crumbH)
 				}

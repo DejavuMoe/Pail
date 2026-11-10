@@ -381,11 +381,10 @@ func TestInspectorHeaderLabelsKeepTheirWidth(t *testing.T) {
 func TestSplitDividersAvoidTheAccent(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
+	h.a.transfersOpen = true // its divider exists only while the panel is open
+	h.settle()
 	k := tokensFor(false)
 	for name, fx := range map[string]*splitFx{"sidebar": &h.a.fxSide, "inspector": &h.a.fxInsp, "transfers": &h.a.fxTrans} {
-		if name == "transfers" {
-			continue // the panel collapses by itself while there is no transfer
-		}
 		if fx.th.Accent == k.Accent {
 			t.Errorf("%s divider is painted with the accent colour", name)
 		}

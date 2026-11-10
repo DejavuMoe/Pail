@@ -516,17 +516,12 @@ func TestSyncJobPreviewRunAndMirrorWarning(t *testing.T) {
 	h.mustClick("Preview")
 	h.waitFor("preview again", func() bool { return s.pv != nil })
 
-	// Run asks first and shows what it will do.
+	// A plan that deletes nothing runs from its button: the preview beside it
+	// already said what it does.
 	h.mustClick("Run sync")
-	if !h.a.confirm.open || h.a.confirm.title != "Run sync?" || h.a.confirm.danger {
-		t.Fatalf("confirm = %+v", h.a.confirm)
+	if h.a.confirm.open {
+		t.Fatalf("a run with no deletes asked to confirm: %+v", h.a.confirm)
 	}
-	h.mustHave("Run sync?", "3 files", "s3://acme-website/sync-it/")
-	if _, ok := h.env.Srv.Object("acme-website", "sync-it/a.txt"); ok {
-		t.Fatal("asking must not upload")
-	}
-	h.a.confirm.run()
-	h.a.confirm.open = false
 	h.waitFor("objects uploaded", func() bool {
 		_, ok := h.env.Srv.Object("acme-website", "sync-it/sub/c.txt")
 		return ok
@@ -852,8 +847,9 @@ func TestRulesTestKeyFillsTheStrip(t *testing.T) {
 	}
 }
 
-// Segmented controls are as high as the inputs and selects beside them, and
-// their radii come from the control radius.
+// Segmented controls are as high as the inputs and selects beside them, and a
+// segment's corner is concentric with the track's: the control radius less the
+// track's border and padding.
 func TestSegmentedControlMatchesTheControlHeight(t *testing.T) {
 	if controlH != 28 {
 		t.Errorf("controlH = %d, want 28 (design.md: controls are 28 high)", controlH)
@@ -861,7 +857,10 @@ func TestSegmentedControlMatchesTheControlHeight(t *testing.T) {
 	if got := segmentH + 2*(segBorder+segPad); got != controlH {
 		t.Errorf("a segmented track is %d high, controls %d", got, controlH)
 	}
-	if segmentRadii != RadiusControl-segPad {
-		t.Errorf("segment radius %d, want %d", segmentRadii, RadiusControl-segPad)
+	if want := RadiusControl - segBorder - segPad; segmentRadii != want {
+		t.Errorf("segment radius %d, want %d", segmentRadii, want)
+	}
+	if RadiusRow != RadiusPopover-popoverPad {
+		t.Errorf("a popover row's radius is %d, want the panel's %d less its inset %d", RadiusRow, RadiusPopover, popoverPad)
 	}
 }

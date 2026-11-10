@@ -69,7 +69,8 @@ func dialogW(c *ui.Context, open *bool, title string, width float32, body, foote
 		overflow := st.MaxY > 0
 		divider(c, overflow)
 		ui.Scroll(c).TrackScroll(st).Shrink(1).MinHeight(0).ScrollbarInsets(0, scrollBarInset, 0, 0).Children(func() {
-			ui.Column(c).Padding(8, dialogPad, 4, dialogPad).Gap(16).Children(body)
+			// 12 + 8 under the title, 8 + 12 over the footer: the same 20 both ways.
+			ui.Column(c).Padding(8, dialogPad, 8, dialogPad).Gap(16).Children(body)
 		})
 		divider(c, overflow)
 		dialogFooter(c, footer)
@@ -148,7 +149,7 @@ func (a *app) deleteDialog(c *ui.Context) {
 			}
 			fieldRow(c, locales.CommonPrefix(), prefix, d.loc.Prefix != "")
 		})
-		ui.Column(c).Gap(2).Padding(8, 10).Radius(RadiusControl).Background(k.Sidebar).Children(func() {
+		well(c, ui.Column(c).Gap(2).Padding(8, 10)).Children(func() {
 			for i, key := range d.keys {
 				if i == 5 {
 					ui.Text(c, locales.DialogsMore(groupInt(len(d.keys)-5))).FontSize(sizeSecondary).TextColor(k.TextMuted)

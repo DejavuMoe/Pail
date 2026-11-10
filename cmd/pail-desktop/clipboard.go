@@ -121,8 +121,10 @@ func copyFailedText(verb, detail string) string {
 	return locales.ClipboardCopyFailed(detail)
 }
 
-// askMove confirms moving the selected rows into dest after a drag.
-func (a *app) askMove(dest Scope) {
+// dropMove moves the selected rows into dest after a drag, as Cut and Paste
+// do: the drop is the decision, the move can be undone by dragging back, and
+// the toast says what moved.
+func (a *app) dropMove(dest Scope) {
 	src := a.scope
 	var keys []string
 	for _, k := range a.selectedKeys() {
@@ -133,17 +135,7 @@ func (a *app) askMove(dest Scope) {
 	if len(keys) == 0 || dest == src {
 		return
 	}
-	where := func(l Scope) string {
-		if l.Prefix == "" {
-			return locales.ClipboardBucketRoot()
-		}
-		return l.Prefix
-	}
-	rows := append(a.scopeRows(src), KV{locales.ClipboardFrom(), where(src)}, KV{locales.ClipboardTo(), where(dest)}, KV{locales.ClipboardItems(), describeKeys(keys)})
-	a.confirm = confirmState{
-		open: true, title: locales.ClipboardMoveTitle(locales.CommonItems(len(keys))), rows: rows, action: locales.CommonMove(),
-		run: func() { a.transferKeys(src, keys, dest, true, false) },
-	}
+	a.transferKeys(src, keys, dest, true, false)
 }
 
 // dropTarget makes e take rows dragged from the object table: dest is the
@@ -152,7 +144,7 @@ func (a *app) askMove(dest Scope) {
 func (a *app) dropTarget(e ui.Element, dest *Scope) bool {
 	_, over := ui.DragOver[any](e)
 	if _, ok := ui.Drop[any](e); ok && dest != nil && a.sel.Len() > 0 {
-		a.askMove(*dest)
+		a.dropMove(*dest)
 	}
 	return over && dest != nil
 }

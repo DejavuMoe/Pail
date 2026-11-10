@@ -372,10 +372,22 @@ func TestContextMenuFromCommandTable(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	menu := h.menu()
-	for _, want := range []string{"Download", "Copy key", "Copy URI", "Copy URL", "Copy signed URL…", "Delete", "Refresh", "Select all"} {
+	// A row's menu: what applies to it, the links folded under "Copy link",
+	// none of the folder's own commands and nothing greyed out.
+	menu := h.menuAll()
+	for _, want := range []string{"Download", "Copy link > Copy key", "Copy link > Copy URI", "Copy link > Copy URL", "Copy link > Copy signed URL…", "Delete"} {
 		if !contains(menu, want) {
 			t.Errorf("context menu %q missing %q", menu, want)
+		}
+	}
+	for _, not := range []string{"Open", "Paste", "Refresh", "Select all", "Upload files…"} {
+		if contains(menu, not) {
+			t.Errorf("a file's context menu %q lists %q", menu, not)
+		}
+	}
+	for _, it := range h.a.popup.levels[0].items {
+		if it.disabled {
+			t.Errorf("the context menu shows %q disabled: it should leave it out", it.label)
 		}
 	}
 	if keys := h.a.selectedKeys(); len(keys) != 1 || keys[0] != "manifest.json" {
@@ -384,8 +396,24 @@ func TestContextMenuFromCommandTable(t *testing.T) {
 	h.snap("context-menu-light")
 	h.closeMenu()
 	h.settle()
+	// The space under the rows: the folder's own commands.
+	h.a.clearSelection()
+	h.a.hoverKey = ""
+	mb := &menuBuilder{}
+	h.a.buildMenu(mb)
+	var blank []string
+	for _, it := range tidyMenu(mb.items) {
+		blank = append(blank, it.label)
+	}
+	for _, want := range []string{"Upload files…", "New folder", "Refresh", "Select all"} {
+		if !contains(blank, want) {
+			t.Errorf("the blank-space menu %q misses %q", blank, want)
+		}
+	}
+	if contains(blank, "Delete") || contains(blank, "Download") {
+		t.Errorf("the blank-space menu %q offers commands for rows", blank)
+	}
 }
-
 func TestBucketListErrorHasRetry(t *testing.T) {
 	h := newRawHarness(t, "light", true)
 	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
@@ -423,4 +451,9 @@ func TestListErrorShowsRetry(t *testing.T) {
 func (a *app) idle() bool {
 	return !a.bucketsLoad && !a.loading && a.headState != loadBusy && a.prev.state != previewLoading &&
 		(!a.del.open || a.del.state != delCounting) && !a.af.busy() && !a.folderDlg.busy && a.busyOps.Load() == 0 && !a.vu.busyNow()
+}
+
+// busyNow reports whether a vault dialog waits on the service (idle).
+func (v *vaultUI) busyNow() bool {
+	return v.create.busy || v.unlock.busy || v.change.busy || v.toKeychain.busy || v.reset.busy
 }

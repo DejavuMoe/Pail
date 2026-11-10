@@ -103,23 +103,22 @@ func (a *app) syncProgress() {
 func (a *app) transfersBar(c *ui.Context) {
 	k := tk(c)
 	n := countTasks(a.tasks)
-	bar := ui.Row(c).Height(collapsedBar).Padding(0, 12).Gap(8).AlignItems(ui.Center).
-		BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Background(k.Background).Transition(hoverFade())
+	bar := ui.Row(c).Height(collapsedBar).Padding(0, 16).Gap(8).AlignItems(ui.Center).
+		BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Background(k.Background)
 	if bar.Hovered() {
 		bar.Background(k.SurfaceHover)
 	}
 	bar.Children(func() {
 		ui.Icon(c, icons.Get("chevron-up")).FontSize(14).TextColor(k.TextMuted)
 		ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeSecondary).TextColor(k.Text)
-		// Three counts, each rolling alone, so that one finishing and another
-		// starting in the same moment do not turn the whole line over.
+		// Three counts, each its own text.
 		for i, s := range []string{
 			locales.TransfersSummaryActive(fmt.Sprint(n[0])), locales.TransfersSummaryCompleted(fmt.Sprint(n[1])), locales.TransfersSummaryFailed(fmt.Sprint(n[2])),
 		} {
 			if i > 0 {
 				ui.Text(c.Key(i), "·").FontSize(sizeSecondary).TextColor(k.TextSubtle)
 			}
-			countText(c, "summary-"+fmt.Sprint(i), s, k.TextMuted, true)
+			countText(c, "summary-"+fmt.Sprint(i), s, k.TextMuted)
 		}
 	})
 	if bar.Clicked() {
@@ -161,9 +160,9 @@ func (a *app) transfersPanel(c *ui.Context) {
 						case tab.Hovered():
 							col = k.Text
 						}
-						ui.Text(c, label).FontSize(sizeSecondary).FontWeight(w).TextColor(tab.AnimateColor("ink", col, colorAnim)).SingleLine().FontFeatures("tnum").ContentTransition(countRoll)
+						ui.Text(c, label).FontSize(sizeSecondary).FontWeight(w).TextColor(col).SingleLine().FontFeatures("tnum")
 						if on {
-							tabIndicator(c, "transfer-tabs")
+							tabIndicator(c)
 						}
 					})
 				}
@@ -210,9 +209,10 @@ func (a *app) transfersPanel(c *ui.Context) {
 }
 
 // progressBar is the fixed 160x4 bar; frac is 0..1, danger paints it Danger.
-// The fill's width eases to each new fraction in durStandard (a task reports
+// The fill's width eases to each new fraction over baseAnim (a task reports
 // about ten times a second, so the target moves on before the ease ends and
-// the fill just keeps going), and a change of state fades the colour.
+// the fill just keeps going, instead of jumping by every chunk); its colour
+// changes at once.
 func progressBar(c *ui.Context, frac float64, danger bool) {
 	k := tk(c)
 	fill := k.Accent
@@ -222,7 +222,7 @@ func progressBar(c *ui.Context, frac float64, danger bool) {
 	frac = max(0, min(1, frac))
 	ui.Box(c).Width(colProgress).Height(4).Radius(RadiusBar).Background(k.Border).Shrink(0).Clip().Children(func() {
 		bar := ui.Box(c).Height(4).Radius(RadiusBar)
-		bar.Width(bar.AnimateTo("w", float32(frac*colProgress), fadeAnim)).Background(bar.AnimateColor("fill", fill, colorAnim))
+		bar.Width(bar.AnimateTo("w", float32(frac*colProgress), baseAnim)).Background(fill)
 	})
 }
 
@@ -244,7 +244,7 @@ func (a *app) taskRow(c *ui.Context, t Task) {
 	direction := map[core.Kind]string{core.KindUpload: locales.TransfersUpload(), core.KindDownload: locales.TransfersDownload(), core.KindOther: locales.TransfersTask()}[t.Kind]
 	// The right padding leaves the scroll bar its own gutter, clear of the
 	// cancel / retry buttons.
-	row := ui.Row(c).Height(32).Padding(0, scrollGutter+2, 0, 16).Gap(rowGap).AlignItems(ui.Center).Transition(hoverFade())
+	row := ui.Row(c).Height(32).Padding(0, scrollGutter+2, 0, 16).Gap(rowGap).AlignItems(ui.Center)
 	if row.Hovered() {
 		row.Background(k.SurfaceHover)
 	}

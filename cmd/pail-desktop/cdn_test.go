@@ -135,24 +135,24 @@ func TestCDNContextMenuAndBucketFilter(t *testing.T) {
 			t.Fatal(err)
 		}
 		h.tt.Frame()
-		m := h.menu()
+		m := h.menuAll()
 		h.closeMenu()
 		h.settle()
 		return m
 	}
-	if m := menuOf(); contains(m, "Copy CDN URL") || contains(m, "Open CDN URL") {
+	if m := menuOf(); contains(m, "Copy link > Copy CDN URL") || contains(m, "Open CDN URL") {
 		t.Errorf("CDN items without a CDN: %q", m)
 	}
 
 	h.setCDN(testCDN)
 	m := menuOf()
-	if missing := menuHas(m, "Copy URL", "Copy CDN URL", "Open CDN URL"); len(missing) > 0 {
+	if missing := menuHas(m, "Copy link > Copy URL", "Copy link > Copy CDN URL", "Open CDN URL"); len(missing) > 0 {
 		t.Errorf("context menu %q misses %q", m, missing)
 	}
 
 	// Limited to another bucket: nothing for this one.
 	h.setCDN(testCDN, "other-bucket")
-	if m := menuOf(); contains(m, "Copy CDN URL") || contains(m, "Open CDN URL") {
+	if m := menuOf(); contains(m, "Copy link > Copy CDN URL") || contains(m, "Open CDN URL") {
 		t.Errorf("CDN items for a filtered-out bucket: %q", m)
 	}
 	h.mustClick("manifest.json")
@@ -172,7 +172,7 @@ func TestCDNContextMenuAndBucketFilter(t *testing.T) {
 func TestCDNContextMenuChoose(t *testing.T) {
 	h := newHarness(t, "light")
 	h.setCDN("https://{bucket}.cdn.example.com/{key}")
-	h.rightClickChoose("manifest.json", "Copy CDN URL")
+	h.rightClickChoose("manifest.json", "Copy link", "Copy CDN URL")
 	if got := h.tt.Clipboard(); got != "https://acme-assets.cdn.example.com/manifest.json" {
 		t.Errorf("copied %q", got)
 	}

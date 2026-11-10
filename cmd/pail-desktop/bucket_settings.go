@@ -49,6 +49,9 @@ var bsSections = []bsSection{
 	{locales.BucketSettingsAccelerateName, locales.BucketSettingsAccelerateHelp, core.ConfigAccelerate, secAccelerate, false},
 }
 
+// bsNavW is the width of the section list of the bucket settings dialog.
+const bsNavW = 200
+
 // bucketSettings is the settings dialog of one bucket.
 type bucketSettings struct {
 	open    bool
@@ -56,10 +59,6 @@ type bucketSettings struct {
 	section int
 	secs    map[core.BucketConfig]*cfgState
 	gen     int
-
-	// navScroll and paneScroll report whether the nav list and the form
-	// overflowed in the last frame, which decides whether the dividers show.
-	navScroll, paneScroll ui.ScrollState
 }
 
 // cfgState is one section: what the service holds and what the form shows.
@@ -441,7 +440,7 @@ func (a *app) askRemoveCfg(sec bsSection, s *cfgState) {
 // ghostDanger is a ghost button whose label is Danger-colored.
 func ghostDanger(c *ui.Context, label, tip string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c.Key("gd:"+label)).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Padding(0, 8).Center().Disabled(disabled).Transition(hoverFade())
+	b := ui.ButtonBase(c.Key("gd:"+label)).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Padding(0, 8).Center().Disabled(disabled)
 	switch {
 	case disabled:
 		b.Opacity(0.4)
@@ -465,14 +464,16 @@ func (a *app) bucketSettingsDialog(c *ui.Context) {
 		dialogHeader(c, locales.BucketSettingsTitle(), func() {
 			ui.Text(c, bs.bucket).FontSize(sizeBody).TextColor(k.TextMuted).SingleLine()
 		})
-		// As in dialogW, the dividers show only while something scrolls.
-		overflow := bs.navScroll.MaxY > 0 || bs.paneScroll.MaxY > 0
-		divider(c, overflow)
+		// One sheet in three parts: the title, the nav beside the form, the
+		// buttons. The line between nav and form meets the lines above and below
+		// it, so those always show here (dialogW shows them only while its body
+		// scrolls).
+		divider(c, true)
 		ui.Row(c).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Children(func() {
 			a.settingsNav(c)
 			a.settingsPane(c)
 		})
-		divider(c, overflow)
+		divider(c, true)
 		dialogFooter(c, func() {
 			buttonRow(c, func() {
 				if secondaryButton(c, locales.CommonClose(), false).Clicked() {
@@ -483,14 +484,19 @@ func (a *app) bucketSettingsDialog(c *ui.Context) {
 	})
 }
 
+// settingsNav is the list of sections: on the card's own Surface, parted from
+// the form by a 1px Border line, so the dialog stays one sheet. The rows sit
+// dialogPad-8 in from the card's edge with 8px padding, so their labels start
+// on the title's left edge. The current section is ActiveFill and weight 600,
+// the others TextMuted (two cues).
 func (a *app) settingsNav(c *ui.Context) {
 	bs := &a.mg.bs
 	k := tk(c)
-	ui.Scroll(c).TrackScroll(&bs.navScroll).Width(208).Shrink(0).MinHeight(0).Background(k.Sidebar).ScrollbarInsets(0, 1, 0, 0).Children(func() {
-		ui.Column(c).Padding(8, scrollGutter, 8, 8).Gap(2).Children(func() {
+	ui.Scroll(c).Width(bsNavW).Shrink(0).MinHeight(0).BorderWidth(0, 1, 0, 0).BorderColor(k.Border).ScrollbarInsets(0, scrollBarInset, 0, 0).Children(func() {
+		ui.Column(c).Padding(8, scrollGutter, 8, dialogPad-8).Gap(2).Children(func() {
 			for i, sec := range bsSections {
 				on := i == bs.section
-				row := ui.ButtonBase(c.Key("sec:"+sec.label())).Label(sec.label()).Height(28).Padding(0, 8).Radius(RadiusControl).AlignItems(ui.Center).Justify(ui.Start).Transition(hoverFade())
+				row := ui.ButtonBase(c.Key("sec:"+sec.label())).Label(sec.label()).Height(28).Padding(0, 8).Radius(RadiusControl).AlignItems(ui.Center).Justify(ui.Start)
 				switch {
 				case on:
 					row.Background(k.ActiveFill)
@@ -498,12 +504,11 @@ func (a *app) settingsNav(c *ui.Context) {
 					row.Background(k.SurfaceHover)
 				}
 				row.Children(func() {
-					w := 400
+					w, col := 400, k.TextMuted
 					if on {
-						w = 600
-						selectionBar(c, 6, "bucket-settings-nav")
+						w, col = 600, k.Text
 					}
-					ui.Text(c, sec.label()).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine()
+					ui.Text(c, sec.label()).FontSize(sizeBody).FontWeight(w).TextColor(col).SingleLine()
 				})
 				if row.Clicked() {
 					bs.section = i
@@ -517,8 +522,10 @@ func (a *app) settingsPane(c *ui.Context) {
 	a.ensureCfg()
 	bs := &a.mg.bs
 	sec, s := bs.cur()
-	ui.Column(c.Key("pane:"+sec.label())).Grow(1).MinWidth(0).MinHeight(0).Padding(20, 0, 0, 0).Gap(16).Justify(ui.Start).Children(func() {
-		ui.Row(c).Padding(0, 20).Shrink(0).Children(func() {
+	// The title row is as high as a nav row and as far down as the first one,
+	// so the section's name stands level with the row that chose it.
+	ui.Column(c.Key("pane:"+sec.label())).Grow(1).MinWidth(0).MinHeight(0).Padding(8, 0, 0, 0).Gap(12).Justify(ui.Start).Children(func() {
+		ui.Row(c).Height(28).Padding(0, dialogPad).AlignItems(ui.Center).Shrink(0).Children(func() {
 			labelHelp(c, sec.help(), func() ui.Element { return sectionTitle(c, sec.label()) })
 		})
 		// The form scrolls with its bar in the 20px right-hand gutter; the JSON
@@ -543,11 +550,11 @@ func (a *app) settingsPane(c *ui.Context) {
 			}
 		}
 		if !scrolls {
-			bs.paneScroll = ui.ScrollState{} // nothing scrolls here: no stale overflow
+
 			ui.Column(c).Grow(1).MinHeight(0).Padding(0, 20, 20, 20).Gap(16).Children(body)
 			return
 		}
-		ui.Scroll(c).TrackScroll(&bs.paneScroll).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
 			ui.Column(c).Padding(0, 20, 20, 20).Gap(16).Children(body)
 		})
 	})
@@ -692,7 +699,7 @@ func (a *app) jsonEditor(c *ui.Context, sec bsSection, s *cfgState) {
 func codeTheme(c *ui.Context) *editor.Theme {
 	k := tk(c)
 	th := editor.DefaultTheme(c.Theme())
-	th.Background, th.Text = k.Sidebar, k.Text
+	th.Background, th.Text = k.Surface, k.Text
 	th.LineNumber, th.ActiveLineNumber = k.TextSubtle, k.TextMuted
 	th.ActiveLine = k.ActiveFill.Alpha(0.5)
 	th.Selection, th.InactiveSelection = k.Selection, k.Selection.Alpha(0.6)
@@ -726,7 +733,9 @@ func (a *app) codeEditor(c *ui.Context, sec bsSection, s *cfgState) {
 	}
 	s.ed.Label = locales.BucketSettingsEditorLabel(sec.label())
 	s.ed.Theme = codeTheme(c)
-	box := ui.Column(c.Key("jsonbox:" + string(sec.cfg))).Grow(1).MinHeight(120).Radius(RadiusControl).Background(k.Sidebar).Clip()
+	// An input like any other: Surface, a BorderStrong outline, Focus while it
+	// has the keyboard.
+	box := ui.Column(c.Key("jsonbox:" + string(sec.cfg))).Grow(1).MinHeight(120).Radius(RadiusControl).Background(k.Surface).Clip()
 	if s.ed.Focused() {
 		box.Border(1, k.Focus)
 	} else {

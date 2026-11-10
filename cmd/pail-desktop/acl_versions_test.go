@@ -283,10 +283,12 @@ func TestRestoreAllDeletedInFolder(t *testing.T) {
 	h.waitFor("versioning known", func() bool { return h.a.versioned(h.a.accountID, demoVersioned) })
 	h.mustClick("Show deleted")
 	h.waitFor("three deleted", func() bool { return h.has("old-plan.txt") && h.has("report.pdf") && h.has("notes.txt") })
+	// Restoring deletes nothing, so the command runs without a question.
 	h.a.run("restoreall", "test")
 	h.settle()
-	h.mustHave("Restore deleted items?", demoVersioned)
-	h.mustClick("Restore")
+	if h.a.confirm.open {
+		t.Fatal("Restore all asked to confirm")
+	}
 	h.waitToast("Restored 3 items")
 	for _, k := range []string{"old-plan.txt", "report.pdf", "notes.txt"} {
 		if !h.hasObject(demoVersioned, k) {
@@ -434,13 +436,11 @@ func (h *harness) drag(from, to string) {
 func TestDragRowOntoFolderMoves(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
+	// The drop is the decision, as Cut and Paste: no question, a toast after.
 	h.drag("README.txt", "assets")
-	h.mustHave("Move 1 item?", "README.txt", "assets/", demoAccountName)
-	h.snap("drag-move-confirm-light")
-	if !h.hasObject(bkt, "README.txt") {
-		t.Fatal("moved before the confirmation")
+	if h.a.confirm.open {
+		t.Fatal("the drop asked to confirm the move")
 	}
-	h.mustClick("Move")
 	h.waitToast("Moved 1 item")
 	if h.hasObject(bkt, "README.txt") || !h.hasObject(bkt, "assets/README.txt") {
 		t.Fatal("the drop did not move the object")
@@ -466,8 +466,6 @@ func TestDragRowOntoBreadcrumbMovesUp(t *testing.T) {
 	h.mustClick("hero.png")
 	// Breadcrumb: acme-assets > assets > images; drop on "assets".
 	h.drag("hero.png", "assets")
-	h.mustHave("Move 1 item?", "assets/images/", "assets/")
-	h.mustClick("Move")
 	h.waitToast("Moved 1 item")
 	if !h.hasObject(bkt, "assets/hero.png") || h.hasObject(bkt, "assets/images/hero.png") {
 		t.Fatal("the breadcrumb drop did not move the object")
