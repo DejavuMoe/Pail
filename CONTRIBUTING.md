@@ -28,8 +28,8 @@ go run -tags pail_demo ./cmd/pail-desktop --demo
 ## Release packaging
 
 ```sh
-go run ./tools/release -version 0.5.3
-go run ./tools/verify-release -dir build/release/0.5.3 -version 0.5.3
+go run ./tools/release -version 0.6.0
+go run ./tools/verify-release -dir build/release/0.6.0 -version 0.6.0
 ```
 
 `tools/release` builds and verifies all six targets (Windows, Linux and macOS, amd64 and arm64) and writes the archives and `SHA256SUMS` to `build/release/<version>/`. `-targets` selects a subset. It uses the icons in `assets/brand/generated`, which are committed; after changing `assets/brand/pail-icon.svg`, regenerate them with `go run ./tools/genicons`. `tools/verify-release` rechecks archives, checksums, binary targets and executable permissions.
@@ -63,7 +63,7 @@ Pass credentials only through the `PAIL_EXT_*` environment variables (`PAIL_EXT_
 ## Website
 
 ```sh
-go run ./tools/site -out build/site -version 0.5.3
+go run ./tools/site -out build/site -version 0.6.0
 ```
 
 The site in `site/` and `tools/site/` is built from the repository's own Markdown. See [docs/dev/site.md](docs/dev/site.md).
