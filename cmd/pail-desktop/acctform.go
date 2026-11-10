@@ -2,6 +2,7 @@ package main
 
 import (
 	"errors"
+	"fmt"
 	"net/url"
 	"strings"
 	"time"
@@ -49,6 +50,7 @@ type acctForm struct {
 	test    int // testIdle, testRunning, testOK, testFailed
 	testMsg string
 	testGen int
+	testSig string // the settings the shown result is about (sig)
 }
 
 const (
@@ -228,6 +230,17 @@ func bucketsText(bs []core.AccountBucket) string {
 	return strings.Join(parts, ", ")
 }
 
+// sig is what the form would connect with, for telling whether a test result
+// is still about it.
+func (f *acctForm) sig() string {
+	ac, sec := f.build()
+	var s core.Secrets
+	if sec != nil {
+		s = *sec
+	}
+	return fmt.Sprintf("%+v|%+v", ac, s)
+}
+
 // testAccount checks the form's connection in the background.
 func (a *app) testAccount() {
 	f := &a.af
@@ -241,7 +254,8 @@ func (a *app) testAccount() {
 	ac, sec := f.build()
 	f.testGen++
 	gen := f.testGen
-	f.test, f.testMsg = testRunning, ""
+	f.test, f.testMsg, f.testSig = testRunning, "", f.sig()
+	f.saveErr, f.noKeychain = "", false // the line under the form is the test's now
 	ctx, cancel := a.timeout(20 * time.Second)
 	go func() {
 		defer cancel()
@@ -280,6 +294,9 @@ func (a *app) saveAccount() {
 	editing := f.editing
 	f.saving, f.saveErr = true, ""
 	f.testGen++ // a running test no longer matters
+	if f.test == testRunning {
+		f.test = testIdle
+	}
 	go func() {
 		saved, err := a.svc.SaveAccount(ac, sec)
 		a.post(func() {
@@ -463,6 +480,9 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 func (a *app) accountFooter(c *ui.Context) {
 	f := &a.af
 	k := tk(c)
+	if (f.test == testOK || f.test == testFailed) && f.sig() != f.testSig {
+		f.test, f.testMsg = testIdle, "" // the fields changed: the result was about other settings
+	}
 	// Result line: the test outcome, or a save error.
 	switch {
 	case f.saveErr != "":
