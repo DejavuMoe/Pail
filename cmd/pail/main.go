@@ -34,8 +34,8 @@ func main() {
 }
 
 func isTerminal(f *os.File) bool {
-	fi, err := f.Stat()
-	return err == nil && fi.Mode()&os.ModeCharDevice != 0
+	// ModeCharDevice is not enough: NUL and /dev/null are character devices too.
+	return term.IsTerminal(int(f.Fd()))
 }
 
 // readPassword asks on the terminal without echoing the input.
