@@ -8,14 +8,15 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 	"unicode/utf8"
 )
 
-// CompressZIP writes one standard ZIP member with a basename only. Level zero
+// CompressZIP writes one standard ZIP member with a basename only, stamped with\n// the modification time of the source file (see zipTimestamp). Level zero
 // stores bytes, -1 uses default deflate, -2 uses Huffman only, and 1..9 deflate.
 // The count is source bytes read. Streams remain open. Errors leave partial
 // output which callers must discard. Cancellation cannot interrupt blocked I/O.
-func CompressZIP(ctx context.Context, dst io.Writer, src io.Reader, name string, level int) (int64, error) {
+func CompressZIP(ctx context.Context, dst io.Writer, src io.Reader, name string, modified time.Time, level int) (int64, error) {
 	if err := ctx.Err(); err != nil {
 		return 0, err
 	}
@@ -32,7 +33,7 @@ func CompressZIP(ctx context.Context, dst io.Writer, src io.Reader, name string,
 	} else {
 		zw.RegisterCompressor(zip.Deflate, func(w io.Writer) (io.WriteCloser, error) { return flate.NewWriter(w, level) })
 	}
-	fw, err := zw.CreateHeader(&zip.FileHeader{Name: name, Method: method})
+	fw, err := zw.CreateHeader(&zip.FileHeader{Name: name, Method: method, Modified: zipTimestamp(modified)})
 	if err != nil {
 		return 0, errors.Join(err, zw.Close())
 	}
@@ -44,4 +45,20 @@ func validateZIPName(name string) error {
 		return fmt.Errorf("ZIP member must be a single valid filename")
 	}
 	return nil
+}
+
+// zipTimestamp is the time a member is stamped with: the modification time of
+// the source file, the current time when that is unknown (zero), limited to the
+// years both an MS-DOS date and a 32-bit Unix time can hold (1980..2105) so that\n// it never wraps.
+func zipTimestamp(modified time.Time) time.Time {
+	if modified.IsZero() {
+		modified = time.Now()
+	}
+	switch {
+	case modified.Year() < 1980:
+		return time.Date(1980, 1, 1, 0, 0, 0, 0, time.UTC)
+	case modified.Year() > 2105:
+		return time.Date(2105, 12, 31, 23, 59, 58, 0, time.UTC)
+	}
+	return modified
 }

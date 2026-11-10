@@ -539,10 +539,14 @@ func (s *Service) spoolCompressed(ctx context.Context, src *os.File, local strin
 		_, err = rules.CompressGZIP(ctx, tmp, src, comp.Level)
 	case "zip":
 		name := filepath.Base(local)
+		var modified time.Time // the member carries the file's own date; zero = now
+		if fi, serr := src.Stat(); serr == nil {
+			modified = fi.ModTime()
+		}
 		if comp.PasswordRef != "" {
-			_, err = rules.CompressAES256ZIP(ctx, tmp, src, name, comp.Level, comp.PasswordRef, s)
+			_, err = rules.CompressAES256ZIP(ctx, tmp, src, name, modified, comp.Level, comp.PasswordRef, s)
 		} else {
-			_, err = rules.CompressZIP(ctx, tmp, src, name, comp.Level)
+			_, err = rules.CompressZIP(ctx, tmp, src, name, modified, comp.Level)
 		}
 	default:
 		err = invalid("Upload", "unsupported compression method %q", comp.Method)

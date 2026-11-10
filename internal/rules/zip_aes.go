@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"io"
 	"strings"
+	"time"
 
 	azip "github.com/DejavuMoe/Pail/internal/rules/internal/zipaes"
 )
@@ -35,9 +36,9 @@ func resolveZIPPassword(ctx context.Context, ref string, resolver PasswordResolv
 }
 
 // CompressAES256ZIP streams one WinZip AE-2 AES-256 member. Levels are the same
-// as CompressZIP. Only the opaque password reference belongs in persisted rules.
+// and the member is stamped like CompressZIP. Only the opaque password reference belongs in persisted rules.
 // The caller owns both streams and must discard all output on error.
-func CompressAES256ZIP(ctx context.Context, dst io.Writer, src io.Reader, name string, level int, passwordRef string, resolver PasswordResolver) (int64, error) {
+func CompressAES256ZIP(ctx context.Context, dst io.Writer, src io.Reader, name string, modified time.Time, level int, passwordRef string, resolver PasswordResolver) (int64, error) {
 	if err := ctx.Err(); err != nil {
 		return 0, err
 	}
@@ -59,6 +60,7 @@ func CompressAES256ZIP(ctx context.Context, dst io.Writer, src io.Reader, name s
 		zw.RegisterCompressor(azip.Deflate, func(w io.Writer) (io.WriteCloser, error) { return flate.NewWriter(w, level) })
 	}
 	fh := &azip.FileHeader{Name: name, Method: method, Flags: 0x800}
+	fh.SetModTime(zipTimestamp(modified))
 	fh.SetPassword(password)
 	fh.SetEncryptionMethod(azip.AES256Encryption)
 	fw, err := zw.CreateHeader(fh)

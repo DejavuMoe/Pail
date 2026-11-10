@@ -14,6 +14,7 @@ import (
 	"path/filepath"
 	"strings"
 	"testing"
+	"time"
 )
 
 type testPasswords string
@@ -27,7 +28,7 @@ const testZIPPassword = testPasswords("pail-test-only-password")
 func makeAES(t *testing.T, level int, data []byte) []byte {
 	t.Helper()
 	var out bytes.Buffer
-	n, err := CompressAES256ZIP(context.Background(), &out, bytes.NewReader(data), "文件.txt", level, "test-ref", testZIPPassword)
+	n, err := CompressAES256ZIP(context.Background(), &out, bytes.NewReader(data), "文件.txt", time.Time{}, level, "test-ref", testZIPPassword)
 	if err != nil || n != int64(len(data)) {
 		t.Fatalf("encrypt: count=%d err=%v", n, err)
 	}
@@ -85,7 +86,7 @@ func TestAES256ZIPRejectsBeforePlaintext(t *testing.T) {
 				binary.LittleEndian.PutUint16(archive[at+2:], 1)
 			case "not-encrypted":
 				var plain bytes.Buffer
-				_, err := CompressZIP(context.Background(), &plain, strings.NewReader("plain"), "plain.txt", 0)
+				_, err := CompressZIP(context.Background(), &plain, strings.NewReader("plain"), "plain.txt", time.Time{}, 0)
 				if err != nil {
 					t.Fatal(err)
 				}
@@ -102,7 +103,7 @@ func TestAES256ZIPRejectsBeforePlaintext(t *testing.T) {
 func TestAES256ZIPFailures(t *testing.T) {
 	ctx, cancel := context.WithCancel(context.Background())
 	cancel()
-	if _, err := CompressAES256ZIP(ctx, io.Discard, strings.NewReader("x"), "x", 0, "test-ref", testZIPPassword); !errors.Is(err, context.Canceled) {
+	if _, err := CompressAES256ZIP(ctx, io.Discard, strings.NewReader("x"), "x", time.Time{}, 0, "test-ref", testZIPPassword); !errors.Is(err, context.Canceled) {
 		t.Fatalf("canceled: %v", err)
 	}
 	for _, c := range []struct {
@@ -111,7 +112,7 @@ func TestAES256ZIPFailures(t *testing.T) {
 		ref   string
 		p     PasswordResolver
 	}{{"../x", 0, "ref", testZIPPassword}, {"x", 10, "ref", testZIPPassword}, {"x", 0, "", testZIPPassword}, {"x", 0, "ref", nil}, {"x", 0, "ref", testPasswords("")}} {
-		if _, err := CompressAES256ZIP(context.Background(), io.Discard, strings.NewReader("x"), c.name, c.level, c.ref, c.p); err == nil {
+		if _, err := CompressAES256ZIP(context.Background(), io.Discard, strings.NewReader("x"), c.name, time.Time{}, c.level, c.ref, c.p); err == nil {
 			t.Fatal("invalid encryption accepted")
 		}
 	}
@@ -159,7 +160,7 @@ func TestAES256ZIPLargeStream(t *testing.T) {
 	}
 	defer file.Close()
 	want := sha256.New()
-	n, err := CompressAES256ZIP(context.Background(), file, io.TeeReader(io.LimitReader(&patternReader{}, size), want), "large.bin", 0, "ref", testZIPPassword)
+	n, err := CompressAES256ZIP(context.Background(), file, io.TeeReader(io.LimitReader(&patternReader{}, size), want), "large.bin", time.Time{}, 0, "ref", testZIPPassword)
 	if err != nil || n != size {
 		t.Fatalf("encrypt %d %v", n, err)
 	}
@@ -254,19 +255,19 @@ func (r cancellingReaderAt) ReadAt(p []byte, off int64) (int, error) {
 }
 func TestAES256ZIPIOAndMidstreamCancellation(t *testing.T) {
 	for _, level := range []int{0, 9} {
-		if _, err := CompressAES256ZIP(context.Background(), failedWriter{}, strings.NewReader("data"), "x", level, "ref", testZIPPassword); err == nil {
+		if _, err := CompressAES256ZIP(context.Background(), failedWriter{}, strings.NewReader("data"), "x", time.Time{}, level, "ref", testZIPPassword); err == nil {
 			t.Fatal("writer failure lost")
 		}
-		if _, err := CompressAES256ZIP(context.Background(), io.Discard, failedReader{}, "x", level, "ref", testZIPPassword); !errors.Is(err, errInjected) {
+		if _, err := CompressAES256ZIP(context.Background(), io.Discard, failedReader{}, "x", time.Time{}, level, "ref", testZIPPassword); !errors.Is(err, errInjected) {
 			t.Fatalf("source error lost: %v", err)
 		}
 	}
-	if _, err := CompressAES256ZIP(context.Background(), io.Discard, strings.NewReader("data"), "x", 0, "ref", failingPasswords{}); !errors.Is(err, errInjected) {
+	if _, err := CompressAES256ZIP(context.Background(), io.Discard, strings.NewReader("data"), "x", time.Time{}, 0, "ref", failingPasswords{}); !errors.Is(err, errInjected) {
 		t.Fatalf("resolver error lost: %v", err)
 	}
 	ctx, cancel := context.WithCancel(context.Background())
 	defer cancel()
-	if _, err := CompressAES256ZIP(ctx, io.Discard, &cancellingReader{cancel: cancel}, "x", 9, "ref", testZIPPassword); !errors.Is(err, context.Canceled) {
+	if _, err := CompressAES256ZIP(ctx, io.Discard, &cancellingReader{cancel: cancel}, "x", time.Time{}, 9, "ref", testZIPPassword); !errors.Is(err, context.Canceled) {
 		t.Fatalf("encrypt cancel lost: %v", err)
 	}
 	archive := makeAES(t, 0, bytes.Repeat([]byte("x"), 256*1024))
