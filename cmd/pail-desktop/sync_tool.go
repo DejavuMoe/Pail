@@ -197,6 +197,11 @@ func remoteText(r Scope) string { return "s3://" + r.Bucket + "/" + r.Prefix }
 
 func (a *app) syncEnter() {
 	s := &a.tl.sync
+	if s.edited() {
+		// Unsaved edits wait where the user left them: leaving the tool by the
+		// sidebar, the palette or another account does not throw them away.
+		return
+	}
 	if s.pvCancel != nil {
 		s.pvCancel()
 	}

@@ -189,3 +189,32 @@ func TestInvalidationPathsNameTheKeys(t *testing.T) {
 		t.Errorf("no path for %v", want)
 	}
 }
+// A new sync job being written was lost when the user left the tool by the
+// sidebar and came back.
+func TestSyncDraftSurvivesLeavingTheTool(t *testing.T) {
+	h := newHarness(t, "light")
+	h.openToolView("sync")
+	h.a.syncNew()
+	h.a.tl.sync.f.name = "my unsaved job"
+	h.settle()
+	h.mustClick("acme-backups")
+	h.settle()
+	h.openToolView("sync")
+	if s := &h.a.tl.sync; s.f.name != "my unsaved job" || !s.edited() {
+		t.Errorf("the draft is gone: name %q", s.f.name)
+	}
+}
+
+// An upload rule being written was lost the same way.
+func TestRulesDraftSurvivesLeavingTheTool(t *testing.T) {
+	h := newHarness(t, "light")
+	h.openToolView("rules")
+	h.a.rulesAdd()
+	h.settle()
+	h.mustClick("acme-backups")
+	h.settle()
+	h.openToolView("rules")
+	if rs := &h.a.tl.rules; !rs.dirty() || len(rs.draft) == 0 {
+		t.Errorf("the draft is gone: %d rules, dirty %v", len(rs.draft), rs.dirty())
+	}
+}
