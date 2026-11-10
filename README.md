@@ -55,9 +55,9 @@ Executables are named with the version and platform. This document calls them `p
 Compare the archive's SHA-256 hash with its line in `SHA256SUMS` from the same release:
 
 ```sh
-sha256sum Pail-v0.5.2-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.5.2-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.5.2-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.5.3-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.5.3-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.5.3-windows-amd64.zip         # Windows PowerShell
 ```
 
 ### First launch on macOS
