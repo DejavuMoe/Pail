@@ -636,6 +636,38 @@ func TestSyncSavedJobNoRules(t *testing.T) {
 	}
 }
 
+// Skipped items count as success, so skipped items next to failed ones make
+// the run partial (3), not a total failure (1).
+func TestFinishCountsSkippedAsSuccess(t *testing.T) {
+	cases := []struct {
+		name string
+		o    outcome
+		want int
+	}{
+		{"all failed", outcome{Failed: 2}, exitFailure},
+		{"skipped and failed", outcome{Skipped: 1, Failed: 1}, exitPartial},
+		{"succeeded and failed", outcome{Succeeded: 1, Failed: 1}, exitPartial},
+		{"skipped only", outcome{Skipped: 2}, exitOK},
+	}
+	for _, tc := range cases {
+		var out, errb bytes.Buffer
+		c := &cli{io: IO{Stdout: &out, Stderr: &errb}}
+		c.enc = json.NewEncoder(&out)
+		err := c.finish(tc.o, "cp", context.Background())
+		got := exitOK
+		if err != nil {
+			ee, ok := err.(*exitErr)
+			if !ok {
+				t.Fatalf("%s: %v", tc.name, err)
+			}
+			got = ee.code
+		}
+		if got != tc.want {
+			t.Errorf("%s: exit %d, want %d", tc.name, got, tc.want)
+		}
+	}
+}
+
 func TestExitCodes(t *testing.T) {
 	h := newHarness(t)
 	h.want(h.run(), 2)
