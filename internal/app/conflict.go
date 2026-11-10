@@ -9,6 +9,8 @@ import (
 
 	"github.com/DejavuMoe/Pail/internal/storage"
 	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+	s3types "github.com/aws/aws-sdk-go-v2/service/s3/types"
 )
 
 // conflictDecision is how a write to an S3 destination key proceeds under a
@@ -45,6 +47,13 @@ func resolveRemoteConflict(ctx context.Context, c *storage.Client, bucket, key s
 	if err != nil {
 		return conflictDecision{}, err
 	}
+	return decideConflict(ctx, c, bucket, key, policy, srcSize, srcModified, dst)
+}
+
+// decideConflict is resolveRemoteConflict for a caller that has HEADed the
+// destination key already (dst). The rename policy still HEADs its candidates.
+func decideConflict(ctx context.Context, c *storage.Client, bucket, key string, policy ConflictPolicy, srcSize int64, srcModified time.Time, dst remoteTarget) (conflictDecision, error) {
+	const op = "ResolveConflict"
 	if !dst.exists {
 		return conflictDecision{Key: key, CreateOnly: true}, nil
 	}
@@ -82,6 +91,28 @@ type remoteTarget struct {
 	size     int64
 	modified time.Time
 	etag     string
+	keyed    bool // SSE-KMS or SSE-C: the ETag is not the MD5 of the content
+}
+
+// etagMD5 reports whether etag is the plain MD5 of an object's content: it has
+// no "-" (a multipart upload or copy: hash of hashes and the part count) and
+// the object is not encrypted with SSE-KMS or SSE-C (ETag unrelated to content).
+func etagMD5(etag string, keyed bool) bool {
+	return etag != "" && !keyed && !strings.Contains(etag, "-")
+}
+
+// sameObjectETag reports whether two objects of equal size are known to have
+// equal content from their ETags: both ETags are content MD5s and equal. When
+// either is not comparable the answer is false, not "different".
+func sameObjectETag(a string, aKeyed bool, b string, bKeyed bool) bool {
+	return etagMD5(a, aKeyed) && etagMD5(b, bKeyed) && strings.Trim(a, `"`) == strings.Trim(b, `"`)
+}
+
+// headKeyed reports whether a HEAD result is SSE-KMS or SSE-C encrypted.
+func headKeyed(h *s3.HeadObjectOutput) bool {
+	return aws.ToString(h.SSECustomerAlgorithm) != "" ||
+		h.ServerSideEncryption == s3types.ServerSideEncryptionAwsKms ||
+		h.ServerSideEncryption == s3types.ServerSideEncryptionAwsKmsDsse
 }
 
 // headTarget HEADs bucket/key; a missing key is not an error.
@@ -98,6 +129,7 @@ func headTarget(ctx context.Context, c *storage.Client, bucket, key string) (rem
 		size:     aws.ToInt64(out.ContentLength),
 		modified: aws.ToTime(out.LastModified),
 		etag:     aws.ToString(out.ETag),
+		keyed:    headKeyed(out),
 	}, nil
 }
 
