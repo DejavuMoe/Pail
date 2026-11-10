@@ -63,35 +63,30 @@ func (a *app) paste() {
 // empties the clipboard once a move was queued.
 func (a *app) transferKeys(src Scope, keys []string, dest Scope, move, clearClip bool) {
 	opt := core.CopyOptions{Conflict: a.svc.Settings().Conflict, Move: move}
-	verb, past := "Copy", "Copied" // the words copyDone takes (English keys, see there)
-	if move {
-		verb, past = "Move", "Moved"
-	}
 	a.bg(func() func() {
 		id, err := a.svc.Copy(core.Selection{Location: src, Keys: keys}, dest, opt)
 		return func() {
 			if err != nil {
-				a.toast(copyFailedText(verb, humanError(err)))
+				a.toast(copyFailedText(move, humanError(err)))
 				return
 			}
 			if clearClip {
 				a.mg.clip = clipData{}
 			}
-			a.follow(id, a.copyDone(verb, past, src, dest))
+			a.follow(id, a.copyDone(move, src, dest))
 		}
 	})
 }
 
 // copyDone reports the end of a copy or move task and refreshes the listing
 // of both folders.
-func (a *app) copyDone(verb, past string, src, dest Scope) func(Task) {
+func (a *app) copyDone(move bool, src, dest Scope) func(Task) {
 	return func(t Task) {
 		sum := a.bulkSummary(t)
-		move := verb == "Move"
 		ok := locales.CommonItems(sum.ok)
 		switch {
 		case sum.failed > 0 && sum.ok == 0:
-			a.toast(copyFailedText(verb, sum.firstErr))
+			a.toast(copyFailedText(move, sum.firstErr))
 		case sum.failed > 0 && move:
 			a.toast(locales.ClipboardMovedFailed(ok, sum.failed))
 		case sum.failed > 0:
@@ -112,10 +107,9 @@ func (a *app) copyDone(verb, past string, src, dest Scope) func(Task) {
 	}
 }
 
-// copyFailedText is the "failed" toast of a copy or a move; verb is the English
-// word the callers pass ("Move"), anything else is a copy.
-func copyFailedText(verb, detail string) string {
-	if verb == "Move" {
+// copyFailedText is the "failed" toast of a copy or a move.
+func copyFailedText(move bool, detail string) string {
+	if move {
 		return locales.ClipboardMoveFailed(detail)
 	}
 	return locales.ClipboardCopyFailed(detail)

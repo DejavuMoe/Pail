@@ -149,11 +149,7 @@ func (a *app) submitBucketCopy() {
 			}
 			a.closeBucketCopy()
 			a.transfersOpen, a.transTab = true, 0
-			verb, past := locales.BucketCopyVerbCopy(), locales.BucketCopyPastCopied()
-			if move {
-				verb, past = locales.BucketCopyVerbMove(), locales.BucketCopyPastMoved()
-			}
-			a.follow(id, a.copyDone(verb, past, src, dest))
+			a.follow(id, a.copyDone(move, src, dest))
 		}
 	})
 }
