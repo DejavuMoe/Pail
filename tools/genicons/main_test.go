@@ -1,8 +1,12 @@
 package main
 
 import (
+	"bytes"
 	"image/color"
+	"os"
+	"path/filepath"
 	"testing"
+	"unicode/utf16"
 )
 
 func near(c color.NRGBA, r, g, b uint8, a uint8) bool {
@@ -68,5 +72,61 @@ func TestContainers(t *testing.T) {
 	icns := buildICNS(pngs)
 	if string(icns[:4]) != "icns" || len(icns) != 8+8*(8+3) {
 		t.Fatalf("bad icns: len %d", len(icns))
+	}
+}
+func TestParseVersion(t *testing.T) {
+	for in, want := range map[string][4]uint16{
+		"0.0.0":          {0, 0, 0, 0},
+		"1.2.3":          {1, 2, 3, 0},
+		"0.5.3-rc.1":     {0, 5, 3, 0},
+		"2.10.65535+b.7": {2, 10, 65535, 0},
+	} {
+		got, err := parseVersion(in)
+		if err != nil || got != want {
+			t.Errorf("parseVersion(%q) = %v, %v; want %v", in, got, err, want)
+		}
+	}
+	for _, in := range []string{"", "1.2", "v1.2.3", "1.2.x", "1.2.65536", "-1.2.3", "1.2.3.4"} {
+		if _, err := parseVersion(in); err == nil {
+			t.Errorf("parseVersion(%q) accepted", in)
+		}
+	}
+}
+
+func TestSysoCarriesVersion(t *testing.T) {
+	pngs := map[int][]byte{}
+	for _, s := range icoSizes {
+		pngs[s] = encodePNG(drawIcon(s))
+	}
+	objs, err := buildSyso(pngs, [4]uint16{3, 4, 5, 0})
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := make([]byte, 0, 16)
+	for _, u := range utf16.Encode([]rune("3.4.5.0")) {
+		want = append(want, byte(u), byte(u>>8))
+	}
+	for arch, data := range objs {
+		if !bytes.Contains(data, want) {
+			t.Errorf("%s resource does not contain version 3.4.5.0", arch)
+		}
+	}
+}
+
+func TestFindRootWalksUpToGoMod(t *testing.T) {
+	root := t.TempDir()
+	if err := os.WriteFile(filepath.Join(root, "go.mod"), []byte("module github.com/DejavuMoe/Pail\n"), 0o644); err != nil {
+		t.Fatal(err)
+	}
+	deep := filepath.Join(root, "tools", "genicons")
+	if err := os.MkdirAll(deep, 0o755); err != nil {
+		t.Fatal(err)
+	}
+	got, err := findRoot(deep)
+	if err != nil || got != root {
+		t.Fatalf("findRoot = %q, %v; want %q", got, err, root)
+	}
+	if _, err := findRoot(t.TempDir()); err == nil {
+		t.Fatal("found a root outside the repository")
 	}
 }

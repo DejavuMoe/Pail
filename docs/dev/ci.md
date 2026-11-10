@@ -120,7 +120,7 @@ The optional `scripts/release.ps1` wrapper retains `-Version`, `-Targets`, `-Out
 
 Each archive has a top-level directory matching its filename without the extension. `tools/release` invokes the existing `tools/pack` command, which preserves executable mode 0755 even when packaging on Windows. `tools/verify-release` rejects missing/unexpected files, incorrect checksums, unsafe archive entries, wrong executable permissions, wrong GOOS/GOARCH, cgo-enabled binaries, incorrect executable packages and broken platform launch entries. The release tool invokes it automatically with the selected targets; when independently verifying a subset, pass the same `-targets` list. `-cli-only` produces local CLI-only archives without desktop launch assets, explicitly skips complete-release verification, and must not be published as a full release.
 
-Generated icons and Windows resources are committed; regenerate them with `go run ./tools/genicons`. Archives are cross-compiled with `CGO_ENABLED=0`, `-trimpath`, `-s -w` and `-X main.version=<version>`. Windows GUI adds `-H windowsgui`. Binaries have no developer signature; macOS is not notarized.
+Generated icons and Windows resources are committed; regenerate them with `go run ./tools/genicons -version X` (from anywhere in the repository; X is recorded in the Windows version resource and defaults to `0.0.0`). The release build does not run it. Archives are cross-compiled with `CGO_ENABLED=0`, `-trimpath`, `-s -w` and `-X main.version=<version>`. Windows GUI adds `-H windowsgui`. Binaries have no developer signature; macOS is not notarized.
 
 ## Integration and manual-only checks
 
