@@ -134,3 +134,18 @@ func TestHiddenSelectionDisablesItsCommands(t *testing.T) {
 		}
 	}
 }
+// A signed URL that arrived after its dialog was closed and opened again for
+// another object showed in the new dialog.
+func TestLateSignedURLStaysOutOfANewDialog(t *testing.T) {
+	h := newHarness(t, "light")
+	h.a.openSigned([]string{"README.txt"}, "")
+	h.a.generateSigned()
+	h.a.objOps.sg.open = false
+	h.a.openSigned([]string{"manifest.json"}, "")
+	h.waitFor("idle", func() bool { return h.a.idle() })
+	h.settle()
+	f := &h.a.objOps.sg
+	if len(f.res) > 0 || f.busy {
+		t.Errorf("the manifest.json dialog shows %+v (busy %v)", f.res, f.busy)
+	}
+}

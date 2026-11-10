@@ -44,6 +44,7 @@ type signedForm struct {
 	version string
 	busy    bool
 	err     string
+	gen     int // which opening of the dialog a reply belongs to
 
 	res     []signedURL // the answer; empty while the options show
 	expires time.Time
@@ -107,7 +108,7 @@ func (a *app) openSigned(keys []string, version string) {
 			}
 		}
 	}
-	a.objOps.sg = signedForm{open: true, loc: a.scope, keys: keys, expiry: 1, unit: 1, version: version}
+	a.objOps.sg = signedForm{open: true, loc: a.scope, keys: keys, expiry: 1, unit: 1, version: version, gen: a.objOps.sg.gen + 1}
 }
 
 // generateSigned signs every key with the chosen options.
@@ -122,7 +123,7 @@ func (a *app) generateSigned() {
 	if method == "GET" && len(f.keys) == 1 {
 		ver = strings.TrimSpace(f.version)
 	}
-	loc, keys := f.loc, f.keys
+	loc, keys, gen := f.loc, f.keys, f.gen
 	f.busy, f.err = true, ""
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(30 * time.Second)
@@ -137,6 +138,9 @@ func (a *app) generateSigned() {
 			out = append(out, signedURL{k, u})
 		}
 		return func() {
+			if f.gen != gen { // the dialog was closed and opened again
+				return
+			}
 			f.busy = false
 			if !f.open {
 				return
