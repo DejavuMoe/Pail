@@ -5502,26 +5502,6 @@ func (msgs Messages) BucketCopyNoOther() string {
 	return Catalog.Format(msgs.locale, "bucketCopyNoOther", nil)
 }
 
-// BucketCopyPastCopied says "Copied"
-// in the language the app shows.
-func BucketCopyPastCopied() string { return In(i18n.Locale()).BucketCopyPastCopied() }
-
-// BucketCopyPastCopied says "Copied"
-// in the language of msgs.
-func (msgs Messages) BucketCopyPastCopied() string {
-	return Catalog.Format(msgs.locale, "bucketCopyPastCopied", nil)
-}
-
-// BucketCopyPastMoved says "Moved"
-// in the language the app shows.
-func BucketCopyPastMoved() string { return In(i18n.Locale()).BucketCopyPastMoved() }
-
-// BucketCopyPastMoved says "Moved"
-// in the language of msgs.
-func (msgs Messages) BucketCopyPastMoved() string {
-	return Catalog.Format(msgs.locale, "bucketCopyPastMoved", nil)
-}
-
 // BucketCopyPrefixControl says "The prefix has control characters"
 // in the language the app shows.
 func BucketCopyPrefixControl() string { return In(i18n.Locale()).BucketCopyPrefixControl() }
@@ -5600,26 +5580,6 @@ func BucketCopyTo() string { return In(i18n.Locale()).BucketCopyTo() }
 // in the language of msgs.
 func (msgs Messages) BucketCopyTo() string {
 	return Catalog.Format(msgs.locale, "bucketCopyTo", nil)
-}
-
-// BucketCopyVerbCopy says "Copy"
-// in the language the app shows.
-func BucketCopyVerbCopy() string { return In(i18n.Locale()).BucketCopyVerbCopy() }
-
-// BucketCopyVerbCopy says "Copy"
-// in the language of msgs.
-func (msgs Messages) BucketCopyVerbCopy() string {
-	return Catalog.Format(msgs.locale, "bucketCopyVerbCopy", nil)
-}
-
-// BucketCopyVerbMove says "Move"
-// in the language the app shows.
-func BucketCopyVerbMove() string { return In(i18n.Locale()).BucketCopyVerbMove() }
-
-// BucketCopyVerbMove says "Move"
-// in the language of msgs.
-func (msgs Messages) BucketCopyVerbMove() string {
-	return Catalog.Format(msgs.locale, "bucketCopyVerbMove", nil)
 }
 
 // FlatListLabel says "Flat"
