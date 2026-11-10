@@ -651,3 +651,37 @@ func TestDeleteBucketForgetsItsAlias(t *testing.T) {
 		t.Fatalf("another bucket's alias changed: %q", got)
 	}
 }
+
+func TestProxyPasswordOnlyChangeRebuildsClients(t *testing.T) {
+	clearProxyEnv(t)
+	s := newTestService(t, nil)
+	a, err := s.SaveAccount(staticAccount("remote", "http://s3.unreachable.test:9000"), &Secrets{SecretAccessKey: "k"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	p := ProxySettings{Scheme: ProxyHTTP, Host: "127.0.0.1", Port: 3128, Username: "robin"}
+	old := "old-password"
+	if err := s.SaveProxy(p, &old); err != nil {
+		t.Fatal(err)
+	}
+	before, err := s.storageClient(testCtx(t), a.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	// Only the password changes; the ProxySettings struct stays equal.
+	fresh := "new-password"
+	if err := s.SaveProxy(p, &fresh); err != nil {
+		t.Fatal(err)
+	}
+	after, err := s.storageClient(testCtx(t), a.ID)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if after == before {
+		t.Fatal("the cached client kept the old proxy password after a password-only change")
+	}
+	e, _ := s.entry(testCtx(t), a.ID)
+	if !strings.Contains(e.cfg.ProxyURL, "new-password") {
+		t.Fatalf("proxy URL %q does not carry the new password", e.cfg.ProxyURL)
+	}
+}
