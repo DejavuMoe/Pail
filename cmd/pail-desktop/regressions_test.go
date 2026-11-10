@@ -102,3 +102,35 @@ func TestMissingSecretClearsTheBucketList(t *testing.T) {
 		t.Errorf("fix %d, %d buckets still listed", h.a.bucketsFix, len(h.a.buckets))
 	}
 }
+// A name with a space at an end was renamed without the trimmed space when
+// the field was left untouched.
+func TestUntouchedRenameKeepsSpaces(t *testing.T) {
+	h := newHarness(t, "light")
+	h.env.Srv.PutObject(bkt, "pad ", []byte("x"), "text/plain", nil)
+	h.a.reload()
+	h.settle()
+	h.a.setSingle("pad ")
+	h.a.startRename()
+	h.settle()
+	h.a.commitRename(true)
+	h.settle()
+	h.waitFor("idle", func() bool { return h.a.idle() })
+	if !h.hasObject(bkt, "pad ") || h.hasObject(bkt, "pad") {
+		t.Error(`an untouched rename of "pad " renamed it`)
+	}
+}
+
+// With the chosen rows hidden by the folder filter, Delete, Copy and the rest
+// looked enabled and did nothing.
+func TestHiddenSelectionDisablesItsCommands(t *testing.T) {
+	h := newHarness(t, "light")
+	h.mustClick("README.txt")
+	h.a.search = "zzzz-no-match"
+	h.a.rowsDirty = true
+	h.settle()
+	for _, id := range []string{"delete", "copy", "cut", "download"} {
+		if h.a.enabled(h.a.cmd(id)) {
+			t.Errorf("%s is enabled with every chosen row filtered out", id)
+		}
+	}
+}
