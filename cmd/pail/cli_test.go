@@ -354,6 +354,35 @@ func TestRm(t *testing.T) {
 	}
 }
 
+// `versions s3://b/key` without a trailing slash lists the versions of that
+// one key, as `ls` shows a single object.
+func TestVersionsOfSingleKey(t *testing.T) {
+	h := newHarness(t)
+	h.srv.CreateBucket("ver", true)
+	h.srv.PutObject("ver", "dir/k.txt", []byte("v1"), "", nil)
+	h.srv.PutObject("ver", "dir/k.txt", []byte("v2"), "", nil)
+	h.srv.PutObject("ver", "dir/k.txt.bak", []byte("other"), "", nil)
+	h.srv.PutObject("ver", "dir/z.txt", []byte("other"), "", nil)
+
+	r := h.want(h.run("--json", "versions", "s3://ver/dir/k.txt"), 0)
+	if s := lastSummary(t, r.out); s["count"] != float64(2) {
+		t.Fatalf("summary %v\n%s", s, r.out)
+	}
+	for _, e := range jsonLines(t, r.out) {
+		if e["type"] == "version" && e["key"] != "dir/k.txt" {
+			t.Fatalf("unrelated key listed: %v", e)
+		}
+	}
+	// A folder still lists everything below it, with or without the slash form.
+	if s := lastSummary(t, h.want(h.run("--json", "versions", "s3://ver/dir/"), 0).out); s["count"] != float64(4) {
+		t.Fatalf("folder summary %v", s)
+	}
+	// A key that does not exist lists nothing.
+	if s := lastSummary(t, h.want(h.run("--json", "versions", "s3://ver/dir/none"), 0).out); s["count"] != float64(0) {
+		t.Fatalf("missing key summary %v", s)
+	}
+}
+
 func TestVersionsRestoreAndPermanentDelete(t *testing.T) {
 	h := newHarness(t)
 	h.srv.CreateBucket("ver", true)
