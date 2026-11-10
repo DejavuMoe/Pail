@@ -7,6 +7,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"strings"
 	"testing"
 )
@@ -71,5 +72,52 @@ func TestWindowsAndUnixChecksumLines(t *testing.T) {
 		if err == nil || !strings.Contains(err.Error(), "not a valid zip") {
 			t.Fatalf("checksum with %q line endings: %v", newline, err)
 		}
+	}
+}
+
+func releaseInfo(settings ...debug.BuildSetting) *debug.BuildInfo {
+	return &debug.BuildInfo{
+		Path: "github.com/DejavuMoe/Pail/cmd/pail",
+		Settings: append([]debug.BuildSetting{
+			{Key: "GOOS", Value: "linux"}, {Key: "GOARCH", Value: "amd64"}, {Key: "CGO_ENABLED", Value: "0"},
+		}, settings...),
+	}
+}
+
+func TestBuildInfoMustCarryReleaseVersion(t *testing.T) {
+	ld := func(v string) debug.BuildSetting { return debug.BuildSetting{Key: "-ldflags", Value: v} }
+	body := []byte("binary without the version")
+	if err := checkBuildInfo(releaseInfo(ld("-s -w -X main.version=1.2.3")), body, "pail", false, "1.2.3", "linux", "amd64"); err != nil {
+		t.Fatalf("good build rejected: %v", err)
+	}
+	for name, v := range map[string]string{
+		"no ldflags value": "",
+		"no -X":            "-s -w",
+		"other version":    "-s -w -X main.version=1.2.2",
+		"longer version":   "-s -w -X main.version=1.2.30",
+		"other variable":   "-s -w -X main.other=1.2.3",
+		"suffixed version": "-s -w -X main.version=1.2.3-dirty",
+	} {
+		err := checkBuildInfo(releaseInfo(ld(v)), body, "pail", false, "1.2.3", "linux", "amd64")
+		if err == nil || !strings.Contains(err.Error(), "version") {
+			t.Errorf("%s: accepted %q: %v", name, v, err)
+		}
+	}
+	// Without -trimpath the setting must be there.
+	if err := checkBuildInfo(releaseInfo(), []byte("1.2.3"), "pail", false, "1.2.3", "linux", "amd64"); err == nil {
+		t.Error("accepted a build with no recorded -ldflags")
+	}
+}
+
+// Go does not record -ldflags for -trimpath builds, which is how releases are
+// built; the version must then be in the binary itself.
+func TestTrimpathBuildInfoFallsBackToBinaryContents(t *testing.T) {
+	trim := releaseInfo(debug.BuildSetting{Key: "-trimpath", Value: "true"})
+	if err := checkBuildInfo(trim, []byte("...1.2.3..."), "pail", false, "1.2.3", "linux", "amd64"); err != nil {
+		t.Fatalf("trimpath build with the version rejected: %v", err)
+	}
+	err := checkBuildInfo(trim, []byte("...dev..."), "pail", false, "1.2.3", "linux", "amd64")
+	if err == nil || !strings.Contains(err.Error(), "version") {
+		t.Fatalf("trimpath build without the version accepted: %v", err)
 	}
 }

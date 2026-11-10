@@ -14,6 +14,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"runtime/debug"
 	"slices"
 	"strings"
 )
@@ -82,6 +83,37 @@ func verify(dir, version string, targets []string) error {
 	return nil
 }
 
+// checkBuildInfo verifies the build information embedded in a release binary.
+func checkBuildInfo(info *debug.BuildInfo, body []byte, rel string, desktop bool, version, osName, arch string) error {
+	settings := map[string]string{}
+	for _, s := range info.Settings {
+		settings[s.Key] = s.Value
+	}
+	pkg := "github.com/DejavuMoe/Pail/cmd/pail"
+	if desktop {
+		pkg += "-desktop"
+	}
+	if settings["GOOS"] != osName || settings["GOARCH"] != arch || settings["CGO_ENABLED"] != "0" || info.Path != pkg {
+		return fmt.Errorf("%s: incorrect platform, cgo or executable package", rel)
+	}
+	ldflags, recorded := settings["-ldflags"]
+	if !recorded && settings["-trimpath"] == "true" {
+		// Go leaves -ldflags out of the build information of a -trimpath build,
+		// so the setting cannot be read. A binary built without -X main.version
+		// holds the default "dev" where the version string belongs.
+		if !bytes.Contains(body, []byte(version)) {
+			return fmt.Errorf("%s: the binary does not contain the release version %s", rel, version)
+		}
+		return nil
+	}
+	fields := strings.Fields(ldflags)
+	for i, f := range fields {
+		if f == "-X" && i+1 < len(fields) && fields[i+1] == "main.version="+version {
+			return nil
+		}
+	}
+	return fmt.Errorf("%s: the build does not set -X main.version=%s in its -ldflags", rel, version)
+}
 func verifyArchive(data []byte, base, version, osName, arch string) error {
 	suffix := "-v" + version + "-" + osName + "-" + arch
 	exe := ""
@@ -130,16 +162,8 @@ func verifyArchive(data []byte, base, version, osName, arch string) error {
 			if err != nil {
 				return err
 			}
-			settings := map[string]string{}
-			for _, s := range info.Settings {
-				settings[s.Key] = s.Value
-			}
-			pkg := "github.com/DejavuMoe/Pail/cmd/pail"
-			if rel == desktopPath {
-				pkg += "-desktop"
-			}
-			if settings["GOOS"] != osName || settings["GOARCH"] != arch || settings["CGO_ENABLED"] != "0" || info.Path != pkg {
-				return fmt.Errorf("%s: incorrect platform, cgo or executable package", rel)
+			if err := checkBuildInfo(info, body, rel, rel == desktopPath, version, osName, arch); err != nil {
+				return err
 			}
 		}
 		if rel == "pail.desktop" && !strings.Contains(string(body), "\nExec="+desktop+"\n") {
