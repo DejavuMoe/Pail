@@ -201,6 +201,9 @@ func copyFile(src, dst string) error {
 	return os.WriteFile(dst, b, 0o644)
 }
 
+// renameInRoot is os.Root.Rename; tests replace it to inject failures.
+var renameInRoot = func(r *os.Root, oldname, newname string) error { return r.Rename(oldname, newname) }
+
 // publish only replaces a directory containing this version's known release files.
 func publish(parent, version, source string) error {
 	if !versionRE.MatchString(version) {
@@ -247,11 +250,46 @@ func publish(parent, version, source string) error {
 				return fmt.Errorf("refusing to replace unexpected output %s", e.Name())
 			}
 		}
-		if err := r.RemoveAll(version); err != nil {
+		// A CLI-only or partial build must not swap out a more complete release.
+		built, err := os.ReadDir(filepath.Join(parent, rel))
+		if err != nil {
 			return err
 		}
+		produced := map[string]bool{}
+		for _, e := range built {
+			produced[e.Name()] = true
+		}
+		for _, e := range entries {
+			if !produced[e.Name()] {
+				return fmt.Errorf("refusing to replace release %s: the new build does not produce %s (a CLI-only or partial build cannot replace a complete release)", version, e.Name())
+			}
+		}
+		// Move the old release aside, install the new one, then delete the old
+		// one; if installing fails, put the old release back.
+		backup, err := os.MkdirTemp(parent, ".pail-old-")
+		if err != nil {
+			return err
+		}
+		backupRel := filepath.Base(backup)
+		kept := filepath.Join(backupRel, version)
+		if err := renameInRoot(r, version, kept); err != nil {
+			r.RemoveAll(backupRel) // still empty
+			return err
+		}
+		if err := renameInRoot(r, rel, version); err != nil {
+			if restoreErr := renameInRoot(r, kept, version); restoreErr != nil {
+				// Keep the backup: it holds the only copy of the previous release.
+				return fmt.Errorf("%w; restoring the previous release from %s also failed: %v", err, backup, restoreErr)
+			}
+			r.RemoveAll(backupRel)
+			return err
+		}
+		if err := r.RemoveAll(backupRel); err != nil {
+			fmt.Fprintf(os.Stderr, "release: could not delete the previous release moved to %s: %v\n", backup, err)
+		}
+		return nil
 	} else if !errors.Is(err, os.ErrNotExist) {
 		return err
 	}
-	return r.Rename(rel, version)
+	return renameInRoot(r, rel, version)
 }
