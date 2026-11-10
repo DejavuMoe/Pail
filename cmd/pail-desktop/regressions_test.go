@@ -70,6 +70,7 @@ func TestVersionsTabFollowsANewVersion(t *testing.T) {
 	h.a.headKey = "" // what a save of the headers does
 	h.waitFor("one more version", func() bool { return h.a.mg.vers.state == loadReady && len(h.a.mg.vers.rows) == n+1 })
 }
+
 // "Show deleted" stayed on after a switch of accounts, for a bucket of the same
 // name on the other account.
 func TestShowDeletedEndsWithTheAccount(t *testing.T) {
@@ -104,6 +105,7 @@ func TestMissingSecretClearsTheBucketList(t *testing.T) {
 		t.Errorf("fix %d, %d buckets still listed", h.a.bucketsFix, len(h.a.buckets))
 	}
 }
+
 // A name with a space at an end was renamed without the trimmed space when
 // the field was left untouched.
 func TestUntouchedRenameKeepsSpaces(t *testing.T) {
@@ -136,6 +138,7 @@ func TestHiddenSelectionDisablesItsCommands(t *testing.T) {
 		}
 	}
 }
+
 // A signed URL that arrived after its dialog was closed and opened again for
 // another object showed in the new dialog.
 func TestLateSignedURLStaysOutOfANewDialog(t *testing.T) {
@@ -151,6 +154,7 @@ func TestLateSignedURLStaysOutOfANewDialog(t *testing.T) {
 		t.Errorf("the manifest.json dialog shows %+v (busy %v)", f.res, f.busy)
 	}
 }
+
 // After a failed save, Test connection's progress and result never showed,
 // and a result stayed on screen after the fields it tested were changed.
 func TestAccountTestResultFollowsTheForm(t *testing.T) {
@@ -166,6 +170,7 @@ func TestAccountTestResultFollowsTheForm(t *testing.T) {
 	h.settle()
 	h.mustNotHave("Connected")
 }
+
 // Keys with %, ?, #, or * became wrong invalidation paths or were refused.
 func TestInvalidationPathsNameTheKeys(t *testing.T) {
 	keys := []string{"50%25 off.png", "a?b.txt", "a#b.txt", "x*.txt", "100%.png", "dir/a%b/", "plain.txt"}
@@ -189,6 +194,7 @@ func TestInvalidationPathsNameTheKeys(t *testing.T) {
 		t.Errorf("no path for %v", want)
 	}
 }
+
 // A new sync job being written was lost when the user left the tool by the
 // sidebar and came back.
 func TestSyncDraftSurvivesLeavingTheTool(t *testing.T) {
