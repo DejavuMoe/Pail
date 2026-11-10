@@ -150,6 +150,12 @@ func setupVersions(c *cli, fs *flag.FlagSet) runner {
 		if err != nil {
 			return err
 		}
+		if len(vs) == 0 && p.Key != "" && !strings.HasSuffix(p.Key, "/") {
+			// Not a folder: maybe a single object, like ls.
+			if vs, err = c.listVersions(ctx, c.loc(p.Bucket, parentPrefix(p.Key)), p.Key); err != nil {
+				return err
+			}
+		}
 		markers := 0
 		for _, v := range vs {
 			if v.DeleteMarker {
