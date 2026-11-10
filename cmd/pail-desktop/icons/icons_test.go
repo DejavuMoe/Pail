@@ -1,9 +1,16 @@
 package icons
 
-import "testing"
+import (
+	"strings"
+	"testing"
+)
 
 func TestAllIconsParse(t *testing.T) {
-	names := Names()
+	entries, _ := files.ReadDir(".")
+	var names []string
+	for _, e := range entries {
+		names = append(names, strings.TrimSuffix(e.Name(), ".svg"))
+	}
 	if len(names) < 40 {
 		t.Fatalf("only %d icons embedded", len(names))
 	}

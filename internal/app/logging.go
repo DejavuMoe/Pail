@@ -281,9 +281,6 @@ func (k *lgSink) loop() {
 	}
 }
 
-// dropped returns the number of records discarded because the queue was full.
-func (k *lgSink) dropped() int64 { return k.drops.Load() }
-
 // close stops accepting records, flushes the queue and closes the writer. It
 // gives up waiting after wait (a hung disk must not hang Shutdown); the writer
 // goroutine then finishes in the background. It reports whether it flushed.
@@ -356,7 +353,6 @@ func (s *Service) LogDir() string {
 }
 
 func (s *Service) lgInfo(msg string, args ...any) { s.lg.emit(slog.LevelInfo, msg, args) }
-func (s *Service) lgWarn(msg string, args ...any) { s.lg.emit(slog.LevelWarn, msg, args) }
 
 // applyLogging opens or closes the log file to match on. Failure to open the
 // file is reported once through the returned error but never blocks callers.

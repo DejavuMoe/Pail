@@ -36,16 +36,6 @@ func Get(name string) *ui.SVG {
 	return s
 }
 
-// Names lists every embedded icon name (used by tests).
-func Names() []string {
-	entries, _ := files.ReadDir(".")
-	out := make([]string, 0, len(entries))
-	for _, e := range entries {
-		out = append(out, strings.TrimSuffix(e.Name(), ".svg"))
-	}
-	return out
-}
-
 var byExt = map[string]string{
 	".txt": "file-text", ".md": "file-text", ".log": "file-text", ".pdf": "file-text", ".doc": "file-text", ".docx": "file-text", ".rtf": "file-text",
 	".png": "file-image", ".jpg": "file-image", ".jpeg": "file-image", ".gif": "file-image", ".webp": "file-image", ".svg": "file-image", ".bmp": "file-image", ".ico": "file-image", ".avif": "file-image",

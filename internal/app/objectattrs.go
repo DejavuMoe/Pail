@@ -24,10 +24,9 @@ func bkStatus(err error) int {
 }
 
 const (
-	bkMaxTags      = 10
-	bkMaxTagKey    = 128
-	bkMaxTagValue  = 256
-	bkMaxObjectKey = 1024
+	bkMaxTags     = 10
+	bkMaxTagKey   = 128
+	bkMaxTagValue = 256
 )
 
 func bkValidTags(op string, tags map[string]string) error {
