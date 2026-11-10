@@ -2,11 +2,13 @@ package main
 
 import (
 	"context"
+	"net/url"
 	"strings"
 	"testing"
 	"time"
 
 	core "github.com/DejavuMoe/Pail/internal/app"
+	"github.com/DejavuMoe/Pail/internal/cloud"
 )
 
 // Regression tests of reported bugs, one per bug.
@@ -163,4 +165,27 @@ func TestAccountTestResultFollowsTheForm(t *testing.T) {
 	h.a.af.endpoint = "http://elsewhere.invalid:9000"
 	h.settle()
 	h.mustNotHave("Connected")
+}
+// Keys with %, ?, #, or * became wrong invalidation paths or were refused.
+func TestInvalidationPathsNameTheKeys(t *testing.T) {
+	keys := []string{"50%25 off.png", "a?b.txt", "a#b.txt", "x*.txt", "100%.png", "dir/a%b/", "plain.txt"}
+	got, err := cloud.NormalizeInvalidationPaths(strings.Split(invalidationPaths(keys), "\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]bool{}
+	for _, k := range keys {
+		want["/"+k] = true
+	}
+	for _, p := range got {
+		folder := strings.HasSuffix(p, "*")
+		raw, err := url.PathUnescape(strings.TrimSuffix(p, "*"))
+		if err != nil || !want[raw] || folder != strings.HasSuffix(raw, "/") {
+			t.Errorf("path %q names %q (%v)", p, raw, err)
+		}
+		delete(want, raw)
+	}
+	if len(want) > 0 {
+		t.Errorf("no path for %v", want)
+	}
 }

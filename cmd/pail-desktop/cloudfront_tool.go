@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"net/url"
 	"strings"
 	"time"
 
@@ -243,15 +244,17 @@ func (a *app) cfTick() {
 // ---- invalidation dialog ----------------------------------------------------------------------
 
 // invalidationPaths turns browser keys into paths: "/key" for objects and
-// "/prefix*" for a folder.
+// "/prefix*" for a folder. The keys are percent-escaped as URL paths, so a
+// "%", "?", "#" or "*" in a key names that character, not an escape, a query,
+// a fragment or a wildcard.
 func invalidationPaths(keys []string) string {
 	var out []string
 	for _, k := range keys {
+		p := (&url.URL{Path: "/" + k}).EscapedPath()
 		if strings.HasSuffix(k, "/") {
-			out = append(out, "/"+k+"*")
-		} else {
-			out = append(out, "/"+k)
+			p += "*"
 		}
+		out = append(out, p)
 	}
 	return strings.Join(out, "\n")
 }
