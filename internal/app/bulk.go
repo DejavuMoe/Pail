@@ -3,6 +3,7 @@ package app
 import (
 	"context"
 	"strings"
+	"sync"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -19,7 +20,8 @@ import (
 // forgotten:
 //
 //   - Move (and Rename) works on current objects only; explicit versions are
-//     rejected. It copies first, verifies the destination by a HEAD (size),
+//     rejected. It copies first, verifies the destination by a HEAD (size, and
+//     the ETag when both ETags are content MD5s),
 //     then HEADs the source again: only if the source is still what was copied
 //     (same VersionId, or in an unversioned bucket the same ETag) it is
 //     removed with a plain DeleteObject WITHOUT a VersionId. A versioned
@@ -121,6 +123,18 @@ type bkCopyPlan struct {
 	rename   string // Rename: replaces the first path segment below src.Prefix
 	failSkip bool   // Rename: an existing destination is a failure, not a skip
 	title    string
+
+	// copied remembers, per source key, the verified copies of a move whose
+	// source has not been deleted yet. A retry of the task (same plan) finishes
+	// such an item instead of treating its own copy as a conflict.
+	copied sync.Map // source key -> bkCopied
+}
+
+// bkCopied is a copy made by an earlier run of the same move.
+type bkCopied struct {
+	srcETag  string // the source as copied
+	destKey  string // where the copy went (the rename policy may have picked a free name)
+	destETag string // the destination as verified after the copy
 }
 
 // destKey maps a source key to its destination key.
@@ -293,8 +307,9 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 	}
 	// A move needs the exact version that is copied (and checked again before
 	// the delete); an unresolved object needs its ETag and size.
+	srcKeyed := false
 	if p.move || !o.Resolved {
-		h, _, err := bkHead(ctx, c, p.src.Bucket, o.Key, o.VersionID)
+		h, hout, err := bkHead(ctx, c, p.src.Bucket, o.Key, o.VersionID)
 		if err != nil {
 			return bkFail(ctx, res, err)
 		}
@@ -304,16 +319,50 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		if !o.Resolved {
 			r.AddTotal(h.Size, 0)
 		}
-		o = h
+		o, srcKeyed = h, headKeyed(hout)
 		if !p.move { // a retried move must resolve the then-current object again
 			res.VersionID = o.VersionID
 		}
 	}
-	dec, err := resolveRemoteConflict(ctx, c, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified)
-	if err != nil {
-		return bkFail(ctx, res, err)
-	}
 	progress := bkProgress(r)
+	var dec conflictDecision
+	copied := false // a retried move: an earlier run copied, but did not delete the source
+	if p.move && p.policy != ConflictOverwrite {
+		// The copy of an earlier run of this task: still the object it verified?
+		// (A multipart copy has no ETag to compare with the source's.)
+		if v, ok := p.copied.Load(o.Key); ok {
+			if rec := v.(bkCopied); rec.srcETag == o.ETag {
+				t, err := headTarget(ctx, c, p.dest.Bucket, rec.destKey)
+				if err != nil {
+					return bkFail(ctx, res, err)
+				}
+				if t.exists && t.size == o.Size && t.etag == rec.destETag {
+					dec, copied = conflictDecision{Key: rec.destKey}, true
+				}
+			}
+		}
+		if !copied {
+			dst, err := headTarget(ctx, c, p.dest.Bucket, destKey)
+			if err != nil {
+				return bkFail(ctx, res, err)
+			}
+			if dst.exists && dst.size == o.Size && sameObjectETag(o.ETag, srcKeyed, dst.etag, dst.keyed) {
+				// The destination is the source's copy (same size and ETag, so same
+				// content): not a conflict; finish the move.
+				dec, copied = conflictDecision{Key: destKey}, true
+			} else if dec, err = decideConflict(ctx, c, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified, dst); err != nil {
+				return bkFail(ctx, res, err)
+			}
+		}
+		if copied {
+			progress(o.Size)
+		}
+	} else {
+		var err error
+		if dec, err = resolveRemoteConflict(ctx, c, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified); err != nil {
+			return bkFail(ctx, res, err)
+		}
+	}
 	if dec.Skip {
 		if p.failSkip {
 			return bkFailf(res, "%q already exists", destKey)
@@ -322,33 +371,38 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		res.Status, res.Err = ItemSkipped, dec.Reason
 		return res
 	}
-	src := storage.CopySource(p.src.Bucket, o.Key, o.VersionID)
-	err = s.writeConditional(p.src.AccountID, dec, func(ifNoneMatch, ifMatch string) error {
-		in := &s3.CopyObjectInput{
-			Bucket: aws.String(p.dest.Bucket), Key: aws.String(dec.Key), CopySource: aws.String(src),
-			CopySourceIfMatch: aws.String(o.ETag), MetadataDirective: types.MetadataDirectiveCopy,
-			StorageClass: bkCopyClass(o.StorageClass),
+	if !copied {
+		src := storage.CopySource(p.src.Bucket, o.Key, o.VersionID)
+		err := s.writeConditional(p.src.AccountID, dec, func(ifNoneMatch, ifMatch string) error {
+			in := &s3.CopyObjectInput{
+				Bucket: aws.String(p.dest.Bucket), Key: aws.String(dec.Key), CopySource: aws.String(src),
+				CopySourceIfMatch: aws.String(o.ETag), MetadataDirective: types.MetadataDirectiveCopy,
+				StorageClass: bkCopyClass(o.StorageClass),
+			}
+			if ifNoneMatch != "" {
+				in.IfNoneMatch = aws.String(ifNoneMatch)
+			}
+			if ifMatch != "" {
+				in.IfMatch = aws.String(ifMatch)
+			}
+			return c.Copy(ctx, in, o.Size, s.bkTransferOpts(progress))
+		})
+		if err != nil {
+			return bkFail(ctx, res, err)
 		}
-		if ifNoneMatch != "" {
-			in.IfNoneMatch = aws.String(ifNoneMatch)
-		}
-		if ifMatch != "" {
-			in.IfMatch = aws.String(ifMatch)
-		}
-		return c.Copy(ctx, in, o.Size, s.bkTransferOpts(progress))
-	})
-	if err != nil {
-		return bkFail(ctx, res, err)
+		progress(o.Size)
 	}
-	progress(o.Size)
 	if p.move {
 		t, err := headTarget(ctx, c, p.dest.Bucket, dec.Key)
 		if err != nil {
 			return bkFailf(res, "copied, but the destination could not be verified (%v); source kept", classify("", err))
 		}
-		if !t.exists || t.size != o.Size {
+		// Size always; the ETag too when both ETags are content MD5s (not
+		// multipart, not SSE-KMS/SSE-C), otherwise it says nothing.
+		if !t.exists || t.size != o.Size || (etagMD5(o.ETag, srcKeyed) && etagMD5(t.etag, t.keyed) && !sameObjectETag(o.ETag, srcKeyed, t.etag, t.keyed)) {
 			return bkFailf(res, "copied, but the destination does not match the source; source kept")
 		}
+		p.copied.Store(o.Key, bkCopied{srcETag: o.ETag, destKey: dec.Key, destETag: t.etag})
 		cur, _, err := bkHead(ctx, c, p.src.Bucket, o.Key, "")
 		switch {
 		case IsKind(err, ErrNotFound):

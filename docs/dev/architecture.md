@@ -47,7 +47,7 @@ tools/pack         归档写入，保证可执行文件权限为 0755
 1. **不做探测写入。** 不为了判断 provider 能力而写入探测对象。条件头被 provider 拒绝（501 等）时，按账户缓存该结论并降级为先 HEAD 再写；412 是真实的前提失败，不能当成"不支持"。
 2. **逐项结果。** 批量操作单项失败不影响其他项，也不在首错处停止。结果汇总为成功、失败、未知、未处理。
 3. **未知结果不重放。** 写操作结果未知（例如 `DeleteObjects` 的确认缺失、重复或不是请求的 key）时，标记为 `unknown`，不自动重试。整体 4xx 才标为 `failed`。
-4. **移动 = 先复制并校验，再删除。** 校验目标的 ETag 与大小与复制结果一致后才删源。版本化桶按复制时的 VersionId 精确删除源；未版本化时按 key 删除，存在竞态。
+4. **移动 = 先复制并校验，再删除。** 校验目标的大小与源一致后才删源；源与目标的 ETag 都是内容 MD5（不含 `-`，即非分片上传或分片复制，且未使用 SSE-KMS / SSE-C）时，还要求 ETag 相同，否则只比大小。重试时，目标若是同一任务先前验证过的那份复制（ETag 未变），或与源大小和 ETag 都相同，则视为复制已完成，直接复核并删源，不当作冲突。版本化桶按复制时的 VersionId 精确删除源；未版本化时按 key 删除，存在竞态。
 5. **下载原子且不覆盖。** 先 `safepath.Join` 得到目标路径，在同目录创建临时文件，GET 带 `If-Match` ETag，校验大小与 ETag 后按冲突策略发布（Windows `MoveFileEx` 不带 REPLACE；Linux `renameat2` NOREPLACE，回退 link 再回退 Lstat + rename）。失败时删除临时文件，绝不发布不完整的文件。大小不一致的下载（例如代理解压了 gzip 对象）被拒绝。
 6. **条件写入与降级。** 冲突策略 skip / rename 优先使用 `If-None-Match: *`（分片上传的 Complete 请求也带），provider 不支持时退化为先 HEAD，竞态在文档中说明。
 7. **原地改写后复核。** 改存储类别、加密、属性用 CopyObject 加 `MetadataDirective: REPLACE`，带回所有未修改的 headers 和 metadata；tags 保持，ACL 尽力保留。完成后对每个对象 HEAD 复核：服务端返回 200 却没有生效的项记为 `failed`，复核本身失败记为 `unknown`。读不到 tags 或 ACL（AccessDenied）时拒绝改写，避免丢失。超过 5 GiB 走分片复制。版本化桶会产生新版本。
