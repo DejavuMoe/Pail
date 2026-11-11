@@ -27,9 +27,9 @@ Run these from the repository root in PowerShell, Bash or another shell; the com
 | Static checks | `go vet ./...` | Go on the current host |
 | Native tests | `go test ./...` | Go on the current host; protocol fixtures are in-process |
 | Native build | `go build -trimpath -ldflags "-s -w" -o build/ ./cmd/pail ./cmd/pail-desktop` | Go; application builds do not require cgo |
-| All release archives | `go run ./tools/release -version 0.6.1` | Go; includes archive verification |
-| One target | `go run ./tools/release -version 0.6.1 -targets linux/amd64` | Same tool and rules as a full release |
-| Downloaded archive verification | `go run ./tools/verify-release -dir build/release/0.6.1 -version 0.6.1` | Go |
+| All release archives | `go run ./tools/release -version 0.6.2` | Go; includes archive verification |
+| One target | `go run ./tools/release -version 0.6.2 -targets linux/amd64` | Same tool and rules as a full release |
+| Downloaded archive verification | `go run ./tools/verify-release -dir build/release/0.6.2 -version 0.6.2` | Go |
 | Race detection | `go test -race ./...` | Go, cgo and a C compiler; Linux in CI |
 | MinIO integration | `bash scripts/integration-minio.sh` | Linux, Bash, Docker, curl and Go; Windows uses the optional WSL wrapper |
 
@@ -94,7 +94,7 @@ Dependabot security/version update PRs and agentic autofix remain disabled: fixe
 1. Prepare both changelogs and download documentation on `master`. Commit and push to Forgejo; verify that GitHub has the identical SHA.
 2. Wait for every required CI and CodeQL job for that SHA. Review CodeQL alerts; a successful analysis upload alone is not a claim that the code has no findings.
 3. Run `node scripts/check-release.mjs DejavuMoe/Pail <sha>`. The check rejects missing, skipped, failed, pending, wrong-commit, wrong-branch and changed-attempt results. The same check runs again inside Release.
-4. On Windows, create a signed annotated tag, for example `git tag -s v0.6.1 -m "Pail v0.6.1"`, and push only that tag to Forgejo: `git push origin v0.6.1`.
+4. On Windows, create a signed annotated tag, for example `git tag -s v0.6.2 -m "Pail v0.6.2"`, and push only that tag to Forgejo: `git push origin v0.6.2`.
 5. Use local `gh run list --repo DejavuMoe/Pail --commit <sha>` and `gh run watch <run-id> --repo DejavuMoe/Pail --exit-status` to monitor the mirrored workflow. Release verifies that the tag is a semantic version and its commit belongs to `master`, then extracts matching English and Chinese changelog sections.
 6. Package all six targets, verify the archives, upload them to a draft Release, then publish only after every upload succeeds. A published Release is not overwritten; failed draft uploads can be rerun. Do not move an existing release tag.
 7. Download the published archives and `SHA256SUMS`, verify them again, and run native version checks where available. Commit and push the validation record to `master`; that push rebuilds the website for the new version (see [site.md](site.md)). Then upload the archives and `SHA256SUMS` to the download mirror's `v<version>/` directory.
@@ -106,9 +106,9 @@ History rewrites and re-signing change commit and tag identities. Old successful
 ## Building and checking release archives
 
 ```sh
-go run ./tools/release -version 0.6.1
+go run ./tools/release -version 0.6.2
 # Optional: -targets linux/amd64,linux/arm64 -out-dir <directory> -cli-only
-go run ./tools/verify-release -dir build/release/0.6.1 -version 0.6.1
+go run ./tools/verify-release -dir build/release/0.6.2 -version 0.6.2
 ```
 
 `-version` is required and accepts SemVer without the `v` prefix. `-targets` accepts a nonempty comma-separated subset of the six supported targets without duplicates. The repository root is discovered from the current directory or its parents, without Git metadata. The default output is `<repo>/build/release/<version>/`; an explicit relative `-out-dir` resolves from the caller's directory. Existing release output is replaced only after all selected targets build and pass verification; linked outputs and unrelated files are refused. The replacement must preserve both the archive names and their contained files, so a same-name CLI-only archive cannot replace one containing the desktop app. The old directory is moved aside and deleted only after the new one is in place. Run only one release build for a given output/version at a time.

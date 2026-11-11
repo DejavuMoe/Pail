@@ -36,7 +36,7 @@
 - **存储桶**：创建、清空、删除，复制或移动内容。用表单或 JSON 编辑 14 项存储桶设置。列出并中止未完成的分段上传。可以给存储桶设置别名。
 - **同步任务**：上传、下载或镜像文件夹。可按大小和时间、仅大小或校验和比较，按通配符排除文件，执行前先查看计划。
 - **上传规则**：按存储桶和对象键匹配，设置请求头、存储类别和加密，或用 GZIP、ZIP、AES-256 ZIP 压缩。
-- **链接**：带有效期的 GET 和 PUT 预签名链接，可指定版本，也可批量生成。每个账户可设置 CDN 域名。AWS 账户可提交 CloudFront 失效请求，并启用或停用分发。
+- **链接**：带有效期的 GET 和 PUT 预签名链接，可指定版本，也可批量生成。每个账户可设置 CDN 域名。AWS 账户可提交 CloudFront 失效请求，并启用或停用分配。
 - **界面**：命令面板（`Ctrl+K`，macOS 上是 `⌘K`）、键盘快捷键，英文和简体中文，浅色和深色主题。
 
 ## 安装
@@ -56,9 +56,9 @@
 计算压缩包的 SHA-256，与同一版本 `SHA256SUMS` 中对应的那一行比较：
 
 ```sh
-sha256sum Pail-v0.6.1-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.6.1-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.6.1-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.6.2-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.6.2-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.6.2-windows-amd64.zip         # Windows PowerShell
 ```
 
 ### 在 macOS 上首次打开

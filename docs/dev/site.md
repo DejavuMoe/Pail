@@ -136,7 +136,7 @@ Run `sh scripts/test-publish-site.sh` on Linux to check atomic activation, two-r
 ## Preview
 
 ```powershell
-go run ./tools/site -out build/site -version 0.6.1
+go run ./tools/site -out build/site -version 0.6.2
 python -m http.server 4312 --bind 127.0.0.1 --directory build/site
 ```
 

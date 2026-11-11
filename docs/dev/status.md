@@ -138,7 +138,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 预签名 URL（GET / PUT、有效期、指定版本、多对象） | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | |
 | CloudFront：distribution 列表、多路径 / 整桶失效、状态 | ✅ | ✅ 仅 AWS 账户；headless 回归覆盖跨账户旧结果、重开失效对话框、慢轮询收敛 | ✅ `httptest`，可控 API 完成顺序 | ❌ | 从未对真实 CloudFront 或 AWS 运行 |
 
-### 未发布：传输控制、跨账户、归档与网络
+### v0.6.2：传输控制、跨账户、归档与网络
 
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
@@ -166,7 +166,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | `pail` 命令行（accounts、account、vault、bucket alias、buckets、ls、cp、mv、rm、mb、rb、presign、url、versions、restore、stat、cat、mkdir、du、tags、acl、props、storage-class、multipart、cloudfront、settings、sync 及 sync job） | ✅ | n/a | ✅ 进程内对 `internal/s3test` | ❌ 命令行外壳本身没有对真实服务端运行 | 它调用的应用层在真实服务端验证过。`cloudfront` 的 `invalidate` 与 `ls` 在命令行层只测了非 AWS 账户被拒绝和确认流程，没有对 CloudFront 或模拟端点运行 |
 | CLI 结果与参数边界 | ✅ | n/a | ✅ `TestBulkSummaryBeyondItemRetention` 删除 10001 项并核对汇总；`TestSavedSyncJobSelectsItsAccount` 覆盖多账户、显式账户冲突和保险库；`TestDoubleDashDownloadDestination`、`TestInterspersedEndOfOptions` 验证 `--` 与选项值 | ❌ 这些边界未对真实服务端验证 | 不从截断的逐项明细推导总数 |
 | CLI 年龄参数、URL 与 JSON 输出 | ✅ | n/a | ✅ `output_age_regression_test.go`：非有限数、溢出、微小天数被拒绝，JSON 写失败返回非零且不执行未成功输出的同步预览；`browse_publicurl_regression_test.go` 保留端点转义 | ⚠️ Windows 实际 CLI 进程对本地 HTTP 夹具验证参数和 URL；无真实云端 | 输出失败不回滚已经完成的远端操作 |
-| 发布内容与版本验证 | n/a | n/a | ✅ 真实 PE、ELF、Mach-O 的 amd64 与 arm64 夹具核对实际版本，拒绝版本前缀、无关字符串、缺失符号和损坏数据；同名 CLI-only 包不能替换完整包 | ⚠️ 本地实际构建、打包、验包；未发布 | 保留符号会增加文件大小；旧的剥离符号产物不能通过新的版本检查 |
+| 发布内容与版本验证 | n/a | n/a | ✅ 真实 PE、ELF、Mach-O 的 amd64 与 arm64 夹具（含剥离符号的构建）核对版本戳，拒绝版本前缀或后缀、未写版本戳、重复、格式错误和截断的数据；同名 CLI-only 包不能替换完整包 | ✅ v0.6.2 起由发布流程实际构建、打包、验包 | 发布产物用 `-s -w` 剥离符号，版本从 `internal/buildstamp` 的标记读取；v0.6.1 及更早的产物用旧方式验证 |
 | 外部验收清理结果 | n/a | n/a | ✅ `ext_cleanup_regression_test.go`：版本和 MPU 列举被拒绝、出错或最终复查失败时报告错误；明确不支持的 API 保留兼容回退 | ❌ 修复后未重跑真实外部端点 | 列举失败不能视为没有残留 |
 | 官网上的命令行演示与迷你演示（`site/cli-demo.json`、传输与版本小动画） | n/a | ⚠️ 用 ego-browser 读 DOM 核对过中英文页面（终端四个标签、视频属性、无第三方请求）；截图超时，没有目视 | ✅ `TestSiteCLIDemo`（`cmd/pail`）进程内对 `internal/s3test` 真跑四条命令并与黄金文件比较；`tools/site` 的测试核对页面、内嵌 JSON、原型与应用的用词（同一份文案键对照） | ❌ 没有对真实服务端录制 | 时间戳与预签名的凭据、签名做了规范化（见测试注释）；预签名示例用 AWS 类型账户在本地签名，没有联网 |
 | 官网首屏截图（``docs/images/main-{light,dark}-{en,zh}.webp``，四张 macOS 原生截图） | n/a | ⚠️ 所有者在 macOS 上用 ``--demo`` 截取（2026-11-07）；用 ego-browser 读 DOM 核对过中文页在亮、暗两种配色下选中的文件与尺寸，没有目视页面 | ✅ ``TestHeroScreenshotsFollowLanguageAndTheme`` 核对四张尺寸一致、页面写的宽高等于文件、两种语言页与两份 README 各用自己的图 | n/a | Open Graph 卡片（``social.webp``）由英文亮色截图重新合成，未在任何社交平台上刷新验证 |`docs/video/`，由 `tools/film` 制作） | n/a | ⚠️ 抽帧目视；没有连续观看，也没有听过配乐 | n/a | n/a | 应用窗口是 `cmd/pail-desktop/film_test.go` 逐帧渲染的真实应用，对内存 demo S3 操作；片头、片尾、字幕和飞入的文件是后加的 |
