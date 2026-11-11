@@ -141,14 +141,14 @@ func TestConfigValidation(t *testing.T) {
 
 func TestHTTPClientTimeouts(t *testing.T) {
 	hc := NewHTTPClient(false, "")
-	tr := hc.Transport.(*http.Transport)
+	tr := hc.Transport.(throttledTransport).base.(*http.Transport)
 	if hc.Timeout != 0 {
 		t.Fatal("overall request timeout would cut off large transfers")
 	}
 	if tr.TLSHandshakeTimeout != 10*time.Second || tr.ResponseHeaderTimeout != 60*time.Second || tr.DisableKeepAlives || tr.TLSClientConfig.InsecureSkipVerify {
 		t.Fatalf("unexpected transport: %+v", tr)
 	}
-	if !NewHTTPClient(true, "").Transport.(*http.Transport).TLSClientConfig.InsecureSkipVerify {
+	if !NewHTTPClient(true, "").Transport.(throttledTransport).base.(*http.Transport).TLSClientConfig.InsecureSkipVerify {
 		t.Fatal("InsecureSkipVerify not applied")
 	}
 }

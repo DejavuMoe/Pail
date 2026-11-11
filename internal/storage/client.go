@@ -111,9 +111,9 @@ func proxyFunc(proxyURL string) func(*http.Request) (*url.URL, error) {
 
 // NewHTTPClient returns a client with connection-level timeouts but no overall
 // request timeout, so multi-gigabyte transfers are never cut off. proxyURL is
-// Config.ProxyURL.
+// Config.ProxyURL. Bodies follow the limits of SetBandwidth.
 func NewHTTPClient(insecureSkipVerify bool, proxyURL string) *http.Client {
-	return &http.Client{Transport: &http.Transport{
+	return &http.Client{Transport: throttledTransport{base: &http.Transport{
 		Proxy:                 proxyFunc(proxyURL),
 		DialContext:           (&net.Dialer{Timeout: 10 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
 		TLSHandshakeTimeout:   10 * time.Second,
@@ -124,7 +124,7 @@ func NewHTTPClient(insecureSkipVerify bool, proxyURL string) *http.Client {
 		MaxIdleConnsPerHost:   32,
 		ForceAttemptHTTP2:     true,
 		TLSClientConfig:       &tls.Config{MinVersion: tls.VersionTLS12, InsecureSkipVerify: insecureSkipVerify},
-	}}
+	}}}
 }
 
 func (cfg Config) validate() error {

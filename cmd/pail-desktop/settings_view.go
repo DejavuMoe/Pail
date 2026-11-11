@@ -28,6 +28,7 @@ type settingsForm struct {
 	loaded                           bool
 	upload, download, other, workers string
 	part                             string
+	upRate, downRate                 string // bandwidth limits, KiB/s
 	conflict                         string
 	dir                              string
 	logOn                            bool
@@ -81,6 +82,10 @@ var numSettings = []numSetting{
 		func(f *settingsForm) *string { return &f.workers }, func(s core.Settings) int { return s.BulkWorkers }, func(s *core.Settings, n int) { s.BulkWorkers = n }},
 	{"part", locales.SettingsPartRow, locales.SettingsPart, locales.SettingsPartHelp, 5, 5120, " MiB",
 		func(f *settingsForm) *string { return &f.part }, func(s core.Settings) int { return s.PartSizeMiB }, func(s *core.Settings, n int) { s.PartSizeMiB = n }},
+	{"upRate", locales.SettingsUploadRate, locales.SettingsUploadRate, locales.SettingsRateHelp, 0, core.MaxBandwidthKiBps, " KiB/s",
+		func(f *settingsForm) *string { return &f.upRate }, func(s core.Settings) int { return s.UploadKiBps }, func(s *core.Settings, n int) { s.UploadKiBps = n }},
+	{"downRate", locales.SettingsDownloadRate, locales.SettingsDownloadRate, locales.SettingsRateHelp, 0, core.MaxBandwidthKiBps, " KiB/s",
+		func(f *settingsForm) *string { return &f.downRate }, func(s core.Settings) int { return s.DownloadKiBps }, func(s *core.Settings, n int) { s.DownloadKiBps = n }},
 	{"recentOps", locales.SettingsRecentOps, locales.SettingsRecentOps, locales.SettingsRecentOpsHelp, core.MinRecentOps, core.MaxRecentOps, "",
 		func(f *settingsForm) *string { return &f.recentOps }, func(s core.Settings) int { return s.RecentOps }, func(s *core.Settings, n int) { s.RecentOps = n }},
 }
@@ -92,6 +97,7 @@ func (a *app) loadSettingsForm() {
 	*f = settingsForm{loaded: true, errs: map[string]string{}, saved: map[string]time.Time{}, focus: map[string]bool{}}
 	f.upload, f.download, f.other = strconv.Itoa(st.Limits.Upload), strconv.Itoa(st.Limits.Download), strconv.Itoa(st.Limits.Other)
 	f.workers, f.part = strconv.Itoa(st.BulkWorkers), strconv.Itoa(st.PartSizeMiB)
+	f.upRate, f.downRate = strconv.Itoa(st.UploadKiBps), strconv.Itoa(st.DownloadKiBps)
 	f.conflict, f.dir = string(st.Conflict), st.DefaultDownloadDir
 	f.proxy = proxyFormOf(st.Proxy)
 	f.logOn = st.LogToFile
@@ -391,6 +397,8 @@ func (a *app) settingsView(c *ui.Context) {
 				a.numberRow(c, ns)
 			}
 			a.numberRow(c, numSettings[4])
+			a.numberRow(c, numSettings[5])
+			a.numberRow(c, numSettings[6])
 			settingsRowHelp(c, locales.SettingsConflictRow(), locales.SettingsConflictHelp(), f.errs["conflict"], func() {
 				if selectBox(c, locales.SettingsConflictLabel(), &f.conflict, conflictChoices(), 240) {
 					a.commitConflict()
@@ -428,7 +436,7 @@ func (a *app) settingsView(c *ui.Context) {
 			settingsRow(c, locales.SettingsLogFiles(), "", func() {
 				ghostButton(c, icons.Get("folder-open"), locales.SettingsOpenLogDir(), locales.SettingsOpenLogDirTip(), false).Margin(0, 0, 0, -8).OnClick(a.openLogDir)
 			})
-			a.numberRow(c, numSettings[5])
+			a.numberRow(c, numSettings[7])
 			settingsRowHelp(c, locales.SettingsKeepRecentOps(), locales.SettingsKeepRecentOpsHelp(), f.errs["keepOps"], func() {
 				if switchControl(c, &f.keepOps, locales.SettingsKeepRecentOps()).Changed() {
 					a.setKeepRecentOps(f.keepOps)
