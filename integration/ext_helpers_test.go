@@ -14,6 +14,7 @@ import (
 	"context"
 	"crypto/rand"
 	"encoding/hex"
+	"errors"
 	"fmt"
 	"net/http"
 	"os"
@@ -282,6 +283,11 @@ func (x *extEnv) sweep(t *testing.T) {
 func extSweep(ctx context.Context, sdk *storage.Client, bucket, prefix string) (left []string, err error) {
 	extGuardPrefix(prefix)
 	s := sdk.S3()
+	listError := func(op string, e error) {
+		if e != nil && !extUnsupportedAPI(e) {
+			err = errors.Join(err, fmt.Errorf("%s: %w", op, e))
+		}
+	}
 
 	// Unfinished multipart uploads (some servers ignore the Prefix filter: filter again).
 	abortAll := func() []string {
@@ -290,6 +296,7 @@ func extSweep(ctx context.Context, sdk *storage.Client, bucket, prefix string) (
 		for pages := 0; pages < 50; pages++ {
 			out, e := s.ListMultipartUploads(ctx, in)
 			if e != nil {
+				listError("list multipart uploads", e)
 				return pending
 			}
 			for _, u := range out.Uploads {
@@ -302,10 +309,11 @@ func extSweep(ctx context.Context, sdk *storage.Client, bucket, prefix string) (
 				}
 			}
 			if !aws.ToBool(out.IsTruncated) {
-				break
+				return pending
 			}
 			in.KeyMarker, in.UploadIdMarker = out.NextKeyMarker, out.NextUploadIdMarker
 		}
+		err = errors.Join(err, errors.New("list multipart uploads: exceeded 50 cleanup pages"))
 		return pending
 	}
 	abortAll()
@@ -316,6 +324,9 @@ func extSweep(ctx context.Context, sdk *storage.Client, bucket, prefix string) (
 		if versionsOK {
 			page, e := s.ListObjectVersions(ctx, &s3.ListObjectVersionsInput{Bucket: &bucket, Prefix: &prefix})
 			if e != nil {
+				if !extUnsupportedAPI(e) {
+					return left, errors.Join(err, fmt.Errorf("list versions: %w", e))
+				}
 				versionsOK = false
 			} else {
 				for _, v := range page.Versions {
@@ -329,7 +340,7 @@ func extSweep(ctx context.Context, sdk *storage.Client, bucket, prefix string) (
 		if !versionsOK {
 			page, e := s.ListObjectsV2(ctx, &s3.ListObjectsV2Input{Bucket: &bucket, Prefix: &prefix})
 			if e != nil {
-				return nil, fmt.Errorf("list: %w", e)
+				return left, errors.Join(err, fmt.Errorf("list: %w", e))
 			}
 			for _, o := range page.Contents {
 				ids = append(ids, storage.ObjectID{Key: aws.ToString(o.Key)})
@@ -358,14 +369,16 @@ func extSweep(ctx context.Context, sdk *storage.Client, bucket, prefix string) (
 	left = append(left, abortAll()...)
 	// Verification: current objects, versions and multipart uploads.
 	if page, e := s.ListObjectsV2(ctx, &s3.ListObjectsV2Input{Bucket: &bucket, Prefix: &prefix}); e != nil {
-		err = fmt.Errorf("verify list: %w", e)
+		err = errors.Join(err, fmt.Errorf("verify list: %w", e))
 	} else {
 		for _, o := range page.Contents {
 			left = append(left, aws.ToString(o.Key))
 		}
 	}
 	if versionsOK {
-		if page, e := s.ListObjectVersions(ctx, &s3.ListObjectVersionsInput{Bucket: &bucket, Prefix: &prefix}); e == nil {
+		if page, e := s.ListObjectVersions(ctx, &s3.ListObjectVersionsInput{Bucket: &bucket, Prefix: &prefix}); e != nil {
+			listError("verify versions", e)
+		} else {
 			for _, v := range page.Versions {
 				left = append(left, "version:"+aws.ToString(v.Key)+"@"+aws.ToString(v.VersionId))
 			}
@@ -374,7 +387,9 @@ func extSweep(ctx context.Context, sdk *storage.Client, bucket, prefix string) (
 			}
 		}
 	}
-	if mp, e := s.ListMultipartUploads(ctx, &s3.ListMultipartUploadsInput{Bucket: &bucket, Prefix: &prefix}); e == nil {
+	if mp, e := s.ListMultipartUploads(ctx, &s3.ListMultipartUploadsInput{Bucket: &bucket, Prefix: &prefix}); e != nil {
+		listError("verify multipart uploads", e)
+	} else {
 		for _, u := range mp.Uploads {
 			if strings.HasPrefix(aws.ToString(u.Key), prefix) {
 				left = append(left, "multipart:"+aws.ToString(u.Key))
@@ -385,6 +400,27 @@ func extSweep(ctx context.Context, sdk *storage.Client, bucket, prefix string) (
 		return nil, nil
 	}
 	return left, err
+}
+
+// extUnsupportedAPI reports whether a list call failed because the endpoint does not
+// implement it (so the sweep may fall back). Gateways answer that in different ways:
+// a NotImplemented-style code, any HTTP 501, or 405 MethodNotAllowed for a sub-resource
+// they do not route. Auth failures (401/403) and every other error stay hard failures.
+func extUnsupportedAPI(err error) bool {
+	var response interface{ HTTPStatusCode() int }
+	if errors.As(err, &response) {
+		switch response.HTTPStatusCode() {
+		case http.StatusForbidden, http.StatusUnauthorized:
+			return false
+		case http.StatusNotImplemented, http.StatusMethodNotAllowed:
+			return true
+		}
+	}
+	switch storage.ErrorCode(err) {
+	case "NotImplemented", "XNotImplemented", "UnsupportedOperation", "UnsupportedAPI", "MethodNotAllowed":
+		return true
+	}
+	return false
 }
 
 // nullVersion maps the unversioned-bucket placeholder to "no version id", so the
