@@ -163,11 +163,15 @@ func (s *Service) uploadTaskSpec(group string, j uploadJob) taskSpec {
 	if j.Folder {
 		title += "/"
 	}
-	return taskSpec{
+	spec := taskSpec{
 		Kind: KindUpload, Group: group, Title: title,
 		Detail: "→ s3://" + j.Dest.Bucket + "/" + keyDir(j.Key),
 		Work:   func(ctx context.Context, r *run) error { return s.runUpload(ctx, r, j) },
 	}
+	if j.Sync == nil {
+		spec.Saved = &savedTransfer{Upload: &j}
+	}
+	return spec
 }
 
 func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {

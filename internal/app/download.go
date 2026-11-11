@@ -382,12 +382,23 @@ func (ds *remoteScan) object(o bkObj, versioned bool) error {
 
 // downloadTaskSpec is the spec of the task that downloads one file.
 func (s *Service) downloadTaskSpec(group string, j downloadJob) taskSpec {
+	return s.downloadSpec(group, j, 0)
+}
+
+// downloadTaskSpecRestored is downloadTaskSpec for a transfer saved in an
+// earlier session: its first run already looks the object up again.
+func (s *Service) downloadTaskSpecRestored(group string, j downloadJob) taskSpec {
+	return s.downloadSpec(group, j, 1)
+}
+
+func (s *Service) downloadSpec(group string, j downloadJob, priorRuns int32) taskSpec {
 	dir := j.DestDir
 	if d := path.Dir(j.Rel); d != "." {
 		dir = filepath.Join(j.DestDir, filepath.FromSlash(d))
 	}
 	var runs atomic.Int32
-	return taskSpec{
+	runs.Store(priorRuns)
+	spec := taskSpec{
 		Kind: KindDownload, Group: group, Title: "Download " + path.Base(j.Rel),
 		Detail: "→ " + dir,
 		Work: func(ctx context.Context, r *run) error {
@@ -401,6 +412,10 @@ func (s *Service) downloadTaskSpec(group string, j downloadJob) taskSpec {
 			return s.runDownload(ctx, r, job)
 		},
 	}
+	if j.Sync == nil {
+		spec.Saved = &savedTransfer{Download: &j}
+	}
+	return spec
 }
 
 // refreshDownloadJob updates the ETag, size and time of j from a fresh HEAD.
