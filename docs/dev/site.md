@@ -4,13 +4,13 @@ The public website lives in this repository next to the application. It is a sta
 
 | Path | Contents | State |
 | --- | --- | --- |
-| `designs/pail-site/` | Reviewable prototype (landing page `index.html`, `styles.css`, `i18n.js`, `app.js`; docs pages `docs*.html`, `changelog*.html`, `license*.html` with `docs.css`, `docs.js`; `social-preview.html`, the composition of the social card) plus the design records (`_d_meta.json`, `ui-contract.json`, `content-inventory.json`, `design-sources.json`) | landing page revision 2 and docs pages approved 2026-10-21; social preview approved 2026-10-21 |
+| `designs/pail-site/` | Original prototype (revision 2, 2026-10-21) | archived, not kept in sync |
 | `site/` | Production templates, locale files and static assets | implemented |
 | `tools/site/` | Go generator: `go run ./tools/site -out <dir> -version <x.y.z>` | implemented, tested |
 | `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | deployed on netcup-vps500 |
 | `docs/product/constraints.md` | Content and UX rules for the site | current |
 
-A visible change starts in `designs/pail-site/`, is approved, and is then implemented in `site/` in a separate commit.
+Change the site directly in `site/` and `tools/site/`. The archived prototype is not updated.
 
 ## Why one repository and a Go generator
 
@@ -27,9 +27,9 @@ site/
   templates/footer.html.tmpl  footer shared by the landing page and the docs pages
   templates/social.html.tmpl  Open Graph and Twitter metadata
   templates/404.html.tmpl     bilingual not-found page
-  locales/en.json             source strings (keys match the prototype's i18n.js, minus its href* keys:
-  locales/zh-Hans.json        the generator computes URLs; plus the not-found strings)
-  static/styles.css           the approved prototype's styles
+  locales/en.json             source strings; the generator computes URLs
+  locales/zh-Hans.json
+  static/styles.css           landing page styles
   static/docs.css             docs pages (navigation, prose, tables, contents list)
   static/app.js               theme, mobile menu, download source, demos; no runtime translation
   static/docs.js              highlights the current entry of "On this page"
@@ -60,13 +60,13 @@ The tests (`go test ./tools/site/...`) build the real site and check both langua
 
 Behaviour of the page scripts: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, a disclosure menu for narrow screens, and reduced-motion support that also applies when the system setting changes while the page is open. The demo video is a native `<video>` that does not autoplay and has a poster and a plain download link inside it; its captions are part of the picture, so it has no `<track>`. There is no site search or command palette. Without JavaScript every section, link and download still works; the theme control, menu button and object-key backdrop are hidden, the mobile navigation is shown as a plain list on narrow screens, and the terminal shows its first example.
 
-The site loads no webfonts. Text uses each operating system's default sans-serif and monospace stacks with CJK fallbacks (see `docs/product/constraints.md`), so the prototype and production make no third-party requests and there are no font licences to ship.
+The site loads no webfonts. Text uses each operating system's default sans-serif and monospace stacks with CJK fallbacks (see `docs/product/constraints.md`), so the site makes no third-party requests and there are no font licences to ship.
 
 ## Screenshots and social card
 
 `docs/images/main-{light,dark}-{en,zh}.webp` are native macOS window captures (2684×1750, transparent shadow) taken in demo mode (`go run -tags pail_demo ./cmd/pail-desktop --demo`), one per theme and per language, saved as WebP with their alpha channel. The landing page shows the pair for its language and theme (a dark `<source>` for the dark scheme, switched by the theme control); `README.md` uses the English pair and `README.zh-CN.md` the Chinese pair. `TestHeroScreenshotsFollowLanguageAndTheme` checks that the four have the same size, that the width and height written in the page are the file's and that each page and README refers to its own language.
 
-`docs/images/social.webp` is the Open Graph and Twitter card. It is `main-light-en.webp` on the page background (`#F3F1EC`, 1120 px wide, 8 px from the top, as in `designs/pail-site/social-preview.html`): `ffmpeg -f lavfi -i color=c=0xF3F1EC:s=1200x630 -i docs/images/main-light-en.webp -filter_complex "[1]scale=1120:-1[s];[0][s]overlay=40:8:format=auto" -frames:v 1 -c:v libwebp -quality 78 docs/images/social.webp`; copy it to `designs/pail-site/assets/`. Local HTML and asset checks do not show that a social platform has refreshed its cache.
+`docs/images/social.webp` is the Open Graph and Twitter card. It is `main-light-en.webp` on the page background (`#F3F1EC`, 1120 px wide, 8 px from the top): `ffmpeg -f lavfi -i color=c=0xF3F1EC:s=1200x630 -i docs/images/main-light-en.webp -filter_complex "[1]scale=1120:-1[s];[0][s]overlay=40:8:format=auto" -frames:v 1 -c:v libwebp -quality 78 docs/images/social.webp` Local HTML and asset checks do not show that a social platform has refreshed its cache.
 
 Social fields follow the [Open Graph protocol](https://ogp.me/); canonical and language alternates continue to identify the individual page. Metadata is rendered at build time, so crawlers do not need JavaScript.
 
@@ -129,14 +129,6 @@ Configure the web server's root as `/var/www/pail.download/html`. Serve `/zh/` f
 Run `sh scripts/test-publish-site.sh` on Linux to check atomic activation, two-release retention, stale-run rejection and preservation of the previous site when validation fails. `SITE_DEPLOY_ROOT` overrides `/deploy` for isolated fixtures. The scripts resolve repository paths from their own location.
 
 ## Preview
-
-Prototype: serve the repository root and open `http://127.0.0.1:4311/designs/pail-site/`. The prototype's demo section and terminal read `docs/video/` and `cli-demo.json` by relative path.
-
-```powershell
-python -m http.server 4311 --bind 127.0.0.1 --directory .
-```
-
-Production:
 
 ```powershell
 go run ./tools/site -out build/site -version 0.6.1

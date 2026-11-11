@@ -102,29 +102,6 @@ func TestScriptHasNoHandWrittenExamples(t *testing.T) {
 }
 
 // The prototype is the approved design; it must show the same recording.
-func TestPrototypeUsesRecordedExamples(t *testing.T) {
-	root := repoRoot(t)
-	norm := func(s string) string { return strings.ReplaceAll(s, "\r\n", "\n") }
-	if norm(read(t, filepath.Join(root, "designs", "pail-site", "cli-demo.json"))) != norm(read(t, filepath.Join(root, "site", "cli-demo.json"))) {
-		t.Error("designs/pail-site/cli-demo.json differs from site/cli-demo.json")
-	}
-	proto := read(t, filepath.Join(root, "designs", "pail-site", "index.html"))
-	for _, e := range recorded(t).Examples {
-		if !strings.Contains(proto, `data-term="`+e.ID+`"`) {
-			t.Errorf("the prototype has no tab for %q", e.ID)
-		}
-	}
-	pos := strings.Index(proto, `id="term-panel"`)
-	for _, l := range recorded(t).Examples[0].Lines {
-		i := strings.Index(proto[pos:], string(termLine(l)))
-		if i < 0 {
-			t.Errorf("the prototype's first example lacks %q", l.Text)
-			continue
-		}
-		pos += i
-	}
-}
-
 func TestLoadCLIDemoRejectsBadRecordings(t *testing.T) {
 	for name, body := range map[string]string{
 		"empty":     `{"examples":[]}`,
