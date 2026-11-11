@@ -86,7 +86,7 @@ func releaseInfo(settings ...debug.BuildSetting) *debug.BuildInfo {
 
 func TestBuildInfoMustCarryReleaseVersion(t *testing.T) {
 	ld := func(v string) debug.BuildSetting { return debug.BuildSetting{Key: "-ldflags", Value: v} }
-	body := []byte("binary without the version")
+	body := versionFixture(t, "linux/amd64", "1.2.3", "-w")
 	if err := checkBuildInfo(releaseInfo(ld("-s -w -X main.version=1.2.3")), body, "pail", false, "1.2.3", "linux", "amd64"); err != nil {
 		t.Fatalf("good build rejected: %v", err)
 	}
@@ -110,10 +110,11 @@ func TestBuildInfoMustCarryReleaseVersion(t *testing.T) {
 }
 
 // Go does not record -ldflags for -trimpath builds, which is how releases are
-// built; the version must then be in the binary itself.
+// built; the version must then come from the binary's main.version symbol.
 func TestTrimpathBuildInfoFallsBackToBinaryContents(t *testing.T) {
 	trim := releaseInfo(debug.BuildSetting{Key: "-trimpath", Value: "true"})
-	if err := checkBuildInfo(trim, []byte("...1.2.3..."), "pail", false, "1.2.3", "linux", "amd64"); err != nil {
+	body := versionFixture(t, "linux/amd64", "1.2.3", "-w")
+	if err := checkBuildInfo(trim, body, "pail", false, "1.2.3", "linux", "amd64"); err != nil {
 		t.Fatalf("trimpath build with the version rejected: %v", err)
 	}
 	err := checkBuildInfo(trim, []byte("...dev..."), "pail", false, "1.2.3", "linux", "amd64")
