@@ -266,7 +266,6 @@
   "clipboardCopiedFailed": "已复制 {items}，{failed, plural, other {# 项失败}}",
   "clipboardCopiedSkipped": "已复制 {items}，{skipped, plural, other {跳过 # 项}}",
   "clipboardCopyFailed": "复制失败：{detail}",
-  "clipboardCrossAccount": "尚不支持在账户之间复制",
   "clipboardMoveFailed": "移动失败：{detail}",
   "clipboardMoved": "已移动 {items}",
   "clipboardMovedFailed": "已移动 {items}，{failed, plural, other {# 项失败}}",

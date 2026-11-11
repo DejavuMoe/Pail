@@ -365,7 +365,9 @@ func TestCutAndPasteMovesObjectsAndFolders(t *testing.T) {
 	}
 }
 
-func TestPasteAcrossAccountsIsRefused(t *testing.T) {
+// Pasting from another account is attempted (the objects stream through
+// Pail); a source account that no longer exists fails the copy.
+func TestPasteAcrossAccountsIsAttempted(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.a.run("copy", "test")
@@ -374,9 +376,16 @@ func TestPasteAcrossAccountsIsRefused(t *testing.T) {
 	h.settle()
 	h.a.run("paste", "test")
 	h.settle()
-	h.waitToast("Copying between accounts is not supported yet")
+	h.waitFor("copy failed toast", func() bool {
+		for _, s := range h.tt.Texts() {
+			if strings.HasPrefix(s, "Copy failed: ") {
+				return true
+			}
+		}
+		return false
+	})
 	if h.hasObject(bkt, "website/README.txt") {
-		t.Fatal("pasted across accounts")
+		t.Fatal("copied from an account that does not exist")
 	}
 }
 

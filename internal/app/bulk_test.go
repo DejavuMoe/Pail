@@ -303,7 +303,7 @@ func TestCopyRejectsSelfAndFolderIntoItself(t *testing.T) {
 		"all into self":     {Selection{Location: e.loc("bkt", "a/"), All: true}, e.loc("bkt", "a/b/"), CopyOptions{}},
 		"whole bucket":      {Selection{Location: loc, All: true}, e.loc("bkt", "z/"), CopyOptions{}},
 		"bad policy":        {Selection{Location: loc, Keys: []string{"a/x"}}, e.loc("other", ""), CopyOptions{Conflict: "bogus"}},
-		"other account":     {Selection{Location: loc, Keys: []string{"a/x"}}, Location{AccountID: "someone-else", Bucket: "other"}, CopyOptions{}},
+		"unknown account":   {Selection{Location: loc, Keys: []string{"a/x"}}, Location{AccountID: "someone-else", Bucket: "other"}, CopyOptions{}},
 		"no dest bucket":    {Selection{Location: loc, Keys: []string{"a/x"}}, e.loc("", ""), CopyOptions{}},
 	}
 	for name, c := range cases {

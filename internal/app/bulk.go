@@ -158,12 +158,18 @@ func (p *bkCopyPlan) sameBucket() bool {
 	return p.src.AccountID == p.dest.AccountID && p.src.Bucket == p.dest.Bucket
 }
 
+// crossAccount reports a copy between two accounts: the object then streams
+// through Pail (GET from the source, upload to the destination).
+func (p *bkCopyPlan) crossAccount() bool { return p.src.AccountID != p.dest.AccountID }
+
 // Copy copies (or, with opt.Move, moves) a selection to dest as one Other
 // task. The destination key is dest.Prefix plus the key relative to
 // sel.Prefix, so a selected folder keeps its own name. Copying inside one
 // bucket is allowed; copying onto itself and folders into themselves are
-// rejected. Different accounts are not supported (S3 copies are server-side).
-// Existing destinations follow opt.Conflict (default: skip).
+// rejected. Between two accounts the objects stream through Pail: each is read
+// with a GET guarded by its ETag and uploaded with its content headers,
+// metadata, storage class and tags. Existing destinations follow opt.Conflict
+// (default: skip).
 func (s *Service) Copy(sel Selection, dest Location, opt CopyOptions) (string, error) {
 	op, verb := "Copy", "Copy"
 	if opt.Move {
@@ -186,8 +192,10 @@ func (s *Service) Copy(sel Selection, dest Location, opt CopyOptions) (string, e
 		return "", err
 	}
 	plan := &bkCopyPlan{op: op, src: sel.Location, dest: dest, policy: opt.Conflict, move: opt.Move, title: bkTitle(verb, sel)}
-	if sel.AccountID != dest.AccountID {
-		return "", invalid(op, "%s between different accounts is not supported; download and upload instead", strings.ToLower(verb))
+	if plan.crossAccount() {
+		if _, ok := s.account(dest.AccountID); !ok {
+			return "", invalid(op, "unknown destination account %q", dest.AccountID)
+		}
 	}
 	if plan.sameBucket() {
 		if dest.Prefix == sel.Prefix {
@@ -264,10 +272,16 @@ func (s *Service) bkCopySpec(plan *bkCopyPlan, scope bkScope) taskSpec {
 			if err != nil {
 				return err
 			}
+			dst := c
+			if plan.crossAccount() {
+				if dst, err = s.bucketClient(ctx, plan.op, plan.dest); err != nil {
+					return err
+				}
+			}
 			pipe := &bkPipe{
 				workers: s.bkWorkers(), batch: 1, lister: bkListObjects(c, plan.src.Bucket),
 				process: func(ctx context.Context, b []bkObj) []ItemResult {
-					return []ItemResult{s.bkCopyOne(ctx, r, c, plan, b[0])}
+					return []ItemResult{s.bkCopyOne(ctx, r, c, dst, plan, b[0])}
 				},
 			}
 			rem, err := pipe.run(ctx, r, scope)
@@ -293,8 +307,10 @@ func bkCopyClass(sc string) types.StorageClass {
 	return types.StorageClass(sc)
 }
 
-// bkCopyOne copies (and for a move, deletes) one object.
-func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *bkCopyPlan, o bkObj) ItemResult {
+// bkCopyOne copies (and for a move, deletes) one object. src and dst are the
+// clients of the source and destination accounts (the same client within one
+// account, where the copy is server-side).
+func (s *Service) bkCopyOne(ctx context.Context, r *run, src, dst *storage.Client, p *bkCopyPlan, o bkObj) ItemResult {
 	res := ItemResult{Key: o.Key, VersionID: o.VersionID}
 	destKey, ok := p.destKey(o.Key)
 	if !ok {
@@ -310,8 +326,8 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 	// the delete); an unresolved object needs its ETag and size.
 	srcKeyed := false
 	var srcHead *s3.HeadObjectOutput
-	if p.move || !o.Resolved {
-		h, hout, err := bkHead(ctx, c, p.src.Bucket, o.Key, o.VersionID)
+	if p.move || !o.Resolved || p.crossAccount() {
+		h, hout, err := bkHead(ctx, src, p.src.Bucket, o.Key, o.VersionID)
 		if err != nil {
 			return bkFail(ctx, res, err)
 		}
@@ -331,11 +347,11 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		if !bkCopyAttributesEqual(srcHead, h) {
 			return false, nil
 		}
-		srcTags, err := bkCopyTags(ctx, c, p.src.Bucket, o.Key, o.VersionID)
+		srcTags, err := bkCopyTags(ctx, src, p.src.Bucket, o.Key, o.VersionID)
 		if err != nil {
 			return false, err
 		}
-		dstTags, err := bkCopyTags(ctx, c, p.dest.Bucket, key, aws.ToString(h.VersionId))
+		dstTags, err := bkCopyTags(ctx, dst, p.dest.Bucket, key, aws.ToString(h.VersionId))
 		return err == nil && maps.Equal(srcTags, dstTags), err
 	}
 	var dec conflictDecision
@@ -345,7 +361,7 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		// (A multipart copy has no ETag to compare with the source's.)
 		if v, ok := p.copied.Load(o.Key); ok {
 			if rec := v.(bkCopied); rec.srcETag == o.ETag {
-				t, err := headTarget(ctx, c, p.dest.Bucket, rec.destKey)
+				t, err := headTarget(ctx, dst, p.dest.Bucket, rec.destKey)
 				if err != nil {
 					return bkFail(ctx, res, err)
 				}
@@ -358,18 +374,18 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 			}
 		}
 		if !copied {
-			dst, err := headTarget(ctx, c, p.dest.Bucket, destKey)
+			target, err := headTarget(ctx, dst, p.dest.Bucket, destKey)
 			if err != nil {
 				return bkFail(ctx, res, err)
 			}
-			if dst.exists && dst.size == o.Size && sameObjectETag(o.ETag, srcKeyed, dst.etag, dst.keyed) {
-				if copied, err = sameAttributes(destKey, dst.head); err != nil {
+			if target.exists && target.size == o.Size && sameObjectETag(o.ETag, srcKeyed, target.etag, target.keyed) {
+				if copied, err = sameAttributes(destKey, target.head); err != nil {
 					return bkFail(ctx, res, err)
 				}
 				dec = conflictDecision{Key: destKey}
 			}
 			if !copied {
-				if dec, err = decideConflict(ctx, c, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified, dst); err != nil {
+				if dec, err = decideConflict(ctx, dst, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified, target); err != nil {
 					return bkFail(ctx, res, err)
 				}
 			}
@@ -379,7 +395,7 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		}
 	} else {
 		var err error
-		if dec, err = resolveRemoteConflict(ctx, c, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified); err != nil {
+		if dec, err = resolveRemoteConflict(ctx, dst, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified); err != nil {
 			return bkFail(ctx, res, err)
 		}
 	}
@@ -392,10 +408,13 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		return res
 	}
 	if !copied {
-		src := storage.CopySource(p.src.Bucket, o.Key, o.VersionID)
-		err := s.writeConditional(p.src.AccountID, dec, func(ifNoneMatch, ifMatch string) error {
+		source := storage.CopySource(p.src.Bucket, o.Key, o.VersionID)
+		err := s.writeConditional(p.dest.AccountID, dec, func(ifNoneMatch, ifMatch string) error {
+			if p.crossAccount() {
+				return s.bkStreamCopy(ctx, src, dst, p, o, srcHead, dec.Key, ifNoneMatch, ifMatch, progress)
+			}
 			in := &s3.CopyObjectInput{
-				Bucket: aws.String(p.dest.Bucket), Key: aws.String(dec.Key), CopySource: aws.String(src),
+				Bucket: aws.String(p.dest.Bucket), Key: aws.String(dec.Key), CopySource: aws.String(source),
 				CopySourceIfMatch: aws.String(o.ETag), MetadataDirective: types.MetadataDirectiveCopy,
 				StorageClass: bkCopyClass(o.StorageClass),
 			}
@@ -405,7 +424,7 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 			if ifMatch != "" {
 				in.IfMatch = aws.String(ifMatch)
 			}
-			return c.Copy(ctx, in, o.Size, s.bkTransferOpts(progress))
+			return dst.Copy(ctx, in, o.Size, s.bkTransferOpts(progress))
 		})
 		if err != nil {
 			return bkFail(ctx, res, err)
@@ -413,7 +432,7 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		progress(o.Size)
 	}
 	if p.move {
-		t, err := headTarget(ctx, c, p.dest.Bucket, dec.Key)
+		t, err := headTarget(ctx, dst, p.dest.Bucket, dec.Key)
 		if err != nil {
 			return bkFailf(res, "copied, but the destination could not be verified (%v); source kept", classify("", err))
 		}
@@ -428,7 +447,7 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 			return bkFailf(res, "copied, but the destination attributes do not match the source; source kept")
 		}
 		p.copied.Store(o.Key, bkCopied{srcETag: o.ETag, destKey: dec.Key, destETag: t.etag})
-		cur, curHead, err := bkHead(ctx, c, p.src.Bucket, o.Key, "")
+		cur, curHead, err := bkHead(ctx, src, p.src.Bucket, o.Key, "")
 		switch {
 		case IsKind(err, ErrNotFound):
 			// The source is already gone (or a delete marker is on top): the move is done.
@@ -447,7 +466,7 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		// No VersionId: a versioned bucket gets a delete marker and keeps its
 		// history, an unversioned one drops the key.
 		din := &s3.DeleteObjectInput{Bucket: aws.String(p.src.Bucket), Key: aws.String(o.Key)}
-		if _, err := c.S3().DeleteObject(ctx, din); err != nil {
+		if _, err := src.S3().DeleteObject(ctx, din); err != nil {
 			return bkFailf(res, "copied, source not deleted: %v", classify("", err))
 		}
 	}
