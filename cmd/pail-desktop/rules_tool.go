@@ -25,7 +25,8 @@ type ruleKV struct{ k, v string }
 type ruleForm struct {
 	name, bucket, key string
 	headers, meta     []ruleKV
-	class             string
+	class             string // "", a name of s3Classes, or customClass
+	otherClass        string // the class typed for customClass
 	enc, kms, keyRef  string // enc: "", AES256, aws:kms, SSE-C
 	comp, level       string // comp: "", gzip, zip, zipaes
 	pwRef             string
@@ -52,7 +53,17 @@ var headerChoices = func() []choice {
 }()
 
 func storageClassChoices() []choice {
-	return append([]choice{{"", locales.RulesDefault()}}, classChoices(s3Classes...)...)
+	out := append([]choice{{"", locales.RulesDefault()}}, classChoices(s3Classes...)...)
+	return append(out, choice{customClass, locales.RewriteOther()})
+}
+
+// storageClass is the class the rule sets: a listed one, or the typed one in
+// capitals (S3-compatible services name their own classes).
+func (f *ruleForm) storageClass() string {
+	if f.class == customClass {
+		return strings.ToUpper(strings.TrimSpace(f.otherClass))
+	}
+	return f.class
 }
 
 func encChoices() []choice {
@@ -90,6 +101,9 @@ func rulesJSON(in []rules.UploadRule) string {
 
 func formFromRule(r rules.UploadRule) ruleForm {
 	f := ruleForm{name: r.Name, bucket: r.BucketPattern, key: r.KeyPattern, class: r.StorageClass, level: "-1"}
+	if r.StorageClass != "" && !slices.Contains(s3Classes, r.StorageClass) {
+		f.class, f.otherClass = customClass, r.StorageClass
+	}
 	keys := make([]string, 0, len(r.Headers))
 	for k := range r.Headers {
 		keys = append(keys, k)
@@ -119,7 +133,7 @@ func formFromRule(r rules.UploadRule) ruleForm {
 }
 
 func (f *ruleForm) rule(disabled bool) rules.UploadRule {
-	r := rules.UploadRule{Name: f.name, BucketPattern: f.bucket, KeyPattern: f.key, Disabled: disabled, StorageClass: f.class}
+	r := rules.UploadRule{Name: f.name, BucketPattern: f.bucket, KeyPattern: f.key, Disabled: disabled, StorageClass: f.storageClass()}
 	for _, h := range f.headers {
 		if h.k = strings.TrimSpace(h.k); h.k != "" {
 			if r.Headers == nil {
@@ -589,12 +603,15 @@ func (a *app) ruleFields(c *ui.Context, f *ruleForm) {
 	})
 
 	ruleSection(c, locales.RulesSectionStorage(), "")
-	classes := storageClassChoices()
-	if f.class != "" && !slices.ContainsFunc(classes, func(o choice) bool { return o.Value == f.class }) {
-		classes = append(slices.Clone(classes), choice{f.class, f.class})
+	classErr := ""
+	if f.class == customClass && strings.TrimSpace(f.otherClass) != "" && !classNameRe.MatchString(f.storageClass()) {
+		classErr = locales.RewriteClassInvalid()
 	}
-	formFieldHelp(c, locales.RulesStorageClass(), locales.RulesStorageClassHelp(), "", func() {
-		selectNone(c, locales.RulesStorageClass(), &f.class, classes, 240)
+	formFieldHelp(c, locales.RulesStorageClass(), locales.RulesStorageClassHelp(), classErr, func() {
+		selectNone(c, locales.RulesStorageClass(), &f.class, storageClassChoices(), 240)
+		if f.class == customClass {
+			inputBox(c, &f.otherClass, locales.RewriteCustomClass(), locales.RewriteCustomPlaceholder(), inputOpts{mono: true, invalid: classErr != ""})
+		}
 	})
 
 	ruleSection(c, locales.RulesSectionEncryption(), "")
