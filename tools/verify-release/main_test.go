@@ -10,6 +10,8 @@ import (
 	"runtime/debug"
 	"strings"
 	"testing"
+
+	"github.com/DejavuMoe/Pail/internal/buildstamp"
 )
 
 func TestRejectsMissingAndUnsafeArchiveEntries(t *testing.T) {
@@ -86,17 +88,17 @@ func releaseInfo(settings ...debug.BuildSetting) *debug.BuildInfo {
 
 func TestBuildInfoMustCarryReleaseVersion(t *testing.T) {
 	ld := func(v string) debug.BuildSetting { return debug.BuildSetting{Key: "-ldflags", Value: v} }
-	body := versionFixture(t, "linux/amd64", "1.2.3", "-w")
-	if err := checkBuildInfo(releaseInfo(ld("-s -w -X main.version=1.2.3")), body, "pail", false, "1.2.3", "linux", "amd64"); err != nil {
+	body := versionFixture(t, "linux/amd64", "1.2.3", "-s -w")
+	if err := checkBuildInfo(releaseInfo(ld("-s -w "+buildstamp.LDFlag("1.2.3"))), body, "pail", false, "1.2.3", "linux", "amd64"); err != nil {
 		t.Fatalf("good build rejected: %v", err)
 	}
 	for name, v := range map[string]string{
 		"no ldflags value": "",
 		"no -X":            "-s -w",
-		"other version":    "-s -w -X main.version=1.2.2",
-		"longer version":   "-s -w -X main.version=1.2.30",
-		"other variable":   "-s -w -X main.other=1.2.3",
-		"suffixed version": "-s -w -X main.version=1.2.3-dirty",
+		"other version":    "-s -w " + buildstamp.LDFlag("1.2.2"),
+		"longer version":   "-s -w " + buildstamp.LDFlag("1.2.30"),
+		"other variable":   "-s -w -X main.version=1.2.3",
+		"suffixed version": "-s -w " + buildstamp.LDFlag("1.2.3-dirty"),
 	} {
 		err := checkBuildInfo(releaseInfo(ld(v)), body, "pail", false, "1.2.3", "linux", "amd64")
 		if err == nil || !strings.Contains(err.Error(), "version") {
@@ -110,10 +112,10 @@ func TestBuildInfoMustCarryReleaseVersion(t *testing.T) {
 }
 
 // Go does not record -ldflags for -trimpath builds, which is how releases are
-// built; the version must then come from the binary's main.version symbol.
+// built; the version must then come from the stamp in the binary.
 func TestTrimpathBuildInfoFallsBackToBinaryContents(t *testing.T) {
 	trim := releaseInfo(debug.BuildSetting{Key: "-trimpath", Value: "true"})
-	body := versionFixture(t, "linux/amd64", "1.2.3", "-w")
+	body := versionFixture(t, "linux/amd64", "1.2.3", "-s -w")
 	if err := checkBuildInfo(trim, body, "pail", false, "1.2.3", "linux", "amd64"); err != nil {
 		t.Fatalf("trimpath build with the version rejected: %v", err)
 	}

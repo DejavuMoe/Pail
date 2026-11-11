@@ -57,7 +57,7 @@ jobs:
           CGO_ENABLED: "0"
         run: |
           mkdir -p build/ci
-          go build -trimpath -ldflags "-w -X main.version=0.1.0-ci" -o build/ci/ ./cmd/pail ./cmd/pail-desktop
+          go build -trimpath -ldflags "-s -w -X github.com/DejavuMoe/Pail/internal/buildstamp.stamp=pail-release-version:0.1.0-ci;" -o build/ci/ ./cmd/pail ./cmd/pail-desktop
           exe="$(go env GOEXE)"
           test "$("build/ci/pail$exe" version)" = "pail 0.1.0-ci"
           test "$("build/ci/pail-desktop$exe" --version)" = "Pail 0.1.0-ci"

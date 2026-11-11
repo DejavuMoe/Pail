@@ -17,6 +17,8 @@ import (
 	"runtime/debug"
 	"slices"
 	"strings"
+
+	"github.com/DejavuMoe/Pail/internal/buildstamp"
 )
 
 func main() {
@@ -102,13 +104,13 @@ func checkBuildInfo(info *debug.BuildInfo, body []byte, rel string, desktop bool
 		fields := strings.Fields(ldflags)
 		for i, f := range fields {
 			if f == "-X" && i+1 < len(fields) {
-				if value, ok := strings.CutPrefix(fields[i+1], "main.version="); ok {
-					declared = value
+				if value, ok := strings.CutPrefix(fields[i+1], buildstamp.Var+"="); ok {
+					declared, _ = buildstamp.Parse(value)
 				}
 			}
 		}
 		if declared != version {
-			return fmt.Errorf("%s: the build does not set -X main.version=%s in its -ldflags", rel, version)
+			return fmt.Errorf("%s: the build does not stamp version %s in its -ldflags", rel, version)
 		}
 	}
 	actual, err := binaryVersion(body, osName, arch)
