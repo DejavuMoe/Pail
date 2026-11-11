@@ -207,7 +207,7 @@ func (s *Service) SaveProxy(p ProxySettings, password *string) error {
 	st := s.settings
 	s.mu.Unlock()
 	st.Proxy = p
-	if err := writeJSONAtomic(s.path("settings.json"), st); err != nil {
+	if err := writeJSONAtomicRetry(s.path("settings.json"), st); err != nil {
 		s.wmu.Unlock()
 		if rollback != nil {
 			rollback()

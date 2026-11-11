@@ -235,7 +235,7 @@ func (s *Service) removeRefLocked(ref string) error {
 }
 
 func (s *Service) commitRefs(refs []string) error {
-	if err := writeJSONAtomic(s.path(secretRefsFile), refs); err != nil {
+	if err := writeJSONAtomicRetry(s.path(secretRefsFile), refs); err != nil {
 		return err
 	}
 	s.mu.Lock()

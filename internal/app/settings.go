@@ -146,7 +146,7 @@ func (s *Service) SaveSettings(st Settings) error {
 	st.SecretBackend = s.settings.SecretBackend
 	st.Proxy = s.settings.Proxy // only SaveProxy changes it
 	s.mu.Unlock()
-	if err := writeJSONAtomic(s.path("settings.json"), st); err != nil {
+	if err := writeJSONAtomicRetry(s.path("settings.json"), st); err != nil {
 		return classify("SaveSettings", err)
 	}
 	s.mu.Lock()
