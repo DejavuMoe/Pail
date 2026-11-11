@@ -15,7 +15,7 @@ import (
 // accountFieldFlags are the flags that describe an account. They are given to
 // "account add" and "account edit" only.
 var accountFieldFlags = []string{"provider", "endpoint", "region", "path-style", "credentials", "access-key-id", "profile",
-	"role-arn", "external-id", "role-session-name", "insecure-skip-verify", "checksum-mode", "cdn-url", "cdn-bucket", "bucket"}
+	"role-arn", "external-id", "role-session-name", "insecure-skip-verify", "checksum-mode", "cdn-url", "cdn-bucket", "bucket", "requester-pays", "proxy"}
 
 // secretFlags control how an account's secret is read; none of them carries it.
 var secretFlags = []string{"secret-stdin", "ask-session-token"}
@@ -23,7 +23,8 @@ var secretFlags = []string{"secret-stdin", "ask-session-token"}
 type accountFlags struct {
 	provider, endpoint, region, credentials, accessKeyID, profile      string
 	roleARN, externalID, roleSessionName, checksumMode, cdnURL, rename string
-	pathStyle, insecure                                                bool
+	proxy                                                              string
+	pathStyle, insecure, requesterPays                                 bool
 	cdnBuckets, buckets                                                multiFlag
 	noTest, secretStdin, setSecret, askSession                         bool
 }
@@ -41,6 +42,8 @@ func (f *accountFlags) register(fs *flag.FlagSet) {
 	fs.StringVar(&f.roleSessionName, "role-session-name", "", "session name for the assumed role")
 	fs.BoolVar(&f.insecure, "insecure-skip-verify", false, "do not verify the server's TLS certificate")
 	fs.StringVar(&f.checksumMode, "checksum-mode", "", "auto, when_required or when_supported")
+	fs.BoolVar(&f.requesterPays, "requester-pays", false, "send x-amz-request-payer: requester (buckets that bill the requester; your account pays)")
+	fs.StringVar(&f.proxy, "proxy", "", "the account's proxy: a URL such as socks5://127.0.0.1:1080, \"direct\" for none, or empty to use the proxy from the settings")
 	fs.StringVar(&f.cdnURL, "cdn-url", "", "CDN base URL or template (empty removes it)")
 	fs.Var(&f.cdnBuckets, "cdn-bucket", "bucket served by the CDN (repeatable; add an empty value to clear the list)")
 	fs.Var(&f.buckets, "bucket", "a bucket the account shows instead of listing them, as NAME or NAME/folder/, for keys that cannot list buckets (repeatable; add an empty value to clear the list)")
@@ -320,6 +323,17 @@ func applyAccountFlags(fs *flag.FlagSet, f *accountFlags, a *app.Account) error 
 			a.InsecureSkipVerify = f.insecure
 		case "checksum-mode":
 			a.ChecksumMode = f.checksumMode
+		case "requester-pays":
+			a.RequesterPays = f.requesterPays
+		case "proxy":
+			switch p := strings.TrimSpace(f.proxy); p {
+			case "":
+				a.ProxyMode, a.ProxyURL = app.ProxyGlobal, ""
+			case app.ProxyDirect:
+				a.ProxyMode, a.ProxyURL = app.ProxyDirect, ""
+			default:
+				a.ProxyMode, a.ProxyURL = app.ProxyCustom, p
+			}
 		case "cdn-url":
 			a.CDNURL = f.cdnURL
 		case "cdn-bucket":
@@ -420,6 +434,7 @@ func (c *cli) accountShow() error {
 			"region": a.Region, "pathStyle": a.PathStyle, "credentials": a.Credentials, "accessKeyId": a.AccessKeyID,
 			"profile": a.Profile, "roleArn": a.RoleARN, "externalId": a.ExternalID, "roleSessionName": a.RoleSessionName,
 			"insecureSkipVerify": a.InsecureSkipVerify, "checksumMode": a.ChecksumMode, "cdnUrl": a.CDNURL,
+			"requesterPays": a.RequesterPays, "proxyMode": a.ProxyMode, "proxyUrl": a.ProxyURL,
 			"cdnBuckets": a.CDNBuckets, "buckets": a.Buckets, "bucketAliases": a.BucketAliases}
 		if a.Credentials == app.CredStatic {
 			o["secretStored"] = !a.SecretMissing
@@ -454,6 +469,15 @@ func (c *cli) accountShow() error {
 		row("TLS verification", "off")
 	}
 	row("checksum mode", a.ChecksumMode)
+	if a.RequesterPays {
+		row("requester pays", "yes")
+	}
+	switch a.ProxyMode {
+	case app.ProxyDirect:
+		row("proxy", "none (direct)")
+	case app.ProxyCustom:
+		row("proxy", a.ProxyURL)
+	}
 	opt("CDN URL", a.CDNURL)
 	if len(a.CDNBuckets) > 0 {
 		row("CDN buckets", strings.Join(a.CDNBuckets, ", "))

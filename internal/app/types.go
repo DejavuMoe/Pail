@@ -107,6 +107,15 @@ type Account struct {
 	RoleSessionName    string `json:"roleSessionName,omitempty"`
 	InsecureSkipVerify bool   `json:"insecureSkipVerify,omitempty"`
 	ChecksumMode       string `json:"checksumMode,omitempty"` // "auto" (default) | "when_required" | "when_supported"
+	// RequesterPays sends x-amz-request-payer: requester with every request,
+	// to read and write buckets whose owner bills the requester.
+	RequesterPays bool `json:"requesterPays,omitempty"`
+	// ProxyMode overrides the proxy of Settings for this account: "" uses it,
+	// ProxyDirect connects without a proxy, ProxyCustom uses ProxyURL.
+	ProxyMode string `json:"proxyMode,omitempty"`
+	// ProxyURL is the account's own proxy, scheme://host:port with the scheme
+	// http, https or socks5. It takes no user name or password.
+	ProxyURL string `json:"proxyUrl,omitempty"`
 	// CDNURL is an optional base URL or template (placeholders {bucket}, {key})
 	// under which the account's objects are served by a CDN; CDNBuckets limits it
 	// to the listed buckets (empty = all).
@@ -128,6 +137,13 @@ type Account struct {
 	// the user to enter it again; SaveAccount with new secrets clears it.
 	SecretMissing bool `json:"-"`
 }
+
+// Account.ProxyMode values.
+const (
+	ProxyGlobal = ""
+	ProxyDirect = "direct"
+	ProxyCustom = "custom"
+)
 
 // Account.Provider values.
 const (

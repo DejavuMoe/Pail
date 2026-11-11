@@ -38,6 +38,13 @@ func storageConfig(a Account, sec Secrets, proxy string) storage.Config {
 		RoleSessionName:    a.RoleSessionName,
 		InsecureSkipVerify: a.InsecureSkipVerify,
 		ChecksumMode:       a.ChecksumMode,
+		RequesterPays:      a.RequesterPays,
+	}
+	switch a.ProxyMode {
+	case ProxyDirect:
+		cfg.ProxyURL = storage.DirectConnection
+	case ProxyCustom:
+		cfg.ProxyURL = a.ProxyURL
 	}
 	switch a.Credentials {
 	case CredStatic:
@@ -119,7 +126,7 @@ func (s *Service) entry(ctx context.Context, id string) (*clientEntry, error) {
 
 		sec, err := s.readSecrets(ctx, rec) // may block on an OS dialog; no lock held
 		proxy := ""
-		if err == nil {
+		if err == nil && rec.ProxyMode == ProxyGlobal {
 			proxy, err = s.proxyAddress(ctx, proxyCfg) // the proxy password, likewise
 		}
 		var e *clientEntry

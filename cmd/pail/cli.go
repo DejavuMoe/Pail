@@ -99,7 +99,7 @@ var commands []command
 func init() {
 	commands = []command{
 		{"accounts", "accounts", "list configured accounts", false, setupAccounts},
-		{"account", "account ls\naccount show [NAME]\naccount add NAME [--provider aws|s3] [--endpoint URL] [--region R] [--path-style] [--credentials static|profile|default|anonymous] [--access-key-id ID] [--profile P] [--role-arn ARN] [--external-id ID] [--role-session-name N] [--insecure-skip-verify] [--checksum-mode M] [--cdn-url URL] [--cdn-bucket B] [--bucket B[/folder/]] [--secret-stdin] [--ask-session-token] [--no-test]\naccount edit [NAME] [--rename NEW] [account flags as for add] [--set-secret [--secret-stdin]]\naccount test [NAME]\naccount rm [NAME]",
+		{"account", "account ls\naccount show [NAME]\naccount add NAME [--provider aws|s3] [--endpoint URL] [--region R] [--path-style] [--credentials static|profile|default|anonymous] [--access-key-id ID] [--profile P] [--role-arn ARN] [--external-id ID] [--role-session-name N] [--insecure-skip-verify] [--checksum-mode M] [--requester-pays] [--proxy URL|direct] [--cdn-url URL] [--cdn-bucket B] [--bucket B[/folder/]] [--secret-stdin] [--ask-session-token] [--no-test]\naccount edit [NAME] [--rename NEW] [account flags as for add] [--set-secret [--secret-stdin]]\naccount test [NAME]\naccount rm [NAME]",
 			"add, change, test and remove accounts", false, setupAccount},
 		{"vault", "vault status [--vault-password-stdin]\nvault init\nvault unlock\nvault lock\nvault passwd [--new-vault-password-stdin]\nvault backend keychain|vault\nvault reset",
 			"manage the secret backend and the encrypted vault", false, setupVault},
