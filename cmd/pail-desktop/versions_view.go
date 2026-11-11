@@ -110,6 +110,12 @@ func (a *app) ensureVersions() {
 
 func (a *app) refreshVersions() { a.mg.vers.state = loadNone }
 
+// versionsShow reports whether the Versions tab lists the versions of key in
+// loc: an action on the versions of one object refreshes only its own list.
+func (a *app) versionsShow(loc Scope, key string) bool {
+	return loc.AccountID == a.scope.AccountID && loc.Bucket == a.scope.Bucket && a.mg.vers.key == key
+}
+
 // versionsTab lists every version of the selected object.
 func (a *app) versionsTab(c *ui.Context) {
 	a.ensureVersions()
@@ -285,10 +291,10 @@ func (a *app) restoreVersion(loc Scope, ref core.ObjectRef) {
 				return
 			}
 			a.toast(locales.VersionsRestored(shortVersion(ref.VersionID)))
-			a.refreshVersions()
-			if loc == a.scope {
-				a.headKey = ""
+			if a.versionsShow(loc, ref.Key) {
+				a.refreshVersions()
 			}
+			a.headTouched(loc, false, ref.Key)
 			a.reloadSame(loc)
 		}
 	})
@@ -328,11 +334,15 @@ func (a *app) askDeleteVersions(loc Scope, refs []core.ObjectRef) {
 						default:
 							a.toast(locales.VersionsDeletedCount(sum.ok))
 						}
-						a.mg.vers.sel = nil
-						a.refreshVersions()
-						if loc == a.scope {
-							a.headKey = ""
+						keys := make([]string, 0, len(refs))
+						for _, r := range refs {
+							keys = append(keys, r.Key)
 						}
+						if slices.ContainsFunc(keys, func(k string) bool { return a.versionsShow(loc, k) }) {
+							a.mg.vers.sel = nil
+							a.refreshVersions()
+						}
+						a.headTouched(loc, false, keys...)
 						a.reloadSame(loc)
 					})
 				}

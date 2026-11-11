@@ -267,6 +267,75 @@ func TestEditTags(t *testing.T) {
 	}
 }
 
+func TestTagsDraftDoesNotFollowBucket(t *testing.T) {
+	h := newHarness(t, "light")
+	const otherBucket = "acme-backups"
+	h.env.Srv.PutObject(otherBucket, "manifest.json", []byte("backup"), "application/json", nil)
+	loc := Scope{AccountID: h.env.Account.ID, Bucket: otherBucket}
+	if err := h.env.Svc.SetTags(context.Background(), loc, core.ObjectRef{Key: "manifest.json"}, map[string]string{"owner": "backup"}); err != nil {
+		t.Fatal(err)
+	}
+	h.mustClick("manifest.json")
+	h.mustClick("Tags")
+	h.mustClick("Add tag")
+	h.typeAndEnter("env")
+	h.typeAndEnter("prod")
+	h.mustHave("Save", "Revert")
+
+	h.mustClick(otherBucket)
+	h.mustNotHave("Save", "Revert")
+	// The action must also reject a draft that no longer has a selected object.
+	h.a.saveTags()
+	h.settle()
+	if tags := h.head(bkt, "manifest.json").Tags; len(tags) != 0 {
+		t.Errorf("leaving the object saved its draft: %v", tags)
+	}
+	if tags := h.head(otherBucket, "manifest.json").Tags; len(tags) != 1 || tags["owner"] != "backup" {
+		t.Errorf("the old draft changed the other bucket's object: %v", tags)
+	}
+
+	// The same key in the new bucket loads its own tags and remains editable.
+	h.mustClick("manifest.json")
+	h.mustHave("owner", "backup")
+	h.mustNotHave("Save", "Revert")
+	h.mustClick("Add tag")
+	h.typeAndEnter("env")
+	h.typeAndEnter("staging")
+	h.mustClick("Save")
+	if tags := h.head(otherBucket, "manifest.json").Tags; len(tags) != 2 || tags["owner"] != "backup" || tags["env"] != "staging" {
+		t.Errorf("saving the new object's tags: %v", tags)
+	}
+}
+
+func TestTagsDraftClearsWhenSelectionChanges(t *testing.T) {
+	for _, mode := range []string{"none", "folder", "multiple"} {
+		t.Run(mode, func(t *testing.T) {
+			h := newHarness(t, "light")
+			h.mustClick("manifest.json")
+			h.mustClick("Tags")
+			h.mustClick("Add tag")
+			h.typeAndEnter("env")
+			h.typeAndEnter("prod")
+			switch mode {
+			case "none":
+				h.a.sel.Clear()
+			case "folder":
+				h.a.sel.Clear()
+				h.a.sel.Add("website/")
+			case "multiple":
+				h.a.sel.Add("README.txt")
+			}
+			h.settle()
+			h.mustNotHave("Save", "Revert")
+			h.a.saveTags()
+			h.settle()
+			if tags := h.head(bkt, "manifest.json").Tags; len(tags) != 0 {
+				t.Errorf("saving without the original single selection changed its tags: %v", tags)
+			}
+		})
+	}
+}
+
 func TestTagsLimitAndDuplicateKey(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")

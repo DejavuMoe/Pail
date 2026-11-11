@@ -27,6 +27,9 @@ func humanError(err error) string {
 	if err == nil {
 		return ""
 	}
+	if errors.Is(err, core.ErrConfigLocked) {
+		return locales.TypesConfigBusy()
+	}
 	var oe *core.OpError
 	if !errors.As(err, &oe) {
 		return err.Error()

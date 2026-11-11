@@ -1,6 +1,7 @@
 package main
 
 import (
+	"maps"
 	"sort"
 	"strings"
 
@@ -17,6 +18,7 @@ type tagsForm struct {
 	gen    int
 	ready  bool
 	items  []kvItem
+	base   map[string]string
 	edit   inlineEdit
 	err    string
 	fix    bool // the tags have mistakes: the footer says so (in the language of the moment)
@@ -24,7 +26,7 @@ type tagsForm struct {
 }
 
 func (t *tagsForm) load(key string, gen int, tags map[string]string) {
-	*t = tagsForm{key: key, gen: gen, ready: true}
+	*t = tagsForm{key: key, gen: gen, ready: true, base: maps.Clone(tags)}
 	names := make([]string, 0, len(tags))
 	for k := range tags {
 		names = append(names, k)
@@ -35,20 +37,12 @@ func (t *tagsForm) load(key string, gen int, tags map[string]string) {
 	}
 }
 
-func (t *tagsForm) dirty() bool { return anyChanged(t.items) }
+func (t *tagsForm) dirty() bool {
+	return !maps.Equal(t.result(), t.base) || anyChanged(t.items) && !t.valid()
+}
 
 func (t *tagsForm) revert() {
-	kept := t.items[:0]
-	for _, it := range t.items {
-		if it.isNew {
-			continue
-		}
-		it.removed, it.touched, it.val = false, false, it.baseVal
-		kept = append(kept, it)
-	}
-	t.items = kept
-	t.edit.stop()
-	t.err, t.fix = "", false
+	t.load(t.key, t.gen, t.base)
 }
 
 // result is the tag set the form describes.
@@ -139,21 +133,39 @@ func (a *app) saveTags() {
 	}
 	tags := t.result()
 	loc, key := a.scope, t.key
+	gen := t.gen
 	t.saving, t.err, t.fix = true, "", false
 	a.bg(func() func() {
 		ctx, cancel := a.shortCtx()
 		defer cancel()
 		err := a.svc.SetTags(ctx, loc, core.ObjectRef{Key: key}, tags)
 		return func() {
+			if loc != a.scope || t.key != key || t.gen != gen || !t.ready {
+				if err != nil {
+					a.toast(humanError(err))
+				} else {
+					a.toast(locales.CommonSaved())
+				}
+				return
+			}
 			t.saving = false
 			if err != nil {
 				t.err = humanError(err)
 				return
 			}
-			if loc == a.scope && a.headKey == key {
-				a.headKey = "" // read the new tags
+			t.base = maps.Clone(tags)
+			if a.headKey == key && a.headGen == gen {
+				a.head.Tags = maps.Clone(tags)
 			}
-			t.ready = false
+			if !t.dirty() && t.edit.id == "" {
+				t.load(key, gen, tags)
+			} else {
+				for i := range t.items {
+					it := &t.items[i]
+					base, saved := tags[strings.TrimSpace(it.key)]
+					it.baseVal, it.isNew, it.touched = base, !saved, saved && it.val != base
+				}
+			}
 			a.toast(locales.CommonSaved())
 		}
 	})

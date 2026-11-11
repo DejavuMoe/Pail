@@ -42,7 +42,7 @@ func mpColumns() []ui.TableColumn {
 
 func (a *app) mpEnter() {
 	m := &a.tl.mp
-	*m = mpState{bucket: a.scope.Bucket, prefix: a.scope.Prefix, cursor: -1}
+	*m = mpState{bucket: a.scope.Bucket, prefix: a.scope.Prefix, cursor: -1, gen: m.gen + 1}
 	if m.bucket != "" {
 		a.mpLoad()
 	}
@@ -63,7 +63,7 @@ func (a *app) mpLoad() {
 		defer cancel()
 		items, err := a.svc.MultipartUploads(ctx, loc)
 		return func() {
-			if gen != m.gen {
+			if gen != m.gen || loc.AccountID != a.accountID {
 				return
 			}
 			m.loading = false
@@ -138,6 +138,8 @@ func (a *app) mpCheckAbort() {
 		return
 	}
 	found := false
+	done, failed, canceled := 0, false, false
+	firstErr := ""
 	for _, t := range a.tasks {
 		if t.ID != m.abortTask && t.GroupID != m.abortTask {
 			continue
@@ -146,12 +148,30 @@ func (a *app) mpCheckAbort() {
 		if !t.Status.Finished() {
 			return
 		}
+		sum := a.bulkSummary(t)
+		done += t.ItemsDone - t.ItemsFailed - t.ItemsSkipped
+		failed = failed || sum.failed > 0 || t.Status == core.StatusFailed || t.Status == core.StatusPartiallyFailed
+		canceled = canceled || t.Status == core.StatusCanceled
+		if firstErr == "" {
+			firstErr = sum.firstErr
+		}
 	}
 	if !found {
 		return
 	}
 	m.abortTask = ""
-	a.toast(locales.MultipartAborted(m.abortN))
+	switch {
+	case canceled:
+		a.toast(locales.MultipartAbortCanceled(done))
+	case failed:
+		msg := locales.MultipartAbortFailed(firstErr)
+		if done > 0 {
+			msg = locales.MultipartAborted(done) + " · " + msg
+		}
+		a.toast(msg)
+	default:
+		a.toast(locales.MultipartAborted(done))
+	}
 	a.mpLoad()
 }
 

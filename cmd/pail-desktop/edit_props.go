@@ -5,6 +5,7 @@ import (
 	"fmt"
 	"hash/maphash"
 	"math/bits"
+	"slices"
 	"sort"
 	"strconv"
 	"strings"
@@ -38,6 +39,7 @@ type propsForm struct {
 	edit    inlineEdit
 	err     string
 	saving  bool
+	saveID  int // the save last sent from this form (app.propsSaves); 0 once rebuilt
 }
 
 func (p *propsForm) reset(sig string) { *p = propsForm{sig: sig} }
@@ -216,6 +218,139 @@ func (p *propsForm) patch() (core.PropertiesPatch, string) {
 		}
 	}
 	return out, ""
+}
+
+// rebase moves the edits onto a new base q (a form built from fresher details,
+// or from the values a save wrote). Fields nobody edited show the new values;
+// edited ones keep what was typed, and stop counting as edits where the new
+// base already holds it. An open text field stays open on its field.
+func (p *propsForm) rebase(q *propsForm) {
+	for i := range stdHeaders {
+		nb := q.hdrBase[i]
+		if p.hdrSet[i] && !nb.mixed && p.hdrVal[i] == nb.baseVal {
+			p.hdrSet[i], p.hdrVal[i] = false, ""
+		}
+		p.hdrBase[i] = nb
+	}
+	var moved []int
+	p.meta, moved = rebaseItems(p.meta, q.meta, metaKey)
+	remapEdit(&p.edit, "m", moved)
+	p.readOnly = q.readOnly
+}
+
+// savedBase is the base the form describes once pt, sent from it, has been
+// applied: the headers and metadata it set or removed take their new values.
+func (p *propsForm) savedBase(pt core.PropertiesPatch) *propsForm {
+	q := &propsForm{hdrBase: p.hdrBase, readOnly: p.readOnly}
+	for i, name := range stdHeaders {
+		if v, ok := pt.SetHeaders[name]; ok {
+			q.hdrBase[i] = kvItem{key: name, baseVal: v}
+		}
+		if slices.Contains(pt.DelHeaders, name) {
+			q.hdrBase[i] = kvItem{key: name}
+		}
+	}
+	del := map[string]bool{}
+	for _, k := range pt.DelMetadata {
+		del[metaKey(k)] = true
+	}
+	set := map[string]string{}
+	for k, v := range pt.SetMetadata {
+		set[metaKey(k)] = v
+	}
+	for _, it := range p.meta {
+		k := metaKey(it.key)
+		if it.isNew || del[k] {
+			continue
+		}
+		b := kvItem{key: it.key, baseVal: it.baseVal, mixed: it.mixed}
+		if v, ok := set[k]; ok {
+			b.baseVal, b.mixed = v, false
+			delete(set, k)
+		}
+		if !b.mixed {
+			b.val = b.baseVal
+		}
+		q.meta = append(q.meta, b)
+	}
+	for k, v := range set {
+		q.meta = append(q.meta, kvItem{key: k, baseVal: v, val: v})
+	}
+	sort.SliceStable(q.meta, func(i, j int) bool { return q.meta[i].key < q.meta[j].key })
+	return q
+}
+
+// metaKey is how a metadata name is compared: user metadata names are not
+// case sensitive.
+func metaKey(k string) string { return strings.ToLower(strings.TrimSpace(k)) }
+
+// rebaseItems moves the edits of a key/value list onto base, the pairs loaded
+// afresh (sorted, unedited). Pairs nobody edited follow base; a changed value,
+// a removal or an added pair is kept, and an added pair or a changed value the
+// base already holds stops being an edit. moved maps each old index to its new
+// one, -1 for a pair that went away.
+func rebaseItems(items, base []kvItem, norm func(string) string) (out []kvItem, moved []int) {
+	out = slices.Clone(base)
+	at := map[string]int{}
+	for j, b := range out {
+		at[norm(b.key)] = j
+	}
+	claimed := make([]bool, len(out))
+	moved = make([]int, len(items))
+	for i, it := range items {
+		j, ok := at[norm(it.key)]
+		if ok && claimed[j] {
+			ok = false // a second pair of the same name: keep it as it is
+		}
+		edited := it.isNew || it.touched || it.removed
+		switch {
+		case it.isNew && (!ok || strings.TrimSpace(it.key) == ""), !it.isNew && !ok && it.touched && !it.removed:
+			// Added, or changed on a pair the base no longer has: an addition.
+			add := it
+			add.isNew, add.removed, add.baseVal, add.mixed = true, false, "", false
+			out = append(out, add)
+			moved[i] = len(out) - 1
+			continue
+		case !ok:
+			moved[i] = -1 // unedited or removed, and gone from the base
+			continue
+		}
+		if edited {
+			claimed[j] = true
+		}
+		b := &out[j]
+		switch {
+		case it.removed:
+			b.removed = true
+		case it.isNew || it.touched:
+			if !b.mixed && it.val == b.baseVal {
+				b.val, b.touched = b.baseVal, false
+			} else {
+				b.val, b.touched = it.val, true
+			}
+		}
+		moved[i] = j
+	}
+	return out, moved
+}
+
+// remapEdit keeps an open field of a key/value list (ids prefix+index, and
+// +"k" for the name of a new pair) on its pair after the list was rebuilt.
+func remapEdit(e *inlineEdit, prefix string, moved []int) {
+	if e.id == "" || !strings.HasPrefix(e.id, prefix) {
+		return
+	}
+	s := strings.TrimPrefix(e.id, prefix)
+	suffix := ""
+	if strings.HasSuffix(s, "k") {
+		s, suffix = strings.TrimSuffix(s, "k"), "k"
+	}
+	i, err := strconv.Atoi(s)
+	if err != nil || i < 0 || i >= len(moved) || moved[i] < 0 {
+		e.stop()
+		return
+	}
+	e.id = prefix + strconv.Itoa(moved[i]) + suffix
 }
 
 // ---- loading ---------------------------------------------------------------------------
@@ -498,44 +633,65 @@ func (a *app) commitInlineEdit() {
 	}
 }
 
+// submitProps sends pt for keys. The form may be rebuilt for another
+// selection while the save runs: its end then only touches the form it was
+// sent from (saveID), and only the details of the objects it changed.
 func (a *app) submitProps(loc Scope, keys []string, pt core.PropertiesPatch) {
 	p := &a.mg.props
-	sig := p.sig
+	a.propsSaves++
+	save := a.propsSaves
+	p.saveID = save
 	p.saving, p.err = true, ""
 	a.bg(func() func() {
 		id, err := a.svc.SetProperties(core.Selection{Location: loc, Keys: keys}, pt)
 		return func() {
 			if err != nil {
-				p.saving, p.err = false, humanError(err)
+				if p.saveID == save {
+					p.saving, p.err = false, humanError(err)
+				} else {
+					a.toast(locales.EditPropsSaveFailed(humanError(err)))
+				}
 				return
 			}
 			a.follow(id, func(t Task) {
-				p.saving = false
+				own := p.saveID == save
+				if own {
+					p.saving = false
+				}
 				sum := a.bulkSummary(t)
 				if t.Status != core.StatusSucceeded || sum.failed > 0 {
 					msg := sum.firstErr
 					if msg == "" {
 						msg = locales.EditPropsNotApplied()
 					}
-					if a.mg.props.sig == sig {
+					if own {
 						p.err = msg
 					}
 					a.toast(locales.EditPropsSaveFailed(msg))
 					a.reloadSame(loc)
 					return
 				}
-				if a.mg.props.sig == sig {
-					p.sig, p.ready, p.err = "", false, ""
-					p.edit.stop()
+				if own {
+					a.propsSaved(pt)
 				}
-				if loc == a.scope {
-					a.headKey = "" // read the new values
-				}
+				a.headTouched(loc, false, keys...) // read the new values
 				a.reloadSame(loc)
 				a.toast(locales.CommonSaved())
 			})
 		}
 	})
+}
+
+// propsSaved takes the values pt wrote as the base of the form it was sent
+// from. Edits made while the save ran stay; with none, the form is read
+// afresh from the objects.
+func (a *app) propsSaved(pt core.PropertiesPatch) {
+	p := &a.mg.props
+	p.err = ""
+	p.rebase(p.savedBase(pt))
+	if !p.dirty() && p.edit.id == "" {
+		p.sig, p.ready = "", false
+	}
 }
 
 // reloadSame refreshes the listing when it still shows loc's bucket.

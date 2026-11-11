@@ -43,8 +43,9 @@ type trayUI struct {
 	notify func(msg string)
 	// status is the state line last given to the icon, refresh what to call
 	// when it changes (nil: no icon yet).
-	status  string
-	refresh func(status string)
+	status        string
+	uploadEnabled bool
+	refresh       func(status string)
 }
 
 // windowHidden reports whether the window is hidden in the tray.
@@ -63,7 +64,7 @@ func (a *app) closeHides() bool {
 func (a *app) setQuitWhenIdle(on bool) {
 	a.tray.quitIdle = on
 	a.applySetting("quitIdle", func(st *core.Settings) { st.QuitWhenIdle = on }, func() {
-		a.tray.quitIdle = !on
+		a.tray.quitIdle = a.svc.Settings().QuitWhenIdle
 	})
 }
 
@@ -74,9 +75,9 @@ func (a *app) setTrayShown(on bool) {
 		a.tray.set(on)
 	}
 	a.applySetting("tray", func(st *core.Settings) { st.HideTrayIcon = !on }, func() {
-		a.tray.on = !on
+		a.tray.on = !a.svc.Settings().HideTrayIcon
 		if a.tray.set != nil {
-			a.tray.set(!on)
+			a.tray.set(a.tray.on)
 		}
 	})
 }
@@ -102,8 +103,9 @@ func (a *app) syncTray() {
 	if a.tray.refresh == nil {
 		return
 	}
-	if s := trayStatus(a.tasks); s != a.tray.status {
-		a.tray.status = s
+	enabled := a.enabled(a.cmd("upload.files"))
+	if s := trayStatus(a.tasks); s != a.tray.status || enabled != a.tray.uploadEnabled {
+		a.tray.status, a.tray.uploadEnabled = s, enabled
 		a.tray.refresh(s)
 	}
 }

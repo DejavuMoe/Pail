@@ -28,6 +28,7 @@ type syncForm struct {
 }
 
 type syncState struct {
+	gen      int
 	jobs     []core.SyncJob
 	sel      int // index of the chosen saved job, -1 for the new draft
 	hasDraft bool
@@ -205,7 +206,7 @@ func (a *app) syncEnter() {
 	if s.pvCancel != nil {
 		s.pvCancel()
 	}
-	*s = syncState{sel: -1, buckets: map[string][]string{}, bLoad: map[string]bool{}, pvGen: s.pvGen + 1}
+	*s = syncState{sel: -1, buckets: map[string][]string{}, bLoad: map[string]bool{}, pvGen: s.pvGen + 1, gen: s.gen + 1}
 	s.jobs = a.svc.SyncJobs()
 	if len(s.jobs) > 0 {
 		a.syncSelect(0)
@@ -228,6 +229,8 @@ func (a *app) syncSelect(i int) {
 		return
 	}
 	s.sel, s.hasDraft, s.err = i, false, ""
+	s.gen++
+	s.saving = false
 	s.f = formFromJob(s.jobs[i])
 	a.syncClearPreview()
 }
@@ -235,6 +238,8 @@ func (a *app) syncSelect(i int) {
 func (a *app) syncNew() {
 	s := &a.tl.sync
 	s.sel, s.hasDraft, s.err = -1, true, ""
+	s.gen++
+	s.saving = false
 	s.f = newSyncForm(a.accountID, a.scope.Bucket)
 	s.base = jobSig(s.draftJob())
 	a.syncClearPreview()
@@ -279,26 +284,47 @@ func (a *app) syncSave(then ...func()) {
 		return
 	}
 	job := s.draftJob()
+	gen, form := s.gen, s.f
 	s.saving, s.err = true, ""
 	a.bg(func() func() {
 		saved, err := a.svc.SaveSyncJob(job)
 		return func() {
-			s.saving = false
+			current := s.gen == gen
+			if current {
+				s.saving = false
+			}
 			if err != nil {
-				s.err = humanError(err)
+				if current {
+					s.err = humanError(err)
+				} else {
+					a.toast(humanError(err))
+				}
 				return
 			}
+			id := s.jobID()
+			if current {
+				id = saved.ID
+			}
 			s.jobs = a.svc.SyncJobs()
+			s.sel = -1
 			for i, j := range s.jobs {
-				if j.ID == saved.ID {
+				if j.ID == id {
 					s.sel = i
 				}
 			}
-			s.hasDraft = false
-			s.f = formFromJob(saved)
 			a.toast(locales.SyncSaved())
+			if !current {
+				return
+			}
+			s.hasDraft = false
+			if s.f != form {
+				return // later edits still belong to this saved job
+			}
+			s.f = formFromJob(saved)
 			for _, f := range then {
-				f()
+				if f != nil {
+					f()
+				}
 			}
 		}
 	})

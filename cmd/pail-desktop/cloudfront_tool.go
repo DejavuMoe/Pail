@@ -30,6 +30,7 @@ var cfPollEvery = 10 * time.Second
 
 type invalidateDlg struct {
 	open      bool
+	gen       int
 	paths     string
 	busy      bool
 	err       string
@@ -51,7 +52,8 @@ type cfState struct {
 
 	invFor  string
 	invs    []cloud.Invalidation
-	invLoad bool
+	invLoad bool // the list shows loading: a load the user asked for is in flight
+	invBusy bool // a load is in flight, asked for or a background poll
 	invErr  string
 	invGen  int
 	invList ui.ListState
@@ -91,7 +93,8 @@ func (a *app) cfAvailable() bool { return a.account().Provider == core.ProviderA
 func (a *app) cfEnter() {
 	cf := &a.tl.cf
 	api := cf.api
-	*cf = cfState{api: api, acct: a.accountID, cursor: -1}
+	a.cfLeave()
+	*cf = cfState{api: api, acct: a.accountID, cursor: -1, gen: cf.gen, invGen: cf.invGen, dlg: invalidateDlg{gen: cf.dlg.gen}}
 	if !a.cfAvailable() {
 		return
 	}
@@ -121,6 +124,9 @@ func (a *app) cfLeave() {
 	}
 	cf.gen++
 	cf.invGen++
+	cf.invLoad, cf.invBusy = false, false
+	cf.dlg.gen++
+	cf.dlg.open = false
 }
 
 // selectedDist is the chosen distribution, if any.
@@ -141,7 +147,7 @@ func (a *app) cfLoad() {
 		defer cancel()
 		ds, err := api.Distributions(ctx, acct)
 		return func() {
-			if gen != cf.gen {
+			if gen != cf.gen || acct != cf.acct {
 				return
 			}
 			cf.load = false
@@ -176,6 +182,7 @@ func (a *app) cfSyncSelection() {
 	if id != cf.invFor {
 		cf.invFor, cf.invs, cf.invErr = id, nil, ""
 		cf.invGen++
+		cf.invLoad, cf.invBusy = false, false
 		if id != "" {
 			a.cfLoadInvs(false)
 		}
@@ -187,28 +194,38 @@ func (a *app) cfSyncSelection() {
 	}
 }
 
+// cfLoadInvs reads the invalidations of the chosen distribution. Only one load
+// runs at a time, so a slow answer is never superseded by the next poll. A
+// silent load (the background poll) shows no loading and keeps its failures
+// to itself; a load the user asks for while a poll is in flight takes that
+// poll over instead of starting another.
 func (a *app) cfLoadInvs(silent bool) {
 	cf := &a.tl.cf
 	id := cf.invFor
 	if id == "" {
 		return
 	}
-	cf.invGen++
-	gen, acct, api := cf.invGen, cf.acct, a.cfService()
 	if !silent {
 		cf.invLoad, cf.invErr = true, ""
 	}
+	if cf.invBusy {
+		return
+	}
+	cf.invGen++
+	gen, acct, api := cf.invGen, cf.acct, a.cfService()
+	cf.invBusy = true
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(60 * time.Second)
 		defer cancel()
 		invs, err := api.Invalidations(ctx, acct, id)
 		return func() {
-			if gen != cf.invGen {
+			if gen != cf.invGen || acct != cf.acct || id != cf.invFor {
 				return
 			}
-			cf.invLoad = false
+			asked := cf.invLoad
+			cf.invLoad, cf.invBusy = false, false
 			if err != nil {
-				if !silent {
+				if asked {
 					cf.invErr = humanError(err)
 				}
 				return
@@ -229,7 +246,7 @@ func (a *app) cfLoadInvs(silent bool) {
 // invalidations of the chosen distribution while one is still in progress.
 func (a *app) cfTick() {
 	cf := &a.tl.cf
-	if a.tool != "cloudfront" || cf.invFor == "" || cf.invLoad || a.windowHidden() {
+	if a.tool != "cloudfront" || cf.invFor == "" || cf.invBusy || a.windowHidden() {
 		return // nobody sees the status of a window kept in the tray
 	}
 	busy := cf.dlg.result != nil && cf.dlg.result.Status == "InProgress"
@@ -278,17 +295,18 @@ func (a *app) cfOpenDialog(paths string) {
 	if _, ok := cf.selectedDist(); !ok {
 		return
 	}
-	cf.dlg = invalidateDlg{open: true, paths: paths, bucket: a.scope.Bucket}
+	cf.dlg = invalidateDlg{open: true, paths: paths, bucket: a.scope.Bucket, gen: cf.dlg.gen + 1}
 	if a.scope.Bucket == "" {
 		return
 	}
 	bucket, acct, api := a.scope.Bucket, cf.acct, a.cfService()
+	gen := cf.dlg.gen
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(60 * time.Second)
 		defer cancel()
 		ds, err := api.DistributionsForBucket(ctx, acct, bucket)
 		return func() {
-			if !cf.dlg.open || cf.dlg.bucket != bucket {
+			if !cf.dlg.open || cf.dlg.gen != gen || cf.acct != acct || cf.dlg.bucket != bucket {
 				return
 			}
 			set := map[string]bool{}
@@ -321,18 +339,30 @@ func (a *app) cfSubmit() {
 	}
 	cf.dlg.busy, cf.dlg.err = true, ""
 	acct, api := cf.acct, a.cfService()
+	gen := cf.dlg.gen
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(60 * time.Second)
 		defer cancel()
 		inv, err := api.Invalidate(ctx, acct, d.ID, paths)
 		return func() {
-			cf.dlg.busy = false
+			current := cf.dlg.open && cf.dlg.gen == gen && cf.acct == acct
+			if current {
+				cf.dlg.busy = false
+			}
 			if err != nil {
-				cf.dlg.err = humanError(err)
+				if current {
+					cf.dlg.err = humanError(err)
+				} else {
+					a.toast(humanError(err))
+				}
 				return
 			}
-			cf.dlg.result = &inv
-			if cf.invFor == d.ID {
+			if current {
+				cf.dlg.result = &inv
+			} else {
+				a.toast(locales.CloudfrontResult(inv.ID, inv.Status))
+			}
+			if cf.acct == acct && cf.invFor == d.ID {
 				a.cfLoadInvs(true)
 			}
 		}
