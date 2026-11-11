@@ -123,6 +123,7 @@ func init() {
 		{"acl", "acl get s3://bucket/key [--version-id V]\nacl set s3://bucket/key CANNED [--version-id V]", "read or set an object's ACL", true, setupACL},
 		{"props", "props get s3://bucket/key\nprops set s3://bucket/key [--content-type T] [--cache-control V] [--content-disposition V] [--content-encoding V] [--content-language V] [--expires DATE] [--metadata K=V] [--delete-header NAME] [--delete-metadata K] [-r]", "show or change object properties", true, setupProps},
 		{"storage-class", "storage-class s3://bucket/key CLASS [-r]", "change the storage class of objects", true, setupStorageClass},
+		{"archive-restore", "archive-restore s3://bucket/key [-r] [--days N] [--tier standard|bulk|expedited]", "restore objects from Glacier Flexible Retrieval or Deep Archive for N days", true, setupArchiveRestore},
 		{"multipart", "multipart ls s3://bucket[/prefix/]\nmultipart abort s3://bucket[/prefix/] [--older-than D]", "list or abort unfinished multipart uploads", true, setupMultipart},
 		{"cloudfront", "cloudfront invalidate DISTRIBUTION PATH...", "invalidate CloudFront paths (AWS accounts)", true, setupCloudFront},
 		{"settings", "settings get [KEY]\nsettings set KEY VALUE", "read or change the settings shared with the desktop app", false, setupSettings},

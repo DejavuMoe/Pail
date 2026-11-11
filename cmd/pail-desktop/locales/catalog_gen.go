@@ -1400,6 +1400,16 @@ func (msgs Messages) AliasRename() string {
 	return Catalog.Format(msgs.locale, "aliasRename", nil)
 }
 
+// AliasRestoreArchive says "glacier deep archive thaw retrieve"
+// in the language the app shows.
+func AliasRestoreArchive() string { return In(i18n.Locale()).AliasRestoreArchive() }
+
+// AliasRestoreArchive says "glacier deep archive thaw retrieve"
+// in the language of msgs.
+func (msgs Messages) AliasRestoreArchive() string {
+	return Catalog.Format(msgs.locale, "aliasRestoreArchive", nil)
+}
+
 // AliasSearch says "find filter"
 // in the language the app shows.
 func AliasSearch() string { return In(i18n.Locale()).AliasSearch() }
@@ -1558,6 +1568,186 @@ func AliasVault() string { return In(i18n.Locale()).AliasVault() }
 // in the language of msgs.
 func (msgs Messages) AliasVault() string {
 	return Catalog.Format(msgs.locale, "aliasVault", nil)
+}
+
+// ArchiveAvailableUntil says "Restored, readable until {date}"
+// in the language the app shows.
+func ArchiveAvailableUntil(date string) string { return In(i18n.Locale()).ArchiveAvailableUntil(date) }
+
+// ArchiveAvailableUntil says "Restored, readable until {date}"
+// in the language of msgs.
+func (msgs Messages) ArchiveAvailableUntil(date string) string {
+	return Catalog.Format(msgs.locale, "archiveAvailableUntil", map[string]any{"date": date})
+}
+
+// ArchiveCanceled says "Restoring from the archive was canceled"
+// in the language the app shows.
+func ArchiveCanceled() string { return In(i18n.Locale()).ArchiveCanceled() }
+
+// ArchiveCanceled says "Restoring from the archive was canceled"
+// in the language of msgs.
+func (msgs Messages) ArchiveCanceled() string {
+	return Catalog.Format(msgs.locale, "archiveCanceled", nil)
+}
+
+// ArchiveDays says "Days available"
+// in the language the app shows.
+func ArchiveDays() string { return In(i18n.Locale()).ArchiveDays() }
+
+// ArchiveDays says "Days available"
+// in the language of msgs.
+func (msgs Messages) ArchiveDays() string {
+	return Catalog.Format(msgs.locale, "archiveDays", nil)
+}
+
+// ArchiveDaysHelp says "How long the restored copy can be read. After that it is removed; the object itself stays archived."
+// in the language the app shows.
+func ArchiveDaysHelp() string { return In(i18n.Locale()).ArchiveDaysHelp() }
+
+// ArchiveDaysHelp says "How long the restored copy can be read. After that it is removed; the object itself stays archived."
+// in the language of msgs.
+func (msgs Messages) ArchiveDaysHelp() string {
+	return Catalog.Format(msgs.locale, "archiveDaysHelp", nil)
+}
+
+// ArchiveDaysInvalid says "Enter a whole number from 1 to {max}"
+// in the language the app shows.
+func ArchiveDaysInvalid(max string) string { return In(i18n.Locale()).ArchiveDaysInvalid(max) }
+
+// ArchiveDaysInvalid says "Enter a whole number from 1 to {max}"
+// in the language of msgs.
+func (msgs Messages) ArchiveDaysInvalid(max string) string {
+	return Catalog.Format(msgs.locale, "archiveDaysInvalid", map[string]any{"max": max})
+}
+
+// ArchiveFailed says "Could not restore from the archive: {detail}"
+// in the language the app shows.
+func ArchiveFailed(detail string) string { return In(i18n.Locale()).ArchiveFailed(detail) }
+
+// ArchiveFailed says "Could not restore from the archive: {detail}"
+// in the language of msgs.
+func (msgs Messages) ArchiveFailed(detail string) string {
+	return Catalog.Format(msgs.locale, "archiveFailed", map[string]any{"detail": detail})
+}
+
+// ArchiveInProgress says "Restoring from the archive"
+// in the language the app shows.
+func ArchiveInProgress() string { return In(i18n.Locale()).ArchiveInProgress() }
+
+// ArchiveInProgress says "Restoring from the archive"
+// in the language of msgs.
+func (msgs Messages) ArchiveInProgress() string {
+	return Catalog.Format(msgs.locale, "archiveInProgress", nil)
+}
+
+// ArchiveNote says "Only objects in Glacier Flexible Retrieval or Deep Archive are restored; other objects are skipped. The provider char…"
+// in the language the app shows.
+func ArchiveNote() string { return In(i18n.Locale()).ArchiveNote() }
+
+// ArchiveNote says "Only objects in Glacier Flexible Retrieval or Deep Archive are restored; other objects are skipped. The provider char…"
+// in the language of msgs.
+func (msgs Messages) ArchiveNote() string {
+	return Catalog.Format(msgs.locale, "archiveNote", nil)
+}
+
+// ArchiveNothing says "Nothing to restore: {n, plural, one {# object} other {# objects}} skipped"
+// in the language the app shows.
+func ArchiveNothing(n int) string { return In(i18n.Locale()).ArchiveNothing(n) }
+
+// ArchiveNothing says "Nothing to restore: {n, plural, one {# object} other {# objects}} skipped"
+// in the language of msgs.
+func (msgs Messages) ArchiveNothing(n int) string {
+	return Catalog.Format(msgs.locale, "archiveNothing", map[string]any{"n": n})
+}
+
+// ArchivePartial says "Restore requested for {ok, plural, one {# object} other {# objects}}, {failed, plural, one {# failed} other {# failed}}"
+// in the language the app shows.
+func ArchivePartial(ok int, failed int) string { return In(i18n.Locale()).ArchivePartial(ok, failed) }
+
+// ArchivePartial says "Restore requested for {ok, plural, one {# object} other {# objects}}, {failed, plural, one {# failed} other {# failed}}"
+// in the language of msgs.
+func (msgs Messages) ArchivePartial(ok int, failed int) string {
+	return Catalog.Format(msgs.locale, "archivePartial", map[string]any{"ok": ok, "failed": failed})
+}
+
+// ArchiveStarted says "Restore requested for {n, plural, one {# object} other {# objects}}"
+// in the language the app shows.
+func ArchiveStarted(n int) string { return In(i18n.Locale()).ArchiveStarted(n) }
+
+// ArchiveStarted says "Restore requested for {n, plural, one {# object} other {# objects}}"
+// in the language of msgs.
+func (msgs Messages) ArchiveStarted(n int) string {
+	return Catalog.Format(msgs.locale, "archiveStarted", map[string]any{"n": n})
+}
+
+// ArchiveSubmit says "Restore"
+// in the language the app shows.
+func ArchiveSubmit() string { return In(i18n.Locale()).ArchiveSubmit() }
+
+// ArchiveSubmit says "Restore"
+// in the language of msgs.
+func (msgs Messages) ArchiveSubmit() string {
+	return Catalog.Format(msgs.locale, "archiveSubmit", nil)
+}
+
+// ArchiveTier says "Retrieval speed"
+// in the language the app shows.
+func ArchiveTier() string { return In(i18n.Locale()).ArchiveTier() }
+
+// ArchiveTier says "Retrieval speed"
+// in the language of msgs.
+func (msgs Messages) ArchiveTier() string {
+	return Catalog.Format(msgs.locale, "archiveTier", nil)
+}
+
+// ArchiveTierBulk says "Bulk"
+// in the language the app shows.
+func ArchiveTierBulk() string { return In(i18n.Locale()).ArchiveTierBulk() }
+
+// ArchiveTierBulk says "Bulk"
+// in the language of msgs.
+func (msgs Messages) ArchiveTierBulk() string {
+	return Catalog.Format(msgs.locale, "archiveTierBulk", nil)
+}
+
+// ArchiveTierExpedited says "Expedited"
+// in the language the app shows.
+func ArchiveTierExpedited() string { return In(i18n.Locale()).ArchiveTierExpedited() }
+
+// ArchiveTierExpedited says "Expedited"
+// in the language of msgs.
+func (msgs Messages) ArchiveTierExpedited() string {
+	return Catalog.Format(msgs.locale, "archiveTierExpedited", nil)
+}
+
+// ArchiveTierHelp says "Glacier Flexible Retrieval: Expedited 1–5 minutes, Standard 3–5 hours, Bulk 5–12 hours. Deep Archive: Standard …"
+// in the language the app shows.
+func ArchiveTierHelp() string { return In(i18n.Locale()).ArchiveTierHelp() }
+
+// ArchiveTierHelp says "Glacier Flexible Retrieval: Expedited 1–5 minutes, Standard 3–5 hours, Bulk 5–12 hours. Deep Archive: Standard …"
+// in the language of msgs.
+func (msgs Messages) ArchiveTierHelp() string {
+	return Catalog.Format(msgs.locale, "archiveTierHelp", nil)
+}
+
+// ArchiveTierStandard says "Standard"
+// in the language the app shows.
+func ArchiveTierStandard() string { return In(i18n.Locale()).ArchiveTierStandard() }
+
+// ArchiveTierStandard says "Standard"
+// in the language of msgs.
+func (msgs Messages) ArchiveTierStandard() string {
+	return Catalog.Format(msgs.locale, "archiveTierStandard", nil)
+}
+
+// ArchiveTitle says "Restore from archive"
+// in the language the app shows.
+func ArchiveTitle() string { return In(i18n.Locale()).ArchiveTitle() }
+
+// ArchiveTitle says "Restore from archive"
+// in the language of msgs.
+func (msgs Messages) ArchiveTitle() string {
+	return Catalog.Format(msgs.locale, "archiveTitle", nil)
 }
 
 // BucketAliasHelp says "Shown instead of the bucket name in the sidebar, the path bar and the command palette. The bucket itself is not renamed."
@@ -3428,6 +3618,16 @@ func CmdRestoreAll() string { return In(i18n.Locale()).CmdRestoreAll() }
 // in the language of msgs.
 func (msgs Messages) CmdRestoreAll() string {
 	return Catalog.Format(msgs.locale, "cmdRestoreAll", nil)
+}
+
+// CmdRestoreArchive says "Restore from archive…"
+// in the language the app shows.
+func CmdRestoreArchive() string { return In(i18n.Locale()).CmdRestoreArchive() }
+
+// CmdRestoreArchive says "Restore from archive…"
+// in the language of msgs.
+func (msgs Messages) CmdRestoreArchive() string {
+	return Catalog.Format(msgs.locale, "cmdRestoreArchive", nil)
 }
 
 // CmdSearch says "Search"

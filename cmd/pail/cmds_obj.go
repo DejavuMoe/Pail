@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"io"
 	"sort"
+	"strconv"
 	"strings"
 	"text/tabwriter"
 
@@ -440,6 +441,57 @@ func setupStorageClass(c *cli, fs *flag.FlagSet) runner {
 		return c.rewrite(ctx, p, *rec, "storage-class", "Set storage class "+class+" on", func(sel app.Selection) (string, error) {
 			return c.svc.SetStorageClass(sel, class)
 		})
+	}
+}
+
+func setupArchiveRestore(c *cli, fs *flag.FlagSet) runner {
+	rec := fs.Bool("r", false, "recursive: every archived object below the prefix")
+	fs.BoolVar(rec, "recursive", false, "same as -r")
+	days := fs.Int("days", 7, "days the restored copy stays readable (1 to 365)")
+	tier := fs.String("tier", "standard", "standard, bulk or expedited (expedited is not available for Deep Archive)")
+	return func(ctx context.Context, pos []string) error {
+		if len(pos) != 1 {
+			return usagef("archive-restore takes one s3://bucket/key or, with -r, s3://bucket/prefix/")
+		}
+		p, err := parseS3(pos[0])
+		if err != nil {
+			return err
+		}
+		var t app.RestoreTier
+		switch strings.ToLower(strings.TrimSpace(*tier)) {
+		case "standard":
+			t = app.TierStandard
+		case "bulk":
+			t = app.TierBulk
+		case "expedited":
+			t = app.TierExpedited
+		default:
+			return usagef("--tier must be standard, bulk or expedited")
+		}
+		sel, err := c.selectionFor(p, *rec)
+		if err != nil {
+			return err
+		}
+		if *rec {
+			est, err := c.svc.Estimate(ctx, sel)
+			if err != nil {
+				return err
+			}
+			if err := c.confirm([]string{
+				"Restore from archive: " + p.String() + " (recursive)",
+				"Scope:   " + fmtEstimate(est),
+				"Archived objects are restored for " + strconv.Itoa(*days) + " day(s); the provider charges for retrieval.",
+			}); err != nil {
+				return err
+			}
+		}
+		w := c.watch()
+		defer w.close()
+		id, err := c.svc.RestoreArchived(sel, app.ArchiveRestoreOptions{Days: *days, Tier: t})
+		if err != nil {
+			return err
+		}
+		return c.finish(w.wait(ctx, id), "archive-restore", ctx)
 	}
 }
 
