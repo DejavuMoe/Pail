@@ -6,13 +6,15 @@ Forgejo (`ssh://git@ssh.via.moe/dejavu/Pail.git`) is the primary repository. Pus
 
 Woodpecker deploys only the static website. Its live acceptance is separate from the application release gates; see [site.md](site.md). GitHub Actions never deploys the website.
 
-`.gitattributes` marks `.agents/skills/**` and `designs/pail-site/**` as `linguist-vendored` to exclude authoring tools and prototypes from GitHub/Forgejo language statistics. Application and shipped website sources remain counted. Hosts recompute their statistics after a push; local `git check-attr` verifies the rules, not the remote refresh.
+`.gitattributes` marks `designs/pail-site/**` as `linguist-vendored` to exclude prototypes from GitHub/Forgejo language statistics. Application and shipped website sources remain counted. Hosts recompute their statistics after a push; local `git check-attr` verifies the rules, not the remote refresh.
 
 ## Locked tools and dependencies
 
 `mise.toml` pins Go 1.27.4 and Node.js 24.19.0. Run `mise trust` and `mise install go node`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
 
 Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node install it with the pinned mise action. Application builds, tests and release packaging use Go directly on every host; no CI job installs or invokes PowerShell. `scripts/release.ps1` is an optional compatibility wrapper that forwards old parameters to the Go release tool. Third-party actions are pinned to full commit SHAs, and website containers to image digests. Changing the Go pin also requires updating the website builder image.
+
+Native tests, race shards and packaging use separate cache scopes, in addition to the runner OS/architecture and Go version that `setup-go` includes. Their keys include module files and the ignored `.ci-go-cache-scope` file, which identifies the build mode or packaging target OS without marking release sources dirty. Go checks cached build inputs and rebuilds changed packages; tests still run with `-count=1`. An exact cache hit is immutable, so changed application packages may need recompilation on later runs. Source hashes are omitted to avoid uploading a new set of module/build caches on each source change; the measured critical path is UI test execution.
 
 Windows owns all source edits and Git writes. For Linux validation use `linux-task.ps1 -Mode build -Project <repo> -Command '...'`; build mirrors are disposable and contain no `.git`. Linux CI runs the same commands directly. Pass workflow paths explicitly to actionlint, which otherwise relies on Git discovery.
 
@@ -39,7 +41,7 @@ The desktop tests render the real UI in memory, including animation frames, mini
 
 Demo environments share only the nine immutable encoded image bodies, initialized with `sync.OnceValue`. Each environment still creates its own service, account, buckets and objects; the test server copies image bytes on insertion. `internal/demo` `TestImagesMatchAndStayIsolated` compares every seeded image with the original generator, checks image dimensions and formats, and checks that replacing an image in one environment leaves the other environment and cache unchanged. Ordinary local tests and CI use this same path.
 
-The Race job adds the workflow file to `setup-go`'s cache dependency paths, giving instrumented builds a different key from native builds. An exact cache hit is immutable: sharing the native key prevented the Race job from saving newly compiled race-instrumented packages. This changes build caching only; the job still runs `go test -race -count=1 -timeout 15m ./...`.
+Race runs in three jobs: `core` covers every package except `cmd/pail-desktop`, and `desktop-1` / `desktop-2` split that package's top-level tests, examples and fuzz seeds alternately in Go's discovered order. `node scripts/test-race.mjs <part>` discovers the inventory and runs each shard with `-race -count=1 -timeout 15m`. Empty or duplicate desktop inventories fail. The selector tests check that every discovered name belongs to exactly one shard. Test names are discovered on each run; adding a test needs no workflow edit. Each process keeps UI tests serial. A local full run can still use `go test -race -count=1 -timeout 15m ./...`.
 
 To measure desktop execution separately from compilation and other packages, create `build/test-perf`, then run:
 
@@ -54,13 +56,13 @@ The JSON `pass` events contain per-test elapsed seconds. Compare top-level tests
 
 | Workflow | Trigger | Required jobs |
 | --- | --- | --- |
-| `CI` | `master` push or manual | Six native test jobs; Quality; Race; MinIO |
+| `CI` | `master` push or manual | Six native test jobs; Quality; three Race shards; MinIO |
 | `CodeQL` | `master` push, manual, or Wednesday 03:23 UTC | Go on Linux, Windows and macOS; site JavaScript; Actions |
 | `Release` | `v*` tag push | Exact-commit preflight; three parallel packaging jobs; verified publication |
 
-Tests and CodeQL run in parallel. A later branch push cancels obsolete validation; release runs are not cancelled. Go analysis uses native OS builds to include OS-specific source. JavaScript analysis excludes `.agents/` and `designs/`, which are authoring tools/prototypes rather than the shipped site.
+Tests and CodeQL run in parallel. A later branch push cancels obsolete validation; release runs are not cancelled. Go analysis uses native OS builds to include OS-specific source. JavaScript analysis excludes `designs/`, which contains prototypes rather than the shipped site.
 
-The weekly CodeQL scan picks up new analysis rules without a source push. Scheduled runs have a separate concurrency group and do not replace the push/manual runs required for release. GitHub may delay scheduled runs and disables schedules in public repositories after 60 days without repository activity; check Actions when resuming an inactive project.
+The weekly CodeQL scan picks up new analysis rules without a source push. Push and manual runs share a concurrency group so a manual rerun replaces an obsolete source scan. Scheduled runs have a separate group and do not replace the push/manual runs required for release. GitHub may delay scheduled runs and disables schedules in public repositories after 60 days without repository activity; check Actions when resuming an inactive project.
 
 | Target | Native test runner | Release archive |
 | --- | --- | --- |
@@ -71,9 +73,9 @@ The weekly CodeQL scan picks up new analysis rules without a source push. Schedu
 | darwin/amd64 | macos-15-intel | ZIP with Pail.app |
 | darwin/arm64 | macos-15 | ZIP with Pail.app |
 
-Each native job checks its actual GOOS/GOARCH, runs `go vet ./...`, `go test -count=1 -timeout 10m ./...`, builds both commands without cgo and executes their version commands. UI unit tests are headless. They do not prove an interactive GUI, GPU rendering or working system keychain on a user's desktop.
+Each native job checks its actual GOOS/GOARCH, runs `go test -vet=all -count=1 -timeout 10m ./...`, builds both commands without cgo and executes their version commands. `-vet=all` runs the full vet checks in the test build instead of running a separate vet build followed by the default test vet subset. The smoke build retains symbols, matching release verification. UI unit tests are headless. They do not prove an interactive GUI, GPU rendering or working system keychain on a user's desktop.
 
-Quality checks formatting, workflow syntax, release-gate tests, deployment fixtures and known Go vulnerabilities. Race runs `go test -race -count=1 -timeout 15m ./...` with cgo and a C compiler on Linux. MinIO uses the existing isolated integration suite, loading a fixed-source image built with the GitHub Actions Buildx cache. No real endpoint credentials are supplied to CI.
+Quality checks formatting, workflow syntax, release-gate and shard-selector tests, deployment fixtures and known Go vulnerabilities. Race uses cgo and a C compiler on Linux. MinIO uses the existing isolated integration suite, loading a fixed-source image built with the GitHub Actions Buildx cache. No real endpoint credentials are supplied to CI.
 
 Security triage for v0.1.0: Goldmark was upgraded to v1.7.17 for [GO-2026-5320](https://pkg.go.dev/vuln/GO-2026-5320). Govulncheck also reports [GO-2026-5932](https://pkg.go.dev/vuln/GO-2026-5932) at module level: it concerns `golang.org/x/crypto/openpgp`, which Pail does not import. A passing scan means no vulnerable imported packages or reachable symbols were found, not that every package in every required module is vulnerability-free.
 
@@ -98,6 +100,8 @@ Dependabot security/version update PRs and agentic autofix remain disabled: fixe
 7. Download the published archives and `SHA256SUMS`, verify them again, and run native version checks where available. Commit and push the validation record to `master`; that push rebuilds the website for the new version (see [site.md](site.md)). Then upload the archives and `SHA256SUMS` to the download mirror's `v<version>/` directory.
 
 The release workflow needs `actions: read` for preflight and `contents: write` only for publication. No Forgejo write token or website deployment secret is stored in GitHub. Tags originate in Forgejo; GitHub's write permission is for Release metadata/assets.
+
+History rewrites and re-signing change commit and tag identities. Old successful runs do not satisfy release gates for a rewritten SHA, even when the product source is unchanged. Published assets still belong to the original release run; moving a tag does not rebuild them. Preserve those assets and the original run's evidence, and release future changes under a new version after its own CI and CodeQL pass. Do not bypass the exact-commit gate or overwrite an existing published release to repair history.
 
 ## Building and checking release archives
 

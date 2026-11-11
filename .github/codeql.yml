@@ -1,4 +1,3 @@
 name: Pail product code
 paths-ignore:
-  - .agents
   - designs

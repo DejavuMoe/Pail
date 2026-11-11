@@ -714,7 +714,7 @@ func TestRetryRefreshesListingAndRecentOperation(t *testing.T) {
 		t.Error("successful retry missing from recent operations")
 	}
 	h.a.clearFinished()
-	h.settle()
+	h.waitFor("finished task removal events", func() bool { return len(h.a.tasks) == 0 })
 	if len(h.a.retryWatches) != 0 {
 		t.Fatal("cleared task history retained retry contexts")
 	}

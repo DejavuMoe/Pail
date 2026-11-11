@@ -36,22 +36,28 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Select native build cache
+        shell: bash
+        run: echo native > .ci-go-cache-scope
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+          cache-dependency-path: |
+            go.mod
+            go.sum
+            .ci-go-cache-scope
       - name: Vet and native tests
         shell: bash
         run: |
           test "$(go env GOOS)/$(go env GOARCH)" = "${{ matrix.target }}"
-          go vet ./...
-          go test -count=1 -timeout 10m ./...
+          go test -vet=all -count=1 -timeout 10m ./...
       - name: Native release-mode build and version smoke
         shell: bash
         env:
           CGO_ENABLED: "0"
         run: |
           mkdir -p build/ci
-          go build -trimpath -ldflags "-s -w -X main.version=0.1.0-ci" -o build/ci/ ./cmd/pail ./cmd/pail-desktop
+          go build -trimpath -ldflags "-w -X main.version=0.1.0-ci" -o build/ci/ ./cmd/pail ./cmd/pail-desktop
           exe="$(go env GOEXE)"
           test "$("build/ci/pail$exe" version)" = "pail 0.1.0-ci"
           test "$("build/ci/pail-desktop$exe" --version)" = "Pail 0.1.0-ci"
@@ -73,7 +79,7 @@ jobs:
           install_args: node
       - name: Formatting, workflow and release checks
         run: |
-          test -z "$(git ls-files '*.go' ':(exclude).agents/**' | xargs gofmt -l)"
+          test -z "$(git ls-files -z '*.go' | xargs -0 gofmt -l)"
           node --test scripts/*.test.mjs
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/*.yml
           sh scripts/test-publish-site.sh
@@ -81,23 +87,37 @@ jobs:
         run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
 
   race:
-    name: Race
+    name: Race ${{ matrix.part }}
     runs-on: ubuntu-24.04
     timeout-minutes: 20
+    strategy:
+      fail-fast: false
+      matrix:
+        part: [core, desktop-1, desktop-2]
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Select race build cache
+        env:
+          CACHE_SCOPE: race-${{ matrix.part }}
+        run: printf '%s\n' "$CACHE_SCOPE" > .ci-go-cache-scope
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
-          # Keep race-instrumented builds out of the native jobs' immutable cache key.
           cache-dependency-path: |
+            go.mod
             go.sum
-            .github/workflows/ci.yml
-      - run: go test -race -count=1 -timeout 15m ./...
+            .ci-go-cache-scope
+      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+        with:
+          version: 2026.10.12
+          install_args: node
+      - name: Run race shard
         env:
+          RACE_PART: ${{ matrix.part }}
           CGO_ENABLED: "1"
+        run: node scripts/test-race.mjs "$RACE_PART"
 
   minio:
     name: MinIO

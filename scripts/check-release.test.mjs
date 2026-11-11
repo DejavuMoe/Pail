@@ -27,6 +27,18 @@ test('requires every job for the exact source commit', () => {
   assert.equal(checkRelease('DejavuMoe/Pail', sha, fixture()).length, 2);
 });
 
+for (const name of ['Race core', 'Race desktop-1', 'Race desktop-2']) {
+  test(`requires successful ${name} before releasing`, () => {
+    for (const state of ['missing', 'skipped', 'failure']) {
+      assert.throws(() => checkRelease('DejavuMoe/Pail', sha, fixture((result, path) => {
+        if (!path.includes('/runs/1/jobs?')) return;
+        if (state === 'missing') result[0].jobs = result[0].jobs.filter(job => job.name !== name);
+        else result[0].jobs.find(job => job.name === name).conclusion = state;
+      })), new RegExp(name));
+    }
+  });
+}
+
 for (const [field, value] of Object.entries({
   head_sha: 'b'.repeat(40), head_branch: 'main', path: '.github/workflows/other.yml',
   event: 'pull_request', status: 'in_progress', conclusion: 'failure',
