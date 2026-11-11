@@ -101,6 +101,46 @@ func mapDistribution(s cft.DistributionSummary) Distribution {
 	return d
 }
 
+// SetDistributionEnabled turns a distribution on or off: it reads the
+// current configuration and writes it back with Enabled changed, guarded by
+// the configuration's ETag so that a concurrent edit fails instead of being
+// overwritten. The change takes CloudFront several minutes to deploy; the
+// returned distribution reports Status "InProgress" until then.
+func (c *Client) SetDistributionEnabled(ctx context.Context, distID string, enabled bool) (Distribution, error) {
+	if err := validID("distribution", distID); err != nil {
+		return Distribution{}, err
+	}
+	got, err := c.cf.GetDistributionConfig(ctx, &cloudfront.GetDistributionConfigInput{Id: aws.String(distID)})
+	if err != nil {
+		return Distribution{}, err
+	}
+	if got.DistributionConfig == nil || got.ETag == nil {
+		return Distribution{}, errors.New("CloudFront returned no distribution configuration")
+	}
+	cfg := got.DistributionConfig
+	cfg.Enabled = aws.Bool(enabled)
+	out, err := c.cf.UpdateDistribution(ctx, &cloudfront.UpdateDistributionInput{Id: aws.String(distID), IfMatch: got.ETag, DistributionConfig: cfg})
+	if err != nil {
+		return Distribution{}, err
+	}
+	d := Distribution{ID: distID, Enabled: enabled}
+	if out.Distribution != nil {
+		d.DomainName, d.Status = aws.ToString(out.Distribution.DomainName), aws.ToString(out.Distribution.Status)
+		if dc := out.Distribution.DistributionConfig; dc != nil {
+			d.Comment, d.Enabled = aws.ToString(dc.Comment), aws.ToBool(dc.Enabled)
+			if dc.Aliases != nil {
+				d.Aliases = append(d.Aliases, dc.Aliases.Items...)
+			}
+			if dc.Origins != nil {
+				for _, o := range dc.Origins.Items {
+					d.Origins = append(d.Origins, Origin{ID: aws.ToString(o.Id), DomainName: aws.ToString(o.DomainName), Path: aws.ToString(o.OriginPath)})
+				}
+			}
+		}
+	}
+	return d, nil
+}
+
 func validID(kind, v string) error {
 	if v == "" {
 		return fmt.Errorf("%s ID is required", kind)

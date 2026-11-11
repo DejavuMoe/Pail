@@ -69,6 +69,27 @@ func (s *Service) Distributions(ctx context.Context, accountID string) ([]cloud.
 	return ds, nil
 }
 
+// SetDistributionEnabled enables or disables one distribution. It changes a
+// cloud resource: the caller shows the account and the distribution and asks
+// for confirmation first. A disabled distribution stops serving its domain
+// once CloudFront has deployed the change.
+func (s *Service) SetDistributionEnabled(ctx context.Context, accountID, distID string, enabled bool) (cloud.Distribution, error) {
+	const op = "SetDistributionEnabled"
+	if err := bmCloudID(op, "distribution", distID); err != nil {
+		return cloud.Distribution{}, err
+	}
+	c, err := s.cfClient(ctx, op, accountID)
+	if err != nil {
+		return cloud.Distribution{}, err
+	}
+	d, err := c.SetDistributionEnabled(ctx, distID, enabled)
+	if err != nil {
+		return cloud.Distribution{}, classify(op, err)
+	}
+	s.lgInfo("distribution enabled changed", "account", accountID, "distribution", distID, "enabled", enabled)
+	return d, nil
+}
+
 // DistributionsForBucket lists the distributions that have an S3 origin of the bucket.
 func (s *Service) DistributionsForBucket(ctx context.Context, accountID, bucket string) ([]cloud.Distribution, error) {
 	const op = "DistributionsForBucket"
