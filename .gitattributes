@@ -30,7 +30,6 @@
 internal/rules/internal/zipaes/testdata/** binary
 
 # Authoring tools and website prototypes are not shipped application code.
-.agents/skills/** linguist-vendored
 designs/pail-site/** linguist-vendored
 *.webp binary
 *.mp4   binary

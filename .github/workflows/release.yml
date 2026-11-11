@@ -64,9 +64,17 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
+      - name: Select packaging build cache
+        env:
+          CACHE_SCOPE: release-${{ matrix.os }}
+        run: printf '%s\n' "$CACHE_SCOPE" > .ci-go-cache-scope
       - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
         with:
           go-version-file: go.mod
+          cache-dependency-path: |
+            go.mod
+            go.sum
+            .ci-go-cache-scope
       - name: Build and verify both architectures
         env:
           VERSION: ${{ needs.preflight.outputs.version }}

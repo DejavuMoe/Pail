@@ -3,6 +3,7 @@ package app
 import (
 	"bufio"
 	"bytes"
+	"errors"
 	"fmt"
 	"os"
 	"os/exec"
@@ -155,27 +156,33 @@ func TestN2VaultPasswordChangeAcrossProcesses(t *testing.T) {
 				t.Fatal(err)
 			}
 			defer log.Close()
-			// Keep writing until the password change is seen: a fixed number of
-			// writes can finish before the other process changes the password.
-			conflicts := 0
-			deadline := time.Now().Add(30 * time.Second)
-			for i := 0; conflicts < 5 && time.Now().Before(deadline); i++ {
+			// Bound contention: the polling file lock does not promise FIFO fairness.
+			for i := range 31 {
 				k := fmt.Sprintf("s%s-%d", id, i)
 				err := v.Set(k, "v-"+k)
 				switch {
 				case err == nil:
 					fmt.Fprintln(log, k)
-				case IsKind(err, ErrConflict):
-					conflicts++
+				case i > 0 && IsKind(err, ErrConflict) && !errors.Is(err, ErrConfigLocked):
 				default:
 					t.Fatalf("Set %s: %v", k, err)
 				}
+				if i == 0 {
+					if err := os.WriteFile(filepath.Join(dir, "written-"+id), nil, 0o600); err != nil {
+						t.Fatal(err)
+					}
+				}
 			}
-			if conflicts == 0 {
-				t.Fatal("writer never noticed the password change")
+			waitAccountTestFile(t, filepath.Join(dir, "changed"))
+			for i := range 5 {
+				if err := v.Set(fmt.Sprintf("stale-%s-%d", id, i), "must not be saved"); !IsKind(err, ErrConflict) || errors.Is(err, ErrConfigLocked) {
+					t.Fatalf("stale writer must detect the changed password: %v", err)
+				}
 			}
 		case "passwd":
-			time.Sleep(150 * time.Millisecond)
+			for _, writer := range []string{"0", "1"} {
+				waitAccountTestFile(t, filepath.Join(dir, "written-"+writer))
+			}
 			if err := v.changePassword(testPW, n2NewPW); err != nil {
 				t.Fatal(err)
 			}
@@ -213,6 +220,14 @@ func TestN2VaultPasswordChangeAcrossProcesses(t *testing.T) {
 			}
 		}
 		f.Close()
+		if n == 0 {
+			t.Errorf("writer %s acknowledged no writes before the password change", id)
+		}
+		for i := range 5 {
+			if _, err := check.Get(fmt.Sprintf("stale-%s-%d", id, i)); !errors.Is(err, ErrSecretNotFound) {
+				t.Errorf("stale write %s/%d reached the vault: %v", id, i, err)
+			}
+		}
 		t.Logf("writer %s: %d acknowledged writes", id, n)
 	}
 }

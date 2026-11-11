@@ -5,7 +5,7 @@ export const requiredJobs = {
   'ci.yml': [
     'Test windows/amd64', 'Test windows/arm64', 'Test linux/amd64',
     'Test linux/arm64', 'Test darwin/amd64', 'Test darwin/arm64',
-    'Quality', 'Race', 'MinIO',
+    'Quality', 'Race core', 'Race desktop-1', 'Race desktop-2', 'MinIO',
   ],
   'codeql.yml': [
     'Analyze go (linux)', 'Analyze go (windows)', 'Analyze go (darwin)',

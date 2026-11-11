@@ -1,6 +1,7 @@
 /bin/
 /build/
 /public/
+.ci-go-cache-scope
 *.exe
 *.log
 .env
