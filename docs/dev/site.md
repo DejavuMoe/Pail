@@ -43,9 +43,12 @@ The generator (`tools/site/main.go`):
 - renders `/index.html` (English) and `/zh/index.html` (Simplified Chinese) with `hreflang` alternates and a canonical URL; text is rendered on the server, and only the strings `app.js` builds at runtime (`runtimeKeys`: `heroDownloadFor`, `sourceGithubNote`, `sourceMirrorNote`, `miniBytesOf`) are embedded as JSON, and so is the recording of the terminal (`site/cli-demo.json`; the page itself shows the first example as plain HTML);
 - renders the docs pages (below) and adds them to `sitemap.xml` with their language alternates;
 - copies `docs/images/main-{light,dark}-{en,zh}.webp`, `docs/images/social.webp`, `docs/video/pail-demo.{mp4,webp}` and `assets/brand/pail-icon.svg` (XML comments removed) instead of keeping second copies;
-- renders Open Graph and Twitter large-image metadata in the initial HTML of both landing pages and every documentation page: localized title, description and image alt text, page canonical URL, `en_US` / `zh_CN` locales, and an absolute fingerprinted URL of `social.webp` built from `-base-url`. `social.webp` is a 1200×630 card, and `TestSocialMetadata` checks the declared size. The 404 page stays `noindex` and has no social card;
+- renders Open Graph and Twitter large-image metadata in the initial HTML of both landing pages and every documentation page: localized title, description and image alt text, page canonical URL, `en_US` / `zh_CN` locales, and an absolute fingerprinted URL of `social.jpg` built from `-base-url`. The build re-encodes `docs/images/social.webp` as JPEG (quality 88), because not every platform reads WebP cards; it is 1200×630, and `TestSocialMetadata` checks the declared size. The 404 page stays `noindex` and has no social card;
+- renders schema.org JSON-LD in the initial HTML (`tools/site/seo.go`): on both landing pages a `WebSite`, a `SoftwareApplication` (free offer, platforms, version, release date from `CHANGELOG.md`, GitHub Release, changelog page, screenshot) and a `VideoObject` for the demo (duration read from the MP4's movie header, upload date `demoVideoDate`, which changes with the video), on every docs page a two-level `BreadcrumbList`;
+- links an `apple-touch-icon` (`assets/brand/generated/pail-256.png`) and the GitHub releases Atom feed from every page;
+- writes the IndexNow key file `/<indexNowKey>.txt`; landing and docs pages also send `robots: max-image-preview:large`. `TestStructuredData` checks both;
 - fingerprints every file under `/assets/` (`styles.<hash>.css`) so it can be cached forever while HTML is revalidated;
-- writes `404.html`, `robots.txt` and `sitemap.xml`;
+- writes `404.html`, `robots.txt` and `sitemap.xml` (every entry lists its `en`, `zh-Hans` and `x-default` alternates);
 - shows the release date in the download section, read from the `## [x.y.z] - YYYY-MM-DD` heading of `CHANGELOG.md`; without such a heading (a preview of an unreleased version) the date is omitted, so the same commit and version always produce the same files;
 - fails when a locale misses a key, when the two locales' key sets differ, when a string is empty, or when `-version` is not a semantic version without the `v` prefix;
 - replaces an existing `-out` directory only when it holds nothing but a previous build.
@@ -113,6 +116,8 @@ The required agent labels are `platform=linux/amd64`, `backend=docker`, `role=ne
 1. `scripts/build-site.sh` resolves the published version, checks the release assets, runs the generator tests and builds `public/` with the mirror links of that version. The pipeline does not check the mirror and the link rule never changes, so the mirror never needs another run: upload each release's archives and `SHA256SUMS` to `v<version>/` by hand once the release is published. Until they are there, the mirror links of that version fail and the GitHub links work.
 2. `scripts/verify-site.sh` checks both languages, all page entry points and static assets, rejecting symlinks and other special files.
 3. `scripts/publish-site.sh public <commit>-<pipeline>-<rerun>` copies into a new release directory, validates it, atomically replaces `html`, verifies activation and retains only the current and immediately previous release. It takes a filesystem lock, refuses out-of-root/linked deployment paths and skips older pipelines. Workflow concurrency is also limited to one.
+
+4. `scripts/indexnow-site.sh public` submits every URL of the sitemap to IndexNow (Bing, Yandex, Seznam, Naver) with the published key. The step has `failure: ignore`, and the script itself never fails the deployment. Google and Baidu do not use IndexNow; submit the sitemap in their webmaster tools once.
 
 The publish step mounts `/var/www/pail.download:/deploy`; no SSH deployment secrets are needed. Expected layout:
 

@@ -16,6 +16,7 @@ import (
 	"fmt"
 	"html"
 	"html/template"
+	"image/jpeg"
 	"net/url"
 	"os"
 	"path"
@@ -23,6 +24,8 @@ import (
 	"regexp"
 	"slices"
 	"strings"
+
+	"golang.org/x/image/webp"
 )
 
 const githubURL = "https://github.com/DejavuMoe/Pail"
@@ -55,6 +58,7 @@ type asset struct {
 	name string // name used by templates
 	src  string // path relative to the repository root
 	svg  bool   // strip XML comments before publishing
+	jpeg bool   // re-encode a WebP source as JPEG (social cards: not every platform reads WebP)
 }
 
 var assets = []asset{
@@ -67,14 +71,20 @@ var assets = []asset{
 	{name: "main-light-zh.webp", src: "docs/images/main-light-zh.webp"},
 	{name: "main-dark-en.webp", src: "docs/images/main-dark-en.webp"},
 	{name: "main-dark-zh.webp", src: "docs/images/main-dark-zh.webp"},
-	{name: "social.webp", src: "docs/images/social.webp"},
+	{name: "social.jpg", src: "docs/images/social.webp", jpeg: true},
+	{name: "apple-touch-icon.png", src: "assets/brand/generated/pail-256.png"},
 	{name: "pail-demo.mp4", src: "docs/video/pail-demo.mp4"},
 	{name: "pail-demo.webp", src: "docs/video/pail-demo.webp"},
 }
 
 // outputs are the top-level entries a build writes. An existing -out
 // directory is replaced only when it holds nothing else.
-var outputs = append([]string{"index.html", "zh", "404.html", "assets", "robots.txt", "sitemap.xml"}, docOutputs...)
+var outputs = append([]string{"index.html", "zh", "404.html", "assets", "robots.txt", "sitemap.xml", indexNowKey + ".txt"}, docOutputs...)
+
+// indexNowKey identifies the site to IndexNow (Bing, Yandex, Seznam, Naver):
+// the build publishes it as /<key>.txt and scripts/indexnow-site.sh submits
+// the sitemap's URLs with it after a deployment. It is public by design.
+const indexNowKey = "183862db66fbee2cc093276138a015d0"
 
 type config struct {
 	root      string // repository root
@@ -197,6 +207,10 @@ func build(c config) error {
 		"bytesOf": func(string, string) (string, error) { return "", errors.New("bytesOf used outside a page") },
 	}
 
+	videoLen, err := mp4Duration(filepath.Join(c.root, "docs", "video", "pail-demo.mp4"))
+	if err != nil {
+		return err
+	}
 	cli, err := loadCLIDemo(c.root)
 	if err != nil {
 		return err
@@ -219,28 +233,38 @@ func build(c config) error {
 		if err != nil {
 			return err
 		}
+		ld, err := appStructuredData(c.baseURL, lang, locales[lang.Code]["docDescription"], c.version, released,
+			c.baseURL+paths["main-light-"+lang.Code+".webp"], c.baseURL+paths["social.jpg"],
+			demoVideo{
+				name: locales[lang.Code]["demoTitle"], description: locales[lang.Code]["demoLede"],
+				contentURL: c.baseURL + paths["pail-demo.mp4"], thumbnailURL: c.baseURL + paths["pail-demo.webp"], duration: videoLen,
+			})
+		if err != nil {
+			return err
+		}
 		data := map[string]any{
-			"Lang":          lang.Code,
-			"HTMLLang":      lang.HTMLLang,
-			"OtherLang":     other.Code,
-			"OtherHTMLLang": other.HTMLLang,
-			"OtherPath":     other.Path,
-			"PathZh":        languages[1].Path,
-			"Links":         linksFor(lang),
-			"Canonical":     c.baseURL + lang.Path,
-			"SocialTitle":   locales[lang.Code]["docTitle"],
-			"Description":   locales[lang.Code]["docDescription"],
-			"URLEn":         c.baseURL + languages[0].Path,
-			"URLZh":         c.baseURL + languages[1].Path,
-			"Version":       c.version,
-			"GitHub":        githubURL,
-			"ReleaseBase":   release,
-			"Released":      releasedText(locales[lang.Code]["releasedOn"], released),
-			"MirrorBase":    mirrorBase,
-			"MirrorLabel":   mirrorLabel,
-			"Runtime":       template.JS(js),
-			"CLI":           cli,
-			"CLIJSON":       template.JS(cliJSON),
+			"Lang":           lang.Code,
+			"HTMLLang":       lang.HTMLLang,
+			"OtherLang":      other.Code,
+			"OtherHTMLLang":  other.HTMLLang,
+			"OtherPath":      other.Path,
+			"PathZh":         languages[1].Path,
+			"Links":          linksFor(lang),
+			"Canonical":      c.baseURL + lang.Path,
+			"SocialTitle":    locales[lang.Code]["docTitle"],
+			"Description":    locales[lang.Code]["docDescription"],
+			"URLEn":          c.baseURL + languages[0].Path,
+			"URLZh":          c.baseURL + languages[1].Path,
+			"Version":        c.version,
+			"GitHub":         githubURL,
+			"ReleaseBase":    release,
+			"Released":       releasedText(locales[lang.Code]["releasedOn"], released),
+			"MirrorBase":     mirrorBase,
+			"MirrorLabel":    mirrorLabel,
+			"Runtime":        template.JS(js),
+			"CLI":            cli,
+			"CLIJSON":        template.JS(cliJSON),
+			"StructuredData": ld,
 		}
 		t, err := pageTmpl.Clone()
 		if err != nil {
@@ -274,6 +298,9 @@ func build(c config) error {
 
 	robots := "User-agent: *\nAllow: /\n\nSitemap: " + c.baseURL + "/sitemap.xml\n"
 	if err := os.WriteFile(filepath.Join(c.out, "robots.txt"), []byte(robots), 0o644); err != nil {
+		return err
+	}
+	if err := os.WriteFile(filepath.Join(c.out, indexNowKey+".txt"), []byte(indexNowKey), 0o644); err != nil {
 		return err
 	}
 	return os.WriteFile(filepath.Join(c.out, "sitemap.xml"), sitemap(c.baseURL), 0o644)
@@ -397,6 +424,17 @@ func writeAssets(c config) (map[string]string, error) {
 		if a.svg {
 			b = svgCommentRE.ReplaceAll(b, nil)
 		}
+		if a.jpeg {
+			img, err := webp.Decode(bytes.NewReader(b))
+			if err != nil {
+				return nil, fmt.Errorf("%s: %w", a.src, err)
+			}
+			var buf bytes.Buffer
+			if err := jpeg.Encode(&buf, img, &jpeg.Options{Quality: 88}); err != nil {
+				return nil, err
+			}
+			b = buf.Bytes()
+		}
 		sum := sha256.Sum256(b)
 		ext := path.Ext(a.name)
 		name := strings.TrimSuffix(a.name, ext) + "." + hex.EncodeToString(sum[:5]) + ext
@@ -429,6 +467,7 @@ func sitemap(base string) []byte {
 			for _, alt := range languages {
 				fmt.Fprintf(&b, "    <xhtml:link rel=\"alternate\" hreflang=\"%s\" href=\"%s\"/>\n", alt.HTMLLang, html.EscapeString(base+path(alt)))
 			}
+			fmt.Fprintf(&b, "    <xhtml:link rel=\"alternate\" hreflang=\"x-default\" href=\"%s\"/>\n", html.EscapeString(base+path(languages[0])))
 			b.WriteString("  </url>\n")
 		}
 	}
