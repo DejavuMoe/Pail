@@ -4,6 +4,9 @@
 package main
 
 import (
+	"archive/tar"
+	"archive/zip"
+	"compress/gzip"
 	"crypto/sha256"
 	"errors"
 	"flag"
@@ -125,7 +128,7 @@ func release(version, targetList, outDir string, cliOnly bool) error {
 			}
 			name := executable(app, version, osName, arch)
 			executables = append(executables, name)
-			ld := "-s -w -X main.version=" + version
+			ld := "-w -X main.version=" + version
 			if app == "pail-desktop" && osName == "windows" {
 				ld += " -H windowsgui"
 			}
@@ -271,6 +274,24 @@ func publish(parent, version, source string) error {
 				return fmt.Errorf("refusing to replace release %s: the new build does not produce %s (a CLI-only or partial build cannot replace a complete release)", version, e.Name())
 			}
 		}
+		for _, e := range entries {
+			if e.Name() == "SHA256SUMS" {
+				continue
+			}
+			oldFiles, err := archiveFiles(r, filepath.Join(version, e.Name()))
+			if err != nil {
+				return err
+			}
+			newFiles, err := archiveFiles(r, filepath.Join(rel, e.Name()))
+			if err != nil {
+				return err
+			}
+			for name := range oldFiles {
+				if !newFiles[name] {
+					return fmt.Errorf("refusing to replace %s: the new archive does not contain %s", e.Name(), name)
+				}
+			}
+		}
 		// Move the old release aside, install the new one, then delete the old
 		// one; if installing fails, put the old release back.
 		backup, err := os.MkdirTemp(parent, ".pail-old-")
@@ -299,6 +320,49 @@ func publish(parent, version, source string) error {
 		return err
 	}
 	return renameInRoot(r, rel, version)
+}
+
+func archiveFiles(root *os.Root, name string) (map[string]bool, error) {
+	f, err := root.Open(name)
+	if err != nil {
+		return nil, err
+	}
+	defer f.Close()
+	files := map[string]bool{}
+	if strings.HasSuffix(name, ".zip") {
+		info, err := f.Stat()
+		if err != nil {
+			return nil, err
+		}
+		zr, err := zip.NewReader(f, info.Size())
+		if err != nil {
+			return nil, fmt.Errorf("read %s: %w", name, err)
+		}
+		for _, entry := range zr.File {
+			if entry.Mode().IsRegular() {
+				files[entry.Name] = true
+			}
+		}
+		return files, nil
+	}
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		return nil, fmt.Errorf("read %s: %w", name, err)
+	}
+	defer gz.Close()
+	tr := tar.NewReader(gz)
+	for {
+		h, err := tr.Next()
+		if err == io.EOF {
+			return files, nil
+		}
+		if err != nil {
+			return nil, fmt.Errorf("read %s: %w", name, err)
+		}
+		if h.FileInfo().Mode().IsRegular() {
+			files[h.Name] = true
+		}
+	}
 }
 
 // versionSyso writes the Windows resources of the desktop app with version in

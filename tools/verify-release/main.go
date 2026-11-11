@@ -97,22 +97,28 @@ func checkBuildInfo(info *debug.BuildInfo, body []byte, rel string, desktop bool
 		return fmt.Errorf("%s: incorrect platform, cgo or executable package", rel)
 	}
 	ldflags, recorded := settings["-ldflags"]
-	if !recorded && settings["-trimpath"] == "true" {
-		// Go leaves -ldflags out of the build information of a -trimpath build,
-		// so the setting cannot be read. A binary built without -X main.version
-		// holds the default "dev" where the version string belongs.
-		if !bytes.Contains(body, []byte(version)) {
-			return fmt.Errorf("%s: the binary does not contain the release version %s", rel, version)
+	if recorded || settings["-trimpath"] != "true" {
+		declared := ""
+		fields := strings.Fields(ldflags)
+		for i, f := range fields {
+			if f == "-X" && i+1 < len(fields) {
+				if value, ok := strings.CutPrefix(fields[i+1], "main.version="); ok {
+					declared = value
+				}
+			}
 		}
-		return nil
-	}
-	fields := strings.Fields(ldflags)
-	for i, f := range fields {
-		if f == "-X" && i+1 < len(fields) && fields[i+1] == "main.version="+version {
-			return nil
+		if declared != version {
+			return fmt.Errorf("%s: the build does not set -X main.version=%s in its -ldflags", rel, version)
 		}
 	}
-	return fmt.Errorf("%s: the build does not set -X main.version=%s in its -ldflags", rel, version)
+	actual, err := binaryVersion(body, osName, arch)
+	if err != nil {
+		return fmt.Errorf("%s: read version: %w", rel, err)
+	}
+	if actual != version {
+		return fmt.Errorf("%s: version is %q, want %q", rel, actual, version)
+	}
+	return nil
 }
 func verifyArchive(data []byte, base, version, osName, arch string) error {
 	suffix := "-v" + version + "-" + osName + "-" + arch
