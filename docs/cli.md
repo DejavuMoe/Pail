@@ -62,6 +62,8 @@ pail tags get|set s3://bucket/key ...               # object tags, see Objects
 pail acl get|set s3://bucket/key ...                # object ACL
 pail props get|set s3://bucket/key ...              # headers and metadata
 pail storage-class s3://bucket/key CLASS [-r]       # change the storage class
+pail archive-restore s3://bucket/key [-r] [--days N] [--tier T]
+                                                    # restore from Glacier or Deep Archive
 pail multipart ls|abort s3://bucket[/prefix/] ...   # unfinished multipart uploads
 pail cloudfront ls|invalidate ...                   # CloudFront, AWS accounts only
 pail settings get [KEY] | set KEY VALUE             # settings shared with the desktop app
@@ -169,6 +171,8 @@ The account flags are the fields of the desktop app's account dialog:
 | `--role-session-name` | Session name of the assumed role. |
 | `--insecure-skip-verify` | Do not verify the server's TLS certificate. |
 | `--checksum-mode` | `auto`, `when_required` or `when_supported`. |
+| `--requester-pays` | Send requests as requester pays, for buckets whose owner bills the requester. Your account pays for the requests and the data. |
+| `--proxy` | The account's own proxy, such as `socks5://127.0.0.1:1080`, without user name or password; `direct` for no proxy; an empty value to use the proxy from the settings. |
 | `--cdn-url` | CDN base URL or template, see CDN URLs. |
 | `--cdn-bucket` | A bucket the CDN serves. Repeat it for several buckets. |
 | `--bucket` | A bucket the account shows instead of listing them, as `NAME` or `NAME/folder/`, for a key that may not list buckets. Repeat it for several buckets. The bucket opens in that folder, and `buckets` prints it as `NAME/folder/`. |
@@ -221,6 +225,7 @@ These commands act on one object. `stat`, `cat`, `tags` and `acl` take `--versio
 - `acl get` prints the owner and the grants. `acl set s3://bucket/key CANNED` applies a canned ACL: `private`, `public-read`, `public-read-write`, `authenticated-read`, `aws-exec-read`, `bucket-owner-read` or `bucket-owner-full-control`. Buckets with ACLs turned off report that ACLs are not supported.
 - `props set` changes headers and user metadata: `--content-type`, `--content-encoding`, `--content-language`, `--content-disposition`, `--cache-control`, `--expires` (an HTTP date), `--metadata KEY=VALUE` (repeatable, lower-case keys), `--delete-header NAME` and `--delete-metadata KEY`. An empty value, such as `--cache-control ""`, removes the header. `props get` is the same as `stat`.
 - `storage-class s3://bucket/key CLASS` changes the storage class, for example `STANDARD_IA` or `GLACIER_IR`.
+- `archive-restore s3://bucket/key` restores an object of the class `GLACIER` or `DEEP_ARCHIVE` for `--days` days (default 7, at most 365). `--tier` is `standard` (default), `bulk` or `expedited`; Deep Archive has no `expedited`. The command returns once the restore is requested; it takes minutes to hours. `stat` shows its progress under `restore`. Objects in other classes and objects whose restore is running are skipped. The provider charges for retrieval.
 
 `props set` and `storage-class` rewrite the object in place, so the object's modification time changes and a versioned bucket gets a new version. With `-r` they apply to every object below a prefix; that prints the scope and asks for confirmation.
 
@@ -240,6 +245,8 @@ These commands act on one object. `stat`, `cat`, `tags` and `acl` take `--versio
 | `other-limit` | Parallel other tasks, 1 to 64 |
 | `bulk-workers` | Workers inside one bulk task, 1 to 64 |
 | `part-size-mib` | Multipart part size in MiB, 5 to 5120 |
+| `upload-kibps` | Upload speed limit in KiB/s for all accounts, 0 for none |
+| `download-kibps` | Download speed limit in KiB/s for all accounts, 0 for none |
 | `download-dir` | Default download folder, empty for none |
 | `conflict` | `skip`, `overwrite`, `rename`, `newer` or `different_size` |
 | `show-versions` | `on` or `off` |
@@ -260,7 +267,7 @@ One line per finished item goes to stderr (`done`, `skipped`, `FAILED`, `UNKNOWN
 
 `rm`, `rb`, `mv` and `sync` with deletions print the scope first: account, bucket and prefix, number of objects and bytes, and for `sync` the number of deletions. Local deletions of a download-direction mirror go to the OS trash. On a terminal they ask `Proceed? [y/N]`. Without a terminal they exit 2 unless `--yes` is given. `cp` does not ask, including with `--conflict overwrite`. `sync --dry-run` prints the plan, changes nothing, asks nothing and exits 0.
 
-These commands ask in the same way: `account rm`, `sync job rm`, `multipart abort` (when something matches), `cloudfront invalidate`, `tags set --clear`, and `props set` and `storage-class` with `-r`. `vault reset` asks you to type `RESET` instead of `y`.
+These commands ask in the same way: `account rm`, `sync job rm`, `multipart abort` (when something matches), `cloudfront invalidate`, `tags set --clear`, and `props set`, `storage-class` and `archive-restore` with `-r`. `vault reset` asks you to type `RESET` instead of `y`.
 
 ## Exit codes
 

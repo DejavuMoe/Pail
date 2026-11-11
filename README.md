@@ -27,15 +27,16 @@
 
 ## Features
 
-- **Accounts.** Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. A custom endpoint, region and path-style addressing for other services, with a connection test. A key that may not list buckets names them, each with the folder it may use. One proxy (HTTP, HTTPS or SOCKS5) for all accounts.
+- **Accounts.** Access keys, AWS profiles, the default credential chain, AssumeRole or anonymous access. A custom endpoint, region and path-style addressing for other services, with a connection test. A key that may not list buckets names them, each with the folder it may use. One proxy (HTTP, HTTPS or SOCKS5) for all accounts, or a proxy of an account's own. Requester pays buckets.
 - **Browsing.** A sortable, multi-select object table that pages by itself, with breadcrumbs, filter, flat view and inspector. Preview text, images and hex. Copy keys, URIs and presigned URLs. Folder sizes on request.
-- **Transfers.** Upload and download files, folders, versions and whole buckets, or drag files into the window. Separate queues with progress, speed, cancel and retry. Five policies for files that already exist. Large files go up in parts with checksums; downloads replace the target only after they are verified.
+- **Transfers.** Upload and download files, folders, versions and whole buckets, or drag files into the window. Separate queues with progress, speed, pause, resume, cancel and retry; unfinished transfers come back paused after a restart. Upload and download speed limits. Copy and move between accounts. Five policies for files that already exist. Large files go up in parts with checksums; downloads replace the target only after they are verified.
 - **Object properties.** Headers, metadata, tags, ACL, storage class and server-side encryption (SSE-S3, SSE-KMS, SSE-C) for one object or a selection.
+- **Archives.** Restore objects from S3 Glacier Flexible Retrieval or Deep Archive for a number of days.
 - **Versions.** List versions and delete markers, download or restore older versions, undelete keys, and permanently delete only the versions you select.
 - **Buckets.** Create, empty, delete, and copy or move the contents. Edit 14 bucket settings as a form or JSON. List and abort incomplete multipart uploads. Give a bucket an alias.
 - **Sync jobs.** Upload, download or mirror a folder. Compare by size and time, size, or checksum; exclude files by pattern; review the plan first.
 - **Upload rules.** Match a bucket and key pattern to set headers, storage class and encryption, or to compress with GZIP, ZIP or AES-256 ZIP.
-- **Links.** Presigned GET and PUT URLs with an expiry, for one version or many objects. An optional CDN domain per account. CloudFront invalidations for AWS accounts.
+- **Links.** Presigned GET and PUT URLs with an expiry, for one version or many objects. An optional CDN domain per account. CloudFront invalidations, and enabling or disabling distributions, for AWS accounts.
 - **Interface.** Command palette (`Ctrl+K`, `⌘K` on macOS), keyboard shortcuts, English and Simplified Chinese, light and dark themes.
 
 ## Install
@@ -111,10 +112,10 @@ Every command, its flags, JSON output and exit codes are in the [command-line re
 
 ## Data and privacy
 
-- **Configuration** is the `Pail` folder in your user configuration directory (`%AppData%\Pail`, `~/Library/Application Support/Pail` or `~/.config/Pail`), or the directory you pass with `--config-dir`. It holds settings, accounts, sync jobs, upload rules and the names of stored secrets.
+- **Configuration** is the `Pail` folder in your user configuration directory (`%AppData%\Pail`, `~/Library/Application Support/Pail` or `~/.config/Pail`), or the directory you pass with `--config-dir`. It holds settings, accounts, sync jobs, upload rules, the transfers left unfinished at the last quit and the names of stored secrets.
 - **Secrets** (secret access keys, session tokens, proxy passwords) go to the system keychain under the name `Pail`. Without a keychain, use the encrypted vault in **Settings › Security**.
 - **Logs** are off by default. When on, `logs/pail.log` leaves out URL query strings, Authorization headers, signatures and known secrets. Passwords typed by hand are recognised only by their label, so read a log before you share it.
-- **Network:** Pail connects only to the endpoints of your accounts, through the proxy from **Settings › Network** or `HTTP_PROXY` and `HTTPS_PROXY`. It has no telemetry and does not check for updates.
+- **Network:** Pail connects only to the endpoints of your accounts, through the proxy from **Settings › Network**, an account's own proxy, or `HTTP_PROXY` and `HTTPS_PROXY`. It has no telemetry and does not check for updates.
 
 ## Tested platforms and services
 

@@ -4,6 +4,28 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Uploads and downloads can be paused and resumed, one file, a whole batch, or all at once from the transfers panel. A paused file starts again from the beginning when it resumes.
+- Transfers that are still queued, running or paused when Pail quits come back paused at the next start.
+- Copy and move between two accounts, also between different providers: paste objects copied in one account into a folder of another. The objects pass through your computer, with their headers, metadata, storage class and tags. A move deletes the source only after the copy is checked.
+- Upload and download speed limits in **Settings › Transfers**, or `pail settings set upload-kibps` and `download-kibps`, shared by all accounts.
+- **Restore from archive…** in the object menu, and `pail archive-restore`, restore objects from S3 Glacier Flexible Retrieval or Deep Archive for a number of days, with the Standard, Bulk or Expedited retrieval option. The inspector shows whether a restore is running and until when the restored copy can be read.
+- An account can send requests as requester pays, to read and write buckets whose owner bills the requester, and can use its own proxy or no proxy instead of the one in Settings. On the command line: `--requester-pays` and `--proxy`.
+- CloudFront distributions can be enabled and disabled from the CloudFront view, after a confirmation.
+- Upload rules accept a storage class that is not in the list, for services with their own class names.
+
+### Changed
+
+- Signed URLs are copied as confidential clipboard content, so Windows clipboard history, macOS Universal Clipboard and clipboard managers that honour the mark do not keep them.
+- On macOS, transfers keep their full speed while the window is hidden.
+
+### Fixed
+
+- A copy or move that failed before its first object, for example because the source account no longer existed, reported "Copied 0 items" instead of the error.
+
 ## [0.6.1] - 2026-11-11
 
 ### Fixed

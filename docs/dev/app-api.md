@@ -20,6 +20,7 @@
 | `upload-rules.json` | `[]rules.UploadRule` |
 | `mime-types.json` | `map[string]string`（扩展名 → Content-Type） |
 | `sync-jobs.json` | `[]SyncJob` |
+| `transfers.json` | 退出时未完成的逐文件传输（`SaveTransfers` 写入，`RestoreTransfers` 读取后删除；`format` 为 1），见 §4 |
 | `secret-refs.json` | 机密引用名（不含值） |
 | `vault.json` | 可选的加密保险库，见 §1.1（仅 `SecretBackend == "vault"` 时存在） |
 | `logs/pail.log` | 脱敏日志（`Settings.LogToFile` 开启时） |
@@ -119,6 +120,9 @@ type Account struct {
 	RoleSessionName    string
 	InsecureSkipVerify bool
 	ChecksumMode       string // "auto" (default) | "when_required" | "when_supported"
+	RequesterPays      bool   // x-amz-request-payer: requester on every S3 request
+	ProxyMode          string // "" = Settings.Proxy | "direct" (no proxy, environment ignored) | "custom"
+	ProxyURL           string // custom: scheme://host:port (http, https, socks5), no user info
 	CDNURL             string   // optional base URL or template; see CDN below
 	CDNBuckets         []string // buckets served by the CDN; empty = all
 	BucketAliases      map[string]string // bucket name -> display name; only SetBucketAlias changes it
@@ -212,7 +216,7 @@ func (s *Service) CreateFolder(ctx context.Context, loc Location, name string) e
 
 ```go
 type Kind int    // KindUpload, KindDownload, KindOther
-type Status int  // Queued, Running, Succeeded, Failed, Canceled, PartiallyFailed
+type Status int  // Queued, Running, Succeeded, Failed, Canceled, PartiallyFailed, Paused (not final)
 type Task struct {
 	ID, GroupID        string // GroupID ties per-file tasks of one user action
 	Kind               Kind
@@ -228,6 +232,7 @@ type Task struct {
 	Started            time.Time
 	Finished           time.Time
 	Err                string
+	Pausable           bool // a per-file upload or download
 }
 type ItemResult struct {
 	Key, VersionID string
@@ -243,7 +248,16 @@ func (s *Service) Cancel(id string) error           // queued: removed immediate
 func (s *Service) CancelGroup(groupID string) error
 func (s *Service) Retry(id string) (string, error)  // new task with failed+unprocessed items only
 func (s *Service) ClearFinished()
+func (s *Service) Pause(id string) error           // task or group; only per-file transfers pause
+func (s *Service) Resume(id string) error          // back to the end of its queue; the file starts again
+func (s *Service) PauseAll()
+func (s *Service) ResumeAll()
+func (s *Service) SaveTransfers() error            // queued, running and paused per-file transfers -> transfers.json
+func (s *Service) RestoreTransfers() (int, error)  // submits them paused, one group per saved group
 ```
+
+- 暂停：排队中的任务离开队列；运行中的任务像取消一样中断（分片上传被中止，下载的临时文件被删除），然后以 Paused 等待，`done` 不关闭，组的 `Pending` 不变。继续时从头传输该文件。暂停整组时，扫描之后提交的同组文件也以 Paused 登记，扫描在积压上限处等待（Paused 计入积压）。扫描和批量任务不受暂停影响。`Shutdown` 把 Paused 任务结束为 Canceled。
+- 跨会话：只保存不带同步前提（`Sync`）的上传和下载；恢复的下载第一次运行就重新 HEAD 对象。账户已删除的条目被丢弃。桌面程序在退出时保存、启动时恢复；命令行不读写这个文件。
 
 - 三类队列各自 FIFO，提交时登记顺序；`Limits` 下调不打断已运行的任务。
 - 一个任务占一个槽。批量服务端操作（删除、复制、改属性等）是一个 Other 任务，内部用 `BulkWorkers` 个并发 worker 处理各项。
@@ -325,6 +339,12 @@ func (s *Service) Rename(ctx context.Context, loc Location, key, newName string)
 func (s *Service) Delete(sel Selection) (taskID string, err error)
 func (s *Service) SetStorageClass(sel Selection, class string) (taskID string, err error)
 func (s *Service) SetEncryption(sel Selection, e Encryption) (taskID string, err error)
+func (s *Service) RestoreArchived(sel Selection, opt ArchiveRestoreOptions) (taskID string, err error)
+type ArchiveRestoreOptions struct {
+	Days int         // 1 to MaxRestoreDays (365)
+	Tier RestoreTier // TierStandard (default) | TierBulk | TierExpedited
+}
+func ParseRestore(v string) (RestoreState, bool) // x-amz-restore -> InProgress, Expiry
 type Encryption struct {
 	Mode     string // "none" | "AES256" | "aws:kms" | "SSE-C"
 	KMSKeyID string
@@ -436,7 +456,10 @@ func (s *Service) DistributionsForBucket(ctx context.Context, accountID, bucket 
 func (s *Service) Invalidate(ctx context.Context, accountID, distID string, paths []string) (cloud.Invalidation, error)
 func (s *Service) Invalidation(ctx context.Context, accountID, distID, id string) (cloud.Invalidation, error)
 func (s *Service) Invalidations(ctx context.Context, accountID, distID string) ([]cloud.Invalidation, error)
+func (s *Service) SetDistributionEnabled(ctx context.Context, accountID, distID string, enabled bool) (cloud.Distribution, error)
 ```
+
+`SetDistributionEnabled` 读出分配配置（GetDistributionConfig），只改 `Enabled`，带 ETag 作 `If-Match` 写回；并发修改时失败而不覆盖。界面先确认。
 
 ## 11. 测试夹具 `internal/s3test`
 

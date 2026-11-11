@@ -62,6 +62,8 @@ pail tags get|set s3://bucket/key ...               # 对象标签，见"对象"
 pail acl get|set s3://bucket/key ...                # 对象 ACL
 pail props get|set s3://bucket/key ...              # 标头和元数据
 pail storage-class s3://bucket/key CLASS [-r]       # 更改存储类型
+pail archive-restore s3://bucket/key [-r] [--days N] [--tier T]
+                                                    # 从 Glacier 或 Deep Archive 取回
 pail multipart ls|abort s3://bucket[/prefix/] ...   # 未完成的分片上传
 pail cloudfront ls|invalidate ...                   # CloudFront，仅限 AWS 账户
 pail settings get [KEY] | set KEY VALUE             # 与桌面应用共用的设置
@@ -169,6 +171,8 @@ pail account rm [NAME]
 | `--role-session-name` | 代入角色时使用的会话名称。 |
 | `--insecure-skip-verify` | 不校验服务器的 TLS 证书。 |
 | `--checksum-mode` | `auto`、`when_required` 或 `when_supported`。 |
+| `--requester-pays` | 以请求者付费方式发送请求，用于所有者设置了请求者付费的存储桶。请求和数据费用由你的账户支付。 |
+| `--proxy` | 账户自己的代理，例如 `socks5://127.0.0.1:1080`，不含用户名和密码；`direct` 表示不使用代理；空值表示使用设置中的代理。 |
 | `--cdn-url` | CDN 基础 URL 或模板，见"CDN URL"。 |
 | `--cdn-bucket` | CDN 所服务的存储桶，多个存储桶就重复使用。 |
 | `--bucket` | 不经列出、直接显示的存储桶，写成 `NAME` 或 `NAME/folder/`，用于没有列出存储桶权限的密钥。多个存储桶就重复使用。该存储桶在这个文件夹中打开，`buckets` 也按 `NAME/folder/` 输出。 |
@@ -221,6 +225,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 - `acl get` 输出所有者和授权。`acl set s3://bucket/key CANNED` 应用预设 ACL：`private`、`public-read`、`public-read-write`、`authenticated-read`、`aws-exec-read`、`bucket-owner-read` 或 `bucket-owner-full-control`。关闭了 ACL 的存储桶会报告不支持 ACL。
 - `props set` 修改标头和用户元数据：`--content-type`、`--content-encoding`、`--content-language`、`--content-disposition`、`--cache-control`、`--expires`（HTTP 日期）、`--metadata KEY=VALUE`（可重复，键用小写）、`--delete-header NAME` 和 `--delete-metadata KEY`。给出空值，例如 `--cache-control ""`，会删除该标头。`props get` 与 `stat` 相同。
 - `storage-class s3://bucket/key CLASS` 更改存储类型，例如 `STANDARD_IA` 或 `GLACIER_IR`。
+- `archive-restore s3://bucket/key` 把存储类型为 `GLACIER` 或 `DEEP_ARCHIVE` 的对象取回 `--days` 天（默认 7，最多 365）。`--tier` 为 `standard`（默认）、`bulk` 或 `expedited`；Deep Archive 不支持 `expedited`。命令在提交取回请求后返回，取回本身需要几分钟到几小时，`stat` 的 `restore` 显示进度。其他存储类型的对象和正在取回的对象会跳过。取回由服务商另行收费。
 
 `props set` 和 `storage-class` 会原地重写对象，因此对象的修改时间会变化，开启版本控制的存储桶会多出一个新版本。加上 `-r` 时，它们作用于前缀下的所有对象，并会先输出范围、要求确认。
 
@@ -240,6 +245,8 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 | `other-limit` | 其他任务的并行数，1 到 64 |
 | `bulk-workers` | 一个批量任务内的工作线程数，1 到 64 |
 | `part-size-mib` | 分片大小，单位 MiB，5 到 5120 |
+| `upload-kibps` | 上传限速，单位 KiB/s，所有账户共用，0 表示不限 |
+| `download-kibps` | 下载限速，单位 KiB/s，所有账户共用，0 表示不限 |
 | `download-dir` | 默认下载文件夹，留空表示没有 |
 | `conflict` | `skip`、`overwrite`、`rename`、`newer` 或 `different_size` |
 | `show-versions` | `on` 或 `off` |
@@ -260,7 +267,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 
 `rm`、`rb`、`mv`，以及会删除内容的 `sync`，会先输出范围：账户、存储桶和前缀、对象数和字节数，`sync` 还有删除数量。下载方向镜像的本地删除会进入系统回收站。在终端中，它们会询问 `Proceed? [y/N]`；没有终端时，除非给出 `--yes`，否则以 2 退出。`cp` 不需要确认，包括 `--conflict overwrite`。`sync --dry-run` 输出计划，不做修改，也不询问，以 0 退出。
 
-下列命令以同样的方式询问：`account rm`、`sync job rm`、`multipart abort`（有匹配项时）、`cloudfront invalidate`、`tags set --clear`，以及带 `-r` 的 `props set` 和 `storage-class`。`vault reset` 要求输入 `RESET`，而不是 `y`。
+下列命令以同样的方式询问：`account rm`、`sync job rm`、`multipart abort`（有匹配项时）、`cloudfront invalidate`、`tags set --clear`，以及带 `-r` 的 `props set`、`storage-class` 和 `archive-restore`。`vault reset` 要求输入 `RESET`，而不是 `y`。
 
 ## 退出码
 
