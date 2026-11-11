@@ -3,6 +3,8 @@ package app
 import (
 	"bytes"
 	"context"
+	"crypto/sha256"
+	"encoding/hex"
 	"fmt"
 	"io"
 	"os"
@@ -104,7 +106,7 @@ func (s *Service) uploadScanSpec(group string, dest Location, roots []scanRoot, 
 	)
 	spec := taskSpec{
 		Kind: KindOther, Group: group, Title: scanTitle(verb, len(roots)),
-		Detail: "→ s3://" + dest.Bucket + "/" + dest.Prefix,
+		Detail: "→ s3://" + dest.Bucket + "/" + dest.Prefix, RetryEmpty: true,
 	}
 	spec.Work = func(ctx context.Context, r *run) error {
 		ls := &localScan{s: s, r: r, ctx: ctx, group: group, dest: dest, policy: policy, noRules: noRules, retry: map[string]scanRoot{}}
@@ -127,6 +129,9 @@ func (s *Service) uploadScanSpec(group string, dest Location, roots []scanRoot, 
 		return nil
 	}
 	spec.Retry = func(failed []ItemResult) (taskSpec, bool) {
+		if len(failed) == 0 {
+			return s.uploadScanSpec(s.newGroupID(), dest, roots, policy, noRules, "Rescan"), true
+		}
 		holdMu.Lock()
 		prev := last
 		holdMu.Unlock()
@@ -146,7 +151,7 @@ func (s *Service) uploadScanSpec(group string, dest Location, roots []scanRoot, 
 		if len(next) == 0 {
 			return taskSpec{}, false
 		}
-		return s.uploadScanSpec(group, dest, next, policy, noRules, "Rescan"), true
+		return s.uploadScanSpec(s.newGroupID(), dest, next, policy, noRules, "Rescan"), true
 	}
 	return spec
 }
@@ -263,6 +268,11 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 		}
 		spooled, body, bodySize = sp, sp, n
 		r.SetTotal(n, 1)
+		if j.Sync != nil && in.Metadata[syMetaSHA] != "" {
+			if in.Metadata[syMetaBodySHA], err = syBodySHA(ctx, sp); err != nil {
+				return classify(op, err)
+			}
+		}
 		return nil
 	}
 	// A size comparison needs the artifact size, so compress first for it; the
@@ -279,14 +289,49 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 		blind    int   // > 0: the destination cannot be inspected (HEAD denied); the number of the current create-only attempt
 		blindErr error // the denial that led there
 	)
+	sameBody := func(key string, h remoteHead) (bool, error) {
+		if _, err := body.Seek(0, io.SeekStart); err != nil {
+			return false, err
+		}
+		local, err := syBodySHA(ctx, body)
+		if err != nil {
+			return false, err
+		}
+		remote, err := syRemoteBodySHA(ctx, c, j.Dest.Bucket, key, h.etag)
+		return err == nil && remote == local, err
+	}
 	// identical reports whether an existing destination already holds this very
-	// file: same artifact size and the same recorded modification time. The
+	// file: same artifact size, modification time and verified content. The
 	// rename policy never numbers such a file again (retries, rescans).
-	identical := func(h remoteHead) (bool, error) {
+	identical := func(key string, h remoteHead) (bool, error) {
 		if err := compress(); err != nil {
 			return false, err
 		}
-		return h.size == bodySize && h.meta[mtimeMetaKey] == in.Metadata[mtimeMetaKey], nil
+		if h.size != bodySize || h.meta[mtimeMetaKey] != in.Metadata[mtimeMetaKey] {
+			return false, nil
+		}
+		if comp == nil || comp.PasswordRef == "" || h.meta[compressionMetaKey] != "aes-zip" {
+			return sameBody(key, h)
+		}
+		// AES ZIP has a random salt, so a rescan verifies the decrypted bytes.
+		tmp, err := os.CreateTemp("", spoolPrefix+"*"+spoolSuffix)
+		if err != nil {
+			return false, err
+		}
+		defer func() { tmp.Close(); os.Remove(tmp.Name()) }()
+		get := &s3.GetObjectInput{Bucket: aws.String(j.Dest.Bucket), Key: aws.String(key), IfMatch: aws.String(h.etag)}
+		if _, err := c.Download(ctx, get, tmp, storage.TransferOptions{Size: h.size}); err != nil {
+			return false, err
+		}
+		digest := sha256.New()
+		if err := s.decodeInto(ctx, tmp, h.size, digest, DecodeZip, comp.PasswordRef, size); err != nil {
+			return false, err
+		}
+		if _, err := f.Seek(0, io.SeekStart); err != nil {
+			return false, err
+		}
+		local, err := syBodySHA(ctx, f)
+		return err == nil && local == hex.EncodeToString(digest.Sum(nil)), err
 	}
 	resolve := func() (conflictDecision, error) {
 		if j.Sync != nil {
@@ -330,7 +375,8 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 				return false
 			}
 		}
-		return true
+		same, err := sameBody(key, h)
+		return err == nil && same
 	}
 
 	partSize := s.partSize()
@@ -378,13 +424,13 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 			return nil
 		}
 		cerr := classify(op, err)
-		if !IsKind(cerr, ErrConflict) {
-			return cerr
-		}
-		if dec.CreateOnly && replayed(dec.Key) {
+		if dec.CreateOnly && (IsKind(cerr, ErrConflict) || storage.ErrorCode(err) == "NoSuchUpload") && replayed(dec.Key) {
 			r.SetBytes(bodySize)
 			r.Item(ItemResult{Key: dec.Key, Status: ItemSucceeded, Err: "committed; response was retried"})
 			return nil
+		}
+		if !IsKind(cerr, ErrConflict) {
+			return cerr
 		}
 		switch {
 		case blind > 0 && j.Policy == ConflictSkip:
@@ -448,6 +494,7 @@ func (s *Service) writeCreateOnly(accountID string, denied error, write func(ifN
 type remoteHead struct {
 	exists bool
 	size   int64
+	etag   string
 	meta   map[string]string // lower-case keys
 }
 
@@ -464,14 +511,14 @@ func headRemoteMeta(ctx context.Context, c *storage.Client, bucket, key string) 
 	for k, v := range out.Metadata {
 		meta[strings.ToLower(k)] = v
 	}
-	return remoteHead{exists: true, size: aws.ToInt64(out.ContentLength), meta: meta}, nil
+	return remoteHead{exists: true, size: aws.ToInt64(out.ContentLength), etag: aws.ToString(out.ETag), meta: meta}, nil
 }
 
 // resolveRenameIdentity is the rename policy of resolveRemoteConflict made
 // identity-aware: the first free "name (n).ext" is chosen, but a name that is
 // already taken by the identical file ends the search with a skip, so that
 // retrying a scan never creates "name (1).ext" copies of what it uploaded.
-func resolveRenameIdentity(ctx context.Context, c *storage.Client, bucket, key string, identical func(remoteHead) (bool, error)) (conflictDecision, error) {
+func resolveRenameIdentity(ctx context.Context, c *storage.Client, bucket, key string, identical func(string, remoteHead) (bool, error)) (conflictDecision, error) {
 	for n := 0; n <= maxRenameAttempts; n++ {
 		cand := key
 		if n > 0 {
@@ -484,7 +531,7 @@ func resolveRenameIdentity(ctx context.Context, c *storage.Client, bucket, key s
 		if !h.exists {
 			return conflictDecision{Key: cand, CreateOnly: true}, nil
 		}
-		same, err := identical(h)
+		same, err := identical(cand, h)
 		if err != nil {
 			return conflictDecision{}, err
 		}

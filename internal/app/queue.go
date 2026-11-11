@@ -68,6 +68,9 @@ type taskSpec struct {
 	// a finished task that reported items. Optional. Tasks that never reported
 	// items are retried by running the same spec again.
 	Retry func(failed []ItemResult) (taskSpec, bool)
+	// RetryEmpty opts scanners into Retry(nil), rebuilding their child group
+	// even when they failed or were canceled before reporting an item.
+	RetryEmpty bool
 }
 
 // run is the handle Work uses to report progress. All methods are safe for
@@ -740,6 +743,8 @@ func (s *Service) Retry(id string) (string, error) {
 			}
 			return "", invalid(op, "no failed or unprocessed items to retry")
 		}
+	}
+	if hadItems || spec.RetryEmpty {
 		if spec.Retry == nil {
 			return "", invalid(op, "this kind of task cannot be retried")
 		}
@@ -751,16 +756,19 @@ func (s *Service) Retry(id string) (string, error) {
 	if next.Work == nil {
 		return "", invalid(op, "task cannot be retried")
 	}
-	next.Kind, next.Group = kind, group
+	next.Kind = kind
+	if next.Group == "" {
+		next.Group = group
+	}
 	if next.Title == "" {
 		next.Title = title
 	}
 	if next.Detail == "" {
 		next.Detail = detail
 	}
-	if group != "" { // an explicit retry lifts an earlier CancelGroup
+	if next.Group != "" { // an explicit retry lifts cancellation of its own group
 		q.mu.Lock()
-		delete(q.canceledGroups, group)
+		delete(q.canceledGroups, next.Group)
 		q.mu.Unlock()
 	}
 	return s.submit(next), nil

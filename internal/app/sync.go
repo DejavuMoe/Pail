@@ -474,6 +474,9 @@ func (p *syPlanner) gather(ctx context.Context, items []*syItem) error {
 		it := work[i]
 		if it.needHead {
 			it.meta, it.metaErr = syHead(ctx, p.c, p.job.Remote.Bucket, it.r.Key)
+			if !p.cmp.Upload && it.needHash && it.metaErr == nil && it.meta[compressionMetaKey] != "" && it.meta[syMetaBodySHA] == "" {
+				it.meta[syMetaBodySHA], it.metaErr = syRemoteBodySHA(ctx, p.c, p.job.Remote.Bucket, it.r.Key, it.r.ETag)
+			}
 		}
 		if it.needHash {
 			it.sha, it.hashErr = syHashFile(ctx, *it.l)

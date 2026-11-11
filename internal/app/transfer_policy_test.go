@@ -343,7 +343,7 @@ func TestUploadRetryAfterCancelNoDuplicates(t *testing.T) {
 	watchGroup(t, e.s, tk.GroupID, 60*time.Second)
 	skipped := 0
 	for _, x := range e.s.Tasks() {
-		if x.GroupID == g && x.Kind == KindUpload {
+		if x.GroupID == tk.GroupID && x.Kind == KindUpload {
 			for _, it := range e.s.TaskItems(x.ID) {
 				if it.Status == ItemSkipped && it.Err == "identical file exists" {
 					skipped++

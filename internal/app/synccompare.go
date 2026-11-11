@@ -1,26 +1,36 @@
 package app
 
 import (
+	"context"
+	"crypto/sha256"
+	"encoding/hex"
+	"io"
 	"strconv"
 	"strings"
 	"time"
+
+	"github.com/aws/aws-sdk-go-v2/aws"
+	"github.com/aws/aws-sdk-go-v2/service/s3"
+
+	"github.com/DejavuMoe/Pail/internal/storage"
 )
 
-// This file holds the pure comparison rules of a sync preview (no I/O), so that
-// they can be read and tested on their own.
+// This file holds the comparison rules and body digest helpers of a sync preview.
 //
 // Logical metadata that sync uploads write on the objects:
 //
 //	pail-mtime   local modification time, RFC 3339 with nanoseconds (all uploads)
 //	pail-size    logical size before compression (sync uploads)
 //	pail-sha256  hex SHA-256 of the local file (sync uploads with Compare=checksum)
+//	pail-body-sha256  hex SHA-256 of the stored bytes (compressed checksum uploads)
 //
 // ETags are never used as content hashes: a multipart ETag is not a digest of
 // the content, and SSE-KMS / SSE-C ETags are not MD5 either. Objects written by
 // other tools therefore compare as "no checksum metadata" in checksum mode.
 const (
-	syMetaSize = "pail-size"
-	syMetaSHA  = "pail-sha256"
+	syMetaSize    = "pail-size"
+	syMetaSHA     = "pail-sha256"
+	syMetaBodySHA = "pail-body-sha256"
 
 	// syTimeSlack is the tolerance for "remote is newer" in the download
 	// direction: downloaded files are stamped with the remote time, and some file
@@ -124,7 +134,7 @@ func syDecideUp(c syCmp, l *syLocalInfo, r *syRemoteInfo) (bool, string) {
 	case syCmpSize:
 		return false, "unchanged"
 	case syCmpChecksum:
-		return syChecksumDiffers(r.Meta, l.SHA)
+		return syChecksumDiffers(r.Meta[syMetaSHA], l.SHA)
 	}
 	if mt, ok := syMTime(r.Meta); ok {
 		switch {
@@ -149,7 +159,11 @@ func syDecideDown(c syCmp, l *syLocalInfo, r *syRemoteInfo) (bool, string) {
 	case syCmpSize:
 		return false, "unchanged"
 	case syCmpChecksum:
-		return syChecksumDiffers(r.Meta, l.SHA)
+		want := r.Meta[syMetaSHA]
+		if r.Meta[compressionMetaKey] != "" {
+			want = r.Meta[syMetaBodySHA]
+		}
+		return syChecksumDiffers(want, l.SHA)
 	}
 	if syRemoteTime(r).After(l.MTime.Add(syTimeSlack)) {
 		return true, "newer"
@@ -157,8 +171,8 @@ func syDecideDown(c syCmp, l *syLocalInfo, r *syRemoteInfo) (bool, string) {
 	return false, "unchanged"
 }
 
-func syChecksumDiffers(meta map[string]string, local string) (bool, string) {
-	want := strings.ToLower(strings.TrimSpace(meta[syMetaSHA]))
+func syChecksumDiffers(want, local string) (bool, string) {
+	want = strings.ToLower(strings.TrimSpace(want))
 	switch {
 	case want == "":
 		return true, "no checksum metadata"
@@ -166,6 +180,31 @@ func syChecksumDiffers(meta map[string]string, local string) (bool, string) {
 		return true, "checksum differs"
 	}
 	return false, "unchanged"
+}
+
+func syBodySHA(ctx context.Context, body io.Reader) (string, error) {
+	h := sha256.New()
+	if _, err := io.Copy(h, decodeCtxReader{ctx, body}); err != nil {
+		return "", err
+	}
+	return hex.EncodeToString(h.Sum(nil)), nil
+}
+
+// Legacy compressed objects only record the logical digest; raw downloads need
+// the stored digest, pinned to the version the preview or replay check inspected.
+func syRemoteBodySHA(ctx context.Context, c *storage.Client, bucket, key, etag string) (string, error) {
+	if etag == "" {
+		return "", invalid("Checksum", "the object has no ETag to guard the read")
+	}
+	out, err := c.S3().GetObject(ctx, &s3.GetObjectInput{Bucket: aws.String(bucket), Key: aws.String(key), IfMatch: aws.String(etag)})
+	if err != nil {
+		return "", err
+	}
+	defer out.Body.Close()
+	if !syEtagEqual(aws.ToString(out.ETag), etag) {
+		return "", opErr("Checksum", ErrConflict, "the object changed while its checksum was being read")
+	}
+	return syBodySHA(ctx, out.Body)
 }
 
 // syMTime parses pail-mtime.

@@ -58,8 +58,10 @@ func (s *Service) RunSync(p SyncPreview) (string, error) {
 		if a.Op == "skip" {
 			continue
 		}
-		if _, err := safepath.Join(job.LocalDir, a.Path); err != nil {
-			return "", invalid(op, "action %q: %v", a.Path, err)
+		if !up || a.Op != "delete" {
+			if _, err := safepath.Join(job.LocalDir, a.Path); err != nil {
+				return "", invalid(op, "action %q: %v", a.Path, err)
+			}
 		}
 		switch a.Op {
 		case "upload":
@@ -82,7 +84,7 @@ func (s *Service) RunSync(p SyncPreview) (string, error) {
 			}
 			downs = append(downs, a)
 		case "delete":
-			if up && (!strings.HasPrefix(a.Key, prefix) || len(a.Key) == len(prefix) || strings.HasSuffix(a.Key, "/")) {
+			if up && (a.Key != prefix+a.Path || len(a.Key) <= len(prefix) || len(a.Key) > maxKeyBytes || strings.HasSuffix(a.Key, "/")) {
 				return "", invalid(op, "delete action %q has the key %q outside the sync prefix", a.Path, a.Key)
 			}
 			if !up && !a.LocalExists {

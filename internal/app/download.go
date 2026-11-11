@@ -159,7 +159,7 @@ func (s *Service) downloadScanSpec(group string, req DownloadRequest, verb strin
 		last   *remoteScan
 	)
 	spec := taskSpec{
-		Kind: KindOther, Group: group,
+		Kind: KindOther, Group: group, RetryEmpty: true,
 		Title:  fmt.Sprintf("%s %d selection(s) for download", verb, len(units)),
 		Detail: "s3://" + req.Source.Bucket + "/" + req.Source.Prefix + " → " + req.DestDir,
 	}
@@ -191,6 +191,9 @@ func (s *Service) downloadScanSpec(group string, req DownloadRequest, verb strin
 		return nil
 	}
 	spec.Retry = func(failed []ItemResult) (taskSpec, bool) {
+		if len(failed) == 0 {
+			return s.downloadScanSpec(s.newGroupID(), req, "Rescan"), true
+		}
 		holdMu.Lock()
 		prev := last
 		holdMu.Unlock()
@@ -220,7 +223,7 @@ func (s *Service) downloadScanSpec(group string, req DownloadRequest, verb strin
 		if !next.WholeBucket && len(next.Keys) == 0 && len(next.Versions) == 0 {
 			return taskSpec{}, false
 		}
-		return s.downloadScanSpec(group, next, "Rescan"), true
+		return s.downloadScanSpec(s.newGroupID(), next, "Rescan"), true
 	}
 	return spec
 }
@@ -330,15 +333,22 @@ func (ds *remoteScan) object(o bkObj, versioned bool) error {
 		return nil // the selected folder's own placeholder object
 	}
 	if strings.HasSuffix(rel, "/") {
+		u := scanUnit{Item: o.Key, Key: o.Key, Folder: true}
+		if versioned {
+			u.VersionID = o.VersionID
+		}
 		dir, err := localJoin("Download", ds.req.DestDir, strings.TrimSuffix(rel, "/"))
 		if err == nil {
 			err = os.MkdirAll(dir, 0o755)
+			if err != nil {
+				ds.remember(u)
+			}
 		}
 		if err != nil {
-			ds.r.Item(ItemResult{Key: o.Key, Status: ItemFailed, Err: err.Error()})
+			ds.r.Item(ItemResult{Key: o.Key, VersionID: u.VersionID, Status: ItemFailed, Err: err.Error()})
 			return nil
 		}
-		ds.r.Item(ItemResult{Key: o.Key, Status: ItemSucceeded})
+		ds.r.Item(ItemResult{Key: o.Key, VersionID: u.VersionID, Status: ItemSucceeded})
 		return nil
 	}
 	if versioned {
