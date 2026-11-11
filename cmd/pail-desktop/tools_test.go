@@ -2,6 +2,7 @@ package main
 
 import (
 	"context"
+	"fmt"
 	"math"
 	"net/http"
 	"os"
@@ -338,10 +339,11 @@ func TestCloudFrontNeedsAnAWSAccount(t *testing.T) {
 }
 
 type fakeCF struct {
-	mu     sync.Mutex
-	status string
-	made   bool
-	paths  [][]string
+	mu      sync.Mutex
+	status  string
+	made    bool
+	paths   [][]string
+	toggled []string
 }
 
 var cfDists = []cloud.Distribution{
@@ -373,6 +375,13 @@ func (f *fakeCF) Invalidations(_ context.Context, _, dist string) ([]cloud.Inval
 		out = append([]cloud.Invalidation{{ID: "INEW1", DistributionID: dist, Status: f.status, CreateTime: time.Now()}}, out...)
 	}
 	return out, nil
+}
+
+func (f *fakeCF) SetDistributionEnabled(_ context.Context, _, dist string, enabled bool) (cloud.Distribution, error) {
+	f.mu.Lock()
+	defer f.mu.Unlock()
+	f.toggled = append(f.toggled, fmt.Sprintf("%s=%v", dist, enabled))
+	return cloud.Distribution{ID: dist, Enabled: enabled, Status: "InProgress"}, nil
 }
 
 func (f *fakeCF) set(status string) {
@@ -862,5 +871,33 @@ func TestSegmentedControlMatchesTheControlHeight(t *testing.T) {
 	}
 	if RadiusRow != RadiusPopover-popoverPad {
 		t.Errorf("a popover row's radius is %d, want the panel's %d less its inset %d", RadiusRow, RadiusPopover, popoverPad)
+	}
+}
+
+func TestCloudFrontDisableAsksFirst(t *testing.T) {
+	h := newHarness(t, "light")
+	fake := &fakeCF{}
+	h.a.tl.cf.api = fake
+	h.a.accounts = []Account{{ID: "aws1", Name: "Production AWS", Provider: core.ProviderAWS}}
+	h.a.accountID = "aws1"
+	h.a.scope = Scope{AccountID: "aws1", Bucket: "acme-assets"}
+	h.openToolView("cloudfront")
+	cf := &h.a.tl.cf
+	h.waitFor("distributions", func() bool { return len(cf.invs) == 1 })
+	h.mustClick("Disable")
+	h.mustHave("Disable distribution", "Production AWS", "E1ABC", "d1.cloudfront.net")
+	fake.mu.Lock()
+	n := len(fake.toggled)
+	fake.mu.Unlock()
+	if n != 0 {
+		t.Fatal("changed before the confirmation")
+	}
+	h.a.confirm.run()
+	h.a.confirm.open = false
+	h.waitToast("E1ABC is being disabled")
+	fake.mu.Lock()
+	defer fake.mu.Unlock()
+	if len(fake.toggled) != 1 || fake.toggled[0] != "E1ABC=false" {
+		t.Fatalf("%v", fake.toggled)
 	}
 }

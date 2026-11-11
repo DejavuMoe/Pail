@@ -268,3 +268,39 @@ func TestNewRequiresCredentials(t *testing.T) {
 		t.Fatal("implicit credentials accepted")
 	}
 }
+
+func TestSetDistributionEnabled(t *testing.T) {
+	const cfg = `<DistributionConfig><CallerReference>ref</CallerReference><Comment>main</Comment><Enabled>%s</Enabled><Origins><Quantity>1</Quantity><Items><Origin><Id>o1</Id><DomainName>assets.s3.amazonaws.com</DomainName></Origin></Items></Origins><DefaultCacheBehavior><TargetOriginId>o1</TargetOriginId><ViewerProtocolPolicy>allow-all</ViewerProtocolPolicy></DefaultCacheBehavior></DistributionConfig>`
+	var put string
+	c := mockClient(t, func(w http.ResponseWriter, r *http.Request) {
+		switch {
+		case r.Method == "GET" && strings.HasSuffix(r.URL.Path, "/distribution/E1/config"):
+			w.Header().Set("ETag", "E-TAG-1")
+			xml(w, fmt.Sprintf(cfg, "true"))
+		case r.Method == "PUT" && strings.HasSuffix(r.URL.Path, "/distribution/E1/config"):
+			if r.Header.Get("If-Match") != "E-TAG-1" {
+				t.Errorf("If-Match %q", r.Header.Get("If-Match"))
+			}
+			b, _ := io.ReadAll(r.Body)
+			put = string(b)
+			w.Header().Set("ETag", "E-TAG-2")
+			xml(w, `<Distribution><Id>E1</Id><Status>InProgress</Status><DomainName>d1.cloudfront.net</DomainName>`+fmt.Sprintf(cfg, "false")+`</Distribution>`)
+		default:
+			t.Errorf("unexpected %s %s", r.Method, r.URL)
+			w.WriteHeader(400)
+		}
+	})
+	d, err := c.SetDistributionEnabled(context.Background(), "E1", false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	if !strings.Contains(put, "<Enabled>false</Enabled>") || !strings.Contains(put, "<Comment>main</Comment>") {
+		t.Fatalf("written config %s", put)
+	}
+	if d.Enabled || d.Status != "InProgress" || d.DomainName != "d1.cloudfront.net" || len(d.Origins) != 1 {
+		t.Fatalf("%+v", d)
+	}
+	if _, err := c.SetDistributionEnabled(context.Background(), "../x", true); err == nil {
+		t.Fatal("bad id accepted")
+	}
+}

@@ -3112,6 +3112,46 @@ func (msgs Messages) CloudfrontCreated() string {
 	return Catalog.Format(msgs.locale, "cloudfrontCreated", nil)
 }
 
+// CloudfrontDisable says "Disable"
+// in the language the app shows.
+func CloudfrontDisable() string { return In(i18n.Locale()).CloudfrontDisable() }
+
+// CloudfrontDisable says "Disable"
+// in the language of msgs.
+func (msgs Messages) CloudfrontDisable() string {
+	return Catalog.Format(msgs.locale, "cloudfrontDisable", nil)
+}
+
+// CloudfrontDisableMessage says "Once CloudFront has deployed the change, which usually takes a few minutes, the domain stops serving content. The dis…"
+// in the language the app shows.
+func CloudfrontDisableMessage() string { return In(i18n.Locale()).CloudfrontDisableMessage() }
+
+// CloudfrontDisableMessage says "Once CloudFront has deployed the change, which usually takes a few minutes, the domain stops serving content. The dis…"
+// in the language of msgs.
+func (msgs Messages) CloudfrontDisableMessage() string {
+	return Catalog.Format(msgs.locale, "cloudfrontDisableMessage", nil)
+}
+
+// CloudfrontDisableTitle says "Disable distribution"
+// in the language the app shows.
+func CloudfrontDisableTitle() string { return In(i18n.Locale()).CloudfrontDisableTitle() }
+
+// CloudfrontDisableTitle says "Disable distribution"
+// in the language of msgs.
+func (msgs Messages) CloudfrontDisableTitle() string {
+	return Catalog.Format(msgs.locale, "cloudfrontDisableTitle", nil)
+}
+
+// CloudfrontDisabledToast says "{id} is being disabled"
+// in the language the app shows.
+func CloudfrontDisabledToast(id string) string { return In(i18n.Locale()).CloudfrontDisabledToast(id) }
+
+// CloudfrontDisabledToast says "{id} is being disabled"
+// in the language of msgs.
+func (msgs Messages) CloudfrontDisabledToast(id string) string {
+	return Catalog.Format(msgs.locale, "cloudfrontDisabledToast", map[string]any{"id": id})
+}
+
 // CloudfrontDistribution says "Distribution"
 // in the language the app shows.
 func CloudfrontDistribution() string { return In(i18n.Locale()).CloudfrontDistribution() }
@@ -3140,6 +3180,46 @@ func CloudfrontDomain() string { return In(i18n.Locale()).CloudfrontDomain() }
 // in the language of msgs.
 func (msgs Messages) CloudfrontDomain() string {
 	return Catalog.Format(msgs.locale, "cloudfrontDomain", nil)
+}
+
+// CloudfrontEnable says "Enable"
+// in the language the app shows.
+func CloudfrontEnable() string { return In(i18n.Locale()).CloudfrontEnable() }
+
+// CloudfrontEnable says "Enable"
+// in the language of msgs.
+func (msgs Messages) CloudfrontEnable() string {
+	return Catalog.Format(msgs.locale, "cloudfrontEnable", nil)
+}
+
+// CloudfrontEnableMessage says "Once CloudFront has deployed the change, which usually takes a few minutes, the domain serves content again."
+// in the language the app shows.
+func CloudfrontEnableMessage() string { return In(i18n.Locale()).CloudfrontEnableMessage() }
+
+// CloudfrontEnableMessage says "Once CloudFront has deployed the change, which usually takes a few minutes, the domain serves content again."
+// in the language of msgs.
+func (msgs Messages) CloudfrontEnableMessage() string {
+	return Catalog.Format(msgs.locale, "cloudfrontEnableMessage", nil)
+}
+
+// CloudfrontEnableTitle says "Enable distribution"
+// in the language the app shows.
+func CloudfrontEnableTitle() string { return In(i18n.Locale()).CloudfrontEnableTitle() }
+
+// CloudfrontEnableTitle says "Enable distribution"
+// in the language of msgs.
+func (msgs Messages) CloudfrontEnableTitle() string {
+	return Catalog.Format(msgs.locale, "cloudfrontEnableTitle", nil)
+}
+
+// CloudfrontEnabledToast says "{id} is being enabled"
+// in the language the app shows.
+func CloudfrontEnabledToast(id string) string { return In(i18n.Locale()).CloudfrontEnabledToast(id) }
+
+// CloudfrontEnabledToast says "{id} is being enabled"
+// in the language of msgs.
+func (msgs Messages) CloudfrontEnabledToast(id string) string {
+	return Catalog.Format(msgs.locale, "cloudfrontEnabledToast", map[string]any{"id": id})
 }
 
 // CloudfrontInvListFailed says "Could not list invalidations: {detail}"
@@ -3328,6 +3408,18 @@ func CloudfrontSelect() string { return In(i18n.Locale()).CloudfrontSelect() }
 // in the language of msgs.
 func (msgs Messages) CloudfrontSelect() string {
 	return Catalog.Format(msgs.locale, "cloudfrontSelect", nil)
+}
+
+// CloudfrontToggleFailed says "Could not change the distribution: {detail}"
+// in the language the app shows.
+func CloudfrontToggleFailed(detail string) string {
+	return In(i18n.Locale()).CloudfrontToggleFailed(detail)
+}
+
+// CloudfrontToggleFailed says "Could not change the distribution: {detail}"
+// in the language of msgs.
+func (msgs Messages) CloudfrontToggleFailed(detail string) string {
+	return Catalog.Format(msgs.locale, "cloudfrontToggleFailed", map[string]any{"detail": detail})
 }
 
 // CloudfrontWholeBucket says "Invalidate whole bucket"

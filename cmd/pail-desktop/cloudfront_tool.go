@@ -22,6 +22,7 @@ type cfAPI interface {
 	DistributionsForBucket(ctx context.Context, accountID, bucket string) ([]cloud.Distribution, error)
 	Invalidate(ctx context.Context, accountID, distID string, paths []string) (cloud.Invalidation, error)
 	Invalidations(ctx context.Context, accountID, distID string) ([]cloud.Invalidation, error)
+	SetDistributionEnabled(ctx context.Context, accountID, distID string, enabled bool) (cloud.Distribution, error)
 }
 
 // cfPollEvery is how often the invalidations of the chosen distribution are
@@ -435,7 +436,16 @@ func (a *app) cfView(c *ui.Context) {
 				ui.Spinner(c).Size(14, 14)
 			}
 			ui.Spacer(c)
-			_, ok := cf.selectedDist()
+			d, ok := cf.selectedDist()
+			if ok {
+				label := locales.CloudfrontDisable()
+				if !d.Enabled {
+					label = locales.CloudfrontEnable()
+				}
+				if ghostButton(c, icons.Get("power"), label, label, cf.load).Clicked() {
+					a.cfConfirmToggle(d)
+				}
+			}
 			if secondaryButton(c, locales.CloudfrontNew(), !ok).Clicked() {
 				a.cfOpenDialog("")
 			}
@@ -480,6 +490,40 @@ func (a *app) cfView(c *ui.Context) {
 			a.cfInvalidations(c)
 		}
 	})
+}
+
+// cfConfirmToggle asks before it enables or disables a distribution: the
+// change reaches every visitor of its domain.
+func (a *app) cfConfirmToggle(d cloud.Distribution) {
+	enable := !d.Enabled
+	title, action, msg := locales.CloudfrontDisableTitle(), locales.CloudfrontDisable(), locales.CloudfrontDisableMessage()
+	if enable {
+		title, action, msg = locales.CloudfrontEnableTitle(), locales.CloudfrontEnable(), locales.CloudfrontEnableMessage()
+	}
+	acct, api := a.accountID, a.cfService()
+	a.confirm = confirmState{
+		open: true, title: title, danger: !enable, action: action, message: msg,
+		rows: []KV{{locales.CommonAccount(), a.account().Name}, {locales.CloudfrontDistribution(), d.ID}, {locales.CloudfrontDomain(), d.DomainName}},
+		run: func() {
+			a.bg(func() func() {
+				_, err := api.SetDistributionEnabled(a.ctx, acct, d.ID, enable)
+				return func() {
+					if err != nil {
+						a.toast(locales.CloudfrontToggleFailed(humanError(err)))
+						return
+					}
+					if enable {
+						a.toast(locales.CloudfrontEnabledToast(d.ID))
+					} else {
+						a.toast(locales.CloudfrontDisabledToast(d.ID))
+					}
+					if a.accountID == acct {
+						a.cfLoad()
+					}
+				}
+			})
+		},
+	}
 }
 
 func (a *app) cfInvalidations(c *ui.Context) {
