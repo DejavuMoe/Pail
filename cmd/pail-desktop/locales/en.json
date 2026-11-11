@@ -589,6 +589,7 @@
   "flatListLabel": "Flat",
   "flatListTip": "List every object below this folder, sub-folders included, as one flat list. Folders are not shown.",
   "flatListUnavailable": "Not available while deleted items are shown",
+  "powerTransferring": "Transferring files",
   "scopeCountCountUnavailable": "Count unavailable",
   "scopeCountCounting": "Counting…",
   "scopeCountMore": "and {n} more",

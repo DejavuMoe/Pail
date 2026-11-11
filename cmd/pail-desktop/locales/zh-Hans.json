@@ -589,6 +589,7 @@
   "flatListLabel": "平铺",
   "flatListTip": "平铺列出此文件夹下的所有对象（包括子文件夹中的），不显示文件夹。",
   "flatListUnavailable": "显示已删除项时不可用",
+  "powerTransferring": "正在传输文件",
   "scopeCountCountUnavailable": "无法统计数量",
   "scopeCountCounting": "正在统计…",
   "scopeCountMore": "另有 {n} 项",
