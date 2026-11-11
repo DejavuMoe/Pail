@@ -42,7 +42,7 @@ func setupSync(c *cli, fs *flag.FlagSet) runner {
 			return err
 		}
 		c.printPreview(pv, *dry)
-		if *dry {
+		if *dry || c.outputErr != nil {
 			return nil
 		}
 		if pv.Uploads+pv.Downloads+pv.Deletes == 0 {
