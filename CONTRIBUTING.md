@@ -15,7 +15,7 @@ Issues are tracked on GitHub; the GitHub repository is a read-only mirror of the
 go build -trimpath -ldflags "-s -w" -o build/ ./cmd/pail-desktop ./cmd/pail
 ```
 
-Without `-s -w` the programs are about 9 MB (desktop) and 5 MB (command line) larger, because they keep the symbol table and debug information. Release builds use these flags.
+Without `-s -w` the programs are about 9 MB (desktop) and 5 MB (command line) larger, because they keep the symbol table and debug information. Release builds use only `-w`: `tools/verify-release` reads the version from the symbol table, so a binary built with `-s` fails release verification.
 
 The demo mode is not in release builds. To run the desktop app against an in-memory S3 server with sample data (nothing leaves the machine), build it in:
 
