@@ -23,6 +23,7 @@ import (
 	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/DejavuMoe/Pail/internal/buildstamp"
 	"github.com/egoist/mygo"
+	"github.com/egoist/mygo/transfer"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -79,6 +80,10 @@ func main() {
 	a := newApp(svc, opts)
 	a.reveal = func(p string) { mygo.Shell.ShowItemInFolder(p) }
 	a.openPath = mygo.Shell.OpenPath
+	a.keepRunning = mygo.Power.KeepRunning
+	a.writeSecret = func(s string) error {
+		return mygo.Clipboard.Write(transfer.TextData(s), mygo.ClipboardOptions{Concealed: true})
+	}
 	a.openURL = mygo.Shell.OpenExternal
 	if !*demo {
 		// Transfers left unfinished when Pail last quit come back paused.

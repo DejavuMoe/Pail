@@ -5994,6 +5994,16 @@ func (msgs Messages) FlatListUnavailable() string {
 	return Catalog.Format(msgs.locale, "flatListUnavailable", nil)
 }
 
+// PowerTransferring says "Transferring files"
+// in the language the app shows.
+func PowerTransferring() string { return In(i18n.Locale()).PowerTransferring() }
+
+// PowerTransferring says "Transferring files"
+// in the language of msgs.
+func (msgs Messages) PowerTransferring() string {
+	return Catalog.Format(msgs.locale, "powerTransferring", nil)
+}
+
 // ScopeCountCountUnavailable says "Count unavailable"
 // in the language the app shows.
 func ScopeCountCountUnavailable() string { return In(i18n.Locale()).ScopeCountCountUnavailable() }

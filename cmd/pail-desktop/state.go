@@ -69,6 +69,14 @@ type app struct {
 	// openPath opens a file or folder with the desktop (Shell.OpenPath); it
 	// blocks, so it only runs on a goroutine. Replaced in tests.
 	openPath func(path string) error
+	// writeSecret writes confidential text to the system clipboard
+	// (Clipboard.Write with Concealed); nil in headless tests.
+	writeSecret func(text string) error
+	// keepRunning keeps the app at full speed while tasks run with its
+	// window hidden (Power.KeepRunning, macOS App Nap); nil in headless
+	// tests. runRelease ends the current request.
+	keepRunning func(reason string) (release func())
+	runRelease  func()
 	// openURL opens a web address in the default browser (Shell.OpenExternal);
 	// it blocks, so it only runs on a goroutine. Replaced in tests.
 	openURL func(url string) error
@@ -1092,6 +1100,7 @@ func (a *app) applyInbox() {
 			a.checkWatch(k)
 		}
 	}
+	a.syncKeepRunning()
 	if removed {
 		retained := map[string]bool{}
 		for _, t := range a.tasks {
@@ -1102,6 +1111,24 @@ func (a *app) applyInbox() {
 				delete(a.retryWatches, key)
 			}
 		}
+	}
+}
+
+// syncKeepRunning holds a Power.KeepRunning request while any task is queued
+// or running, so transfers keep their speed when the window is hidden.
+func (a *app) syncKeepRunning() {
+	if a.keepRunning == nil {
+		return
+	}
+	busy := slices.ContainsFunc(a.tasks, func(t Task) bool {
+		return t.Status == core.StatusQueued || t.Status == core.StatusRunning
+	})
+	switch {
+	case busy && a.runRelease == nil:
+		a.runRelease = a.keepRunning(locales.PowerTransferring())
+	case !busy && a.runRelease != nil:
+		a.runRelease()
+		a.runRelease = nil
 	}
 }
 

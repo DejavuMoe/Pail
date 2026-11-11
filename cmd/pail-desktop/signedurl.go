@@ -201,7 +201,7 @@ func (a *app) signedDialog(c *ui.Context) {
 					label = locales.SignedCopyAll()
 				}
 				if primaryButton(c, label, false).Clicked() {
-					c.WriteClipboard(f.urls())
+					a.copySecret(c, f.urls())
 					if len(f.res) == 1 {
 						c.Toast(locales.SignedCopied())
 					} else {
@@ -286,7 +286,7 @@ func (a *app) signedResult(c *ui.Context) {
 							mono(ui.Text(c, r.URL).FontSize(sizeLabel).TextColor(k.Text).SingleLine())
 						})
 						if iconButton(c, icons.Get("copy"), locales.SignedCopyUrlOf(baseName(r.Key))).Clicked() {
-							c.WriteClipboard(r.URL)
+							a.copySecret(c, r.URL)
 							c.Toast(locales.SignedCopied())
 						}
 					})
@@ -306,6 +306,16 @@ func (a *app) signedHasCDN() bool {
 		}
 	}
 	return len(f.res) > 0
+}
+
+// copySecret puts presigned URLs on the clipboard marked confidential, so
+// clipboard histories and other devices do not keep them: they grant access
+// until they expire.
+func (a *app) copySecret(c *ui.Context, s string) {
+	if a.writeSecret != nil && a.writeSecret(s) == nil {
+		return
+	}
+	c.WriteClipboard(s)
 }
 
 // copyCDNURLs copies the CDN addresses of the objects.
