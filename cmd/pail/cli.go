@@ -76,12 +76,13 @@ func (g *globals) register(fs *flag.FlagSet) {
 }
 
 type cli struct {
-	io   IO
-	g    globals
-	svc  *app.Service
-	acct *app.Account
-	in   *bufio.Reader
-	enc  *json.Encoder
+	io        IO
+	g         globals
+	svc       *app.Service
+	acct      *app.Account
+	in        *bufio.Reader
+	enc       *json.Encoder
+	outputErr error
 }
 
 type runner func(ctx context.Context, pos []string) error
@@ -159,7 +160,14 @@ func run(ctx context.Context, args []string, io IO) int {
 		_ = c.svc.Shutdown(sctx)
 		cancel()
 	}
-	return c.report(err)
+	code := c.report(err)
+	if c.outputErr != nil {
+		fmt.Fprintln(c.io.Stderr, "pail: write JSON output:", c.outputErr)
+		if code == exitOK {
+			return exitFailure
+		}
+	}
+	return code
 }
 
 func (c *cli) report(err error) int {
@@ -235,7 +243,11 @@ func kindName(k app.ErrKind) string {
 	return "error"
 }
 
-func (c *cli) emit(v any) { _ = c.enc.Encode(v) }
+func (c *cli) emit(v any) {
+	if c.outputErr == nil {
+		c.outputErr = c.enc.Encode(v)
+	}
+}
 
 func (c *cli) infof(format string, a ...any) {
 	if !c.g.quiet {

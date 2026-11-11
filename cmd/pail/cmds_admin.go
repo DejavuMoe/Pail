@@ -64,10 +64,12 @@ func setupBucket(c *cli, fs *flag.FlagSet) runner {
 func parseAge(s string) (time.Duration, error) {
 	if n, ok := strings.CutSuffix(s, "d"); ok {
 		days, err := strconv.ParseFloat(n, 64)
-		if err != nil || days <= 0 {
+		nanos := days * float64(24*time.Hour)
+		// The comparison also rejects NaN, infinities and sub-nanosecond ages.
+		if err != nil || !(nanos >= 1 && nanos < 1<<63) {
 			return 0, usagef("--older-than must be a positive duration such as 36h or 7d, not %q", s)
 		}
-		return time.Duration(days * float64(24*time.Hour)), nil
+		return time.Duration(nanos), nil
 	}
 	d, err := time.ParseDuration(s)
 	if err != nil || d <= 0 {
