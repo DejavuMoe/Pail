@@ -85,9 +85,31 @@ func (c *call) objectOp(m string) *resp {
 			return c.createUpload()
 		case q.Has("uploadId"):
 			return c.completeUpload()
+		case q.Has("restore"):
+			return c.restoreObject(q.Get("versionId"))
 		}
 	}
 	return c.methodNotAllowed()
+}
+
+// restoreObject starts a restore of an archived version: it stays in
+// progress until the test calls FinishRestore.
+func (c *call) restoreObject(vid string) *resp {
+	v, rs := c.resolve(c.b, c.key, vid)
+	if rs != nil {
+		return rs
+	}
+	if v.storageClass != "GLACIER" && v.storageClass != "DEEP_ARCHIVE" {
+		return c.fail(403, "InvalidObjectState", "The operation is not valid for the object's storage class.")
+	}
+	if strings.Contains(v.restore, `ongoing-request="true"`) {
+		return c.fail(409, "RestoreAlreadyInProgress", "Object restore is already in progress.")
+	}
+	if strings.Contains(v.restore, `ongoing-request="false"`) {
+		return c.empty(200)
+	}
+	v.restore = `ongoing-request="true"`
+	return c.empty(202)
 }
 
 // resolve finds the target version of key in b; a delete marker is an error.

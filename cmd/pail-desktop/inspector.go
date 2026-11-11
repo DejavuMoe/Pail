@@ -235,7 +235,7 @@ func (a *app) overviewTab(c *ui.Context, e Entry) {
 				kvRow(c, locales.InspectorEncryption(), enc, false, kvCopy{})
 			}
 			if info.Restore != "" {
-				kvRow(c, locales.InspectorRestoreStatus(), info.Restore, false, kvCopy{})
+				kvRow(c, locales.InspectorRestoreStatus(), restoreStatusText(info.Restore), false, kvCopy{})
 			}
 			if info.LockMode != "" {
 				kvRow(c, locales.InspectorObjectLock(), locales.InspectorLockUntil(info.LockMode, formatTime(info.RetainUntil)), false, kvCopy{})

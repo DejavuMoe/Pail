@@ -36,7 +36,7 @@ func (a *app) nativeMenu(redraw func()) *mygo.Menu {
 	m := mygo.NewMenu([]*mygo.MenuItem{
 		{Role: mygo.RoleAppMenu},
 		{Label: locales.MenuFile(), Submenu: file},
-		{Label: locales.MenuEdit(), Submenu: items("copy", "cut", "paste", "rename", "delete", "-", "storageclass", "encryption", "copysigned", "copycdn", "opencdn", "-", "selectall", "-", "search")},
+		{Label: locales.MenuEdit(), Submenu: items("copy", "cut", "paste", "rename", "delete", "-", "storageclass", "encryption", "restorearchive", "copysigned", "copycdn", "opencdn", "-", "selectall", "-", "search")},
 		{Label: locales.MenuView(), Submenu: items("refresh", "foldersizes", "up", "-", "inspector", "transfers")},
 		{Label: locales.MenuBucket(), Submenu: items("newbucket", "newfolder", "-", "bucketsettings")},
 		{Label: locales.MenuTools(), Submenu: tools},

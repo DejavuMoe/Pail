@@ -309,3 +309,19 @@ func TestStorageClass(t *testing.T) {
 		}
 	}
 }
+
+func TestArchiveRestore(t *testing.T) {
+	h := newHarness(t)
+	h.srv.PutObject("bkt", "cold/a", []byte("a"), "", nil)
+	h.srv.PutObject("bkt", "cold/b", []byte("b"), "", nil)
+	h.srv.SetStorageClass("bkt", "cold/a", "DEEP_ARCHIVE")
+	h.want(h.run("archive-restore", "s3://bkt/cold/a", "--days", "3"), 0)
+	if !strings.Contains(h.statJSON("cold/a")["restore"].(string), `ongoing-request="true"`) {
+		t.Fatalf("no restore started: %v", h.statJSON("cold/a"))
+	}
+	h.want(h.run("archive-restore", "s3://bkt/cold/a", "--tier", "fast"), 2)
+	h.want(h.run("archive-restore", "s3://bkt/cold/a", "--days", "0"), 2)
+	h.want(h.run("archive-restore", "s3://bkt/cold/"), 2) // a prefix needs -r
+	// The STANDARD object is skipped, the running restore too.
+	h.want(h.run("--yes", "archive-restore", "s3://bkt/cold/", "-r"), 0)
+}

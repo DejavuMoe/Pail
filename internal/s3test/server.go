@@ -81,6 +81,7 @@ type version struct {
 	data     []byte // immutable once stored
 	etag     string
 	modified time.Time
+	restore  string // x-amz-restore after a RestoreObject
 	objMeta
 }
 
@@ -307,6 +308,22 @@ func (s *Server) DeleteMarker(bucketName, key string) string {
 	m := &version{marker: true, modified: now(), id: newID()}
 	b.objects[key] = append([]*version{m}, b.objects[key]...)
 	return m.id
+}
+
+// FinishRestore completes the restore of the current version of key.
+func (s *Server) FinishRestore(bucketName, key string) bool {
+	s.mu.Lock()
+	defer s.mu.Unlock()
+	b := s.buckets[bucketName]
+	if b == nil {
+		return false
+	}
+	v := b.current(key)
+	if v == nil {
+		return false
+	}
+	v.restore = `ongoing-request="false", expiry-date="Fri, 21 Dec 2012 00:00:00 GMT"`
+	return true
 }
 
 // SetStorageClass changes the storage class of the current version.
@@ -781,6 +798,7 @@ func (b *bucket) objectHeaders(h http.Header, v *version) {
 	if v.storageClass != "" && v.storageClass != "STANDARD" {
 		h.Set("x-amz-storage-class", v.storageClass)
 	}
+	set("x-amz-restore", v.restore)
 	set("x-amz-server-side-encryption", v.sse)
 	set("x-amz-server-side-encryption-aws-kms-key-id", v.kmsKey)
 	set("x-amz-server-side-encryption-customer-algorithm", v.ssecAlg)

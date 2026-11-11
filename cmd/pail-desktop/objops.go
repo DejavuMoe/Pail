@@ -17,6 +17,7 @@ type objOpsState struct {
 	rw rewriteForm
 	bc bucketCopyForm
 	sg signedForm
+	ar archiveForm
 
 	flat bool // the table lists every object below the open folder
 }
@@ -24,7 +25,7 @@ type objOpsState struct {
 // objOpsModalOpen reports whether one of these dialogs holds the keyboard.
 func (a *app) objOpsModalOpen() bool {
 	m := &a.objOps
-	return m.rw.open || m.bc.open || m.sg.open
+	return m.rw.open || m.bc.open || m.sg.open || m.ar.open
 }
 
 // objOpsDialogs draws the object-operation dialogs.
@@ -32,6 +33,7 @@ func (a *app) objOpsDialogs(c *ui.Context) {
 	a.rewriteDialog(c)
 	a.bucketCopyDialog(c)
 	a.signedDialog(c)
+	a.archiveDialog(c)
 }
 
 // ---- scope counts ------------------------------------------------------------------------------
