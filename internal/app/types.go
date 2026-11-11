@@ -233,7 +233,8 @@ func (k Kind) String() string {
 // Status is the lifecycle state of a task.
 type Status int
 
-// Task statuses. Succeeded, Failed, Canceled and PartiallyFailed are final.
+// Task statuses. Succeeded, Failed, Canceled and PartiallyFailed are final;
+// Paused waits for Resume or Cancel.
 const (
 	StatusQueued Status = iota
 	StatusRunning
@@ -241,6 +242,7 @@ const (
 	StatusFailed
 	StatusCanceled
 	StatusPartiallyFailed
+	StatusPaused
 )
 
 func (s Status) String() string {
@@ -257,12 +259,14 @@ func (s Status) String() string {
 		return "canceled"
 	case StatusPartiallyFailed:
 		return "partially failed"
+	case StatusPaused:
+		return "paused"
 	}
 	return "unknown"
 }
 
 // Finished reports whether s is a final state.
-func (s Status) Finished() bool { return s >= StatusSucceeded }
+func (s Status) Finished() bool { return s >= StatusSucceeded && s != StatusPaused }
 
 // Task is a snapshot of one queued, running or finished task.
 type Task struct {
@@ -283,6 +287,8 @@ type Task struct {
 	Started          time.Time
 	Finished         time.Time
 	Err              string
+	// Pausable marks a per-file upload or download: Pause and Resume apply.
+	Pausable bool
 }
 
 // TaskGroupResult totals a group independently of its retained task history.

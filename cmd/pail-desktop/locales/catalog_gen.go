@@ -5696,6 +5696,90 @@ func (msgs Messages) MainTitleDemo() string {
 	return Catalog.Format(msgs.locale, "mainTitleDemo", nil)
 }
 
+// TransfersCouldNotPause says "Could not pause: {detail}"
+// in the language the app shows.
+func TransfersCouldNotPause(detail string) string {
+	return In(i18n.Locale()).TransfersCouldNotPause(detail)
+}
+
+// TransfersCouldNotPause says "Could not pause: {detail}"
+// in the language of msgs.
+func (msgs Messages) TransfersCouldNotPause(detail string) string {
+	return Catalog.Format(msgs.locale, "transfersCouldNotPause", map[string]any{"detail": detail})
+}
+
+// TransfersCouldNotResume says "Could not resume: {detail}"
+// in the language the app shows.
+func TransfersCouldNotResume(detail string) string {
+	return In(i18n.Locale()).TransfersCouldNotResume(detail)
+}
+
+// TransfersCouldNotResume says "Could not resume: {detail}"
+// in the language of msgs.
+func (msgs Messages) TransfersCouldNotResume(detail string) string {
+	return Catalog.Format(msgs.locale, "transfersCouldNotResume", map[string]any{"detail": detail})
+}
+
+// TransfersPause says "Pause"
+// in the language the app shows.
+func TransfersPause() string { return In(i18n.Locale()).TransfersPause() }
+
+// TransfersPause says "Pause"
+// in the language of msgs.
+func (msgs Messages) TransfersPause() string {
+	return Catalog.Format(msgs.locale, "transfersPause", nil)
+}
+
+// TransfersPauseAll says "Pause all"
+// in the language the app shows.
+func TransfersPauseAll() string { return In(i18n.Locale()).TransfersPauseAll() }
+
+// TransfersPauseAll says "Pause all"
+// in the language of msgs.
+func (msgs Messages) TransfersPauseAll() string {
+	return Catalog.Format(msgs.locale, "transfersPauseAll", nil)
+}
+
+// TransfersPaused says "Paused"
+// in the language the app shows.
+func TransfersPaused() string { return In(i18n.Locale()).TransfersPaused() }
+
+// TransfersPaused says "Paused"
+// in the language of msgs.
+func (msgs Messages) TransfersPaused() string {
+	return Catalog.Format(msgs.locale, "transfersPaused", nil)
+}
+
+// TransfersRestored says "{n, plural, one {# transfer from the last session is paused} other {# transfers from the last session are paused}}"
+// in the language the app shows.
+func TransfersRestored(n int) string { return In(i18n.Locale()).TransfersRestored(n) }
+
+// TransfersRestored says "{n, plural, one {# transfer from the last session is paused} other {# transfers from the last session are paused}}"
+// in the language of msgs.
+func (msgs Messages) TransfersRestored(n int) string {
+	return Catalog.Format(msgs.locale, "transfersRestored", map[string]any{"n": n})
+}
+
+// TransfersResume says "Resume"
+// in the language the app shows.
+func TransfersResume() string { return In(i18n.Locale()).TransfersResume() }
+
+// TransfersResume says "Resume"
+// in the language of msgs.
+func (msgs Messages) TransfersResume() string {
+	return Catalog.Format(msgs.locale, "transfersResume", nil)
+}
+
+// TransfersResumeAll says "Resume all"
+// in the language the app shows.
+func TransfersResumeAll() string { return In(i18n.Locale()).TransfersResumeAll() }
+
+// TransfersResumeAll says "Resume all"
+// in the language of msgs.
+func (msgs Messages) TransfersResumeAll() string {
+	return Catalog.Format(msgs.locale, "transfersResumeAll", nil)
+}
+
 // TrayActive says "{n, plural, one {# transfer} other {# transfers}} · {percent}%"
 // in the language the app shows.
 func TrayActive(n int, percent string) string { return In(i18n.Locale()).TrayActive(n, percent) }

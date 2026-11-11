@@ -15,7 +15,7 @@ import (
 // running), 1 completed, 2 failed (failed, partly failed and canceled).
 func taskGroup(t Task) int {
 	switch t.Status {
-	case core.StatusQueued, core.StatusRunning:
+	case core.StatusQueued, core.StatusRunning, core.StatusPaused:
 		return 0
 	case core.StatusSucceeded:
 		return 1
@@ -168,6 +168,19 @@ func (a *app) transfersPanel(c *ui.Context) {
 				}
 			})
 			ui.Spacer(c)
+			if a.transTab == 0 {
+				pausable, paused := false, false
+				for _, t := range a.tasks {
+					pausable = pausable || t.Pausable && (t.Status == core.StatusQueued || t.Status == core.StatusRunning)
+					paused = paused || t.Status == core.StatusPaused
+				}
+				if pausable {
+					ghostButton(c, icons.Get("pause"), locales.TransfersPauseAll(), locales.TransfersPauseAll(), false).Height(24).OnClick(a.svc.PauseAll)
+				}
+				if paused {
+					ghostButton(c, icons.Get("play"), locales.TransfersResumeAll(), locales.TransfersResumeAll(), false).Height(24).OnClick(a.svc.ResumeAll)
+				}
+			}
 			finished := n[1] > 0 || n[2] > 0
 			ghostButton(c, nil, locales.TransfersClearFinished(), locales.TransfersClearFinished(), !finished).Height(24).OnClick(a.clearFinished)
 			if iconButton(c, icons.Get("chevron-down"), locales.TransfersCollapse()).Clicked() {
@@ -269,13 +282,21 @@ func (a *app) taskRow(c *ui.Context, t Task) {
 		})
 		switch taskGroup(t) {
 		case 0:
-			if t.Status == core.StatusQueued {
-				ui.Row(c).Width(colProgress).Shrink(0).Children(func() {
-					ui.Text(c, locales.TransfersQueued()).FontSize(sizeSecondary).TextColor(k.TextMuted)
+			switch t.Status {
+			case core.StatusQueued, core.StatusPaused:
+				label := locales.TransfersQueued()
+				if t.Status == core.StatusPaused {
+					label = locales.TransfersPaused()
+				}
+				ui.Row(c).Width(colProgress).Shrink(0).Gap(6).AlignItems(ui.Center).Children(func() {
+					if t.Status == core.StatusPaused {
+						ui.Icon(c, icons.Get("pause")).FontSize(12).TextColor(k.TextMuted)
+					}
+					ui.Text(c, label).FontSize(sizeSecondary).TextColor(k.TextMuted)
 				})
 				bytesCell("")
 				speedCell("")
-			} else {
+			default:
 				progressBar(c, frac, false)
 				bytesCell(progress)
 				if t.BytesTotal > 0 {
@@ -283,6 +304,18 @@ func (a *app) taskRow(c *ui.Context, t Task) {
 				} else {
 					speedCell("")
 				}
+			}
+			switch {
+			case t.Status == core.StatusPaused:
+				if iconButton(c, icons.Get("play"), locales.TransfersResume()).Clicked() {
+					a.resumeTask(t.ID)
+				}
+			case t.Pausable:
+				if iconButton(c, icons.Get("pause"), locales.TransfersPause()).Clicked() {
+					a.pauseTask(t.ID)
+				}
+			default:
+				ui.Box(c).Size(24, 24).Shrink(0) // keeps the cancel buttons in one column
 			}
 			if iconButton(c, icons.Get("x"), locales.CommonCancel()).Clicked() {
 				a.cancelTask(t.ID)

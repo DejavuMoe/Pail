@@ -71,6 +71,9 @@ type taskSpec struct {
 	// RetryEmpty opts scanners into Retry(nil), rebuilding their child group
 	// even when they failed or were canceled before reporting an item.
 	RetryEmpty bool
+	// Saved describes a per-file transfer so that it can be paused, resumed
+	// and kept across restarts. nil for every other task.
+	Saved *savedTransfer
 }
 
 // run is the handle Work uses to report progress. All methods are safe for
@@ -180,6 +183,11 @@ type task struct {
 	// cancel releases ctx; calling it is how Cancel interrupts Work.
 	cancel context.CancelFunc
 	done   chan struct{} // closed when the task reached a final state
+	// pausing is set when Pause interrupts the running Work; the task then
+	// becomes Paused instead of Canceled. Guarded by queueState.mu.
+	pausing bool
+	// resumeAfter queues the task again as soon as its pause completes.
+	resumeAfter bool
 
 	// Guarded by queueState.mu.
 	pub      Task
@@ -217,6 +225,9 @@ type queueState struct {
 
 	canceledGroups map[string]struct{}
 	canceledOrder  []string
+	// pausedGroups holds the groups paused as a whole: their tasks submitted
+	// later (by a scan that is still running) start out paused too.
+	pausedGroups map[string]struct{}
 
 	// stateCh is closed (and reset to nil) when a task starts or reaches a
 	// final state; waitGroupBacklog parks on it. Created lazily by a waiter.
@@ -270,6 +281,12 @@ func (s *Service) waitGroupBacklog(ctx context.Context, group string, max int) e
 				}
 			}
 		}
+		// Paused tasks wait too: a paused group's scan stops at the backlog.
+		for _, t := range q.tasks {
+			if t.pub.GroupID == group && t.pub.Status == StatusPaused {
+				n++
+			}
+		}
 		if n < max {
 			q.mu.Unlock()
 			return nil
@@ -293,6 +310,7 @@ func (s *Service) initQueue(l Limits) {
 	s.q.limits = [3]int{l.Upload, l.Download, l.Other}
 	s.q.maxFinished = maxFinishedTasks
 	s.q.canceledGroups = map[string]struct{}{}
+	s.q.pausedGroups = map[string]struct{}{}
 	s.q.bus = newEventBus()
 }
 
@@ -333,7 +351,7 @@ func (s *Service) submit(spec taskSpec) string {
 	t := &task{
 		seq: q.seq, spec: spec, ctx: ctx, cancel: cancel, done: make(chan struct{}),
 		pub: Task{ID: fmt.Sprintf("t%d", q.seq), GroupID: spec.Group, Kind: spec.Kind, Title: spec.Title,
-			Detail: spec.Detail, Status: StatusQueued, Created: s.now()},
+			Detail: spec.Detail, Status: StatusQueued, Created: s.now(), Pausable: spec.Saved != nil},
 	}
 	q.tasks[t.pub.ID] = t
 	if spec.Group != "" {
@@ -352,6 +370,11 @@ func (s *Service) submit(spec taskSpec) string {
 			msg = "canceled: the application is shutting down"
 		}
 		s.finishQueuedLocked(t, msg)
+		return t.pub.ID
+	}
+	if _, paused := q.pausedGroups[spec.Group]; paused && spec.Group != "" && spec.Saved != nil {
+		t.pub.Status = StatusPaused
+		s.emitLocked(t, false)
 		return t.pub.ID
 	}
 	i := kindIndex(spec.Kind)
@@ -423,6 +446,23 @@ func (s *Service) finishRunning(t *task, err error) {
 	t.pub.Finished = s.now()
 	t.err = err
 	canceled := t.ctx.Err() != nil
+	if t.pausing && canceled && !q.closed && len(t.items) == 0 {
+		// Paused: the file starts again from the beginning on Resume.
+		t.pausing = false
+		t.pub.Status, t.pub.Err, t.pub.Finished, t.pub.Started = StatusPaused, "", time.Time{}, time.Time{}
+		t.bytes.Store(0)
+		t.speed.stop()
+		s.notifyStateLocked()
+		if t.resumeAfter {
+			t.resumeAfter = false
+			s.resumeLocked(t)
+		} else {
+			s.emitLocked(t, false)
+		}
+		s.dispatchLocked()
+		return
+	}
+	t.pausing, t.resumeAfter = false, false
 	switch {
 	case err != nil && canceled:
 		t.pub.Status, t.pub.Err = StatusCanceled, "canceled"
@@ -658,7 +698,10 @@ func (s *Service) cancelLocked(t *task) {
 			}
 		}
 		s.finishQueuedLocked(t, "canceled")
+	case StatusPaused:
+		s.finishQueuedLocked(t, "canceled")
 	case StatusRunning:
+		t.pausing, t.resumeAfter = false, false
 		t.cancel()
 	}
 }
@@ -682,6 +725,7 @@ func (s *Service) CancelGroup(groupID string) error {
 	if len(members) == 0 {
 		return opErr("CancelGroup", ErrNotFound, "no tasks in group %q", groupID)
 	}
+	delete(q.pausedGroups, groupID)
 	if _, ok := q.canceledGroups[groupID]; !ok {
 		q.canceledGroups[groupID] = struct{}{}
 		q.canceledOrder = append(q.canceledOrder, groupID)
@@ -797,8 +841,11 @@ func (s *Service) shutdownQueue(ctx context.Context) error {
 		q.queued[k] = nil
 	}
 	for _, t := range q.tasks {
-		if t.pub.Status == StatusRunning {
+		switch t.pub.Status {
+		case StatusRunning:
 			t.cancel()
+		case StatusPaused:
+			s.finishQueuedLocked(t, "canceled: the application is shutting down")
 		}
 	}
 	q.mu.Unlock()

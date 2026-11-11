@@ -1113,6 +1113,19 @@ func countTasks(ts []Task) (n [3]int) {
 	return
 }
 
+// pauseTask and resumeTask are the panel's pause and resume buttons.
+func (a *app) pauseTask(id string) {
+	if err := a.svc.Pause(id); err != nil {
+		a.toast(locales.TransfersCouldNotPause(humanError(err)))
+	}
+}
+
+func (a *app) resumeTask(id string) {
+	if err := a.svc.Resume(id); err != nil {
+		a.toast(locales.TransfersCouldNotResume(humanError(err)))
+	}
+}
+
 // cancelTask and retryTask are the panel's buttons.
 func (a *app) cancelTask(id string) {
 	if err := a.svc.Cancel(id); err != nil {

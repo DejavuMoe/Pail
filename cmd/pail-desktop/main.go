@@ -80,6 +80,15 @@ func main() {
 	a.reveal = func(p string) { mygo.Shell.ShowItemInFolder(p) }
 	a.openPath = mygo.Shell.OpenPath
 	a.openURL = mygo.Shell.OpenExternal
+	if !*demo {
+		// Transfers left unfinished when Pail last quit come back paused.
+		if n, err := svc.RestoreTransfers(); err != nil {
+			log.Printf("restore transfers: %v", err)
+		} else if n > 0 {
+			a.toast(locales.TransfersRestored(n))
+			a.transfersOpen = true
+		}
+	}
 	a.quit = mygo.App.Quit
 	a.themeSet = mygo.Theme.SetSource
 	// The language choice ("" follows the system) is read before the first frame.
@@ -158,6 +167,10 @@ func main() {
 	if stopDemo != nil {
 		stopDemo() // stops the service, the server and removes the temp dir
 		return
+	}
+	// Unfinished transfers are offered again, paused, at the next start.
+	if err := svc.SaveTransfers(); err != nil {
+		log.Printf("save transfers: %v", err)
 	}
 	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
 	defer cancel()
