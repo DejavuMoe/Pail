@@ -19,6 +19,8 @@ import (
 	"runtime"
 	"slices"
 	"strings"
+
+	"github.com/DejavuMoe/Pail/internal/buildstamp"
 )
 
 const allTargets = "windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwin/amd64,darwin/arm64"
@@ -128,7 +130,7 @@ func release(version, targetList, outDir string, cliOnly bool) error {
 			}
 			name := executable(app, version, osName, arch)
 			executables = append(executables, name)
-			ld := "-w -X main.version=" + version
+			ld := "-s -w " + buildstamp.LDFlag(version)
 			if app == "pail-desktop" && osName == "windows" {
 				ld += " -H windowsgui"
 			}

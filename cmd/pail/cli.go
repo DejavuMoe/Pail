@@ -13,10 +13,11 @@ import (
 	"time"
 
 	"github.com/DejavuMoe/Pail/internal/app"
+	"github.com/DejavuMoe/Pail/internal/buildstamp"
 )
 
-// version is set at release time with -ldflags "-X main.version=...".
-var version = "dev"
+// version is stamped at release time (internal/buildstamp).
+var version = buildstamp.Version()
 
 // Exit codes.
 const (
