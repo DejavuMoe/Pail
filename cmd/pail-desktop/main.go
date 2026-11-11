@@ -43,7 +43,9 @@ func main() {
 	tool := flag.String("tool", "", "open a tool view at start: sync, cloudfront, rules, mime, multipart, settings")
 	smokeExit := flag.Duration("smoke-exit", 0, "close the window after this duration, e.g. 5s")
 	smokeShot := flag.String("smoke-screenshot", "", "save a native window PNG before smoke exit")
+	startPprof := pprofFlag()
 	flag.Parse()
+	startPprof()
 	if *showVersion {
 		fmt.Println("Pail", version)
 		return

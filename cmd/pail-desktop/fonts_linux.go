@@ -11,6 +11,16 @@ import (
 // only: the desktop's interface font differs from distribution to distribution
 // and the design needs 400, 500 and 600 to look alike everywhere. Windows and
 // macOS keep Segoe UI and SF, and their binaries do not carry these files.
+//
+// The files are subsets of the Inter 4.1 static TTFs (Latin, Greek, Cyrillic,
+// punctuation, arrows and symbols; Chinese falls back to the system font),
+// keeping hinting, the default OpenType features and tnum, case, zero, frac,
+// sups, subs and ordn. For each weight W, with fontTools 4.60:
+//
+//	pyftsubset Inter-W.ttf --output-file=fonts/Inter-W.ttf \
+//	  --unicodes=U+0000-024F,U+0259,U+02B0-036F,U+0370-03FF,U+0400-052F,U+1E00-1EFF,U+2000-218F,U+2190-23FF,U+2460-24FF,U+2500-26FF,U+2700-27BF,U+FB00-FB06,U+FEFF,U+FFFD \
+//	  --layout-features+=tnum,case,zero,frac,sups,subs,ordn \
+//	  --name-IDs='*' --name-languages='*' --name-legacy --notdef-outline
 
 //go:embed fonts/Inter-Regular.ttf
 var interRegular []byte
