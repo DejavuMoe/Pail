@@ -87,6 +87,7 @@ func decideConflict(ctx context.Context, c *storage.Client, bucket, key string, 
 }
 
 type remoteTarget struct {
+	head     *s3.HeadObjectOutput
 	exists   bool
 	size     int64
 	modified time.Time
@@ -125,6 +126,7 @@ func headTarget(ctx context.Context, c *storage.Client, bucket, key string) (rem
 		return remoteTarget{}, err
 	}
 	return remoteTarget{
+		head:     out,
 		exists:   true,
 		size:     aws.ToInt64(out.ContentLength),
 		modified: aws.ToTime(out.LastModified),

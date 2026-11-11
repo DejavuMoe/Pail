@@ -408,16 +408,23 @@ func (s *Service) PublicURL(loc Location, key string) string {
 	if err != nil {
 		return ""
 	}
-	base := strings.TrimRight(u.Path, "/")
+	base := strings.TrimRight(u.EscapedPath(), "/")
 	hostname := u.Hostname()
 	if rec.PathStyle || net.ParseIP(hostname) != nil || hostname == "localhost" {
-		return u.Scheme + "://" + u.Host + base + "/" + loc.Bucket + "/" + esc
+		base += "/" + storage.EscapePath(loc.Bucket)
+	} else {
+		host := loc.Bucket + "." + hostname
+		if p := u.Port(); p != "" {
+			host += ":" + p
+		}
+		u.Host = host
 	}
-	host := loc.Bucket + "." + hostname
-	if p := u.Port(); p != "" {
-		host += ":" + p
+	escapedPath := base + "/" + esc
+	path, err := url.PathUnescape(escapedPath)
+	if err != nil {
+		return ""
 	}
-	return u.Scheme + "://" + host + base + "/" + esc
+	return (&url.URL{Scheme: u.Scheme, Host: u.Host, Path: path, RawPath: escapedPath}).String()
 }
 
 // CreateFolder creates the zero-byte placeholder object "<prefix><name>/".

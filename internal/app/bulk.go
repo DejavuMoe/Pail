@@ -2,6 +2,7 @@ package app
 
 import (
 	"context"
+	"maps"
 	"strings"
 	"sync"
 
@@ -308,6 +309,7 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 	// A move needs the exact version that is copied (and checked again before
 	// the delete); an unresolved object needs its ETag and size.
 	srcKeyed := false
+	var srcHead *s3.HeadObjectOutput
 	if p.move || !o.Resolved {
 		h, hout, err := bkHead(ctx, c, p.src.Bucket, o.Key, o.VersionID)
 		if err != nil {
@@ -319,12 +321,23 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		if !o.Resolved {
 			r.AddTotal(h.Size, 0)
 		}
-		o, srcKeyed = h, headKeyed(hout)
+		o, srcKeyed, srcHead = h, headKeyed(hout), hout
 		if !p.move { // a retried move must resolve the then-current object again
 			res.VersionID = o.VersionID
 		}
 	}
 	progress := bkProgress(r)
+	sameAttributes := func(key string, h *s3.HeadObjectOutput) (bool, error) {
+		if !bkCopyAttributesEqual(srcHead, h) {
+			return false, nil
+		}
+		srcTags, err := bkCopyTags(ctx, c, p.src.Bucket, o.Key, o.VersionID)
+		if err != nil {
+			return false, err
+		}
+		dstTags, err := bkCopyTags(ctx, c, p.dest.Bucket, key, aws.ToString(h.VersionId))
+		return err == nil && maps.Equal(srcTags, dstTags), err
+	}
 	var dec conflictDecision
 	copied := false // a retried move: an earlier run copied, but did not delete the source
 	if p.move && p.policy != ConflictOverwrite {
@@ -337,7 +350,10 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 					return bkFail(ctx, res, err)
 				}
 				if t.exists && t.size == o.Size && t.etag == rec.destETag {
-					dec, copied = conflictDecision{Key: rec.destKey}, true
+					if copied, err = sameAttributes(rec.destKey, t.head); err != nil {
+						return bkFail(ctx, res, err)
+					}
+					dec = conflictDecision{Key: rec.destKey}
 				}
 			}
 		}
@@ -347,11 +363,15 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 				return bkFail(ctx, res, err)
 			}
 			if dst.exists && dst.size == o.Size && sameObjectETag(o.ETag, srcKeyed, dst.etag, dst.keyed) {
-				// The destination is the source's copy (same size and ETag, so same
-				// content): not a conflict; finish the move.
-				dec, copied = conflictDecision{Key: destKey}, true
-			} else if dec, err = decideConflict(ctx, c, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified, dst); err != nil {
-				return bkFail(ctx, res, err)
+				if copied, err = sameAttributes(destKey, dst.head); err != nil {
+					return bkFail(ctx, res, err)
+				}
+				dec = conflictDecision{Key: destKey}
+			}
+			if !copied {
+				if dec, err = decideConflict(ctx, c, p.dest.Bucket, destKey, p.policy, o.Size, o.Modified, dst); err != nil {
+					return bkFail(ctx, res, err)
+				}
 			}
 		}
 		if copied {
@@ -402,8 +422,13 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		if !t.exists || t.size != o.Size || (etagMD5(o.ETag, srcKeyed) && etagMD5(t.etag, t.keyed) && !sameObjectETag(o.ETag, srcKeyed, t.etag, t.keyed)) {
 			return bkFailf(res, "copied, but the destination does not match the source; source kept")
 		}
+		if same, err := sameAttributes(dec.Key, t.head); err != nil {
+			return bkFailf(res, "copied, but the attributes could not be verified (%v); source kept", classify("", err))
+		} else if !same {
+			return bkFailf(res, "copied, but the destination attributes do not match the source; source kept")
+		}
 		p.copied.Store(o.Key, bkCopied{srcETag: o.ETag, destKey: dec.Key, destETag: t.etag})
-		cur, _, err := bkHead(ctx, c, p.src.Bucket, o.Key, "")
+		cur, curHead, err := bkHead(ctx, c, p.src.Bucket, o.Key, "")
 		switch {
 		case IsKind(err, ErrNotFound):
 			// The source is already gone (or a delete marker is on top): the move is done.
@@ -416,7 +441,7 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 		if o.VersionID != "" {
 			same = cur.VersionID == o.VersionID
 		}
-		if !same {
+		if !same || !bkCopyAttributesEqual(srcHead, curHead) {
 			return bkFailf(res, "copied, but source changed since; source kept")
 		}
 		// No VersionId: a versioned bucket gets a delete marker and keeps its
@@ -428,6 +453,39 @@ func (s *Service) bkCopyOne(ctx context.Context, r *run, c *storage.Client, p *b
 	}
 	res.Status = ItemSucceeded
 	return res
+}
+
+// Content ETags exclude metadata, headers and tags; a move must keep those too.
+func bkCopyAttributesEqual(a, b *s3.HeadObjectOutput) bool {
+	return maps.Equal(a.Metadata, b.Metadata) &&
+		aws.ToString(a.ContentType) == aws.ToString(b.ContentType) &&
+		aws.ToString(a.ContentEncoding) == aws.ToString(b.ContentEncoding) &&
+		aws.ToString(a.ContentDisposition) == aws.ToString(b.ContentDisposition) &&
+		aws.ToString(a.ContentLanguage) == aws.ToString(b.ContentLanguage) &&
+		aws.ToString(a.CacheControl) == aws.ToString(b.CacheControl) &&
+		aws.ToString(a.ExpiresString) == aws.ToString(b.ExpiresString) &&
+		aws.ToTime(a.Expires).Equal(aws.ToTime(b.Expires)) &&
+		aws.ToString(a.WebsiteRedirectLocation) == aws.ToString(b.WebsiteRedirectLocation) &&
+		bkCopyClass(string(a.StorageClass)) == bkCopyClass(string(b.StorageClass))
+}
+
+func bkCopyTags(ctx context.Context, c *storage.Client, bucket, key, version string) (map[string]string, error) {
+	in := &s3.GetObjectTaggingInput{Bucket: aws.String(bucket), Key: aws.String(key)}
+	if version != "" {
+		in.VersionId = aws.String(version)
+	}
+	out, err := c.S3().GetObjectTagging(ctx, in)
+	if err != nil {
+		if IsKind(classify("", err), ErrUnsupported) || bkStatus(err) == 405 {
+			return nil, nil
+		}
+		return nil, err
+	}
+	tags := make(map[string]string, len(out.TagSet))
+	for _, tag := range out.TagSet {
+		tags[aws.ToString(tag.Key)] = aws.ToString(tag.Value)
+	}
+	return tags, nil
 }
 
 // ---- delete ---------------------------------------------------------------------------------
