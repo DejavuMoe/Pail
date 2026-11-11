@@ -266,7 +266,6 @@
   "clipboardCopiedFailed": "Copied {items}, {failed, plural, one {# failed} other {# failed}}",
   "clipboardCopiedSkipped": "Copied {items}, {skipped, plural, one {# skipped} other {# skipped}}",
   "clipboardCopyFailed": "Copy failed: {detail}",
-  "clipboardCrossAccount": "Copying between accounts is not supported yet",
   "clipboardMoveFailed": "Move failed: {detail}",
   "clipboardMoved": "Moved {items}",
   "clipboardMovedFailed": "Moved {items}, {failed, plural, one {# failed} other {# failed}}",

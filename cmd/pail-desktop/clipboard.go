@@ -47,14 +47,11 @@ func (a *app) keyInClip(key string) bool {
 	return false
 }
 
-// paste copies or moves the clipboard into the open folder.
+// paste copies or moves the clipboard into the open folder, also from
+// another account (the objects then stream through Pail).
 func (a *app) paste() {
 	cl := a.mg.clip
 	if !cl.has() || !a.browsing() {
-		return
-	}
-	if cl.loc.AccountID != a.scope.AccountID {
-		a.toast(locales.ClipboardCrossAccount())
 		return
 	}
 	a.transferKeys(cl.loc, cl.keys, a.scope, cl.cut, cl.cut)
@@ -86,6 +83,9 @@ func (a *app) copyDone(move bool, src, dest Scope) func(Task) {
 		sum := a.bulkSummary(t)
 		ok := locales.CommonItems(sum.ok)
 		switch {
+		case t.Status == core.StatusFailed && sum.failed == 0 && sum.ok == 0:
+			// The task failed before any object, e.g. an account that is gone.
+			a.toast(copyFailedText(move, t.Err))
 		case sum.failed > 0 && sum.ok == 0:
 			a.toast(copyFailedText(move, sum.firstErr))
 		case sum.failed > 0 && move:

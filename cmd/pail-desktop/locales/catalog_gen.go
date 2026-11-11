@@ -2736,16 +2736,6 @@ func (msgs Messages) ClipboardCopyFailed(detail string) string {
 	return Catalog.Format(msgs.locale, "clipboardCopyFailed", map[string]any{"detail": detail})
 }
 
-// ClipboardCrossAccount says "Copying between accounts is not supported yet"
-// in the language the app shows.
-func ClipboardCrossAccount() string { return In(i18n.Locale()).ClipboardCrossAccount() }
-
-// ClipboardCrossAccount says "Copying between accounts is not supported yet"
-// in the language of msgs.
-func (msgs Messages) ClipboardCrossAccount() string {
-	return Catalog.Format(msgs.locale, "clipboardCrossAccount", nil)
-}
-
 // ClipboardMoveFailed says "Move failed: {detail}"
 // in the language the app shows.
 func ClipboardMoveFailed(detail string) string { return In(i18n.Locale()).ClipboardMoveFailed(detail) }
