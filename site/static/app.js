@@ -140,11 +140,15 @@
   }
 
   /* ---------- Demos (run only while visible) ---------- */
+  var motionSync = []; // re-evaluate every demo when the reduced-motion preference changes
   function whenVisible(el, start, stop) {
     if (!el || !hasIO) return;
+    var inView = false;
+    function sync() { if (inView && !reduced.matches) start(); else stop(); }
+    motionSync.push(sync);
     new IntersectionObserver(function (entries) {
-      var on = entries[entries.length - 1].isIntersecting && !reduced.matches;
-      if (on) start(); else stop();
+      inView = entries[entries.length - 1].isIntersecting;
+      sync();
     }).observe(el);
   }
   function loop(el, fn, interval) {
@@ -231,7 +235,7 @@
   var term = $('[data-demo="terminal"]');
   var termCode = term ? $('.term-body code', term) : null;
   var termTabs = term ? $$('[data-term]', term) : [];
-  var termTimer = null;
+  var termTimer = null, termName = null;
   function esc(s) { return s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;'); }
   function lineHTML(kind, text) {
     var wrap = /\S {2,}\S/.test(text) ? '' : ' t-wrap'; // aligned columns scroll, other lines wrap
@@ -244,6 +248,7 @@
     if (!termCode) return;
     clearTimeout(termTimer);
     var lines = TERM[name];
+    if (lines) termName = name;
     if (!lines) return; // no recording: the page keeps its first example
     if (!animate || reduced.matches) {
       termCode.innerHTML = lines.map(function (l) { return lineHTML(l[0], l[1]); }).join('\n') + PROMPT;
@@ -288,6 +293,15 @@
       termIO.observe(term);
     }
   }
+
+  // The preference can change while the page is open: stop what runs and show the
+  // finished terminal at once, or let the demos resume by their normal visibility.
+  function motionChanged() {
+    motionSync.forEach(function (sync) { sync(); });
+    if (reduced.matches && termName) renderTerminal(termName, false);
+  }
+  if (reduced.addEventListener) reduced.addEventListener('change', motionChanged);
+  else if (reduced.addListener) reduced.addListener(motionChanged); // Safari < 14
 
   /* ---------- Mobile navigation ---------- */
   var menuBtn = $('.menu-btn');
