@@ -3,14 +3,13 @@ package main
 import (
 	"bytes"
 	"fmt"
+	"image/jpeg"
 	"os"
 	"path/filepath"
 	"regexp"
 	"slices"
 	"strings"
 	"testing"
-
-	"golang.org/x/image/webp"
 )
 
 func TestSocialMetadata(t *testing.T) {
@@ -36,7 +35,7 @@ func TestSocialMetadata(t *testing.T) {
 				`property="og:locale" content="` + locale + `"`,
 				`property="og:locale:alternate" content="` + alternate + `"`,
 				`name="twitter:card" content="summary_large_image"`,
-				`property="og:image:type" content="image/webp"`,
+				`property="og:image:type" content="image/jpeg"`,
 			} {
 				if !strings.Contains(page, want) {
 					t.Errorf("%s lacks %s", path, want)
@@ -60,7 +59,7 @@ func TestSocialMetadata(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			dim, err := webp.DecodeConfig(bytes.NewReader(data))
+			dim, err := jpeg.DecodeConfig(bytes.NewReader(data))
 			if err != nil {
 				t.Fatal(err)
 			}
@@ -231,7 +230,7 @@ func TestAssetsAreFingerprintedAndClean(t *testing.T) {
 	if len(entries) != len(assets) {
 		t.Fatalf("%d assets, want %d", len(entries), len(assets))
 	}
-	hashed := regexp.MustCompile(`^[a-z-]+\.[0-9a-f]{10}\.(css|js|svg|webp|mp4)$`)
+	hashed := regexp.MustCompile(`^[a-z-]+\.[0-9a-f]{10}\.(css|js|svg|webp|mp4|jpg|png)$`)
 	for _, e := range entries {
 		if !hashed.MatchString(e.Name()) {
 			t.Errorf("asset %s is not fingerprinted", e.Name())

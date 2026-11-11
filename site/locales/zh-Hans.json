@@ -1,6 +1,7 @@
 {
-  "docTitle": "Pail · S3 兼容存储的桌面客户端",
-  "docDescription": "Pail 是免费开源的桌面应用，用来管理 Amazon S3、Cloudflare R2、MinIO 等兼容 S3 的对象存储，支持 Windows、macOS 和 Linux。",
+  "docTitle": "Pail · 免费开源的 S3 客户端，支持 Windows、macOS 和 Linux",
+  "docDescription": "Pail 是免费开源的 S3 客户端，有桌面应用和命令行，用来管理 Amazon S3、Cloudflare R2、MinIO 等兼容 S3 的对象存储：浏览存储桶、同步文件夹、管理版本。",
+  "releasesFeed": "Pail 发行版",
   "skip": "跳到正文",
   "navLabel": "主导航",
   "navFeatures": "功能",

@@ -332,24 +332,29 @@ func renderDocs(c config, locales map[string]map[string]string, funcs template.F
 					}
 				}
 			}
+			ld, err := docStructuredData(c.baseURL, lang, tr(p.TitleKey), c.baseURL+docURL(p, lang))
+			if err != nil {
+				return err
+			}
 			data := map[string]any{
-				"Lang":          lang.Code,
-				"HTMLLang":      lang.HTMLLang,
-				"OtherLang":     other.Code,
-				"OtherHTMLLang": other.HTMLLang,
-				"OtherPath":     docURL(p, other),
-				"Canonical":     c.baseURL + docURL(p, lang),
-				"URLEn":         c.baseURL + docURL(p, languages[0]),
-				"URLZh":         c.baseURL + docURL(p, languages[1]),
-				"Title":         tr(p.TitleKey),
-				"SocialTitle":   tr(p.TitleKey) + " · Pail",
-				"Description":   tr(p.DescKey),
-				"Links":         linksFor(lang),
-				"Nav":           nav,
-				"TOC":           toc,
-				"EnglishOnly":   p.EnglishOnly && lang.Code != "en",
-				"Content":       template.HTML(strings.TrimRight(content.HTML, "\n")),
-				"GitHub":        githubURL,
+				"StructuredData": ld,
+				"Lang":           lang.Code,
+				"HTMLLang":       lang.HTMLLang,
+				"OtherLang":      other.Code,
+				"OtherHTMLLang":  other.HTMLLang,
+				"OtherPath":      docURL(p, other),
+				"Canonical":      c.baseURL + docURL(p, lang),
+				"URLEn":          c.baseURL + docURL(p, languages[0]),
+				"URLZh":          c.baseURL + docURL(p, languages[1]),
+				"Title":          tr(p.TitleKey),
+				"SocialTitle":    tr(p.TitleKey) + " · Pail",
+				"Description":    tr(p.DescKey),
+				"Links":          linksFor(lang),
+				"Nav":            nav,
+				"TOC":            toc,
+				"EnglishOnly":    p.EnglishOnly && lang.Code != "en",
+				"Content":        template.HTML(strings.TrimRight(content.HTML, "\n")),
+				"GitHub":         githubURL,
 			}
 			t, err := base.Clone()
 			if err != nil {

@@ -1,6 +1,7 @@
 {
-  "docTitle": "Pail · Desktop client for S3-compatible storage",
-  "docDescription": "Pail is a free, open-source desktop app for Amazon S3, Cloudflare R2, MinIO and other S3-compatible storage, for Windows, macOS and Linux.",
+  "docTitle": "Pail · Open-source S3 client for Windows, macOS and Linux",
+  "docDescription": "Free, open-source desktop app and command line for Amazon S3, Cloudflare R2, MinIO and other S3-compatible storage. Browse, transfer and sync files.",
+  "releasesFeed": "Pail releases",
   "skip": "Skip to content",
   "navLabel": "Main",
   "navFeatures": "Features",

@@ -6,6 +6,7 @@
   <title>{{.Title}} · Pail</title>
   <meta name="description" content="{{.Description}}">
   {{template "social" .}}
+  <meta name="robots" content="max-image-preview:large">
   <meta name="color-scheme" content="light dark">
   <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
   <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
@@ -14,6 +15,9 @@
   <link rel="alternate" hreflang="zh-Hans" href="{{.URLZh}}">
   <link rel="alternate" hreflang="x-default" href="{{.URLEn}}">
   <link rel="icon" href="{{asset "pail-icon.svg"}}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{asset "apple-touch-icon.png"}}">
+  <link rel="alternate" type="application/atom+xml" title="{{t "releasesFeed"}}" href="{{.GitHub}}/releases.atom">
+  <script type="application/ld+json">{{.StructuredData}}</script>
   <script>
     (function () {
       var d = document.documentElement, pref = 'system';
