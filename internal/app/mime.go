@@ -40,7 +40,7 @@ func (s *Service) SaveMIMETypes(m map[string]string) error {
 	}
 	s.wmu.Lock()
 	defer s.wmu.Unlock()
-	if err := writeJSONAtomic(s.path(mimeFile), norm); err != nil {
+	if err := writeJSONAtomicRetry(s.path(mimeFile), norm); err != nil {
 		return classify(op, err)
 	}
 	s.mu.Lock()

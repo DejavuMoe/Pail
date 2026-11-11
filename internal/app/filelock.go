@@ -126,8 +126,10 @@ func lockConfigFile(ctx context.Context, path string) (func(), error) {
 
 // writeJSONAtomicRetry is writeJSONAtomic that retries, for well under a
 // second, the replace failures Windows reports while another program has the
-// target open for a moment. Writers of the file are already serialised by a
-// configuration lock, so a retry never reorders two writers.
+// target open for a moment, including another Pail process replacing the same
+// file. Every configuration file is written through it. Accounts and the
+// vault are also serialised by their file locks, so a retry never reorders
+// two of their writers; the other files keep last-writer-wins semantics.
 func writeJSONAtomicRetry(path string, v any) error {
 	delay := 10 * time.Millisecond
 	for attempt := 1; ; attempt++ {

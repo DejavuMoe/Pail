@@ -88,7 +88,7 @@ func (s *Service) SaveSyncJob(job SyncJob) (SyncJob, error) {
 	} else {
 		return SyncJob{}, opErr(op, ErrNotFound, "no sync job %q", job.ID)
 	}
-	if err := writeJSONAtomic(s.path(syncJobsFile), next); err != nil {
+	if err := writeJSONAtomicRetry(s.path(syncJobsFile), next); err != nil {
 		return SyncJob{}, classify(op, err)
 	}
 	s.mu.Lock()
@@ -111,7 +111,7 @@ func (s *Service) DeleteSyncJob(id string) error {
 		return opErr(op, ErrNotFound, "no sync job %q", id)
 	}
 	next := append(cur[:i:i], cur[i+1:]...)
-	if err := writeJSONAtomic(s.path(syncJobsFile), next); err != nil {
+	if err := writeJSONAtomicRetry(s.path(syncJobsFile), next); err != nil {
 		return classify(op, err)
 	}
 	s.mu.Lock()
