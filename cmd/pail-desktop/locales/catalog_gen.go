@@ -5686,6 +5686,36 @@ func (msgs Messages) MainTitleDemo() string {
 	return Catalog.Format(msgs.locale, "mainTitleDemo", nil)
 }
 
+// SettingsDownloadRate says "Download speed limit"
+// in the language the app shows.
+func SettingsDownloadRate() string { return In(i18n.Locale()).SettingsDownloadRate() }
+
+// SettingsDownloadRate says "Download speed limit"
+// in the language of msgs.
+func (msgs Messages) SettingsDownloadRate() string {
+	return Catalog.Format(msgs.locale, "settingsDownloadRate", nil)
+}
+
+// SettingsRateHelp says "In KiB per second, for all accounts together. 0 means no limit. A running transfer follows a change from its next part."
+// in the language the app shows.
+func SettingsRateHelp() string { return In(i18n.Locale()).SettingsRateHelp() }
+
+// SettingsRateHelp says "In KiB per second, for all accounts together. 0 means no limit. A running transfer follows a change from its next part."
+// in the language of msgs.
+func (msgs Messages) SettingsRateHelp() string {
+	return Catalog.Format(msgs.locale, "settingsRateHelp", nil)
+}
+
+// SettingsUploadRate says "Upload speed limit"
+// in the language the app shows.
+func SettingsUploadRate() string { return In(i18n.Locale()).SettingsUploadRate() }
+
+// SettingsUploadRate says "Upload speed limit"
+// in the language of msgs.
+func (msgs Messages) SettingsUploadRate() string {
+	return Catalog.Format(msgs.locale, "settingsUploadRate", nil)
+}
+
 // TransfersCouldNotPause says "Could not pause: {detail}"
 // in the language the app shows.
 func TransfersCouldNotPause(detail string) string {

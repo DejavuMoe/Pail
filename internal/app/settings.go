@@ -8,6 +8,7 @@ import (
 	"path/filepath"
 
 	"github.com/DejavuMoe/Pail/internal/safepath"
+	"github.com/DejavuMoe/Pail/internal/storage"
 )
 
 // Settings limits. There is deliberately no free-edition cap; the upper bounds
@@ -100,6 +101,9 @@ func (st Settings) validate() error {
 	if st.PartSizeMiB < minPartMiB || st.PartSizeMiB > maxPartMiB {
 		return fmt.Errorf("part size must be between %d and %d MiB", minPartMiB, maxPartMiB)
 	}
+	if st.UploadKiBps < 0 || st.UploadKiBps > MaxBandwidthKiBps || st.DownloadKiBps < 0 || st.DownloadKiBps > MaxBandwidthKiBps {
+		return fmt.Errorf("bandwidth limits must be between 0 (no limit) and %d KiB/s", MaxBandwidthKiBps)
+	}
 	if st.RecentOps < MinRecentOps || st.RecentOps > MaxRecentOps {
 		return fmt.Errorf("recent operations must be between %d and %d", MinRecentOps, MaxRecentOps)
 	}
@@ -154,12 +158,21 @@ func (s *Service) SaveSettings(st Settings) error {
 	s.settings = st
 	s.mu.Unlock()
 	s.setLimits(st.Limits)
+	applyBandwidth(st)
 	if old.Limits != st.Limits {
 		s.lgInfo("queue limits changed", "upload", st.Limits.Upload, "download", st.Limits.Download, "other", st.Limits.Other,
 			"prev_upload", old.Limits.Upload, "prev_download", old.Limits.Download, "prev_other", old.Limits.Other)
 	}
 	s.applyLogging(st.LogToFile) // a log file that cannot be opened never fails the save
 	return nil
+}
+
+// MaxBandwidthKiBps is the highest bandwidth limit (about 10 GB/s).
+const MaxBandwidthKiBps = 10_000_000
+
+// applyBandwidth hands the limits to the transport, which every account shares.
+func applyBandwidth(st Settings) {
+	storage.SetBandwidth(int64(st.UploadKiBps)<<10, int64(st.DownloadKiBps)<<10)
 }
 
 // ---- atomic JSON files ----------------------------------------------------------

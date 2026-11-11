@@ -143,6 +143,7 @@ func New(opts Options) (*Service, error) {
 	}
 	go s.vaultWatch()
 	s.initQueue(s.settings.Limits)
+	applyBandwidth(s.settings)
 	os.MkdirAll(s.LogDir(), 0o700)
 	if s.settings.LogToFile {
 		s.applyLogging(true)

@@ -415,6 +415,8 @@ var settingKeys = []settingKey{
 	{"other-limit", func(s app.Settings) any { return s.Limits.Other }, setInt(func(s *app.Settings) *int { return &s.Limits.Other })},
 	{"bulk-workers", func(s app.Settings) any { return s.BulkWorkers }, setInt(func(s *app.Settings) *int { return &s.BulkWorkers })},
 	{"part-size-mib", func(s app.Settings) any { return s.PartSizeMiB }, setInt(func(s *app.Settings) *int { return &s.PartSizeMiB })},
+	{"upload-kibps", func(s app.Settings) any { return s.UploadKiBps }, setInt(func(s *app.Settings) *int { return &s.UploadKiBps }, true)},
+	{"download-kibps", func(s app.Settings) any { return s.DownloadKiBps }, setInt(func(s *app.Settings) *int { return &s.DownloadKiBps }, true)},
 	{"download-dir", func(s app.Settings) any { return s.DefaultDownloadDir }, func(s *app.Settings, v string) error {
 		if v != "" {
 			abs, err := filepath.Abs(v)

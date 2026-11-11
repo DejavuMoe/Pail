@@ -32,10 +32,14 @@ type Limits struct {
 
 // Settings is persisted in settings.json.
 type Settings struct {
-	Theme              string         `json:"theme"`       // "system" | "light" | "dark"
-	Limits             Limits         `json:"limits"`      // queue slots per kind
-	BulkWorkers        int            `json:"bulkWorkers"` // workers inside one bulk task
-	PartSizeMiB        int            `json:"partSizeMiB"` // multipart part size
+	Theme       string `json:"theme"`       // "system" | "light" | "dark"
+	Limits      Limits `json:"limits"`      // queue slots per kind
+	BulkWorkers int    `json:"bulkWorkers"` // workers inside one bulk task
+	PartSizeMiB int    `json:"partSizeMiB"` // multipart part size
+	// UploadKiBps and DownloadKiBps limit the bandwidth of all transfers, in
+	// KiB per second; 0 (the default) means no limit.
+	UploadKiBps        int            `json:"uploadKiBps,omitempty"`
+	DownloadKiBps      int            `json:"downloadKiBps,omitempty"`
 	DefaultDownloadDir string         `json:"defaultDownloadDir,omitempty"`
 	Conflict           ConflictPolicy `json:"conflict"` // default for uploads/downloads
 	ShowVersions       bool           `json:"showVersions"`
