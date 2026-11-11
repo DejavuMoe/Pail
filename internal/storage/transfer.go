@@ -10,7 +10,9 @@ import (
 	"sync/atomic"
 	"time"
 
-	"github.com/aws/aws-sdk-go-v2/feature/s3/manager"
+	"github.com/aws/aws-sdk-go-v2/aws"
+	tm "github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager"
+	tmtypes "github.com/aws/aws-sdk-go-v2/feature/s3/transfermanager/types"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 )
 
@@ -20,7 +22,7 @@ import (
 // exceeds it. Upload parts may be reported before the object is committed: only
 // a nil error establishes completion.
 type TransferOptions struct {
-	PartSize    int64 // 0 = SDK default (5 MiB upload/download, 64 MiB copy)
+	PartSize    int64 // 0 = default (5 MiB upload/download, 64 MiB copy)
 	Concurrency int   // 0 = default
 	Size        int64 // expected total bytes (downloads); 0 = unknown
 	Progress    func(int64)
@@ -125,9 +127,9 @@ func (p *progressUploadClient) AbortMultipartUpload(ctx context.Context, in *s3.
 	return out, err
 }
 
-// Upload sends in.Body, using multipart for large bodies. On failure or
-// cancellation the multipart session is aborted.
-func (c *Client) Upload(ctx context.Context, in *s3.PutObjectInput, opts TransferOptions) (*manager.UploadOutput, error) {
+// Upload sends in.Body, using multipart for bodies of at least one part. On
+// failure or cancellation the multipart session is aborted.
+func (c *Client) Upload(ctx context.Context, in *s3.PutObjectInput, opts TransferOptions) (*tm.UploadObjectOutput, error) {
 	if err := opts.validate(); err != nil {
 		return nil, err
 	}
@@ -136,23 +138,74 @@ func (c *Client) Upload(ctx context.Context, in *s3.PutObjectInput, opts Transfe
 	}
 	size := bodySize(in.Body, in.ContentLength)
 	api := &progressUploadClient{Client: c.sdk, counter: &counter{size: size, report: opts.Progress}, input: in}
-	u := manager.NewUploader(api, func(u *manager.Uploader) {
+	u := tm.New(api, func(o *tm.Options) {
 		if opts.PartSize > 0 {
-			u.PartSize = opts.PartSize
+			o.PartSizeBytes = opts.PartSize
 		}
+		if o.PartSizeBytes == 0 {
+			o.PartSizeBytes = defaultTransferPart
+		}
+		// One part or less goes up with a single PutObject, as before.
+		o.MultipartUploadThreshold = o.PartSizeBytes
 		if opts.Concurrency > 0 {
-			u.Concurrency = opts.Concurrency
+			o.Concurrency = opts.Concurrency
 		}
-		u.LeavePartsOnError = false
-		u.RequestChecksumCalculation = c.reqChecksum
+		o.RequestChecksumCalculation = c.reqChecksum
 	})
-	out, err := u.Upload(ctx, in)
+	out, err := u.UploadObject(ctx, uploadInput(in))
 	api.mu.Lock()
 	defer api.mu.Unlock()
 	if api.cleanupErr != nil {
 		err = errors.Join(err, api.cleanupErr)
 	}
 	return out, err
+}
+
+// defaultTransferPart is the part size when the caller names none (the S3
+// minimum, as with the earlier SDK manager).
+const defaultTransferPart = 5 << 20
+
+// uploadInput maps a PutObject request to the transfer manager's input.
+func uploadInput(in *s3.PutObjectInput) *tm.UploadObjectInput {
+	return &tm.UploadObjectInput{
+		Bucket: in.Bucket, Key: in.Key, Body: in.Body,
+		ACL:                       tmtypes.ObjectCannedACL(in.ACL),
+		BucketKeyEnabled:          in.BucketKeyEnabled,
+		CacheControl:              in.CacheControl,
+		ChecksumAlgorithm:         tmtypes.ChecksumAlgorithm(in.ChecksumAlgorithm),
+		ChecksumCRC32:             in.ChecksumCRC32,
+		ChecksumCRC32C:            in.ChecksumCRC32C,
+		ChecksumCRC64NVME:         in.ChecksumCRC64NVME,
+		ChecksumSHA1:              in.ChecksumSHA1,
+		ChecksumSHA256:            in.ChecksumSHA256,
+		ContentLength:             in.ContentLength,
+		ContentDisposition:        in.ContentDisposition,
+		ContentEncoding:           in.ContentEncoding,
+		ContentLanguage:           in.ContentLanguage,
+		ContentType:               in.ContentType,
+		ExpectedBucketOwner:       in.ExpectedBucketOwner,
+		Expires:                   in.Expires,
+		GrantFullControl:          in.GrantFullControl,
+		GrantRead:                 in.GrantRead,
+		GrantReadACP:              in.GrantReadACP,
+		GrantWriteACP:             in.GrantWriteACP,
+		IfMatch:                   in.IfMatch,
+		IfNoneMatch:               in.IfNoneMatch,
+		Metadata:                  in.Metadata,
+		ObjectLockLegalHoldStatus: tmtypes.ObjectLockLegalHoldStatus(in.ObjectLockLegalHoldStatus),
+		ObjectLockMode:            tmtypes.ObjectLockMode(in.ObjectLockMode),
+		ObjectLockRetainUntilDate: in.ObjectLockRetainUntilDate,
+		RequestPayer:              tmtypes.RequestPayer(in.RequestPayer),
+		SSECustomerAlgorithm:      in.SSECustomerAlgorithm,
+		SSECustomerKey:            in.SSECustomerKey,
+		SSECustomerKeyMD5:         in.SSECustomerKeyMD5,
+		SSEKMSEncryptionContext:   in.SSEKMSEncryptionContext,
+		SSEKMSKeyID:               in.SSEKMSKeyId,
+		ServerSideEncryption:      tmtypes.ServerSideEncryption(in.ServerSideEncryption),
+		StorageClass:              tmtypes.StorageClass(in.StorageClass),
+		Tagging:                   in.Tagging,
+		WebsiteRedirectLocation:   in.WebsiteRedirectLocation,
+	}
 }
 
 // UploadBytes puts a small in-memory object.
@@ -210,15 +263,25 @@ func (c *Client) Download(ctx context.Context, in *s3.GetObjectInput, w io.Write
 	if opts.Progress != nil {
 		w = &progressWriter{w: w, c: &counter{size: opts.Size, report: opts.Progress}}
 	}
-	d := manager.NewDownloader(rangeCheckClient{c.sdk}, func(d *manager.Downloader) {
+	d := tm.New(rangeCheckClient{c.sdk}, func(o *tm.Options) {
+		o.PartSizeBytes = defaultTransferPart
 		if opts.PartSize > 0 {
-			d.PartSize = opts.PartSize
+			o.PartSizeBytes = opts.PartSize
 		}
 		if opts.Concurrency > 0 {
-			d.Concurrency = opts.Concurrency
+			o.Concurrency = opts.Concurrency
 		}
+		// Byte ranges work on every S3-compatible service; part-number GETs
+		// do not. The app verifies downloads itself, so the GETs do not ask
+		// for checksums the service might not keep.
+		o.GetObjectType = tmtypes.GetObjectType(tmtypes.GetObjectRanges)
+		o.DisableChecksumValidation = true
 	})
-	n, err := d.Download(ctx, w, in)
+	out, err := d.DownloadObject(ctx, downloadInput(in, w))
+	var n int64
+	if out != nil {
+		n = aws.ToInt64(out.ContentLength)
+	}
 	if errors.Is(err, errRangeIgnored) {
 		// A canceled download is reported as canceled, whichever response was
 		// in flight when it happened.
@@ -230,6 +293,30 @@ func (c *Client) Download(ctx context.Context, in *s3.GetObjectInput, w io.Write
 		}
 	}
 	return n, err
+}
+
+// downloadInput maps a GetObject request to the transfer manager's input.
+func downloadInput(in *s3.GetObjectInput, w io.WriterAt) *tm.DownloadObjectInput {
+	return &tm.DownloadObjectInput{
+		Bucket: in.Bucket, Key: in.Key, WriterAt: w,
+		ExpectedBucketOwner:        in.ExpectedBucketOwner,
+		IfMatch:                    in.IfMatch,
+		IfModifiedSince:            in.IfModifiedSince,
+		IfNoneMatch:                in.IfNoneMatch,
+		IfUnmodifiedSince:          in.IfUnmodifiedSince,
+		Range:                      in.Range,
+		RequestPayer:               tmtypes.RequestPayer(in.RequestPayer),
+		ResponseCacheControl:       in.ResponseCacheControl,
+		ResponseContentDisposition: in.ResponseContentDisposition,
+		ResponseContentEncoding:    in.ResponseContentEncoding,
+		ResponseContentLanguage:    in.ResponseContentLanguage,
+		ResponseContentType:        in.ResponseContentType,
+		ResponseExpires:            in.ResponseExpires,
+		SSECustomerAlgorithm:       in.SSECustomerAlgorithm,
+		SSECustomerKey:             in.SSECustomerKey,
+		SSECustomerKeyMD5:          in.SSECustomerKeyMD5,
+		VersionID:                  in.VersionId,
+	}
 }
 
 // downloadWhole streams the object with one unranged GET.
