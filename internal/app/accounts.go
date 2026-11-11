@@ -118,6 +118,24 @@ func normalizeAccount(a Account) (Account, error) {
 	} else if a.Provider == ProviderS3 {
 		return a, errors.New("an endpoint is required for S3-compatible providers")
 	}
+	switch a.ProxyMode {
+	case ProxyGlobal, ProxyDirect:
+		a.ProxyURL = ""
+	case ProxyCustom:
+		norm, err := storage.NormalizeProxy(a.ProxyURL)
+		if err != nil {
+			return a, err
+		}
+		if norm == "" {
+			return a, errors.New("the account's proxy needs an address such as socks5://127.0.0.1:1080")
+		}
+		if u, _ := url.Parse(norm); u != nil && u.User != nil {
+			return a, errors.New("the account's proxy takes no user name or password; set a proxy that needs them in Settings")
+		}
+		a.ProxyURL = norm
+	default:
+		return a, fmt.Errorf("unknown proxy mode %q", a.ProxyMode)
+	}
 	switch a.ChecksumMode {
 	case "":
 		a.ChecksumMode = storage.ChecksumAuto

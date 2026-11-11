@@ -26,6 +26,7 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/sts"
 	"github.com/aws/smithy-go"
+	smithyhttp "github.com/aws/smithy-go/transport/http"
 )
 
 // Checksum modes for Config.ChecksumMode.
@@ -59,6 +60,9 @@ type Config struct {
 	// NO_PROXY still connect directly. Empty follows HTTP_PROXY, HTTPS_PROXY
 	// and NO_PROXY from the environment.
 	ProxyURL string
+	// RequesterPays sends x-amz-request-payer: requester with every S3
+	// request, for buckets whose owner bills the requester.
+	RequesterPays bool
 	// HTTPClient overrides the transport (tests). When nil NewHTTPClient is used.
 	HTTPClient aws.HTTPClient
 }
@@ -93,9 +97,16 @@ func NormalizeProxy(s string) (string, error) {
 	return (&url.URL{Scheme: u.Scheme, User: u.User, Host: u.Host}).String(), nil
 }
 
+// DirectConnection as Config.ProxyURL connects without any proxy, ignoring
+// HTTP_PROXY, HTTPS_PROXY and NO_PROXY too.
+const DirectConnection = "direct"
+
 // proxyFunc is the transport's proxy selector. An address that does not pass
 // NormalizeProxy fails every request instead of silently connecting directly.
 func proxyFunc(proxyURL string) func(*http.Request) (*url.URL, error) {
+	if proxyURL == DirectConnection {
+		return nil
+	}
 	if strings.TrimSpace(proxyURL) == "" {
 		return http.ProxyFromEnvironment
 	}
@@ -145,7 +156,7 @@ func (cfg Config) validate() error {
 	default:
 		return fmt.Errorf("unknown checksum mode %q", cfg.ChecksumMode)
 	}
-	if _, err := NormalizeProxy(cfg.ProxyURL); err != nil {
+	if _, err := NormalizeProxy(cfg.ProxyURL); err != nil && cfg.ProxyURL != DirectConnection {
 		return err
 	}
 	return nil
@@ -231,6 +242,9 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 			o.BaseEndpoint = aws.String(strings.TrimRight(cfg.Endpoint, "/"))
 		}
 		o.APIOptions = append(o.APIOptions, leaveAcceptEncodingUnsigned)
+		if cfg.RequesterPays {
+			o.APIOptions = append(o.APIOptions, smithyhttp.AddHeaderValue("x-amz-request-payer", "requester"))
+		}
 		switch {
 		case whenRequired:
 			o.RequestChecksumCalculation = aws.RequestChecksumCalculationWhenRequired

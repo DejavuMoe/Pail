@@ -42,6 +42,9 @@ type acctForm struct {
 	roleName   string
 	skipTLS    bool
 	checksum   string
+	reqPays    bool   // Requester Pays buckets
+	proxyMode  string // core.Proxy*
+	proxyURL   string // the account's own proxy
 
 	tried   bool // Save was pressed: show every field error
 	saving  bool
@@ -112,7 +115,17 @@ func (a *app) openAccountForm(edit bool) {
 	if f.checksum == "" {
 		f.checksum = "auto"
 	}
-	f.advanced = f.roleARN != "" || f.skipTLS || f.checksum != "auto"
+	f.reqPays, f.proxyMode, f.proxyURL = ac.RequesterPays, ac.ProxyMode, ac.ProxyURL
+	f.advanced = f.roleARN != "" || f.skipTLS || f.checksum != "auto" || f.reqPays || f.proxyMode != core.ProxyGlobal
+}
+
+// proxyModeChoices are the proxy choices of an account.
+func proxyModeChoices() []choice {
+	return []choice{
+		{core.ProxyGlobal, locales.AcctProxyGlobal()},
+		{core.ProxyDirect, locales.AcctProxyDirect()},
+		{core.ProxyCustom, locales.AcctProxyCustom()},
+	}
 }
 
 // fieldErrors validates the form the way the service will, field by field.
@@ -145,6 +158,15 @@ func (f *acctForm) fieldErrors() map[string]string {
 	case core.CredProfile:
 		if strings.TrimSpace(f.profile) == "" {
 			e["profile"] = locales.AcctErrProfile()
+		}
+	}
+	if f.proxyMode == core.ProxyCustom {
+		u, err := url.Parse(strings.TrimSpace(f.proxyURL))
+		switch {
+		case err != nil || u.Hostname() == "" || (u.Scheme != "http" && u.Scheme != "https" && u.Scheme != "socks5"):
+			e["proxy"] = locales.AcctErrProxy()
+		case u.User != nil:
+			e["proxy"] = locales.AcctErrProxyUser()
 		}
 	}
 	if _, err := core.NormalizeCDNURL(f.cdnURL); err != nil {
@@ -188,6 +210,7 @@ func (f *acctForm) build() (core.Account, *core.Secrets) {
 		Region: strings.TrimSpace(f.region), Credentials: f.creds,
 		RoleARN: strings.TrimSpace(f.roleARN), ExternalID: strings.TrimSpace(f.externalID),
 		RoleSessionName: strings.TrimSpace(f.roleName), InsecureSkipVerify: f.skipTLS, ChecksumMode: f.checksum,
+		RequesterPays: f.reqPays, ProxyMode: f.proxyMode,
 		CDNURL: strings.TrimSpace(f.cdnURL), CDNBuckets: splitList(f.cdnBuckets),
 	}
 	// Both callers run fieldErrors first, which refuses entries that do not parse.
@@ -196,6 +219,9 @@ func (f *acctForm) build() (core.Account, *core.Secrets) {
 		ac.Provider = core.ProviderS3
 		ac.Endpoint = strings.TrimSpace(f.endpoint)
 		ac.PathStyle = f.path
+	}
+	if f.proxyMode == core.ProxyCustom {
+		ac.ProxyURL = strings.TrimSpace(f.proxyURL)
 	}
 	switch f.creds {
 	case core.CredStatic:
@@ -488,6 +514,13 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 		selectBox(c, locales.AcctChecksumMode(), &f.checksum, checksumChoices(), 0)
 	})
 	switchRowHelp(c, locales.AcctSkipTLS(), locales.AcctSkipTLSHelp(), &f.skipTLS)
+	switchRowHelp(c, locales.AcctRequesterPays(), locales.AcctRequesterPaysHelp(), &f.reqPays)
+	formFieldHelp(c, locales.AcctProxy(), locales.AcctProxyHelp(), errs["proxy"], func() {
+		selectBox(c, locales.AcctProxy(), &f.proxyMode, proxyModeChoices(), 0)
+		if f.proxyMode == core.ProxyCustom {
+			inputBox(c, &f.proxyURL, locales.AcctProxyAddress(), "socks5://127.0.0.1:1080", inputOpts{invalid: errs["proxy"] != "", mono: true})
+		}
+	})
 }
 
 func (a *app) accountFooter(c *ui.Context) {

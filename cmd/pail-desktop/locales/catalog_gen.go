@@ -514,6 +514,26 @@ func (msgs Messages) AcctErrProfile() string {
 	return Catalog.Format(msgs.locale, "acctErrProfile", nil)
 }
 
+// AcctErrProxy says "Enter an address such as socks5://127.0.0.1:1080 (http, https or socks5)"
+// in the language the app shows.
+func AcctErrProxy() string { return In(i18n.Locale()).AcctErrProxy() }
+
+// AcctErrProxy says "Enter an address such as socks5://127.0.0.1:1080 (http, https or socks5)"
+// in the language of msgs.
+func (msgs Messages) AcctErrProxy() string {
+	return Catalog.Format(msgs.locale, "acctErrProxy", nil)
+}
+
+// AcctErrProxyUser says "An account's proxy takes no user name or password; set a proxy that needs them in Settings"
+// in the language the app shows.
+func AcctErrProxyUser() string { return In(i18n.Locale()).AcctErrProxyUser() }
+
+// AcctErrProxyUser says "An account's proxy takes no user name or password; set a proxy that needs them in Settings"
+// in the language of msgs.
+func (msgs Messages) AcctErrProxyUser() string {
+	return Catalog.Format(msgs.locale, "acctErrProxyUser", nil)
+}
+
 // AcctErrRole says "A role ARN starts with arn:"
 // in the language the app shows.
 func AcctErrRole() string { return In(i18n.Locale()).AcctErrRole() }
@@ -644,6 +664,66 @@ func (msgs Messages) AcctProviderHelp() string {
 	return Catalog.Format(msgs.locale, "acctProviderHelp", nil)
 }
 
+// AcctProxy says "Proxy"
+// in the language the app shows.
+func AcctProxy() string { return In(i18n.Locale()).AcctProxy() }
+
+// AcctProxy says "Proxy"
+// in the language of msgs.
+func (msgs Messages) AcctProxy() string {
+	return Catalog.Format(msgs.locale, "acctProxy", nil)
+}
+
+// AcctProxyAddress says "Proxy address"
+// in the language the app shows.
+func AcctProxyAddress() string { return In(i18n.Locale()).AcctProxyAddress() }
+
+// AcctProxyAddress says "Proxy address"
+// in the language of msgs.
+func (msgs Messages) AcctProxyAddress() string {
+	return Catalog.Format(msgs.locale, "acctProxyAddress", nil)
+}
+
+// AcctProxyCustom says "Its own proxy"
+// in the language the app shows.
+func AcctProxyCustom() string { return In(i18n.Locale()).AcctProxyCustom() }
+
+// AcctProxyCustom says "Its own proxy"
+// in the language of msgs.
+func (msgs Messages) AcctProxyCustom() string {
+	return Catalog.Format(msgs.locale, "acctProxyCustom", nil)
+}
+
+// AcctProxyDirect says "No proxy"
+// in the language the app shows.
+func AcctProxyDirect() string { return In(i18n.Locale()).AcctProxyDirect() }
+
+// AcctProxyDirect says "No proxy"
+// in the language of msgs.
+func (msgs Messages) AcctProxyDirect() string {
+	return Catalog.Format(msgs.locale, "acctProxyDirect", nil)
+}
+
+// AcctProxyGlobal says "Same as Settings"
+// in the language the app shows.
+func AcctProxyGlobal() string { return In(i18n.Locale()).AcctProxyGlobal() }
+
+// AcctProxyGlobal says "Same as Settings"
+// in the language of msgs.
+func (msgs Messages) AcctProxyGlobal() string {
+	return Catalog.Format(msgs.locale, "acctProxyGlobal", nil)
+}
+
+// AcctProxyHelp says "Use the proxy from Settings, connect directly, or send this account's requests through a proxy of its own."
+// in the language the app shows.
+func AcctProxyHelp() string { return In(i18n.Locale()).AcctProxyHelp() }
+
+// AcctProxyHelp says "Use the proxy from Settings, connect directly, or send this account's requests through a proxy of its own."
+// in the language of msgs.
+func (msgs Messages) AcctProxyHelp() string {
+	return Catalog.Format(msgs.locale, "acctProxyHelp", nil)
+}
+
 // AcctRegionHelp says "The region requests are signed for, such as us-east-1. Leave the default unless your service asks for a specific region."
 // in the language the app shows.
 func AcctRegionHelp() string { return In(i18n.Locale()).AcctRegionHelp() }
@@ -682,6 +762,26 @@ func AcctRemoved(name string) string { return In(i18n.Locale()).AcctRemoved(name
 // in the language of msgs.
 func (msgs Messages) AcctRemoved(name string) string {
 	return Catalog.Format(msgs.locale, "acctRemoved", map[string]any{"name": name})
+}
+
+// AcctRequesterPays says "Requester pays"
+// in the language the app shows.
+func AcctRequesterPays() string { return In(i18n.Locale()).AcctRequesterPays() }
+
+// AcctRequesterPays says "Requester pays"
+// in the language of msgs.
+func (msgs Messages) AcctRequesterPays() string {
+	return Catalog.Format(msgs.locale, "acctRequesterPays", nil)
+}
+
+// AcctRequesterPaysHelp says "Sends the request-payer header with every request, so that buckets whose owner bills the requester can be read and wr…"
+// in the language the app shows.
+func AcctRequesterPaysHelp() string { return In(i18n.Locale()).AcctRequesterPaysHelp() }
+
+// AcctRequesterPaysHelp says "Sends the request-payer header with every request, so that buckets whose owner bills the requester can be read and wr…"
+// in the language of msgs.
+func (msgs Messages) AcctRequesterPaysHelp() string {
+	return Catalog.Format(msgs.locale, "acctRequesterPaysHelp", nil)
 }
 
 // AcctRoleARN says "Role ARN"
