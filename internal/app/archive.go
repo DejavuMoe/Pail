@@ -135,10 +135,16 @@ func bkArchiveOne(ctx context.Context, c *storage.Client, loc Location, opt Arch
 	if opt.Tier == TierExpedited && class == string(types.StorageClassDeepArchive) {
 		return bkFailf(res, "Expedited retrieval is not available for Deep Archive; use Standard or Bulk")
 	}
+	// RestoreArchived validates Days; checked again here, next to the
+	// conversion, so that no caller can pass a value int32 cannot hold.
+	if opt.Days < 1 || opt.Days > MaxRestoreDays {
+		return bkFailf(res, "days must be between 1 and %d", MaxRestoreDays)
+	}
+	days := int32(opt.Days)
 	in := &s3.RestoreObjectInput{
 		Bucket: aws.String(loc.Bucket), Key: aws.String(o.Key),
 		RestoreRequest: &types.RestoreRequest{
-			Days:                 aws.Int32(int32(opt.Days)),
+			Days:                 aws.Int32(days),
 			GlacierJobParameters: &types.GlacierJobParameters{Tier: types.Tier(opt.Tier)},
 		},
 	}
