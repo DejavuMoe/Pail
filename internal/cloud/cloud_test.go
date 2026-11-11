@@ -48,24 +48,28 @@ func TestNormalizeInvalidationPaths(t *testing.T) {
 	}
 }
 
-func TestOriginMatchesBucket(t *testing.T) {
+func TestDistributionsForBucketOriginNames(t *testing.T) {
+	matches := func(domain, bucket string) bool {
+		ds := DistributionsForBucket(bucket, []Distribution{{ID: "tested", Origins: []Origin{{DomainName: domain}}}})
+		return len(ds) == 1 && ds[0].ID == "tested"
+	}
 	for _, host := range []string{"assets.s3.amazonaws.com", "assets.s3.us-east-1.amazonaws.com", "assets.s3-us-west-2.amazonaws.com",
 		"assets.s3.dualstack.eu-west-1.amazonaws.com", "assets.s3.cn-north-1.amazonaws.com.cn", "ASSETS.S3.AMAZONAWS.COM.",
 		"assets.s3-website-us-east-1.amazonaws.com", "assets.s3-website.us-east-1.amazonaws.com"} {
-		if !originMatchesBucket(host, "assets") {
+		if !matches(host, "assets") {
 			t.Errorf("valid S3 origin rejected: %s", host)
 		}
 	}
 	for _, host := range []string{"assets.s3.amazonaws.com.attacker.invalid", "other.s3.amazonaws.com", "assets.example.com", "xassets.s3.amazonaws.com",
 		"assets.s3.amazonaws.com.cn.evil", "assets.s3.Bad_Region.amazonaws.com", "assets.s3x.amazonaws.com", "evil.assets.s3.amazonaws.com", ""} {
-		if originMatchesBucket(host, "assets") {
+		if matches(host, "assets") {
 			t.Errorf("non-matching origin accepted: %s", host)
 		}
 	}
-	if !originMatchesBucket("my.dotted.bucket.s3.amazonaws.com", "my.dotted.bucket") || originMatchesBucket("myXdottedXbucket.s3.amazonaws.com", "my.dotted.bucket") {
+	if !matches("my.dotted.bucket.s3.amazonaws.com", "my.dotted.bucket") || matches("myXdottedXbucket.s3.amazonaws.com", "my.dotted.bucket") {
 		t.Error("dots in bucket names must be literal")
 	}
-	if originMatchesBucket("x.s3.amazonaws.com", "") {
+	if matches("x.s3.amazonaws.com", "") {
 		t.Error("empty bucket matched")
 	}
 }
