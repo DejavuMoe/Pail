@@ -134,7 +134,7 @@ Plain `go test ./...` skips integration tests unless their endpoint variables ar
 
 External cleanup may fall back from version listing only when the endpoint explicitly reports that the API is unsupported. Denied or failed object, version or multipart listings remain cleanup errors, including errors during final verification; an unreadable list is not evidence of an empty prefix. Local HTTP regression fixtures cover these failures without external credentials.
 
-The terminal examples on the website come from `site/cli-demo.json`. `go test ./cmd/pail -run TestSiteCLIDemo` compares it with what the CLI prints; run it with `PAIL_UPDATE_GOLDEN=1` to rewrite the file, then copy it to `designs/pail-site/cli-demo.json`. --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
+The terminal examples on the website come from `site/cli-demo.json`. `go test ./cmd/pail -run TestSiteCLIDemo` compares it with what the CLI prints; run it with `PAIL_UPDATE_GOLDEN=1` to rewrite the file. --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
 
 ## Demo video
 

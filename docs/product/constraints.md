@@ -1,6 +1,6 @@
 # Pail landing site — product and UX constraints
 
-Scope: the public landing site at https://pail.download (`designs/pail-site/` prototype, `site/` production). The desktop app is not governed by this file; its rules are in `docs/dev/design.md`.
+Scope: the public landing site at https://pail.download (`site/`, built by `tools/site`). The desktop app is not governed by this file; its rules are in `docs/dev/design.md`.
 
 ## Product
 
@@ -9,7 +9,6 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 - Primary jobs: understand what Pail does, download the right archive, read how to install and use it, find the source.
 - Pages: the landing page, plus on-site docs rendered from the repository (the README has the sections Features, Install, Quick start, Command line, Data and privacy, Tested platforms and services, Build from source and License, in the Chinese README 功能, 安装, 快速开始, 命令行, 数据与隐私, 已测试的平台与服务, 从源码构建 and 许可证; Get started renders Install, Quick start, Command line, Data and privacy, Tested platforms and services and Build from source; the CLI reference from `docs/cli.md` / `docs/cli.zh-CN.md`; the changelog from `CHANGELOG.md` / `CHANGELOG.zh-CN.md`; the license, in English only because the English text is the binding one). Only the open-source project itself — repository, source files, issues, releases and download assets — links to GitHub.
 - UI surface classification: marketing.
-- Content profile: `marketing-approved`.
 
 ## Supported environments
 
@@ -34,17 +33,14 @@ Scope: the public landing site at https://pail.download (`designs/pail-site/` pr
 - Docs pages render the repository's own Markdown; they do not get separately written copy.
 - No claims about providers or platforms beyond `docs/dev/status.md` evidence.
 
-## Non-negotiable content boundary
+## Content boundary
 
-- The task brief is design input, never product copy.
-- Design goals, audience descriptions, implementation details, architecture, aesthetic rationale, agent instructions and internal review notes never appear in rendered text, attributes, ARIA, alt text, comments or client-visible data.
-- Marketing copy is allowed only after the user approves it; until then the inventory marks it `review`.
-- Do not invent claims, metrics, customers, testimonials, integrations or capabilities. Every factual sentence cites README.md, CHANGELOG.md, docs/cli.md, docs/dev/design.md or tools/release in `content-inventory.json`.
+- Design goals, implementation details, agent instructions and review notes never appear in rendered text, attributes, ARIA, alt text, comments or client-visible data.
+- Do not invent claims, metrics, customers, testimonials, integrations or capabilities. Every factual sentence must be backed by README.md, CHANGELOG.md, docs/cli.md, docs/dev/status.md or tools/release.
 
-## Approved terminology and content sources
+## Terminology and content sources
 
 - Domain terminology: `cmd/pail-desktop/locales/en.json`, `zh-Hans.json`, and the glossary in `docs/dev/design.md`.
-- Approved copy: approval of `designs/pail-site/index.html` (revision 2, 2026-10-21) approves its i18n strings.
 - Legal: the trademark notice in README.md.
 
 ## Visual and interaction constraints

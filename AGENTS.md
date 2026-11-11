@@ -8,7 +8,7 @@
 - `cmd/pail-desktop` 桌面界面（mygo）；`cmd/pail` 命令行；`internal/app` 应用编排；`internal/storage` S3 协议层；`internal/cloud` AWS 专有服务（CloudFront）。
 - `internal/rules` 上传规则与压缩；`internal/safepath` 下载路径安全；`internal/trash` 本地回收站；`internal/s3test` 内存 S3 测试服务（`--demo` 也用它）。
 - `tools/genicons` 图标生成；`tools/release` 跨平台发布构建与验包入口，复用 `tools/pack` 和 `tools/verify-release`；`integration/` MinIO 与外部端点验收。架构与不变量见 `docs/dev/architecture.md`。
-- `site/` 与 `tools/site` 是 https://pail.download 的静态网站（Landing Page）；原型在 `designs/pail-site/`，部署流水线在 `.woodpecker/site.yml`，说明见 `docs/dev/site.md`。
+- `site/` 与 `tools/site` 是 https://pail.download 的静态网站（Landing Page）；部署流水线在 `.woodpecker/site.yml`，说明见 `docs/dev/site.md`。
 
 ## 规则
 - 网络和文件传输不能阻塞 UI 线程；界面更新一律经 mygo `Window.Update`。
@@ -25,8 +25,8 @@
 - 测试、CodeQL 与发布在 GitHub Actions，工具版本由 `mise.toml` 锁定，Woodpecker 只部署网站。命令、输入输出和哪些任务不能无人值守运行，见 `docs/dev/ci.md`；改脚本时同步更新它。
 
 ## Landing Page
-- 网站改动先改原型（`designs/pail-site/`）并经用户明确批准，再实现到 `site/`；设计提交与实现提交分开。内容与产品约束见 `docs/product/constraints.md`。桌面应用和命令行的界面改动按 `docs/dev/design.md` 直接实现。
-- 网站不加载第三方资源（字体、脚本、统计），配色沿用 `theme.go` 的 Graphite & Paper，中英双语，跟随系统亮暗并可手动切换。
+- 网站直接在 `site/` 与 `tools/site` 修改，约束见 `docs/product/constraints.md`。`designs/pail-site/` 是已归档的旧原型，不需要同步。
+- 不加载第三方资源（字体、脚本、统计）；配色沿用 `theme.go`；中英双语，亮暗跟随系统并可切换。
 
 ## 云资源安全
 - 操作云资源前由应用展示范围并要求明确确认；开发测试只用隔离的本地服务或 httptest。

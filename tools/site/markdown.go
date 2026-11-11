@@ -103,7 +103,7 @@ func (e siteExtension) Extend(m goldmark.Markdown) {
 	m.Renderer().AddOptions(renderer.WithNodeRenderers(util.Prioritized(&siteRenderer{ctx: e.ctx}, 100)))
 }
 
-// convert renders Markdown to the HTML structure of the approved prototype.
+// convert renders Markdown to the HTML structure the docs pages style.
 // Raw HTML and images are errors rather than silently dropped.
 func (c *mdContext) convert(md []byte) (string, error) {
 	m := goldmark.New(goldmark.WithExtensions(siteExtension{ctx: c}))
