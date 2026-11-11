@@ -138,6 +138,19 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 预签名 URL（GET / PUT、有效期、指定版本、多对象） | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | |
 | CloudFront：distribution 列表、多路径 / 整桶失效、状态 | ✅ | ✅ 仅 AWS 账户；headless 回归覆盖跨账户旧结果、重开失效对话框、慢轮询收敛 | ✅ `httptest`，可控 API 完成顺序 | ❌ | 从未对真实 CloudFront 或 AWS 运行 |
 
+### 未发布：传输控制、跨账户、归档与网络
+
+| 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
+| --- | --- | --- | --- | --- | --- |
+| 传输改用 `feature/s3/transfermanager`（v0.5.7，替代已弃用的 `feature/s3/manager`） | ✅ | n/a | ✅ `internal/storage` 原有上传、下载、取消即中止、忽略 Range、进度测试全部通过；下载固定用 Range、不请求校验和 | ⚠️ MinIO 集成套件通过（含分片往返、分片复制、特殊键）；外部端点未跑 | transfermanager 仍是 0.x |
+| 暂停、继续、全部暂停/继续；退出时保存、启动时以暂停恢复 | ✅ `pause_test.go`：排队与运行中暂停、暂停组的后续文件、暂停中继续、取消已暂停、保存后在新会话恢复并上传 | ✅ 传输面板按钮；headless 套件通过，未单独断言按钮 | ✅ 内存 S3 | ❌ | 继续时文件从头传输；同步任务不保存 |
+| 跨账户复制、移动（流式 GET → 上传） | ✅ `crosscopy_test.go`：两个内存服务、移动删源、标头、元数据、标签保留、7 MiB 分片、断连不留对象 | ✅ 粘贴跨账户；整任务失败时提示错误 | ✅ | ❌ | 命令行的 `cp`/`mv` 仍限一个账户 |
+| 上传、下载限速 | ✅ 设置校验 | ✅ 设置 › 传输 | ✅ `ratelimit_test.go`：96 KiB 在 64 KiB/s 下两个方向均不少于 1 s；取消立即返回 | ❌ | 新值从下一个请求（下一个分片）起生效 |
+| 归档取回（Glacier 灵活检索、Deep Archive） | ✅ `archive_test.go` | ✅ 对话框、检查器状态；`TestRestoreFromArchiveDialog` | ✅ 内存 S3 新增 RestoreObject 与 `x-amz-restore` | ❌ 未对 AWS 运行 | 不估算费用 |
+| 请求者付费、账户自己的代理或直连 | ✅ `account_network_test.go` | ✅ 账户对话框高级选项 | ✅ 每个请求带 `x-amz-request-payer`；代理模式到传输配置 | ❌ | 账户代理不支持用户名和密码 |
+| CloudFront 启用、停用分配 | ✅ | ✅ 先确认；`TestCloudFrontDisableAsksFirst` | ✅ `httptest`：GET 配置、带 ETag 的 PUT，只改 `Enabled` | ❌ | 从未对真实 CloudFront 运行 |
+| 预签名链接以机密内容写入剪贴板（mygo `ClipboardOptions.Concealed`）；macOS 传输时 `Power.KeepRunning` | n/a | ⚠️ headless 无系统剪贴板与电源管理，回退普通写入 | n/a | ❌ 未在真机确认剪贴板历史与 App Nap | |
+
 ### 安全、日志与本地化
 
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
