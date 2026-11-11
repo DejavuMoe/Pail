@@ -4,7 +4,7 @@
 
 本项目所有值得注意的变更都记录在此文件中。格式遵循 [Keep a Changelog](https://keepachangelog.com/zh-CN/1.1.0/)。
 
-## [Unreleased]
+## [0.6.2] - 2026-11-11
 
 ### 新增
 
@@ -14,7 +14,7 @@
 - 在 **设置 › 传输** 中设置上传和下载限速，也可以用 `pail settings set upload-kibps` 和 `download-kibps`，所有账户共用。
 - 对象菜单中的 **从归档取回…** 和 `pail archive-restore` 可以把 S3 Glacier 灵活检索或 Deep Archive 中的对象取回若干天，可选标准、批量或加急。检查器会显示取回是否在进行，以及取回的副本可读取到何时。
 - 账户可以以请求者付费方式发送请求，用来读写所有者设置了请求者付费的存储桶；也可以使用自己的代理或不使用代理，而不跟随设置中的代理。命令行参数为 `--requester-pays` 和 `--proxy`。
-- 在 CloudFront 视图中确认后可以启用或停用分发。
+- 在 CloudFront 视图中确认后可以启用或停用分配。
 - 上传规则可以填写列表之外的存储类别，用于自定义类别名的服务。
 
 ### 变更
