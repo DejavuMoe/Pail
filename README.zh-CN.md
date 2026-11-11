@@ -126,7 +126,7 @@ pail cat s3://my-bucket/notes.txt
 
 ## 从源码构建
 
-需要 Go 1.27.3，不需要 C 编译器。
+需要 Go 1.27.4，不需要 C 编译器。
 
 ```sh
 go build -o build/ ./cmd/pail-desktop ./cmd/pail
