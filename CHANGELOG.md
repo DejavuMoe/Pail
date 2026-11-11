@@ -4,6 +4,35 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- Switching buckets while editing object tags could apply the old tags to an object with the same key in the new bucket. Leaving the object now clears the unsaved tags.
+- Saving accounts in two open instances could discard another instance's changes or restore an obsolete credential reference. Account writes now preserve the latest saved accounts and credentials.
+- Moving onto an object with identical contents but different properties could delete the source and lose its metadata or tags. The source is now kept when the destination's properties differ.
+- Invalid or overflowing day values for `multipart abort --older-than` could abort recent uploads. These values are now rejected before any upload is aborted.
+- An upload conflict could be reported as a successful retry when another object had the same size and metadata but different contents. The stored contents are now checked before reporting success.
+- Changing a setting back while its previous save was pending could leave a different value on disk. Saves now follow the order of changes.
+- Reopening Multipart uploads or CloudFront could show results from the previous account or bucket. Old requests no longer replace the current view.
+- Finishing an earlier bucket creation, account save or CloudFront invalidation could close or change a newly opened dialog. The new dialog now keeps its state.
+- Finishing a tag save could discard edits to another object or edits made after pressing Save. Those drafts are now preserved.
+- Finishing a header save, rename, storage class change or version restore or deletion could discard unsaved header or tag edits to another object, or edits made while it ran. A finished rename also moved the selection away from the object you had picked meanwhile. The other object's edits and selection are now kept, and the changed object shows its new values without losing your edits.
+- Saving MIME types or a sync job could erase changes typed while the save was pending. Those changes now remain available for the next save.
+- Retrying a failed transfer could finish without refreshing the file list or reporting its result. Retried transfers now update the list and recent operations.
+- Failed, partially failed or canceled multipart aborts could be reported as fully successful. The notification now reports the actual result.
+- Slow CloudFront responses could be discarded by every subsequent poll, leaving invalidations stuck in progress. Polling now waits for the current request to finish.
+- The tray's Upload command could remain disabled after returning to a bucket. Its availability now follows navigation.
+- A download that failed to create a folder could not be retried after removing the obstruction. The failed folder creation can now be retried.
+- Checksum sync repeatedly downloaded unchanged compressed objects. Download comparisons now use the checksum of the stored contents, including objects uploaded by earlier versions.
+- On Windows, an upload mirror could preview deletion of remote objects with names such as `CON`, then refuse to run. Remote-only deletion now accepts those object names.
+- Public links could misinterpret escaped characters in an endpoint's path. Links now preserve the path's escaping.
+- JSON output failures could leave the command line reporting success. The command now exits with an error when it cannot write the output.
+- Saving vault secrets in two open instances could lose entries that were reported as saved. Vault writes now keep every saved entry, and an instance whose master password was changed elsewhere asks to unlock again.
+- Saving accounts or vault secrets could wait forever while another Pail window or command was stuck saving. The save now gives up after a short wait and says another Pail process is saving settings.
+- On macOS, moving two files with the same name to the Trash at the same time could overwrite the first one in the Trash. Each file now keeps its own entry.
+- While the window was hidden in the tray, finished tasks such as emptying a bucket or renaming did not send their notification or refresh the list until the window was shown again. They now do so while the window is hidden.
+
 ## [0.6.0] - 2026-11-10
 
 ### Changed

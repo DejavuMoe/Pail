@@ -39,9 +39,10 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | 账户增删改、测试连接（静态密钥、profile、默认凭据、匿名、AssumeRole） | ✅ | ✅ 账户对话框 | ✅ AssumeRole 只在 `httptest` STS 上验证 | ⚠️ 每个服务端一个账户 | 测试连接单次尝试，15 秒上限，连接被拒约 0.03 秒内报 Network |
+| 多实例账户与保险库写入 | ✅ 保存、删除、桶别名、凭据迁移、保险库重置共用账户事务；保险库读写经 `vault.lock`；两把锁限时 15 秒，超时返回 `ErrConfigLocked` | ✅ 原有保存入口；超时显示“另一个 Pail 窗口或命令正在保存设置”（`TestHumanErrorConfigBusy`） | n/a；`accounts_concurrent_test.go`、`n2_vault_multiprocess_test.go`、`lock_timeout_test.go` 在 Windows 与 Linux 上覆盖独立进程写入、旧凭据代次、存储切换冲突、改主密码与写入并发、同时持两把锁的路径和持锁进程卡住时的超时，Linux race 通过 | n/a | 只保证账户与保险库写入，不代表所有配置文件都有跨进程事务；轮询加锁不保证先到先得 |
 | 指定存储桶：密钥没有列桶权限或只能用某个文件夹时，账户填写 `bucket` 或 `bucket/folder/`，侧栏与命令行只显示这些并在该文件夹中打开 | ✅ `Account.Buckets`、`ParseAccountBuckets`；`Buckets()` 不发 ListBuckets，`TestAccount` 逐个列出指定的文件夹 | ✅ 账户对话框"存储桶"字段、测试被拒时的提示；侧栏列桶被拒时的"填写存储桶…"按钮；`--bucket` 参数、`account show` / `account test`、`buckets` 输出 | ✅ `internal/app/account_buckets_test.go`、`cmd/pail/named_buckets_test.go`、`cmd/pail-desktop/named_buckets_test.go`（headless）：内存 S3 只放行指定文件夹的列表与其下的对象请求，其余（含 ListBuckets 和打开存储桶时的版本控制读取）一律 AccessDenied；多个存储桶并行测试、按顺序报告第一个失败 | ⚠️ MinIO `TestAppNamedBuckets`：桶策略只允许匿名请求按 `s3:prefix` 列出 `dir/` 并读取其下对象，测试连接、列表、预览、下载文件夹通过，桶根与其他文件夹被拒；没有对 AWS 的受限 IAM 密钥运行 | 未在原生窗口实机操作。面包屑与"上一级"停在指定文件夹，整桶操作作用于该文件夹；同一桶只能指定一个文件夹 |
 | 机密存入系统钥匙串 | ✅ | ✅ | ✅ 用内存 Keyring 验证配置文件不含机密 | ❌ | 系统钥匙串由第三方库提供 |
-| 加密保险库（Argon2id + XChaCha20-Poly1305） | ✅ | ✅ 设置 → 安全、解锁对话框、状态栏锁标识 | ✅ 迁移与回滚、自动锁定、并发写入合并、参数范围检查 | n/a | 本地功能，无服务端参与；加密代码经人工复核 |
+| 加密保险库（Argon2id + XChaCha20-Poly1305） | ✅ | ✅ 设置 → 安全、解锁对话框、状态栏锁标识 | ✅ 迁移与回滚、自动锁定、并发写入合并（含独立进程）、另一进程改主密码后旧密钥返回 Conflict、参数范围检查 | n/a | 本地功能，无服务端参与；加密代码经人工复核 |
 | 每账户 CDN 域名 | ✅ | ✅ 账户字段、检查器、命令、上传后提示 | ✅ | ✅ VersityGW：运行中上传的对象经 CDN 返回 200 且内容一致 | 测试桶本身非公开时 CDN 返回 403，会被记录为"非公开"而不是失败 |
 | 桶别名：在侧边栏、路径栏、命令面板、检查器标题和"返回"按钮里显示自定的名字，真实名称不变 | ✅ `SetBucketAlias`、`BucketAlias`，保存在账户记录 `bucketAliases` 里；`SaveAccount` 保留已有别名；`DeleteBucket` 清除该桶的别名 | ✅ 桶右键菜单"设置别名…"与对话框；侧边栏筛选同时匹配别名与真实名称；删除、清空、复制等对话框与传输任务仍显示真实名称 | ✅ `internal/app/proxy_alias_test.go`：保存、清除、重复别名、长度按字符计、重启后保留、`List` 请求仍用真实桶名；`alias_proxy_took_test.go`（headless）：对话框、侧边栏、路径栏、命令面板、中文文案 | n/a 只存在于本机配置，不发往服务端 | 未在原生窗口实机操作。命令行不显示别名 |
 | 代理服务器（设置 › 网络）：S3、STS、CloudFront 的请求经 HTTP、HTTPS 或 SOCKS5 代理，可带用户名和密码；"跟随环境变量"时沿用 `HTTP_PROXY`、`HTTPS_PROXY`、`NO_PROXY` | ✅ `Settings.Proxy`（`ProxySettings`）、`SaveProxy`；密码存机密存储，随后端迁移，保险库重置时清除并报告；改动后丢弃已建的客户端，命令行读同一设置 | ✅ 设置 › 网络：协议选择框、主机、端口、用户名、密码与"应用"；每种问题在字段下说明，保存失败时保留字段；保险库重置对话框列出代理密码 | ✅ `internal/storage/proxy_test.go`：本地 HTTP 代理与自制 SOCKS5 服务器转发 S3 请求，两者的用户名密码（含特殊字符）通过与拒绝，本机地址与 `NO_PROXY` 直连，无效地址不会退回直连；`internal/app/proxy_alias_test.go`：校验表、密码只进机密存储、保存失败回滚、密码缺失与保险库迁移和重置、测试连接走代理并因错误密码失败；`alias_proxy_took_test.go`（headless）：表单、中文文案 | ❌ 没有对真实代理软件（如 Clash）运行过 | 只读环境变量，不读操作系统的系统代理设置。不支持需要证书或其他认证方式（如 NTLM）的代理 |
@@ -55,6 +56,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 对象表复选框列、三态全选表头、选择条 | n/a | ⚠️ headless 测试（`selection_test.go`、`motion_test.go`、`theme_test.go`）：复选框只切换该行，`Shift` 范围扩选，表头三态，`Esc` 清除，选中两项及以上出现选择条（960×600 下按钮都在条内），复选框填充对比度 ≥ 3:1；亮暗快照经人工目视 | n/a | n/a 本地交互 | 未在原生窗口实机操作。`Shift` 扩选的起点是上一次普通点击或 `Ctrl` 点击的行（mygo 不公开设置起点的接口）。960×600 选中行时表格出现横向滚动条，改动前已存在 |
 | 文件夹大小：右键菜单、工具栏按钮、命令面板，检查器显示，按大小排序 | ✅ `FolderSize(ctx, loc, progress)` | ⚠️ headless 测试（`foldersize_test.go`）：触发计算、进度、按大小排序、写操作后结果作废、失败可重试、已算出的文件夹可再次计算 | ✅ `internal/app/foldersize_test.go` 对内存 S3：分页、URL 编码的 key、错误、取消 | n/a 没有对真实服务端运行 | 未在原生窗口实机操作。只统计当前对象，不含旧版本、删除标记和未完成的分段上传。超大前缀的耗时没有测量 |
 | 托盘图标、关闭即隐藏、单实例、窗口隐藏时的系统通知 | n/a | ⚠️ headless 测试：托盘状态文字、托盘图案、窗口隐藏时 Toast 改发系统通知、托盘设置的保存（`hideTrayIcon`，缺省为显示） | n/a | ❌ 只构建并通过单元测试，没有在真实的 Windows、macOS、Linux 桌面上运行 | 托盘菜单、点击行为、关闭即隐藏、单实例、系统通知、macOS 菜单栏百分比、Linux AppIndicator 缺失时的回退都未实机验证；macOS 交叉编译不代表真机 |
+| 异步结果与编辑草稿 | ✅ 原有保存、查询接口 | ⚠️ `async_regressions_test.go`：设置按操作顺序保存；工具重入和对话框重开拒绝旧回调；标签、MIME、同步任务保存保留后续输入；托盘上传可用状态随导航更新 | ✅ 标签和建桶经内存 S3；CloudFront 使用可控 API 夹具 | ❌ 这些边界尚未在修复后的原生窗口和真实云端验收 | 回归通过受控完成顺序触发，不依赖网络延迟概率 |
 | 状态栏显示最近一次成功操作的用时：加载存储桶列表、打开文件夹、上传、下载、删除 | n/a | ⚠️ headless 测试（`alias_proxy_took_test.go`）：打开文件夹与加载存储桶后更新，上传与删除完成后保留其用时、之后自动的刷新不覆盖，切换账户清除，悬停说明与中文文案；`recentops_test.go`：失败和取消的操作不更新它 | n/a | n/a 本地计时 | 未在原生窗口实机操作。用时从发出请求算到最后一页返回，上传与删除按任务的首次开始到最后结束 |
 | 最近操作列表：点击状态栏的用时打开，列出加载存储桶列表、打开文件夹、上传、下载、删除的结果（成功、失败、已取消）与用时；设置里可调条数（1 到 1000，默认 100）和是否在切换账户后保留 | ✅ `Settings.RecentOps`、`Settings.KeepRecentOps`：默认值、两端边界、越界被拒绝且不改动已保存的值、旧设置文件取默认值、重启后保留（`internal/app/settings_test.go`） | ⚠️ headless 测试（`recentops_test.go`）：各行的文字（计数、状态、失败原因、位置、账户名、用时与结束时刻）；点击用时打开、再点或 `Esc` 关闭、`Enter` 重新打开，最新的在最上；内存 S3 注入 403 的目录列表记为失败、注入延迟后被另一个文件夹取代的目录列表记为已取消、失败与已取消的上传、删除、下载经完成回调记录，且不更新状态栏；条数上限、调低后立即截断、"清空"；切换账户默认清空、开启后保留并写账户名、切走后才结束的操作在关闭时被丢弃；设置页的范围校验与开关保存；伪语言下没有未翻译文案，中文文案；亮暗、中英快照经人工目视 | n/a | n/a 只在内存里，没有写盘 | 未在原生窗口实机操作。任务的取消没有从传输面板的取消按钮走一遍，测试把已取消的任务直接交给完成回调。条数到 1000 时的滚动只在 headless 窗口里看过。命令行没有这个列表 |
 | 平铺（flat）视图 | ✅ | ✅ | ✅ | ⚠️ 与列表共用路径 | |
@@ -75,11 +77,12 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | --- | --- | --- | --- | --- | --- |
 | 文件、文件夹、整桶上传与下载，拖放 | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | 含 11 MiB 分片往返与 SHA-256 校验 |
 | 三类队列并发、取消、重试 | ✅ | ✅ 传输面板（事件驱动） | ✅ | ⚠️ 队列跑了全部端到端传输，上限数值没有断言 | |
-| 批次完成通知与历史上限 | ✅ `TaskGroup` | ✅ headless 通知断言 | ✅ `TestUploadOutcomeSurvivesHistoryEviction`：1002 个文件首项失败，通知为 1001 成功、1 失败，历史仍为 1000 条；`TestSkippedTransfersAreNotAnnouncedAsCompleted`：上传与下载的全部跳过、混合结果 | ❌ 这些边界未对真实服务端验证 | `TestGroupResultSurvivesEvictionAndActiveClear` 验证活动批次清空历史后保留汇总，最后一个成员移除后释放 |
+| 批次完成通知与历史上限 | ✅ `TaskGroup`；重试扫描创建独立批次 | ✅ headless 通知与最近操作断言 | ✅ `TestUploadOutcomeSurvivesHistoryEviction` 与 `TestRetryScanOutcomeSurvivesHistoryEviction`：1002 个文件首项失败，通知为 1001 成功、1 失败，历史仍为 1000 条；`TestSkippedTransfersAreNotAnnouncedAsCompleted`：上传与下载的全部跳过、混合结果 | ❌ 这些边界未对真实服务端验证 | `TestTransferScanRetryUsesFreshGroup` 覆盖上传、下载在有逐项失败、扫描启动前失败和排队取消后的重试；`TestGroupResultSurvivesEvictionAndActiveClear` 验证活动批次清空历史后保留汇总 |
 | 五种冲突策略 | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | |
 | create-only 条件写入与降级 | ✅ | ✅ | ✅ 412 不会被当成"不支持"，501 会降级 | ✅ 并发写竞态（MinIO、VersityGW） | 降级到 HEAD 时存在竞态，只写权限账户在 rename 策略下无法识别重放产生的 412 |
 | 分片上传与下载、四种 checksum 模式 | ✅ | ✅ 设置 | ✅ | ✅ 含 VersityGW 的服务端 checksum | 自定义 endpoint 默认 `WhenRequired` |
 | 下载先写临时文件、校验后原子发布 | ✅ | ✅ | ✅ | ✅ | 不依赖硬链接；大小不符的下载被拒绝 |
+| 上传重放与下载扫描重试 | ✅ | ✅ 原有重试入口 | ✅ `upload_replay_test.go`：竞争对象正文不同、同尺寸同 mtime 重传、单次及分片上传成功响应丢失；`download_mkdirretry_test.go`：排除目录障碍后重试，非法路径仍被拒绝 | ❌ 新增边界仅经本地协议夹具验证 | 上传正文确认会增加读取；加密 ZIP 重复上传核对解密内容 |
 | 服务端忽略 Range 时改用单连接下载 | ✅ | n/a | ✅ `download_norange_test.go`：httptest 对每个 GET 返回整个对象，内容与进度正确，只发一次带 Range 的探测和一次不带 Range 的 GET；小对象不重试；回退前已取消则不回退 | ❌ 没有忽略 Range 的真实服务端可验证（issue #6 的用户 NAS 未复测） | 修复前同一测试稳定复现 `EOF` |
 | 未完成的分片上传：列出与中止 | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | MinIO 对"文件夹"前缀返回空，应用改为列整桶后本地过滤 |
 | 任务栏进度（v0.3.0） | n/a | ⚠️ headless 测试（`flows_test.go`）：合计规则（字节、无字节时按项目数、不确定、0.5% 步长、只算排队与进行中的任务）；本地测试服务上传进行中时设置进度、值不变时不重复设置、取消后清除；不绘制界面时，后台任务事件仍更新进度并在完成后清除 | n/a | ⚠️ Windows v0.3.0 发布包连接隔离的本地限速 S3 测试服务：128 MiB 上传全程最小化，任务栏出现进度并在完成后清除；512 MiB 上传最小化时显示进度，恢复窗口取消后再次最小化，进度清除，服务端确认请求取消 | 未验证 macOS Dock 或 Linux dock；本地测试服务不代表真实云端验收。尚未开始的任务不计入总字节，开始时进度可能回退 |
@@ -88,9 +91,9 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
-| 复制、移动、重命名（同桶、跨桶、版本化源） | ✅ | ✅ 含拖到文件夹移动、F2 | ✅ | ✅ MinIO、VersityGW | 移动先复制并校验再删源；仅限同一账户 |
+| 复制、移动、重命名（同桶、跨桶、版本化源） | ✅ | ✅ 含拖到文件夹移动、F2 | ✅ `bulk_moveattrs_test.go` 另覆盖相同正文但 metadata、标头、存储类别或 tags 不同，以及复制后属性改变 | ✅ MinIO、VersityGW；新增属性竞争场景只在本地夹具验证 | 移动先复制并校验再删源；仅限同一账户；无法读取 tags 时保留源并报失败 |
 | 批量删除，逐项结果 | ✅ | ✅ 带数量估算 | ✅ unknown 不重发 | ✅ 1105 个 key（MinIO） | |
-| headers、metadata、tags 编辑 | ✅ | ✅ 单对象直接保存，多选弹范围确认 | ✅ 未改动的属性全部保留 | ✅ MinIO、VersityGW（tags 可用） | |
+| headers、metadata、tags 编辑 | ✅ | ✅ 单对象与多选编辑；离开对象时清除标签草稿（headless） | ✅ 未改动的属性全部保留；`TestTagsDraftDoesNotFollowBucket`、`TestTagsDraftClearsWhenSelectionChanges` 经内存 S3 验证切桶、取消选择、选择文件夹和多选；`n1_head_refresh_test.go` 覆盖保存标头、改存储类别、重命名、恢复或删除版本完成时保留另一对象和同一对象的草稿与选择 | ✅ MinIO、VersityGW（tags 可用） | 标签草稿切换与 N1 草稿保留回归尚未在修复后的原生窗口或真实端点验收 |
 | ACL 查看与编辑 | ✅ | ✅ 公开 ACL 需确认 | ✅ | ⚠️ VersityGW 读取 ACL 返回 NotImplemented，应用报 Unsupported | 读不到 ACL 时拒绝改写 |
 | 存储类别与加密改写（对象、整桶） | ✅ | ✅ | ✅ 改写后 HEAD 复核 | ⚠️ MinIO 存储类别支持有限、SSE-S3 需 KMS；VersityGW 静默忽略并被正确报为 failed | SSE-S3、KMS、SSE-C 成功路径从未在真实服务端验证 |
 
@@ -115,6 +118,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | 同步作业增删改、预览、执行（上传 / 下载 / 镜像，三种比较模式，排除规则） | ✅ | ✅ 预览筛选、执行确认（删除项用危险色） | ✅ 执行前逐项复核前提 | ✅ MinIO、VersityGW | `size_time` 会漏检同尺寸改动；checksum 模式下，其他工具写入、缺少 `pail-sha256` 的对象会被反复判为需要传输 |
+| 压缩对象 checksum 下载与远端镜像删除 | ✅ | ✅ 原有同步入口 | ✅ `sync_checksum_artifact_test.go`：新旧压缩对象下载后收敛、同尺寸修改仍被识别；`syncrun_remoteonly_test.go`：远端 `CON` 等对象可删除，本地非法路径仍被拒绝 | ❌ 这些边界仅经本地协议夹具验证 | 旧压缩对象缺少正文校验和时，每次 checksum 比较会读取正文 |
 | 镜像跳过目录链接的远程子树 | ✅ `PreviewSync`、`RunSync` | ✅ 复用同步预览 | ✅ `TestMirrorProtectsSkippedDirectoryDescendants`：子树保留，名称仅有相同前缀的其他目录仍按镜像规则删除 | ❌ 该边界未对真实服务端验证 | 系统无法创建目录链接时测试明确跳过 |
 | 本地删除进系统回收站 | ✅ | ✅ | ✅ Windows 与 Linux 回收站各有测试 | ⚠️ 只验证了预览，没有真的移入回收站 | Windows 拒绝长路径与网络盘 |
 
@@ -132,7 +136,7 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | 功能 | API | 界面 | 协议测试 | 真实端到端 | 备注 |
 | --- | --- | --- | --- | --- | --- |
 | 预签名 URL（GET / PUT、有效期、指定版本、多对象） | ✅ | ✅ | ✅ | ✅ MinIO、VersityGW | |
-| CloudFront：distribution 列表、多路径 / 整桶失效、状态 | ✅ | ✅ 仅 AWS 账户 | ✅ `httptest` | ❌ | 从未对真实 CloudFront 或 AWS 运行 |
+| CloudFront：distribution 列表、多路径 / 整桶失效、状态 | ✅ | ✅ 仅 AWS 账户；headless 回归覆盖跨账户旧结果、重开失效对话框、慢轮询收敛 | ✅ `httptest`，可控 API 完成顺序 | ❌ | 从未对真实 CloudFront 或 AWS 运行 |
 
 ### 安全、日志与本地化
 
@@ -148,6 +152,9 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 | --- | --- | --- | --- | --- | --- |
 | `pail` 命令行（accounts、account、vault、bucket alias、buckets、ls、cp、mv、rm、mb、rb、presign、url、versions、restore、stat、cat、mkdir、du、tags、acl、props、storage-class、multipart、cloudfront、settings、sync 及 sync job） | ✅ | n/a | ✅ 进程内对 `internal/s3test` | ❌ 命令行外壳本身没有对真实服务端运行 | 它调用的应用层在真实服务端验证过。`cloudfront` 的 `invalidate` 与 `ls` 在命令行层只测了非 AWS 账户被拒绝和确认流程，没有对 CloudFront 或模拟端点运行 |
 | CLI 结果与参数边界 | ✅ | n/a | ✅ `TestBulkSummaryBeyondItemRetention` 删除 10001 项并核对汇总；`TestSavedSyncJobSelectsItsAccount` 覆盖多账户、显式账户冲突和保险库；`TestDoubleDashDownloadDestination`、`TestInterspersedEndOfOptions` 验证 `--` 与选项值 | ❌ 这些边界未对真实服务端验证 | 不从截断的逐项明细推导总数 |
+| CLI 年龄参数、URL 与 JSON 输出 | ✅ | n/a | ✅ `output_age_regression_test.go`：非有限数、溢出、微小天数被拒绝，JSON 写失败返回非零且不执行未成功输出的同步预览；`browse_publicurl_regression_test.go` 保留端点转义 | ⚠️ Windows 实际 CLI 进程对本地 HTTP 夹具验证参数和 URL；无真实云端 | 输出失败不回滚已经完成的远端操作 |
+| 发布内容与版本验证 | n/a | n/a | ✅ 真实 PE、ELF、Mach-O 的 amd64 与 arm64 夹具核对实际版本，拒绝版本前缀、无关字符串、缺失符号和损坏数据；同名 CLI-only 包不能替换完整包 | ⚠️ 本地实际构建、打包、验包；未发布 | 保留符号会增加文件大小；旧的剥离符号产物不能通过新的版本检查 |
+| 外部验收清理结果 | n/a | n/a | ✅ `ext_cleanup_regression_test.go`：版本和 MPU 列举被拒绝、出错或最终复查失败时报告错误；明确不支持的 API 保留兼容回退 | ❌ 修复后未重跑真实外部端点 | 列举失败不能视为没有残留 |
 | 官网上的命令行演示与迷你演示（`site/cli-demo.json`、传输与版本小动画） | n/a | ⚠️ 用 ego-browser 读 DOM 核对过中英文页面（终端四个标签、视频属性、无第三方请求）；截图超时，没有目视 | ✅ `TestSiteCLIDemo`（`cmd/pail`）进程内对 `internal/s3test` 真跑四条命令并与黄金文件比较；`tools/site` 的测试核对页面、内嵌 JSON、原型与应用的用词（同一份文案键对照） | ❌ 没有对真实服务端录制 | 时间戳与预签名的凭据、签名做了规范化（见测试注释）；预签名示例用 AWS 类型账户在本地签名，没有联网 |
 | 官网首屏截图（``docs/images/main-{light,dark}-{en,zh}.webp``，四张 macOS 原生截图） | n/a | ⚠️ 所有者在 macOS 上用 ``--demo`` 截取（2026-11-07）；用 ego-browser 读 DOM 核对过中文页在亮、暗两种配色下选中的文件与尺寸，没有目视页面 | ✅ ``TestHeroScreenshotsFollowLanguageAndTheme`` 核对四张尺寸一致、页面写的宽高等于文件、两种语言页与两份 README 各用自己的图 | n/a | Open Graph 卡片（``social.webp``）由英文亮色截图重新合成，未在任何社交平台上刷新验证 |`docs/video/`，由 `tools/film` 制作） | n/a | ⚠️ 抽帧目视；没有连续观看，也没有听过配乐 | n/a | n/a | 应用窗口是 `cmd/pail-desktop/film_test.go` 逐帧渲染的真实应用，对内存 demo S3 操作；片头、片尾、字幕和飞入的文件是后加的 |
 | 发布包（Windows / Linux / macOS，amd64 与 arm64）与 SHA256SUMS | n/a | n/a | ✅ 打包工具保留 Unix 权限位（tar.gz 与 zip 各有测试） | ✅ Windows 与 Linux amd64 解压后运行过；macOS arm64 与 amd64 在真机上手动运行过，首次启动需 `xattr -dr com.apple.quarantine`；六平台 CI 原生测试与版本冒烟通过 | 已在 GitHub Releases 发布 |
@@ -160,7 +167,8 @@ VersityGW 已确认的行为：PutObject 与 CompleteMultipartUpload 遵守 `If-
 - 经 Cloudflare 的 gzip 对象：代理会解压，下载被拒绝（不会写出错误文件）。
 - SSE-S3、SSE-KMS、SSE-C 成功路径：MinIO 没有配置 KMS，VersityGW 忽略加密；https 端点上的 SSE-C 成功路径从未运行。
 - 超过 5 GiB 的对象经原地改写（存储类别、加密、属性）的分片复制路径：未验证。
-- 本地镜像删除移入真实回收站：只验证了预览。
+- 本地镜像删除移入真实回收站：只验证了预览。macOS 同名文件并发移入回收站的修复（`RENAME_EXCL`，不支持时的不覆盖兜底）只在 Windows 与 Linux 上测试了共用的占名逻辑和兜底，macOS 专用测试只交叉编译，没有在 Mac 上运行。
+- 窗口隐藏到托盘时任务完成后的通知与列表刷新：mygo 隐藏窗口不画帧这一点来自源码阅读，修复只有 headless 测试（`follow_hidden_test.go`），没有在任何原生窗口里隐藏后实测。
 - 窗口内菜单（Windows 与 Linux）：只有 headless 测试与快照目视，没有在原生窗口里手动操作，也没有用读屏软件验证。macOS 的系统右键菜单与系统菜单栏：没有目视审阅。
 - 界面动效：只有受控时钟的 headless 测试与快照目视，没有在任何原生窗口里观看过，流畅度、帧率与"减少动态效果"的系统设置都未在真实桌面上验证。
 - 窗口拖动缩放时的布局抖动：应用侧的晚一帧回读和断点翻转已修，有 headless 回归测试。缩放中的帧仍同步绘制，系统按钮与帧是否原子合成没有确认，没有采集拖动中的连续帧，因此不标记为解决。
