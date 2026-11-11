@@ -25,6 +25,8 @@ go run -tags pail_demo ./cmd/pail-desktop --demo
 
 `go test ./...` needs no tag: the tests use `internal/demo` directly.
 
+To profile the desktop app, build it with `-tags pail_pprof` and pass `--pprof 127.0.0.1:6060`; `go tool pprof http://127.0.0.1:6060/debug/pprof/heap` (or `profile`, `goroutine`) then reads it. Only loopback addresses are accepted, and release builds do not have the flag.
+
 ## Release packaging
 
 ```sh

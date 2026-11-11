@@ -10,6 +10,7 @@ import (
 	"strings"
 	"sync"
 	"time"
+	"unique"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
@@ -139,10 +140,7 @@ func (s *Service) List(ctx context.Context, loc Location, opt ListOptions) (Page
 		e := Entry{
 			Key: key, Name: entryName(key), Folder: strings.HasSuffix(key, "/"),
 			Size: aws.ToInt64(o.Size), Modified: aws.ToTime(o.LastModified), ETag: aws.ToString(o.ETag),
-			StorageClass: string(o.StorageClass),
-		}
-		if e.StorageClass == "" {
-			e.StorageClass = string(types.ObjectStorageClassStandard)
+			StorageClass: storageClassName(o.StorageClass),
 		}
 		page.Entries = append(page.Entries, e)
 	}
@@ -150,6 +148,16 @@ func (s *Service) List(ctx context.Context, loc Location, opt ListOptions) (Page
 		page.NextToken = aws.ToString(out.NextContinuationToken)
 	}
 	return page, nil
+}
+
+// storageClassName returns one shared copy of each storage class name, so a
+// listing of many objects does not keep a copy of "STANDARD" per object.
+// An empty class is STANDARD.
+func storageClassName(c types.ObjectStorageClass) string {
+	if c == "" {
+		c = types.ObjectStorageClassStandard
+	}
+	return unique.Make(string(c)).Value()
 }
 
 // entryName is the last path segment of key, without a trailing "/".
