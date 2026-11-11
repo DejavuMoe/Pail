@@ -107,13 +107,17 @@ func (a *app) commitRename(fromEnter bool) {
 					a.reloadSame(loc)
 					return
 				}
-				if loc == a.scope {
+				// The renamed row stays chosen under its new name, unless
+				// something else was chosen while the rename ran.
+				if k, one := a.soleSelected(); loc == a.scope && (a.sel.Len() == 0 || one && k == key) {
 					sel := loc.Prefix + name
 					if isFolderKey(key) {
 						sel += "/"
 					}
 					a.selectAfter = sel
-					a.headKey = ""
+				}
+				if a.headShows(loc, false, key) {
+					a.headKey = "" // the object has another name now
 				}
 				a.reloadSame(loc)
 				a.toast(locales.RenameDone(name))

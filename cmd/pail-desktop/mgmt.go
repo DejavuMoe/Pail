@@ -309,3 +309,13 @@ func shortVersion(id string) string {
 }
 
 func iconOf(name string) *ui.SVG { return icons.Get(name) }
+
+// uiTurn is what Window.Update runs on the UI thread: the drain of the queued
+// work. The follow-ups of finished tasks are not left to the next frame: a
+// window hidden in the tray draws none (mygo draws only the first frame of a
+// hidden window), yet the notifications and list refreshes they carry have to
+// happen then.
+func (a *app) uiTurn() {
+	a.drain()
+	a.pollFollows()
+}

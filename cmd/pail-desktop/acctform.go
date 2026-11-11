@@ -294,14 +294,22 @@ func (a *app) saveAccount() {
 	editing := f.editing
 	f.saving, f.saveErr = true, ""
 	f.testGen++ // a running test no longer matters
+	gen := f.testGen
 	if f.test == testRunning {
 		f.test = testIdle
 	}
 	go func() {
 		saved, err := a.svc.SaveAccount(ac, sec)
 		a.post(func() {
-			a.af.saving = false
+			current := a.af.open && a.af.testGen == gen
+			if current {
+				a.af.saving = false
+			}
 			if saved.ID == "" && err != nil {
+				if !current {
+					a.toast(humanError(err))
+					return
+				}
 				a.af.saveErr = a.noteErr(err, "acct-save", func() {
 					if a.af.open {
 						a.saveAccount()
@@ -310,7 +318,9 @@ func (a *app) saveAccount() {
 				a.af.noKeychain = errors.Is(err, core.ErrKeyringUnavailable)
 				return
 			}
-			a.af.open = false
+			if current {
+				a.af.open = false
+			}
 			a.accounts = a.svc.Accounts()
 			if err != nil { // saved, but cleaning up the old secret failed
 				a.toast(humanError(err))
@@ -318,6 +328,9 @@ func (a *app) saveAccount() {
 				a.toast(locales.AcctAdded(saved.Name))
 			} else {
 				a.toast(locales.AcctSavedAccount(saved.Name))
+			}
+			if !current {
+				return
 			}
 			if editing == "" || editing != a.accountID {
 				a.selectAccount(saved.ID)

@@ -3,6 +3,7 @@ package main
 import (
 	"context"
 	"errors"
+	"maps"
 	"slices"
 	"strings"
 	"sync"
@@ -93,9 +94,11 @@ type app struct {
 	pal   paletteState // the command palette (palette.go)
 	about aboutState   // the About dialog (about.go)
 	keys  keysState    // the keyboard shortcuts dialog (about.go)
-	// settingsMu orders the read-modify-write cycles of Settings, so two quick
-	// changes in Settings cannot overwrite each other.
-	settingsMu sync.Mutex
+	// settingsTail preserves UI submission order; settingsPending ignores
+	// completions superseded by a newer intent for the same key.
+	settingsMu      sync.Mutex
+	settingsTail    <-chan struct{}
+	settingsPending map[string]chan struct{}
 
 	// collapseTools folds the sidebar's TOOLS group to its header (sidebar.go);
 	// it is kept in settings.json (collapseTools).
@@ -170,7 +173,9 @@ type app struct {
 	headState     loadPhase
 	headErr       string
 	headGen       int
+	headSeq       int // fresh reads of the details that keep the forms (refreshHead)
 	cancelHead    context.CancelFunc
+	propsSaves    int // saves sent from the Headers tab, to tell their ends apart
 	prev          previewState
 
 	transfersOpen bool
@@ -181,6 +186,7 @@ type app struct {
 	inbox         eventInbox
 	unsub         func()
 	watches       map[string]*watch
+	retryWatches  map[string]*watch // original context while a task/group remains retryable
 
 	del       deleteState
 	newFolder bool
@@ -232,7 +238,8 @@ func newApp(svc *core.Service, opts options) *app {
 		quit:      func() {},
 		themeSet:  func(mygo.ThemeSource) {},
 		localeSet: func(string) {}, langSave: func(string) {},
-		progressSet: func(mygo.ProgressBar) {},
+		progressSet:  func(mygo.ProgressBar) {},
+		retryWatches: map[string]*watch{},
 	}
 	a.ctx, a.stop = context.WithCancel(context.Background())
 	a.post = a.enqueue
@@ -872,12 +879,108 @@ func (a *app) resetHead() {
 	a.headGen++
 	a.headKey, a.headState, a.headErr = "", loadNone, ""
 	a.resetPreview()
+	a.mg.tags = tagsForm{}
 	// The Permissions and Versions tabs describe the same object as the head:
 	// another object (perhaps of the same name in another bucket) or a new
 	// version of this one loads them again. The generations move on, so a
 	// reply still on its way is dropped.
 	a.mg.acl = aclForm{gen: a.mg.acl.gen + 1}
 	a.mg.vers = versionsForm{gen: a.mg.vers.gen + 1}
+}
+
+// headTouched is told that an operation in loc has ended which may have
+// changed keys (and what lies under the folder keys among them; all: the whole
+// of loc's folder). The details on show are read again only when they are
+// those of one of these objects: an operation never reloads, and so never
+// resets, the forms of another object chosen while it ran. Unsaved edits of
+// the object itself are kept (refreshHead).
+func (a *app) headTouched(loc Scope, all bool, keys ...string) {
+	if !a.headShows(loc, all, keys...) {
+		return
+	}
+	if a.headState != loadReady || !a.headDrafts() {
+		a.headKey = "" // nothing to keep: the next frame reads it from scratch
+		return
+	}
+	a.refreshHead()
+}
+
+// headShows reports whether the details on show are those of one of keys in
+// loc (see headTouched).
+func (a *app) headShows(loc Scope, all bool, keys ...string) bool {
+	k := a.headKey
+	if k == "" || loc.AccountID != a.scope.AccountID || loc.Bucket != a.scope.Bucket {
+		return false
+	}
+	if all && strings.HasPrefix(k, loc.Prefix) {
+		return true
+	}
+	for _, x := range keys {
+		if x == k || strings.HasSuffix(x, "/") && strings.HasPrefix(k, x) {
+			return true
+		}
+	}
+	return false
+}
+
+// headDrafts reports whether the Headers or Tags form of the object on show
+// holds something a reload would lose: edits, an open field, a save under way.
+func (a *app) headDrafts() bool {
+	p := &a.mg.props
+	if p.ready && !p.multi && p.gen == a.headGen && p.sig == a.selectionSig() && (p.dirty() || p.edit.id != "" || p.saving) {
+		return true
+	}
+	t := &a.mg.tags
+	return t.ready && t.key == a.headKey && t.gen == a.headGen && (t.dirty() || t.edit.id != "" || t.saving)
+}
+
+// refreshHead reads the details on show again without starting the forms over:
+// when they arrive, the Headers and Tags forms take them as their base and
+// keep their edits on top. What has no edits (preview, permissions, versions)
+// loads again as after any other change of the object.
+func (a *app) refreshHead() {
+	a.headSeq++
+	seq, gen, key, scope := a.headSeq, a.headGen, a.headKey, a.scope
+	a.resetPreview()
+	a.mg.acl = aclForm{gen: a.mg.acl.gen + 1}
+	a.mg.vers = versionsForm{gen: a.mg.vers.gen + 1}
+	a.bg(func() func() {
+		ctx, cancel := a.timeout(30 * time.Second)
+		defer cancel()
+		info, err := a.svc.Head(ctx, scope, key, "")
+		return func() {
+			if seq != a.headSeq || gen != a.headGen || key != a.headKey || err != nil {
+				return // superseded; on a failure the details and edits on show stay
+			}
+			a.head = info
+			if p := &a.mg.props; p.ready && !p.multi && p.gen == gen && p.sig == a.selectionSig() {
+				var q propsForm
+				q.build([]core.ObjectInfo{info}, false, 0)
+				p.rebase(&q)
+			}
+			if t := &a.mg.tags; t.ready && t.key == key && t.gen == gen {
+				rebaseTags(t, info.Tags)
+			}
+		}
+	})
+}
+
+// rebaseTags takes tags, read afresh, as the base of the Tags form and keeps
+// its edits on top (propsForm.rebase).
+func rebaseTags(t *tagsForm, tags map[string]string) {
+	names := make([]string, 0, len(tags))
+	for k := range tags {
+		names = append(names, k)
+	}
+	slices.Sort(names)
+	base := make([]kvItem, 0, len(names))
+	for _, k := range names {
+		base = append(base, kvItem{key: k, val: tags[k], baseVal: tags[k]})
+	}
+	var moved []int
+	t.items, moved = rebaseItems(t.items, base, strings.TrimSpace)
+	remapEdit(&t.edit, "t", moved)
+	t.base = maps.Clone(tags)
 }
 
 // ensureHead starts loading the details of the single selected object.
@@ -956,15 +1059,23 @@ func (a *app) applyInbox() {
 		return
 	}
 	touched := map[string]bool{}
+	removed := false
 	for _, e := range evs {
 		t := e.Task
 		touched[t.ID] = true
 		if t.GroupID != "" {
 			touched[t.GroupID] = true
+			// A fast rescan can leave retained history before retryTask finds its group.
+			if w := a.watches[t.ID]; w != nil && t.Kind == core.KindOther {
+				delete(a.watches, t.ID)
+				a.watches[t.GroupID], a.retryWatches[t.GroupID] = w, w
+			}
 		}
 		i, ok := a.taskIdx[t.ID]
 		switch {
 		case e.Removed:
+			removed = true
+			delete(a.retryWatches, t.ID)
 			if ok {
 				a.tasks = slices.Delete(a.tasks, i, i+1)
 				a.reindexTasks()
@@ -979,6 +1090,17 @@ func (a *app) applyInbox() {
 	for k := range touched {
 		if a.watches[k] != nil {
 			a.checkWatch(k)
+		}
+	}
+	if removed {
+		retained := map[string]bool{}
+		for _, t := range a.tasks {
+			retained[t.ID], retained[t.GroupID] = true, true
+		}
+		for key := range a.retryWatches {
+			if !retained[key] {
+				delete(a.retryWatches, key)
+			}
 		}
 	}
 }
@@ -999,9 +1121,30 @@ func (a *app) cancelTask(id string) {
 }
 
 func (a *app) retryTask(id string) {
-	if _, err := a.svc.Retry(id); err != nil {
+	var original Task
+	for _, t := range a.svc.Tasks() {
+		if t.ID == id {
+			original = t
+		}
+	}
+	w := a.retryWatches[id]
+	if w == nil {
+		w = a.retryWatches[original.GroupID]
+	}
+	next, err := a.svc.Retry(id)
+	if err != nil {
 		a.toast(locales.StateCouldNotRetry(humanError(err)))
 		return
+	}
+	if w != nil {
+		key := next
+		for _, t := range a.svc.Tasks() {
+			if t.ID == next && t.GroupID != "" && t.GroupID != original.GroupID {
+				key = t.GroupID // a rescan owns a fresh group, including its new transfers
+				break
+			}
+		}
+		a.addWatch(key, w)
 	}
 	a.transTab = 0
 }

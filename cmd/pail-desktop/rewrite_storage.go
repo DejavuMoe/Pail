@@ -181,9 +181,7 @@ func (a *app) submitRewrite() {
 			a.follow(id, func(t Task) {
 				sum := a.bulkSummary(t)
 				a.toast(rewriteResult(enc, t, sum, value))
-				if loc.AccountID == a.scope.AccountID && loc.Bucket == a.scope.Bucket {
-					a.headKey = "" // read the new values
-				}
+				a.headTouched(loc, sel.All, sel.Keys...) // read the new values
 				a.reloadSame(loc)
 			})
 		}

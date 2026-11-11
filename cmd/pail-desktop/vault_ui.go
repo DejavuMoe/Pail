@@ -410,23 +410,7 @@ func (a *app) submitChange() {
 
 func (a *app) setAutoLock(minutes int) {
 	a.vu.state.AutoLockMinutes = minutes
-	a.bg(func() func() {
-		a.settingsMu.Lock()
-		st := a.svc.Settings()
-		st.VaultAutoLockMinutes = minutes
-		err := a.svc.SaveSettings(st)
-		a.settingsMu.Unlock()
-		return func() {
-			a.refreshVault()
-			if err != nil {
-				a.toast(locales.VaultSaveFailed(humanError(err)))
-				return
-			}
-			if a.sf.saved != nil {
-				a.sf.saved["autolock"] = time.Now()
-			}
-		}
-	})
+	a.applySetting("autolock", func(st *core.Settings) { st.VaultAutoLockMinutes = minutes }, a.refreshVault)
 }
 
 // openReset lists what a reset loses before asking for the word RESET.

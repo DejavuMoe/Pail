@@ -319,7 +319,7 @@ func (a *app) toolsHeader(c *ui.Context) {
 func (a *app) setCollapseTools(on bool) {
 	a.collapseTools = on
 	a.applySetting("collapseTools", func(st *core.Settings) { st.CollapseTools = on }, func() {
-		a.collapseTools = !on
+		a.collapseTools = a.svc.Settings().CollapseTools
 	})
 }
 

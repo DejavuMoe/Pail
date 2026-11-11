@@ -49,6 +49,7 @@ type watch struct {
 // missed.
 func (a *app) addWatch(key string, w *watch) {
 	a.watches[key] = w
+	a.retryWatches[key] = w
 	a.applyInbox()
 	a.checkWatch(key)
 }

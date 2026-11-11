@@ -6136,6 +6136,16 @@ func (msgs Messages) MultipartAbort() string {
 	return Catalog.Format(msgs.locale, "multipartAbort", nil)
 }
 
+// MultipartAbortCanceled says "{n, plural, one {Abort canceled: # upload aborted} other {Abort canceled: # uploads aborted}}"
+// in the language the app shows.
+func MultipartAbortCanceled(n int) string { return In(i18n.Locale()).MultipartAbortCanceled(n) }
+
+// MultipartAbortCanceled says "{n, plural, one {Abort canceled: # upload aborted} other {Abort canceled: # uploads aborted}}"
+// in the language of msgs.
+func (msgs Messages) MultipartAbortCanceled(n int) string {
+	return Catalog.Format(msgs.locale, "multipartAbortCanceled", map[string]any{"n": n})
+}
+
 // MultipartAbortAction says "{n, plural, one {Abort # upload} other {Abort # uploads}}"
 // in the language the app shows.
 func MultipartAbortAction(n int) string { return In(i18n.Locale()).MultipartAbortAction(n) }
@@ -11246,6 +11256,16 @@ func TypesCanceled() string { return In(i18n.Locale()).TypesCanceled() }
 // in the language of msgs.
 func (msgs Messages) TypesCanceled() string {
 	return Catalog.Format(msgs.locale, "typesCanceled", nil)
+}
+
+// TypesConfigBusy says "Another Pail window or command is saving settings. Try again in a moment"
+// in the language the app shows.
+func TypesConfigBusy() string { return In(i18n.Locale()).TypesConfigBusy() }
+
+// TypesConfigBusy says "Another Pail window or command is saving settings. Try again in a moment"
+// in the language of msgs.
+func (msgs Messages) TypesConfigBusy() string {
+	return Catalog.Format(msgs.locale, "typesConfigBusy", nil)
 }
 
 // TypesLocked says "The encrypted vault is locked. Enter the master password to unlock it"

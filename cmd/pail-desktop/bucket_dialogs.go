@@ -24,6 +24,7 @@ func (a *app) bucketDialogs(c *ui.Context) {
 
 type newBucketForm struct {
 	open   bool
+	gen    int
 	name   string
 	region string
 	lock   bool
@@ -76,7 +77,7 @@ func (a *app) openNewBucket() {
 	if region == "" {
 		region = "us-east-1"
 	}
-	a.mg.nb = newBucketForm{open: true, region: region}
+	a.mg.nb = newBucketForm{open: true, region: region, gen: a.mg.nb.gen + 1}
 }
 
 func (a *app) createBucket() {
@@ -86,6 +87,7 @@ func (a *app) createBucket() {
 		return
 	}
 	region, lock, acct := strings.TrimSpace(f.region), f.lock, a.accountID
+	gen := f.gen
 	f.busy, f.err = true, ""
 	a.bg(func() func() {
 		ctx, cancel := a.timeout(60 * time.Second)
@@ -98,12 +100,21 @@ func (a *app) createBucket() {
 		}
 		return func() {
 			f := &a.mg.nb
-			f.busy = false
+			current := f.open && f.gen == gen && acct == a.accountID
+			if current {
+				f.busy = false
+			}
 			if err != nil {
-				f.err = humanError(err)
+				if current {
+					f.err = humanError(err)
+				} else {
+					a.toast(humanError(err))
+				}
 				return
 			}
-			f.open = false
+			if current {
+				f.open = false
+			}
 			a.toast(locales.BucketDialogsCreated(name))
 			if acct != a.accountID {
 				return
@@ -113,7 +124,9 @@ func (a *app) createBucket() {
 			} else {
 				a.loadBuckets(false)
 			}
-			a.openBucket(name)
+			if current {
+				a.openBucket(name)
+			}
 		}
 	})
 }

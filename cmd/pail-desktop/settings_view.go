@@ -112,22 +112,39 @@ func (a *app) sfFail(key, msg string) {
 // when the save fails.
 func (a *app) applySetting(key string, mutate func(*core.Settings), revert func()) {
 	delete(a.sf.errs, key)
+	delete(a.sf.saved, key)
+	if a.settingsPending == nil {
+		a.settingsPending = map[string]chan struct{}{}
+	}
+	prev, done := a.settingsTail, make(chan struct{})
+	a.settingsTail, a.settingsPending[key] = done, done
 	a.busyOps.Add(1)
 	go func() {
+		if prev != nil {
+			<-prev
+		}
 		a.settingsMu.Lock()
 		st := a.svc.Settings()
 		mutate(&st)
 		err := a.svc.SaveSettings(st)
 		a.settingsMu.Unlock()
+		close(done)
 		a.post(func() {
 			a.busyOps.Add(-1)
+			if a.settingsPending[key] != done {
+				return
+			}
+			delete(a.settingsPending, key)
 			if err != nil {
 				if revert != nil {
 					revert()
 				}
 				msg := locales.SettingsErrSave(humanError(err))
+				if key == "autolock" {
+					msg = locales.VaultSaveFailed(humanError(err))
+				}
 				a.sfFail(key, msg)
-				if a.tool != "settings" {
+				if a.tool != "settings" || key == "autolock" {
 					a.toast(msg) // nothing on screen shows the inline reason
 				}
 				return
@@ -154,10 +171,10 @@ func (a *app) commitNumber(ns numSetting) {
 	}
 	delete(f.errs, ns.key)
 	*txt = strconv.Itoa(n)
-	if n == cur {
+	if n == cur && a.settingsPending[ns.key] == nil {
 		return
 	}
-	a.applySetting(ns.key, func(st *core.Settings) { ns.set(st, n) }, func() { *ns.text(&a.sf) = strconv.Itoa(cur) })
+	a.applySetting(ns.key, func(st *core.Settings) { ns.set(st, n) }, func() { *ns.text(&a.sf) = strconv.Itoa(ns.get(a.svc.Settings())) })
 }
 
 // commitDir checks and saves the default download folder ("" asks every time).
@@ -172,20 +189,20 @@ func (a *app) commitDir() {
 	}
 	delete(f.errs, "dir")
 	f.dir = d
-	if d == cur {
+	if d == cur && a.settingsPending["dir"] == nil {
 		return
 	}
-	a.applySetting("dir", func(st *core.Settings) { st.DefaultDownloadDir = d }, func() { a.sf.dir = cur })
+	a.applySetting("dir", func(st *core.Settings) { st.DefaultDownloadDir = d }, func() { a.sf.dir = a.svc.Settings().DefaultDownloadDir })
 }
 
 // commitConflict saves the file-exists policy.
 func (a *app) commitConflict() {
 	cur := string(a.svc.Settings().Conflict)
 	v := a.sf.conflict
-	if v == cur {
+	if v == cur && a.settingsPending["conflict"] == nil {
 		return
 	}
-	a.applySetting("conflict", func(st *core.Settings) { st.Conflict = core.ConflictPolicy(v) }, func() { a.sf.conflict = cur })
+	a.applySetting("conflict", func(st *core.Settings) { st.Conflict = core.ConflictPolicy(v) }, func() { a.sf.conflict = string(a.svc.Settings().Conflict) })
 }
 
 // setTheme applies a theme at once and saves the choice.
@@ -195,18 +212,18 @@ func (a *app) setTheme(mode string) {
 		return
 	}
 	a.opts.theme = mode
-	a.applySetting("theme", func(st *core.Settings) { st.Theme = mode }, func() { a.opts.theme = prev })
+	a.applySetting("theme", func(st *core.Settings) { st.Theme = mode }, func() { a.opts.theme = a.svc.Settings().Theme })
 }
 
 // setLogToFile switches the diagnostic log at once and saves the choice.
 func (a *app) setLogToFile(on bool) {
-	a.applySetting("log", func(st *core.Settings) { st.LogToFile = on }, func() { a.sf.logOn = !on })
+	a.applySetting("log", func(st *core.Settings) { st.LogToFile = on }, func() { a.sf.logOn = a.svc.Settings().LogToFile })
 }
 
 // setKeepRecentOps chooses whether the list of recent operations survives a
 // change of account, and saves the choice. It takes effect at the next change.
 func (a *app) setKeepRecentOps(on bool) {
-	a.applySetting("keepOps", func(st *core.Settings) { st.KeepRecentOps = on }, func() { a.sf.keepOps = !on })
+	a.applySetting("keepOps", func(st *core.Settings) { st.KeepRecentOps = on }, func() { a.sf.keepOps = a.svc.Settings().KeepRecentOps })
 }
 
 // openLogDir shows the folder of the diagnostic log files in the file manager.

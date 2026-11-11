@@ -58,18 +58,6 @@ func fadeIn(c *ui.Context, el ui.Element) {
 	el.AnimatePose(ui.Pose{}, baseAnim)
 }
 
-// flips reports whether mygo puts an overlay on the other side of its anchor
-// (above instead of below, left instead of right): the place p it would take
-// overflows the window along this axis (limit long) and q, the place on the
-// other side, overflows less. It is alongTarget of mygo's layout, for
-// choosing a side before the first layout.
-func flips(p, q, size, limit float32) bool {
-	over := func(v float32) float32 {
-		return max(0, menuWindowMargin-v) + max(0, v+size-(limit-menuWindowMargin))
-	}
-	return over(p) > 0 && over(q) < over(p)
-}
-
 // modalLayer shows a dialog as ui.DialogBase does (the backdrop takes the
 // presses outside the card and Escape, the focus goes into it and back) with
 // the scrim and the card fading in over baseAnim. A dialog that closes is gone

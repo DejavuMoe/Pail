@@ -19,6 +19,7 @@ import (
 type mimeRow struct{ ext, typ string }
 
 type mimeState struct {
+	gen      int
 	saved    map[string]string
 	rows     []mimeRow
 	addExt   string
@@ -91,7 +92,7 @@ func (m *mimeState) draftType(name string) string {
 
 func (a *app) mimeEnter() {
 	m := &a.tl.mime
-	*m = mimeState{}
+	*m = mimeState{gen: m.gen + 1}
 	a.mimeReload()
 }
 
@@ -137,15 +138,27 @@ func (a *app) mimeSave() {
 		return
 	}
 	m.saving, m.err = true, ""
+	gen := m.gen
 	a.bg(func() func() {
 		err := a.svc.SaveMIMETypes(t)
 		return func() {
+			if gen != m.gen {
+				if err != nil {
+					a.toast(humanError(err))
+				} else {
+					a.toast(locales.MimeSaved())
+				}
+				return
+			}
 			m.saving = false
 			if err != nil {
 				m.err = humanError(err)
 				return
 			}
-			a.mimeReload()
+			m.saved = t
+			if !m.dirty() {
+				a.mimeReload()
+			}
 			a.toast(locales.MimeSaved())
 		}
 	})
