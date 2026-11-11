@@ -22,8 +22,20 @@ package app
 // A vault file that cannot be decrypted is never overwritten: every write
 // first re-reads the file and re-decrypts it with the held key, and refuses to
 // continue when the file changed underneath.
+//
+// Several processes may use one vault.json. Every read and write of the file
+// happens under the vault lock (filelock.go): an in-process mutex plus an OS
+// lock on the sidecar vault.lock, waited for at most configLockTimeout.
+// Writers re-read and decrypt the file under the lock and apply their change
+// to that content, so an entry another process wrote is never lost to a stale
+// in-memory copy; reads pick up other processes' writes the same way. A
+// process whose key no longer matches the file (the password was changed
+// elsewhere) gets Conflict on every read and write until it is locked and
+// unlocked again; the file is left alone. Lock order: v.wmu -> vault.lock ->
+// v.mu. The vault lock is a leaf; accounts.lock, when held, is taken first.
 
 import (
+	"context"
 	"crypto/rand"
 	"crypto/subtle"
 	"encoding/base64"
@@ -113,10 +125,16 @@ type vault struct {
 	path string
 	kdf  vaultKDFParams
 
-	mu   sync.Mutex
-	hdr  vaultHeader       // header of the file this key belongs to
-	key  []byte            // nil while locked
-	data map[string][]byte // decrypted entries
+	// wmu is the in-process half of the vault lock (see acquire). Holders
+	// wait for nothing but file I/O and key derivation, so a plain (fair)
+	// mutex is enough; only the OS lock wait needs a bound.
+	wmu sync.Mutex
+
+	mu    sync.Mutex
+	hdr   vaultHeader       // header of the file this key belongs to
+	key   []byte            // nil while locked
+	data  map[string][]byte // decrypted entries
+	nonce string            // nonce of the file content data was read from or written as
 }
 
 func newVault(path string) *vault { return &vault{path: path, kdf: vaultNewKDF} }
@@ -131,6 +149,12 @@ const lockedMessage = "the encrypted vault is locked; enter the master password 
 
 func vaultInvalid(format string, a ...any) *OpError {
 	return &OpError{Kind: ErrInvalid, Message: fmt.Sprintf(format, a...)}
+}
+
+// vaultChangedErr: vault.json is protected by another key than the one this
+// process holds, normally because another process changed the password.
+func vaultChangedErr() *OpError {
+	return &OpError{Kind: ErrConflict, Message: "the vault was changed by another process (for example its password); lock and unlock it again"}
 }
 
 func errWrongPassword() *OpError {
@@ -148,6 +172,25 @@ func checkPassword(pw string) error {
 }
 
 // ---- file I/O -------------------------------------------------------------------
+
+// acquire takes the vault lock: v.wmu, then the OS lock on vault.lock next to
+// vault.json. Every method that reads or writes vault.json holds it.
+func (v *vault) acquire() (func(), error) {
+	v.wmu.Lock()
+	dir := filepath.Dir(v.path)
+	if err := os.MkdirAll(dir, 0o700); err != nil {
+		v.wmu.Unlock()
+		return nil, err
+	}
+	release, err := lockConfigFile(context.Background(), filepath.Join(dir, vaultLockFileName))
+	if err != nil {
+		v.wmu.Unlock()
+		return nil, err
+	}
+	return func() { release(); v.wmu.Unlock() }, nil
+}
+
+func sameHeader(a, b vaultHeader) bool { return string(a.aad()) == string(b.aad()) }
 
 func (v *vault) exists() bool {
 	_, err := os.Stat(v.path)
@@ -287,11 +330,18 @@ func (v *vault) unlocked() bool {
 	return v.key != nil
 }
 
-// install replaces the in-memory state (caller holds mu).
-func (v *vault) installLocked(hdr vaultHeader, key []byte, data map[string][]byte) {
+// install replaces the in-memory state (caller holds mu). nonce identifies the
+// file content data came from.
+func (v *vault) installLocked(hdr vaultHeader, key []byte, data map[string][]byte, nonce string) {
 	wipe(v.key)
 	wipeMap(v.data)
-	v.hdr, v.key, v.data = hdr, key, data
+	v.hdr, v.key, v.data, v.nonce = hdr, key, data, nonce
+}
+
+// setDataLocked replaces the decrypted entries (caller holds mu).
+func (v *vault) setDataLocked(data map[string][]byte, nonce string) {
+	wipeMap(v.data)
+	v.data, v.nonce = data, nonce
 }
 
 // create makes a new, empty vault protected by pw and leaves it unlocked. It
@@ -300,6 +350,11 @@ func (v *vault) create(pw string) error {
 	if err := checkPassword(pw); err != nil {
 		return err
 	}
+	release, err := v.acquire()
+	if err != nil {
+		return err
+	}
+	defer release()
 	if v.exists() {
 		return &OpError{Kind: ErrConflict, Message: "a vault already exists"}
 	}
@@ -313,24 +368,30 @@ func (v *vault) create(pw string) error {
 	if err != nil {
 		return err
 	}
-	if err := writeJSONAtomic(v.path, f); err != nil {
+	if err := writeJSONAtomicRetry(v.path, f); err != nil {
 		wipe(key)
 		return err
 	}
 	v.mu.Lock()
-	v.installLocked(hdr, key, data)
+	v.installLocked(hdr, key, data, f.Nonce)
 	v.mu.Unlock()
 	return nil
 }
 
 // unlock derives the key from pw, decrypts the file and keeps the key. The
-// expensive derivation runs outside the lock so concurrent reads (which fail
-// as locked) are not delayed.
+// expensive derivation runs outside the locks so concurrent reads (which fail
+// as locked) and other processes are not delayed; a write that lands in
+// between is picked up by the next read (its nonce differs).
 func (v *vault) unlock(pw string) error {
 	if pw == "" {
 		return vaultInvalid("a master password is required")
 	}
+	release, err := v.acquire()
+	if err != nil {
+		return err
+	}
 	f, err := v.readFile()
+	release()
 	if err != nil {
 		return err
 	}
@@ -341,7 +402,7 @@ func (v *vault) unlock(pw string) error {
 		return err
 	}
 	v.mu.Lock()
-	v.installLocked(f.vaultHeader, key, data)
+	v.installLocked(f.vaultHeader, key, data, f.Nonce)
 	v.mu.Unlock()
 	return nil
 }
@@ -352,12 +413,17 @@ func (v *vault) lock() bool {
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	was := v.key != nil
-	v.installLocked(vaultHeader{}, nil, nil)
+	v.installLocked(vaultHeader{}, nil, nil, "")
 	return was
 }
 
-// destroy locks the vault and removes vault.json.
+// destroy locks the vault and removes vault.json (vault.lock stays).
 func (v *vault) destroy() error {
+	release, err := v.acquire()
+	if err != nil {
+		return err
+	}
+	defer release()
 	v.lock()
 	if err := os.Remove(v.path); err != nil && !errors.Is(err, os.ErrNotExist) {
 		return err
@@ -367,7 +433,8 @@ func (v *vault) destroy() error {
 }
 
 // changePassword re-encrypts the vault under newPW with a fresh salt. oldPW
-// must open the file; the vault is unlocked afterwards.
+// must open the file as it is on disk now, so the entries of every process are
+// kept; the vault is unlocked afterwards.
 func (v *vault) changePassword(oldPW, newPW string) error {
 	if err := checkPassword(newPW); err != nil {
 		return err
@@ -375,6 +442,11 @@ func (v *vault) changePassword(oldPW, newPW string) error {
 	if oldPW == "" {
 		return vaultInvalid("the current master password is required")
 	}
+	release, err := v.acquire()
+	if err != nil {
+		return err
+	}
+	defer release()
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	f, err := v.readFile()
@@ -395,23 +467,38 @@ func (v *vault) changePassword(oldPW, newPW string) error {
 	key := deriveKey(newPW, hdr.KDF)
 	nf, err := sealFile(hdr, key, data)
 	if err == nil {
-		err = writeJSONAtomic(v.path, nf)
+		err = writeJSONAtomicRetry(v.path, nf)
 	}
 	if err != nil {
 		wipe(key)
 		wipeMap(data)
 		return err
 	}
-	v.installLocked(hdr, key, data)
+	v.installLocked(hdr, key, data, nf.Nonce)
 	return nil
 }
 
 // ---- Keyring ------------------------------------------------------------------------
 
-// Get implements Keyring.
+// Get implements Keyring. It answers from vault.json as it is now, so entries
+// that other processes wrote or deleted since the unlock are seen. When the
+// file cannot be consulted (another process keeps the lock past the timeout,
+// the file is gone or unreadable) it answers from the entries in memory.
 func (v *vault) Get(key string) (string, error) {
-	v.mu.Lock()
-	defer v.mu.Unlock()
+	if !v.unlocked() {
+		return "", lockedErr()
+	}
+	if release, err := v.acquire(); err == nil {
+		defer release()
+		v.mu.Lock()
+		defer v.mu.Unlock()
+		if err := v.refreshLocked(); err != nil {
+			return "", err
+		}
+	} else {
+		v.mu.Lock()
+		defer v.mu.Unlock()
+	}
 	if v.key == nil {
 		return "", lockedErr()
 	}
@@ -465,11 +552,42 @@ func (v *vault) deleteMany(keys []string) error {
 	})
 }
 
+// refreshLocked reloads the entries when vault.json was rewritten since this
+// instance last read or wrote it (caller holds the vault lock and mu). Only a
+// file under another key is an error; anything else keeps the entries.
+func (v *vault) refreshLocked() error {
+	if v.key == nil {
+		return nil
+	}
+	f, err := v.readFile()
+	if err != nil || f.Nonce == v.nonce {
+		return nil
+	}
+	if !sameHeader(f.vaultHeader, v.hdr) {
+		return vaultChangedErr()
+	}
+	data, err := openFile(f, v.key)
+	if err != nil {
+		return nil
+	}
+	v.setDataLocked(data, f.Nonce)
+	return nil
+}
+
 // mutate applies fn to the current content of the file and writes the result.
-// The file is re-read and decrypted first, so a concurrent change by another
-// process is merged rather than lost, and a file that no longer matches the
-// unlocked state is never overwritten. fn reports whether it changed anything.
+// Under the vault lock the file is re-read and decrypted first, so a change by
+// another process is merged rather than lost, and a file that no longer
+// matches the unlocked state is never overwritten. fn reports whether it
+// changed anything.
 func (v *vault) mutate(fn func(map[string][]byte) bool) error {
+	if !v.unlocked() {
+		return lockedErr()
+	}
+	release, err := v.acquire()
+	if err != nil {
+		return err
+	}
+	defer release()
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	if v.key == nil {
@@ -479,33 +597,37 @@ func (v *vault) mutate(fn func(map[string][]byte) bool) error {
 	if err != nil {
 		return err
 	}
-	if string(f.vaultHeader.aad()) != string(v.hdr.aad()) {
-		return &OpError{Kind: ErrConflict, Message: "the vault was changed by another process (for example its password); lock and unlock it again"}
+	if !sameHeader(f.vaultHeader, v.hdr) {
+		return vaultChangedErr()
 	}
 	cur, err := openFile(f, v.key)
 	if err != nil {
 		return vaultInvalid("vault.json no longer matches the unlocked vault; it was not overwritten")
 	}
 	if !fn(cur) {
-		wipeMap(cur)
+		v.setDataLocked(cur, f.Nonce)
 		return nil
 	}
 	nf, err := sealFile(v.hdr, v.key, cur)
 	if err == nil {
-		err = writeJSONAtomic(v.path, nf)
+		err = writeJSONAtomicRetry(v.path, nf)
 	}
 	if err != nil {
 		wipeMap(cur)
 		return err
 	}
-	wipeMap(v.data)
-	v.data = cur
+	v.setDataLocked(cur, nf.Nonce)
 	return nil
 }
 
 // verify re-reads vault.json from disk and checks that it holds exactly the
 // given values for the given keys (migration read-back).
 func (v *vault) verify(want map[string]string) error {
+	release, err := v.acquire()
+	if err != nil {
+		return err
+	}
+	defer release()
 	v.mu.Lock()
 	defer v.mu.Unlock()
 	if v.key == nil {

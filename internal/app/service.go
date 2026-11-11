@@ -8,7 +8,8 @@
 //   - Writer locks serialise writers of persisted configuration and may be held
 //     across I/O; readers (Accounts, Settings, Tasks ...) never take them, so a
 //     keyring dialog that blocks a writer cannot freeze the UI:
-//     acctMu  SaveAccount / DeleteAccount (keyring + accounts.json)
+//     acctMu  account writers (keyring + accounts.json), then accounts.lock
+//     for the whole read-modify-write transaction across processes
 //     refMu   SetSecret / DeleteSecret (keyring + secret-refs.json)
 //     wmu     file-only writers: SaveSettings, SaveUploadRules, SaveMIMETypes,
 //     SaveSyncJob ... Never hold wmu across a keyring call, so that the
@@ -20,11 +21,17 @@
 // and ResetVault, which hold acctMu, then refMu, and take wmu (then backendMu)
 // only around the settings.json write, never across a keychain call.
 // backendMu (secretbackend.go) is taken shared around every secret read/write.
+//
+// Cross-process file locks (filelock.go) sit below those mutexes:
+// accounts.lock is always taken before vault.lock, and the vault (vault.wmu,
+// vault.lock, vault.mu) is a leaf that never calls back into Service. Both
+// file locks are acquired with a deadline (configLockTimeout, 15 s by default;
+// acctMu shares the deadline of accounts.lock) and a context where one is
+// available; giving up returns an OpError wrapping ErrConfigLocked.
 package app
 
 import (
 	"context"
-	"errors"
 	"fmt"
 	"os"
 	"path/filepath"
@@ -161,16 +168,9 @@ func (s *Service) load() error {
 	}
 	s.settings = st
 
-	var recs []accountRecord
-	if _, err := readJSON(s.path("accounts.json"), &recs); err != nil {
+	recs, err := s.readAccounts()
+	if err != nil {
 		return err
-	}
-	seen := map[string]bool{}
-	for _, r := range recs {
-		if r.ID == "" || seen[r.ID] {
-			return errors.New("accounts.json is corrupt: missing or duplicate account id")
-		}
-		seen[r.ID] = true
 	}
 	s.accounts = recs
 

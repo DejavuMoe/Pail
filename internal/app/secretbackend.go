@@ -277,8 +277,11 @@ func (s *Service) SetSecretBackend(ctx context.Context, backend, password string
 	if backend != SecretBackendKeyring && backend != SecretBackendVault {
 		return invalid(op, "unknown secret backend %q", backend)
 	}
-	s.acctMu.Lock()
-	defer s.acctMu.Unlock()
+	endWrite, err := s.beginAccountWriteCtx(ctx)
+	if err != nil {
+		return classify(op, err)
+	}
+	defer endWrite()
 	s.refMu.Lock()
 	defer s.refMu.Unlock()
 
@@ -400,7 +403,7 @@ func (s *Service) SetSecretBackend(ctx context.Context, backend, password string
 	s.mu.Unlock()
 	st.SecretBackend = backend
 	s.backendMu.Lock()
-	err := writeJSONAtomic(s.path("settings.json"), st)
+	err = writeJSONAtomicRetry(s.path("settings.json"), st)
 	if err == nil {
 		s.mu.Lock()
 		s.settings = st
@@ -447,8 +450,11 @@ func (s *Service) SetSecretBackend(ctx context.Context, backend, password string
 func (s *Service) ResetVault() (VaultReset, error) {
 	const op = "ResetVault"
 	var res VaultReset
-	s.acctMu.Lock()
-	defer s.acctMu.Unlock()
+	endWrite, err := s.beginAccountWrite()
+	if err != nil {
+		return res, classify(op, err)
+	}
+	defer endWrite()
 	s.refMu.Lock()
 	defer s.refMu.Unlock()
 
@@ -464,7 +470,7 @@ func (s *Service) ResetVault() (VaultReset, error) {
 			}
 			next[i].HasSecret, next[i].HasSession = false, false
 		}
-		if err := writeJSONAtomic(s.path("accounts.json"), next); err != nil {
+		if err := writeJSONAtomicRetry(s.path("accounts.json"), next); err != nil {
 			return VaultReset{}, classify(op, err)
 		}
 		s.mu.Lock()
@@ -487,7 +493,7 @@ func (s *Service) ResetVault() (VaultReset, error) {
 			st.Proxy.HasPassword = false
 		}
 		s.backendMu.Lock()
-		err := writeJSONAtomic(s.path("settings.json"), st)
+		err := writeJSONAtomicRetry(s.path("settings.json"), st)
 		if err == nil {
 			s.mu.Lock()
 			s.settings = st

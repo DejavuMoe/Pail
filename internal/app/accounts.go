@@ -210,8 +210,11 @@ func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error) {
 		}
 	}
 
-	s.acctMu.Lock()
-	defer s.acctMu.Unlock()
+	endWrite, err := s.beginAccountWrite()
+	if err != nil {
+		return Account{}, classify(op, err)
+	}
+	defer endWrite()
 	if sec != nil {
 		lgAddSecret(sec.SecretAccessKey)
 		lgAddSecret(sec.SessionToken)
@@ -279,7 +282,7 @@ func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error) {
 	if !replaced {
 		next = append(next, rec)
 	}
-	if err := writeJSONAtomic(s.path("accounts.json"), next); err != nil {
+	if err := writeJSONAtomicRetry(s.path("accounts.json"), next); err != nil {
 		rollback()
 		return Account{}, classify(op, err)
 	}
@@ -315,8 +318,11 @@ func (s *Service) deleteSecretEntries(old, rec accountRecord) error {
 // gone and the error reports the leftover entry.
 func (s *Service) DeleteAccount(id string) error {
 	const op = "DeleteAccount"
-	s.acctMu.Lock()
-	defer s.acctMu.Unlock()
+	endWrite, err := s.beginAccountWrite()
+	if err != nil {
+		return classify(op, err)
+	}
+	defer endWrite()
 
 	s.mu.Lock()
 	old, ok := s.accountLocked(id)
@@ -330,7 +336,7 @@ func (s *Service) DeleteAccount(id string) error {
 	if !ok {
 		return opErr(op, ErrNotFound, "no account %q", id)
 	}
-	if err := writeJSONAtomic(s.path("accounts.json"), next); err != nil {
+	if err := writeJSONAtomicRetry(s.path("accounts.json"), next); err != nil {
 		return classify(op, err)
 	}
 	s.mu.Lock()
@@ -395,8 +401,11 @@ func (s *Service) SetBucketAlias(accountID, bucket, alias string) error {
 		alias = ""
 	}
 
-	s.acctMu.Lock()
-	defer s.acctMu.Unlock()
+	endWrite, err := s.beginAccountWrite()
+	if err != nil {
+		return classify(op, err)
+	}
+	defer endWrite()
 	s.mu.Lock()
 	next := make([]accountRecord, len(s.accounts))
 	copy(next, s.accounts)
@@ -431,7 +440,7 @@ func (s *Service) SetBucketAlias(accountID, bucket, alias string) error {
 		aliases = nil
 	}
 	next[idx].BucketAliases = aliases
-	if err := writeJSONAtomic(s.path("accounts.json"), next); err != nil {
+	if err := writeJSONAtomicRetry(s.path("accounts.json"), next); err != nil {
 		return classify(op, err)
 	}
 	s.mu.Lock()
