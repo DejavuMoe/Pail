@@ -142,7 +142,7 @@ func keyListBlock(c *ui.Context, keys []string) {
 				ui.Text(c, locales.ScopeCountMore(groupInt(len(keys)-5))).FontSize(sizeSecondary).TextColor(k.TextMuted)
 				break
 			}
-			mono(ui.Text(c.Key(i), key).FontSize(sizeSecondary).TextColor(k.Text).SingleLine())
+			mono(ui.Text(c.Key(i), key).FontSize(sizeSecondary).TextColor(k.Text).SingleLine().TruncateStart().Tooltip(key))
 		}
 	})
 }

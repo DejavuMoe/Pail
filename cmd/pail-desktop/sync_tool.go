@@ -769,7 +769,7 @@ func (a *app) syncPreviewPane(c *ui.Context) {
 				}
 				ui.Icon(c, icons.Get(icon)).FontSize(14).TextColor(col)
 			case 1:
-				mono(ui.Text(c, act.Path).FontSize(sizeSecondary).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0).Tooltip(act.Path))
+				mono(ui.Text(c, act.Path).FontSize(sizeSecondary).TextColor(k.Text).SingleLine().TruncateStart().Grow(1).MinWidth(0).Tooltip(act.Path))
 			case 2:
 				secondaryCell(c, syncReason(act.Reason), true, ui.Start)
 			case 3:

@@ -282,7 +282,7 @@ func (a *app) signedResult(c *ui.Context) {
 				for i, r := range f.res {
 					ui.Row(c.Key(i)).Height(44).Gap(8).AlignItems(ui.Center).Children(func() {
 						ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
-							ui.Text(c, r.Key).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine()
+							ui.Text(c, r.Key).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().TruncateStart().Tooltip(r.Key)
 							mono(ui.Text(c, r.URL).FontSize(sizeLabel).TextColor(k.Text).SingleLine())
 						})
 						if iconButton(c, icons.Get("copy"), locales.SignedCopyUrlOf(baseName(r.Key))).Clicked() {

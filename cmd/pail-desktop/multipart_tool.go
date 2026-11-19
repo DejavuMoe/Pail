@@ -238,7 +238,7 @@ func (a *app) mpView(c *ui.Context) {
 				u := &items[row]
 				switch col {
 				case 0:
-					mono(ui.Text(c, u.Key).FontSize(sizeSecondary).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0))
+					mono(ui.Text(c, u.Key).FontSize(sizeSecondary).TextColor(k.Text).SingleLine().TruncateStart().Grow(1).MinWidth(0).Tooltip(u.Key))
 				case 1:
 					secondaryCell(c, formatTime(u.Initiated), true, ui.Start)
 				case 2:
