@@ -19,18 +19,24 @@ env:
 
 jobs:
   test:
-    name: Test ${{ matrix.target }}
+    name: Test ${{ matrix.target }}${{ matrix.part && format(' {0}', matrix.part) || '' }}
     runs-on: ${{ matrix.runner }}
     timeout-minutes: 20
     strategy:
       fail-fast: false
       matrix:
+        # The two slowest runners split their tests into the Race parts;
+        # the others run every package in one job and have no part.
         include:
           - {target: windows/amd64, runner: windows-2025}
-          - {target: windows/arm64, runner: windows-11-arm}
+          - {target: windows/arm64, runner: windows-11-arm, part: core}
+          - {target: windows/arm64, runner: windows-11-arm, part: desktop-1}
+          - {target: windows/arm64, runner: windows-11-arm, part: desktop-2}
           - {target: linux/amd64, runner: ubuntu-24.04}
           - {target: linux/arm64, runner: ubuntu-24.04-arm}
-          - {target: darwin/amd64, runner: macos-15-intel}
+          - {target: darwin/amd64, runner: macos-15-intel, part: core}
+          - {target: darwin/amd64, runner: macos-15-intel, part: desktop-1}
+          - {target: darwin/amd64, runner: macos-15-intel, part: desktop-2}
           - {target: darwin/arm64, runner: macos-15}
     steps:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
@@ -38,20 +44,34 @@ jobs:
           persist-credentials: false
       - name: Select native build cache
         shell: bash
-        run: echo native > .ci-go-cache-scope
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+        env:
+          TEST_PART: ${{ matrix.part }}
+        run: printf '%s\n' "native${TEST_PART:+-$TEST_PART}" > .ci-go-cache-scope
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: go.mod
           cache-dependency-path: |
             go.mod
             go.sum
             .ci-go-cache-scope
+      - if: matrix.part
+        uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
+        with:
+          version: 2026.11.10
+          install_args: node
       - name: Vet and native tests
         shell: bash
+        env:
+          TEST_PART: ${{ matrix.part }}
         run: |
           test "$(go env GOOS)/$(go env GOARCH)" = "${{ matrix.target }}"
-          go test -vet=all -count=1 -timeout 10m ./...
+          if [ -n "$TEST_PART" ]; then
+            node scripts/test-shard.mjs native "$TEST_PART"
+          else
+            go test -vet=all -shuffle=on -count=1 -timeout 10m ./...
+          fi
       - name: Native release-mode build and version smoke
+        if: matrix.part == '' || matrix.part == 'core'
         shell: bash
         env:
           CGO_ENABLED: "0"
@@ -70,21 +90,26 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: go.mod
-      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+      - uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
         with:
-          version: 2026.10.12
+          version: 2026.11.10
           install_args: node
       - name: Formatting, workflow and release checks
         run: |
           test -z "$(git ls-files -z '*.go' | xargs -0 gofmt -l)"
+          go vet -tags pail_demo,pail_pprof ./cmd/pail-desktop
           node --test scripts/*.test.mjs
           go run github.com/rhysd/actionlint/cmd/actionlint@v1.7.12 .github/workflows/*.yml
           sh scripts/test-publish-site.sh
+      - name: Staticcheck
+        env:
+          CGO_ENABLED: "0"
+        run: go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -matrix ./... < .github/staticcheck.matrix
       - name: Known vulnerabilities
-        run: go run golang.org/x/vuln/cmd/govulncheck@v1.9.0 ./...
+        run: go run golang.org/x/vuln/cmd/govulncheck@v1.10.0 ./...
 
   race:
     name: Race ${{ matrix.part }}
@@ -102,22 +127,22 @@ jobs:
         env:
           CACHE_SCOPE: race-${{ matrix.part }}
         run: printf '%s\n' "$CACHE_SCOPE" > .ci-go-cache-scope
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: go.mod
           cache-dependency-path: |
             go.mod
             go.sum
             .ci-go-cache-scope
-      - uses: jdx/mise-action@fc42bcc7ddbf51124c30f95a877a0c5168a3bfde # v5.2.1
+      - uses: jdx/mise-action@90f833d396d0cc3674b631d2d225e306476c303a # v5.2.10
         with:
-          version: 2026.10.12
+          version: 2026.11.10
           install_args: node
       - name: Run race shard
         env:
           RACE_PART: ${{ matrix.part }}
           CGO_ENABLED: "1"
-        run: node scripts/test-race.mjs "$RACE_PART"
+        run: node scripts/test-shard.mjs race "$RACE_PART"
 
   minio:
     name: MinIO
@@ -127,7 +152,7 @@ jobs:
       - uses: actions/checkout@3d3c42e5aac5ba805825da76410c181273ba90b1 # v7.0.1
         with:
           persist-credentials: false
-      - uses: actions/setup-go@b7ad1dad31e06c5925ef5d2fc7ad053ef454303e # v7.0.0
+      - uses: actions/setup-go@d8cbb8045d7f43706b9177cceb36c1f91a6644d5 # v7.1.0
         with:
           go-version-file: go.mod
       - uses: docker/setup-buildx-action@f87e5991a6d7451dcb8d9637bfbc97413f497069 # v4.4.1

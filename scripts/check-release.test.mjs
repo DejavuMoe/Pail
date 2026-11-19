@@ -1,4 +1,5 @@
 import assert from 'node:assert/strict';
+import { readFileSync } from 'node:fs';
 import { test } from 'node:test';
 import { checkRelease, requiredJobs } from './check-release.mjs';
 
@@ -27,7 +28,21 @@ test('requires every job for the exact source commit', () => {
   assert.equal(checkRelease('DejavuMoe/Pail', sha, fixture()).length, 2);
 });
 
-for (const name of ['Race core', 'Race desktop-1', 'Race desktop-2']) {
+const shards = requiredJobs['ci.yml'].filter(name => / (core|desktop-\d+)$/.test(name));
+
+// Renaming a job or adding a matrix entry must update the release gate too.
+test('requires the job names the CI workflow produces', () => {
+  const ci = readFileSync(new URL('../.github/workflows/ci.yml', import.meta.url), 'utf8').replace(/\r\n/g, '\n');
+  const names = [...ci.matchAll(/^ {4}name: ([^$\n]+)$/gm)].map(m => m[1]);
+  for (const m of ci.matchAll(/^ {10}- \{target: ([^,}]+), runner: [^,}]+(?:, part: ([^,}]+))?\}$/gm)) {
+    names.push(`Test ${m[1]}${m[2] ? ` ${m[2]}` : ''}`);
+  }
+  for (const part of ci.match(/^ {8}part: \[([^\]]+)\]$/m)[1].split(/,\s*/)) names.push(`Race ${part}`);
+  assert.deepEqual([...names].sort(), [...requiredJobs['ci.yml']].sort());
+  assert.equal(shards.length, 9);
+});
+
+for (const name of shards) {
   test(`requires successful ${name} before releasing`, () => {
     for (const state of ['missing', 'skipped', 'failure']) {
       assert.throws(() => checkRelease('DejavuMoe/Pail', sha, fixture((result, path) => {

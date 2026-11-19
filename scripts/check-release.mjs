@@ -3,8 +3,11 @@ import { execFileSync } from 'node:child_process';
 
 export const requiredJobs = {
   'ci.yml': [
-    'Test windows/amd64', 'Test windows/arm64', 'Test linux/amd64',
-    'Test linux/arm64', 'Test darwin/amd64', 'Test darwin/arm64',
+    'Test windows/amd64',
+    'Test windows/arm64 core', 'Test windows/arm64 desktop-1', 'Test windows/arm64 desktop-2',
+    'Test linux/amd64', 'Test linux/arm64',
+    'Test darwin/amd64 core', 'Test darwin/amd64 desktop-1', 'Test darwin/amd64 desktop-2',
+    'Test darwin/arm64',
     'Quality', 'Race core', 'Race desktop-1', 'Race desktop-2', 'MinIO',
   ],
   'codeql.yml': [

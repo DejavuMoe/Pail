@@ -1,0 +1,4 @@
+linux: GOOS=linux
+tags: GOOS=linux -tags=pail_demo,pail_pprof
+windows: GOOS=windows
+darwin: GOOS=darwin

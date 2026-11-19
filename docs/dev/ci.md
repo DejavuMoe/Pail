@@ -6,15 +6,15 @@ Forgejo (`ssh://git@ssh.via.moe/dejavu/Pail.git`) is the primary repository. Pus
 
 Woodpecker deploys only the static website. Its live acceptance is separate from the application release gates; see [site.md](site.md). GitHub Actions never deploys the website.
 
-`.gitattributes` marks `designs/pail-site/**` as `linguist-vendored` to exclude prototypes from GitHub/Forgejo language statistics. Application and shipped website sources remain counted. Hosts recompute their statistics after a push; local `git check-attr` verifies the rules, not the remote refresh.
-
 ## Locked tools and dependencies
 
-`mise.toml` pins Go 1.27.4 and Node.js 24.19.0. Run `mise trust` and `mise install go node`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
+`mise.toml` pins Go 1.27.4 and Node.js 26.13.1 (LTS). Run `mise trust` and `mise install go node`; use `mise exec -- <command>` without shell activation. `GOTOOLCHAIN=local` prevents implicit Go upgrades and `GOFLAGS=-mod=readonly` prevents implicit module changes. `go.mod` / `go.sum` pin application dependencies. Node runs small standard-library CI scripts only; the website and application need no npm packages.
 
-Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node install it with the pinned mise action. Application builds, tests and release packaging use Go directly on every host; no CI job installs or invokes PowerShell. `scripts/release.ps1` is an optional compatibility wrapper that forwards old parameters to the Go release tool. Third-party actions are pinned to full commit SHAs, and website containers to image digests. Changing the Go pin also requires updating the website builder image.
+Actions uses `setup-go` with `go-version-file: go.mod` and its module/build cache. A regression check keeps its version equal to mise. Jobs needing Node install it with the pinned mise action. Application builds, tests and release packaging use Go directly on every host; no CI job installs or invokes PowerShell. `scripts/release.ps1` is an optional compatibility wrapper that forwards old parameters to the Go release tool. Third-party actions are pinned to full commit SHAs with the release tag in a comment, the mise action to a fixed mise release, `go run` tools to a module version, and website containers to image digests. When updating a pin, check that the SHA or digest belongs to the tag (`git ls-remote https://github.com/<owner>/<repo> refs/tags/<tag>`). Changing the Go pin also requires updating the website builder image.
 
-Native tests, race shards and packaging use separate cache scopes, in addition to the runner OS/architecture and Go version that `setup-go` includes. Their keys include module files and the ignored `.ci-go-cache-scope` file, which identifies the build mode or packaging target OS without marking release sources dirty. Go checks cached build inputs and rebuilds changed packages; tests still run with `-count=1`. An exact cache hit is immutable, so changed application packages may need recompilation on later runs. Source hashes are omitted to avoid uploading a new set of module/build caches on each source change; the measured critical path is UI test execution.
+Native tests, native shards and race shards use separate cache scopes (`native`, `native-<part>`, `race-<part>`), in addition to the runner OS/architecture and Go version that `setup-go` includes. Their keys include module files and the ignored `.ci-go-cache-scope` file, which identifies the build mode without marking release sources dirty. Go checks cached build inputs and rebuilds changed packages; tests still run with `-count=1`. An exact cache hit is immutable, so changed application packages may need recompilation on later runs. Source hashes are omitted to avoid uploading a new set of module/build caches on each source change; the measured critical path is UI test execution. GitHub evicts caches unused for 7 days, so the first CI run after a quiet week compiles from scratch.
+
+Release packaging runs without a Go cache. A cache saved by a tag run is visible only to that tag, and `master` never builds the release cross-compilation mode, so a packaging cache would be uploaded on every release and never restored.
 
 Windows owns all source edits and Git writes. For Linux validation use `linux-task.ps1 -Mode build -Project <repo> -Command '...'`; build mirrors are disposable and contain no `.git`. Linux CI runs the same commands directly. Pass workflow paths explicitly to actionlint, which otherwise relies on Git discovery.
 
@@ -25,6 +25,7 @@ Run these from the repository root in PowerShell, Bash or another shell; the com
 | Purpose | Command | Runtime requirements |
 | --- | --- | --- |
 | Static checks | `go vet ./...` | Go on the current host |
+| Staticcheck | see below | Go; downloads the pinned staticcheck |
 | Native tests | `go test ./...` | Go on the current host; protocol fixtures are in-process |
 | Native build | `go build -trimpath -ldflags "-s -w" -o build/ ./cmd/pail ./cmd/pail-desktop` | Go; application builds do not require cgo |
 | All release archives | `go run ./tools/release -version 0.6.2` | Go; includes archive verification |
@@ -33,7 +34,15 @@ Run these from the repository root in PowerShell, Bash or another shell; the com
 | Race detection | `go test -race ./...` | Go, cgo and a C compiler; Linux in CI |
 | MinIO integration | `bash scripts/integration-minio.sh` | Linux, Bash, Docker, curl and Go; Windows uses the optional WSL wrapper |
 
-CI keeps six native OS/architecture test jobs because cross-compiling a binary does not test platform-specific runtime behavior. Packaging uses three Linux jobs, one per target OS with both architectures, sharing the same Go tool. This avoids six separate packaging implementations and repeated native runner setup. Node is used for CI/release metadata checks, not application builds. Website deployment remains a Linux shell operation. Real external endpoints and native GUI interaction remain manual-only checks.
+Staticcheck analyses the Linux, Windows and macOS builds and the `pail_demo` / `pail_pprof` tags in one run, so code used by only one build is not reported as unused. Quality runs it with `CGO_ENABLED=0`, as release builds do:
+
+```sh
+go run honnef.co/go/tools/cmd/staticcheck@v0.8.2 -matrix ./... < .github/staticcheck.matrix
+```
+
+In PowerShell, pipe the file instead: `Get-Content .github/staticcheck.matrix | go run ...`. Suppress a finding only with a `//lint:ignore <check> <reason>` comment on the line.
+
+CI tests all six native OS/architecture targets because cross-compiling a binary does not test platform-specific runtime behavior. Packaging uses three Linux jobs, one per target OS with both architectures, sharing the same Go tool. This avoids six separate packaging implementations and repeated native runner setup. Node is used for CI/release metadata checks, not application builds. Website deployment remains a Linux shell operation. Real external endpoints and native GUI interaction remain manual-only checks.
 
 ## Desktop test performance
 
@@ -41,7 +50,16 @@ The desktop tests render the real UI in memory, including animation frames, mini
 
 Demo environments share only the nine immutable encoded image bodies, initialized with `sync.OnceValue`. Each environment still creates its own service, account, buckets and objects; the test server copies image bytes on insertion. `internal/demo` `TestImagesMatchAndStayIsolated` compares every seeded image with the original generator, checks image dimensions and formats, and checks that replacing an image in one environment leaves the other environment and cache unchanged. Ordinary local tests and CI use this same path.
 
-Race runs in three jobs: `core` covers every package except `cmd/pail-desktop`, and `desktop-1` / `desktop-2` split that package's top-level tests, examples and fuzz seeds alternately in Go's discovered order. `node scripts/test-race.mjs <part>` discovers the inventory and runs each shard with `-race -count=1 -timeout 15m`. Empty or duplicate desktop inventories fail. The selector tests check that every discovered name belongs to exactly one shard. Test names are discovered on each run; adding a test needs no workflow edit. Each process keeps UI tests serial. A local full run can still use `go test -race -count=1 -timeout 15m ./...`.
+Race runs in three jobs: `core` covers every package except `cmd/pail-desktop`, and `desktop-1` / `desktop-2` split that package's top-level tests, examples and fuzz seeds. The native tests on the two slowest runners, windows/arm64 and darwin/amd64, use the same three parts; the other four targets run every package in one job. `node scripts/test-shard.mjs <race|native> <part>` discovers the inventory and runs each shard: `race` with `-race -shuffle=on -count=1 -timeout 15m`, `native` with the unsplit native flags `-vet=all -shuffle=on -count=1 -timeout 10m`. A selector test checks that the workflow uses the same flags and parts. Empty or duplicate desktop inventories fail. The selector tests check that every discovered name belongs to exactly one shard. Test names are discovered on each run; adding a test needs no workflow edit. Each process keeps UI tests serial. A local full run can still use `go test -race -count=1 -timeout 15m ./...`.
+
+The desktop split balances measured durations: `scripts/test-shard-weights.json` lists the tests that take at least 0.2 s and an average for all others, and the script assigns the slowest remaining test to the shard with less total weight. The weights affect only balance. A test missing from the file gets the average, and a name that no longer exists is ignored. A few long dialog and transfer tests dominate the package: a split by position alone can make one shard twice as long as the other, and adding or removing one test moves the long tests to the other side. Race and native shards use the same weights. Refresh them when one desktop shard is clearly longer than the other:
+
+```sh
+go test -count=1 -timeout 15m -json ./cmd/pail-desktop > build/test-perf/desktop-weights.json
+node scripts/test-shard.mjs weights build/test-perf/desktop-weights.json > scripts/test-shard-weights.json
+```
+
+The measurement runs without `-race`; only relative durations matter. Create `build/test-perf` first.
 
 To measure desktop execution separately from compilation and other packages, create `build/test-perf`, then run:
 
@@ -56,11 +74,11 @@ The JSON `pass` events contain per-test elapsed seconds. Compare top-level tests
 
 | Workflow | Trigger | Required jobs |
 | --- | --- | --- |
-| `CI` | `master` push or manual | Six native test jobs; Quality; three Race shards; MinIO |
+| `CI` | `master` push or manual | Ten native test jobs (six targets); Quality; three Race shards; MinIO |
 | `CodeQL` | `master` push, manual, or Wednesday 03:23 UTC | Go on Linux, Windows and macOS; site JavaScript; Actions |
 | `Release` | `v*` tag push | Exact-commit preflight; three parallel packaging jobs; verified publication |
 
-Tests and CodeQL run in parallel. A later branch push cancels obsolete validation; release runs are not cancelled. Go analysis uses native OS builds to include OS-specific source. JavaScript analysis excludes `designs/`, which contains prototypes rather than the shipped site.
+Tests and CodeQL run in parallel. A later branch push cancels obsolete validation; release runs are not cancelled. Go analysis uses native OS builds to include OS-specific source.
 
 The weekly CodeQL scan picks up new analysis rules without a source push. Push and manual runs share a concurrency group so a manual rerun replaces an obsolete source scan. Scheduled runs have a separate group and do not replace the push/manual runs required for release. GitHub may delay scheduled runs and disables schedules in public repositories after 60 days without repository activity; check Actions when resuming an inactive project.
 
@@ -73,9 +91,9 @@ The weekly CodeQL scan picks up new analysis rules without a source push. Push a
 | darwin/amd64 | macos-15-intel | ZIP with Pail.app |
 | darwin/arm64 | macos-15 | ZIP with Pail.app |
 
-Each native job checks its actual GOOS/GOARCH, runs `go test -vet=all -count=1 -timeout 10m ./...`, builds both commands without cgo and executes their version commands. `-vet=all` runs the full vet checks in the test build instead of running a separate vet build followed by the default test vet subset. The smoke build strips symbols and stamps the version, as release builds do. UI unit tests are headless. They do not prove an interactive GUI, GPU rendering or working system keychain on a user's desktop.
+Each native job checks its actual GOOS/GOARCH and runs `go test -vet=all -shuffle=on -count=1 -timeout 10m ./...`, or its part of it on a split target. The unsplit job, or the `core` part, then builds both commands without cgo and executes their version commands. `-vet=all` runs the full vet checks in the test build instead of running a separate vet build followed by the default test vet subset. `-shuffle=on` runs each package's tests in a new random order, so a test that depends on state left by an earlier one fails. The log prints the order as `-test.shuffle <seed>`; rerun with `-shuffle=<seed>` to reproduce a failure. The smoke build strips symbols and stamps the version, as release builds do. UI unit tests are headless. They do not prove an interactive GUI, GPU rendering or working system keychain on a user's desktop.
 
-Quality checks formatting, workflow syntax, release-gate and shard-selector tests, deployment fixtures and known Go vulnerabilities. Race uses cgo and a C compiler on Linux. MinIO uses the existing isolated integration suite, loading a fixed-source image built with the GitHub Actions Buildx cache. No real endpoint credentials are supplied to CI.
+Quality checks formatting, workflow syntax, release-gate and shard-selector tests, deployment fixtures, Staticcheck and known Go vulnerabilities. The release-gate test compares the required job names in `scripts/check-release.mjs` with the names the CI matrix produces, so a renamed or added job fails Quality until the gate lists it. It also vets the desktop package with the `pail_demo` and `pail_pprof` build tags, which no test or release build compiles. Race uses cgo and a C compiler on Linux. MinIO uses the existing isolated integration suite, loading a fixed-source image built with the GitHub Actions Buildx cache. No real endpoint credentials are supplied to CI.
 
 Security triage for v0.1.0: Goldmark was upgraded to v1.7.17 for [GO-2026-5320](https://pkg.go.dev/vuln/GO-2026-5320). Govulncheck also reports [GO-2026-5932](https://pkg.go.dev/vuln/GO-2026-5932) at module level: it concerns `golang.org/x/crypto/openpgp`, which Pail does not import. A passing scan means no vulnerable imported packages or reachable symbols were found, not that every package in every required module is vulnerability-free.
 
@@ -134,16 +152,12 @@ Plain `go test ./...` skips integration tests unless their endpoint variables ar
 
 External cleanup may fall back from version listing only when the endpoint explicitly reports that the API is unsupported. Denied or failed object, version or multipart listings remain cleanup errors, including errors during final verification; an unreadable list is not evidence of an empty prefix. Local HTTP regression fixtures cover these failures without external credentials.
 
-The terminal examples on the website come from `site/cli-demo.json`. `go test ./cmd/pail -run TestSiteCLIDemo` compares it with what the CLI prints; run it with `PAIL_UPDATE_GOLDEN=1` to rewrite the file. --smoke-screenshot out.png` opens an actual window and needs a desktop session. Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
+The terminal examples on the website come from `site/cli-demo.json`. `go test ./cmd/pail -run TestSiteCLIDemo` compares it with what the CLI prints; run it with `PAIL_UPDATE_GOLDEN=1` to rewrite the file.
 
-## Demo video
+The headless UI tests do not open a window. To check a real one, run the following in a desktop session; it opens the demo window, saves a screenshot and closes after 5 s:
 
-`tools/film` makes the product demo video. It is manual only and never runs in CI; the finished MP4 is not committed.
+```sh
+go run -tags pail_demo ./cmd/pail-desktop --demo --smoke-exit 5s --smoke-screenshot out.png
+```
 
-1. Capture: `$env:PAIL_FILM_DIR = "tools/film/public/capture"; go test ./cmd/pail-desktop -run 'TestFilm$' -count=1 -timeout 20m` (`cmd/pail-desktop/film_test.go`). It drives the real app against the in-memory demo S3 server with the animations playing and the clock moved one frame at a time, and writes the frames and `manifest.json` (cursor path, clicks, drops, finished uploads). Without `PAIL_FILM_DIR` the test is skipped. No real account data is involved.
-2. Sound: `node tools/film/scripts/events.mjs && node tools/film/audio/synth.mjs` writes `public/audio/events.json` and a synthesized original score with sound effects cut to the same events.
-3. Render, in the Linux runner (it has a system Chromium): `linux-task.ps1 -Mode build -Project <repo> -Command 'cd tools/film && pnpm install && PAIL_FILM_CHROMIUM=/usr/bin/chromium pnpm exec remotion render src/index.ts Main out/pail-demo.mp4 --codec h264 --crf 18'`. `node tools/film/scripts/srt.mjs` writes the English and Chinese subtitle files. Copy only the finished files out of the build mirror.
-
-The copy on the website is re-encoded from the master and committed in `docs/video/` (about 9 MB, so re-encode only when the video changes): `ffmpeg -i build/film/pail-demo.mp4 -c:v libx264 -preset slow -crf 24 -pix_fmt yuv420p -profile:v high -movflags +faststart -c:a aac -b:a 128k docs/video/pail-demo.mp4`, and the poster with `ffmpeg -ss 15.2 -i build/film/pail-demo.mp4 -frames:v 1 -c:v libwebp -quality 82 docs/video/pail-demo.webp`.
-
-The capture and the video run at 60 fps (`filmFPS` in `film_test.go`, `OUT_FPS` in `timeline.js`). When and what happens is defined once, in `tools/film/src/timeline.js`, in frames of a 30 fps film. The result is checked by eye (contact sheets of the frames) and with `ffprobe` and `ffmpeg -af ebur128`; it is not covered by `go test`.
+Snapshot, API, protocol, native-runtime and real-server results are recorded separately in [status.md](status.md).
