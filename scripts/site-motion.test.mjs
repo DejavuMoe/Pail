@@ -52,24 +52,22 @@ function load(rel, { legacyListener = false } = {}) {
   return { mq, listeners, observers, timers, termCode };
 }
 
-for (const rel of ['designs/pail-site/app.js', 'site/static/app.js']) {
-  for (const legacy of [false, true]) {
-    test(`${rel}: reduced-motion change is applied live (${legacy ? 'addListener' : 'addEventListener'})`, async () => {
-      const p = load(rel, { legacyListener: legacy });
-      await new Promise((r) => setImmediate(r)); // the prototype loads cli-demo.json first
-      assert.equal(p.listeners.length, 1, 'a change listener is registered');
-      // Make the versions demo visible: its interval starts.
-      p.observers.forEach((o) => o.cb([{ isIntersecting: true, target: { classList: { add() {} } } }]));
-      assert.ok(p.timers.size > 0, 'demo interval running while visible');
-      // OS switches to reduce while the page is open: everything stops at once.
-      p.mq.matches = true;
-      p.listeners[0]({ matches: true });
-      assert.equal(p.timers.size, 0, 'intervals cleared on switching to reduce');
-      assert.match(p.termCode.innerHTML, /t-prompt/, 'terminal shows its static final state');
-      // Switching back resumes by visibility (still in view).
-      p.mq.matches = false;
-      p.listeners[0]({ matches: false });
-      assert.ok(p.timers.size > 0, 'demos resume when reduce is turned off');
-    });
-  }
+const rel = 'site/static/app.js';
+for (const legacy of [false, true]) {
+  test(`${rel}: reduced-motion change is applied live (${legacy ? 'addListener' : 'addEventListener'})`, async () => {
+    const p = load(rel, { legacyListener: legacy });
+    assert.equal(p.listeners.length, 1, 'a change listener is registered');
+    // Make the versions demo visible: its interval starts.
+    p.observers.forEach((o) => o.cb([{ isIntersecting: true, target: { classList: { add() {} } } }]));
+    assert.ok(p.timers.size > 0, 'demo interval running while visible');
+    // OS switches to reduce while the page is open: everything stops at once.
+    p.mq.matches = true;
+    p.listeners[0]({ matches: true });
+    assert.equal(p.timers.size, 0, 'intervals cleared on switching to reduce');
+    assert.match(p.termCode.innerHTML, /t-prompt/, 'terminal shows its static final state');
+    // Switching back resumes by visibility (still in view).
+    p.mq.matches = false;
+    p.listeners[0]({ matches: false });
+    assert.ok(p.timers.size > 0, 'demos resume when reduce is turned off');
+  });
 }

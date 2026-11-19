@@ -4,13 +4,12 @@ The public website lives in this repository next to the application. It is a sta
 
 | Path | Contents | State |
 | --- | --- | --- |
-| `designs/pail-site/` | Original prototype (revision 2, 2026-10-21) | archived, not kept in sync |
 | `site/` | Production templates, locale files and static assets | implemented |
 | `tools/site/` | Go generator: `go run ./tools/site -out <dir> -version <x.y.z>` | implemented, tested |
 | `.woodpecker/site.yml` | Build and deploy pipeline on Forgejo's Woodpecker | deployed on netcup-vps500 |
 | `docs/product/constraints.md` | Content and UX rules for the site | current |
 
-Change the site directly in `site/` and `tools/site/`. The archived prototype is not updated.
+Change the site directly in `site/` and `tools/site/`.
 
 ## Why one repository and a Go generator
 
@@ -61,7 +60,7 @@ Flags: `-out`, `-version` (required); `-root` (default: found by walking up to t
 
 The tests (`go test ./tools/site/...`) build the real site and check both languages and every page, the stable heading ids, that the Chinese docs reuse the English ids in order, that the six download links match the targets in `tools/release`, the mirror links and switch, the release date, that every internal link and fragment resolves to a built file and id and that external links stay on the allowed hosts, that `app.js` only asks for embedded strings, fingerprinting, deterministic output, that a translation with different headings or a link that leaves the repository fails the build, input validation, and the writing rules in [writing.md](writing.md) (`TestCopyRules`, in `tools/site/copy_test.go`).
 
-Behaviour of the page scripts: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, a disclosure menu for narrow screens, and reduced-motion support that also applies when the system setting changes while the page is open. The demo video is a native `<video>` that does not autoplay and has a poster and a plain download link inside it; its captions are part of the picture, so it has no `<track>`. There is no site search or command palette. Without JavaScript every section, link and download still works; the theme control, menu button and object-key backdrop are hidden, the mobile navigation is shown as a plain list on narrow screens, and the terminal shows its first example.
+Behaviour of the page scripts: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, a disclosure menu for narrow screens, and reduced-motion support that also applies when the system setting changes while the page is open. The demo video is a native `<video>` that does not autoplay and has a poster and a plain download link inside it; its captions are part of the picture, so it has no `<track>`. It keeps `preload="none"`, and Chrome's own centre play button does nothing on such a video until something has loaded, so `app.js` hides the native controls, shows the page's own play button over the poster, and restores the native controls once the video starts; without JavaScript the native controls stay. Interaction feedback (pressed buttons, the menu icon turning into a cross, the mobile menu dropping in, the terminal tab marker, a theme cross-fade where the browser has view transitions) is not an entrance animation and stops under reduced motion like everything else. On narrow screens the terminal tabs scroll sideways and the edge with more tabs behind it fades out. There is no site search or command palette. Without JavaScript every section, link and download still works; the theme control and menu button are hidden, the mobile navigation is shown as a plain list on narrow screens, and the terminal shows its first example.
 
 The site loads no webfonts. Text uses each operating system's default sans-serif and monospace stacks with CJK fallbacks (see `docs/product/constraints.md`), so the site makes no third-party requests and there are no font licences to ship.
 

@@ -25,7 +25,7 @@
 - 测试、CodeQL 与发布在 GitHub Actions，工具版本由 `mise.toml` 锁定，Woodpecker 只部署网站。命令、输入输出和哪些任务不能无人值守运行，见 `docs/dev/ci.md`；改脚本时同步更新它。
 
 ## Landing Page
-- 网站直接在 `site/` 与 `tools/site` 修改，约束见 `docs/product/constraints.md`。`designs/pail-site/` 是已归档的旧原型，不需要同步。
+- 网站直接在 `site/` 与 `tools/site` 修改，约束见 `docs/product/constraints.md`。
 - 不加载第三方资源（字体、脚本、统计）；配色沿用 `theme.go`；中英双语，亮暗跟随系统并可切换。
 
 ## 云资源安全

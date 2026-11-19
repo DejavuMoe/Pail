@@ -76,4 +76,4 @@ Write documentation as described in [docs/dev/writing.md](docs/dev/writing.md); 
 
 ## Project layout
 
-The packages and what each one does are listed in [docs/dev/architecture.md](docs/dev/architecture.md). Outside `cmd/` and `internal/`: `tools/` (icon generation, release packaging and verification, website generator), `integration/` (tests against MinIO and external endpoints), `site/` (templates, strings and static files of https://pail.download) and `designs/` (website prototypes). The application API, design rules, CI and verification status are in [docs/dev/](docs/dev/).
+The packages and what each one does are listed in [docs/dev/architecture.md](docs/dev/architecture.md). Outside `cmd/` and `internal/`: `tools/` (icon generation, release packaging and verification, website generator), `integration/` (tests against MinIO and external endpoints) and `site/` (templates, strings and static files of https://pail.download). The application API, design rules, CI and verification status are in [docs/dev/](docs/dev/).
