@@ -66,11 +66,15 @@ export function weightsFromTestJSON(text) {
   return weights;
 }
 
-// Flags shared by every shard of a mode. `list` builds the same test binary
+// Flags shared by every shard of a mode; `desktop` is added for the desktop
+// shards. Under -race the desktop tests run one at a time: mygo keeps
+// package-level state (the z-order painters set by ZIndex, the frame-stats
+// switch) that one UI thread writes in the app but parallel Testers write at
+// once, which the detector reports although no app code races. `list` builds the same test binary
 // that `run` executes, so the inventory and the shard agree.
 export const modes = {
-  race: { list: ['-race'], run: ['-race', '-shuffle=on', '-count=1', '-timeout', '15m'] },
-  native: { list: ['-vet=all'], run: ['-vet=all', '-shuffle=on', '-count=1', '-timeout', '10m'] },
+  race: { list: ['-race'], run: ['-race', '-shuffle=on', '-count=1', '-timeout', '15m'], desktop: ['-parallel', '1'] },
+  native: { list: ['-vet=all'], run: ['-vet=all', '-shuffle=on', '-count=1', '-timeout', '10m'], desktop: [] },
 };
 export const parts = ['core', ...Array.from({ length: shardCount }, (_, i) => `desktop-${i + 1}`)];
 
@@ -91,7 +95,7 @@ if (import.meta.main) {
       } else {
         const weights = JSON.parse(readFileSync(new URL('test-shard-weights.json', import.meta.url), 'utf8'));
         const inventory = capture(['test', ...modes[mode].list, '-list', '^(Test|Fuzz|Example)', desktop]);
-        args.push('-run', desktopShards(inventory, weights)[parts.indexOf(part) - 1], desktop);
+        args.push(...modes[mode].desktop, '-run', desktopShards(inventory, weights)[parts.indexOf(part) - 1], desktop);
       }
       execFileSync('go', args, { cwd, stdio: 'inherit' });
     }

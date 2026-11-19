@@ -90,6 +90,9 @@ test('the workflow runs the same flags and parts as the shard script', () => {
 test('race and native shards differ only in their test flags', () => {
   assert.deepEqual(modes.race.run.filter(flag => flag !== '-race'), ['-shuffle=on', '-count=1', '-timeout', '15m']);
   assert.ok(modes.race.list.includes('-race'));
+  // Parallel Testers trip the detector on mygo's package-level state.
+  assert.deepEqual(modes.race.desktop, ['-parallel', '1']);
+  assert.deepEqual(modes.native.desktop, []);
   assert.ok(modes.native.list.includes('-vet=all') && modes.native.run.includes('-vet=all'));
   assert.deepEqual(parts, ['core', 'desktop-1', 'desktop-2']);
 });
