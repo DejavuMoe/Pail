@@ -1,6 +1,7 @@
 # 项目开发约定
 
 - 源代码唯一位置是 Windows 当前仓库，只在 Windows 做 Git 写操作。
+- 每次提交时，必须在提交消息末尾添加 `Co-Authored-By: DeepSeek v4.1 Flash Codex (1M context) <noreply@openai.com>`，作为唯一的协作者尾注。
 - 主仓库是 Forgejo（`ssh://git@ssh.via.moe/dejavu/Pail.git`），每次推送自动镜像到 GitHub（`github.com/DejavuMoe/Pail`）。GitHub 只读，不在上面提交或合并。
 - Linux 编译与测试通过 `linux-task.ps1 -Mode build -Project <仓库根目录> -Command '...'`；同一镜像的 build 任务必须串行。
 
