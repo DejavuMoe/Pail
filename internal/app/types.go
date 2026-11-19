@@ -32,7 +32,15 @@ type Limits struct {
 
 // Settings is persisted in settings.json.
 type Settings struct {
-	Theme       string `json:"theme"`       // "system" | "light" | "dark"
+	Theme string `json:"theme"` // "system" | "light" | "dark"
+	// LightColors and DarkColors name the palette the desktop app shows in its
+	// light and in its dark theme. Empty (the default, and a file saved before
+	// they existed) is the app's first palette of that theme. The palettes are
+	// the desktop app's, so only the shape of a name is checked here, and the
+	// app shows its first palette for a name it does not know.
+	LightColors string `json:"lightColors,omitempty"`
+	DarkColors  string `json:"darkColors,omitempty"`
+
 	Limits      Limits `json:"limits"`      // queue slots per kind
 	BulkWorkers int    `json:"bulkWorkers"` // workers inside one bulk task
 	PartSizeMiB int    `json:"partSizeMiB"` // multipart part size

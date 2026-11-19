@@ -79,19 +79,24 @@ func (a *app) authorLink(c *ui.Context, text string) ui.Element {
 // aboutSection is the "About" block at the end of Settings: version, author,
 // repository and license, with the links of the About dialog.
 func (a *app) aboutSection(c *ui.Context) {
-	settingsSection(c, locales.SettingsAbout())
-	settingsRow(c, locales.AboutVersionLabel(), "", func() {
-		ui.Text(c, version).FontSize(sizeBody).TextColor(tk(c).Text).SingleLine()
-	})
-	settingsRow(c, locales.AboutAuthor(), "", func() {
-		a.authorLink(c, authorName).Margin(0, 0, 0, -8)
-	})
-	settingsRow(c, locales.AboutRepository(), "", func() {
-		ghostButton(c, icons.Get("external-link"), strings.TrimPrefix(repoURL, "https://"), locales.AboutOpenProject(), false).
-			Label(locales.AboutProjectPage()).Margin(0, 0, 0, -8).OnClick(func() { a.openExternal(repoURL) })
-	})
-	settingsRow(c, locales.AboutLicenseLabel(), "", func() {
-		ui.Text(c, locales.AboutLicense()).FontSize(sizeBody).TextColor(tk(c).Text).SingleLine()
+	// A ghost button's text starts and ends 8px inside its hover fill: the
+	// negative margin puts it on the edge the other rows' values end on.
+	a.settingsGroup(c, "about", func() {
+		a.settingsCard(c, func() {
+			a.settingsRow(c, locales.AboutVersionLabel(), "", func() {
+				ui.Text(c, version).FontSize(sizeBody).TextColor(tk(c).TextMuted).SingleLine()
+			})
+			a.settingsRow(c, locales.AboutAuthor(), "", func() {
+				a.authorLink(c, authorName).Margin(0, -8, 0, 0)
+			})
+			a.settingsRow(c, locales.AboutRepository(), "", func() {
+				ghostButton(c, icons.Get("external-link"), strings.TrimPrefix(repoURL, "https://"), locales.AboutOpenProject(), false).
+					Label(locales.AboutProjectPage()).Margin(0, -8, 0, 0).OnClick(func() { a.openExternal(repoURL) })
+			})
+			a.settingsRow(c, locales.AboutLicenseLabel(), "", func() {
+				ui.Text(c, locales.AboutLicense()).FontSize(sizeBody).TextColor(tk(c).TextMuted).SingleLine()
+			})
+		})
 	})
 }
 

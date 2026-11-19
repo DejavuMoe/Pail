@@ -15,6 +15,7 @@ import (
 )
 
 func TestShortcutKeysSplitsOneCapPerKey(t *testing.T) {
+	t.Parallel()
 	for in, want := range map[string][]string{
 		"":             nil,
 		"F5":           {"F5"},
@@ -37,6 +38,7 @@ func TestShortcutKeysSplitsOneCapPerKey(t *testing.T) {
 // The colour discipline of docs/dev/design.md: no view names a colour. Everything
 // comes from theme.go through tk.
 func TestNoColourLiteralsOutsideTheme(t *testing.T) {
+	t.Parallel()
 	lit := regexp.MustCompile(`\bui\.(RGB|RGBA|Hex|Oklch)\(|ui\.Color\{`)
 	files, err := filepath.Glob("*.go")
 	if err != nil {
@@ -61,14 +63,19 @@ func TestNoColourLiteralsOutsideTheme(t *testing.T) {
 // Overlay tokens: a light overlay is lifted by a shadow, a dark one (where a
 // shadow cannot be seen) by an outline, and the radii step 6, 8, 10.
 func TestOverlayTokens(t *testing.T) {
-	if lightTokens.ShadowPopover.A == 0 || lightTokens.ShadowDialog.A == 0 {
-		t.Error("the light theme needs both overlay shadows")
+	t.Parallel()
+	for _, p := range lightPalettes {
+		if p.k.ShadowPopover.A == 0 || p.k.ShadowDialog.A == 0 {
+			t.Errorf("%s: a light palette needs both overlay shadows", p.id)
+		}
+		if p.k.ShadowDialog.A <= p.k.ShadowPopover.A {
+			t.Errorf("%s: a dialog floats higher than a popover: its shadow must be the stronger", p.id)
+		}
 	}
-	if lightTokens.ShadowDialog.A <= lightTokens.ShadowPopover.A {
-		t.Error("a dialog floats higher than a popover: its shadow must be the stronger")
-	}
-	if darkTokens.ShadowPopover.A != 0 || darkTokens.ShadowDialog.A != 0 {
-		t.Error("the dark theme draws an outline, not a shadow")
+	for _, p := range darkPalettes {
+		if p.k.ShadowPopover.A != 0 || p.k.ShadowDialog.A != 0 {
+			t.Errorf("%s: a dark palette draws an outline, not a shadow", p.id)
+		}
 	}
 	if !(RadiusKeycap < RadiusControl && RadiusControl < RadiusPopover && RadiusPopover < RadiusDialog) {
 		t.Error("radii must step keycap < control < popover < dialog")
@@ -84,6 +91,7 @@ func px(img *image.RGBA, x, y float32) color.Color { return img.At(int(x), int(y
 // The three kinds of overlayPanel, drawn over the canvas in both themes: the
 // fill, and what holds the edge up.
 func TestOverlayPanelEdges(t *testing.T) {
+	t.Parallel()
 	for _, theme := range []string{"light", "dark"} {
 		for _, kind := range []overlayKind{overlayDialog, overlayPopover, overlayTip} {
 			k := tokensFor(theme == "dark")
@@ -160,6 +168,7 @@ const palLeft, palRight = (testW-paletteW)/2 + 8 + 4, (testW+paletteW)/2 - scrol
 // keyboard or the pointer put it there: SurfaceHover, never Selection. The
 // active choice is a different cue: an Accent check (and weight 600).
 func TestPaletteHighlightIsOneLookAndCurrentChoiceIsChecked(t *testing.T) {
+	t.Parallel()
 	for _, theme := range []string{"light", "dark"} {
 		t.Run(theme, func(t *testing.T) {
 			h := newHarness(t, theme)
@@ -213,6 +222,7 @@ func TestPaletteHighlightIsOneLookAndCurrentChoiceIsChecked(t *testing.T) {
 
 // A command that cannot run is dimmed, takes no hover and does not run.
 func TestPaletteDisabledRowTakesNoHover(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openPaletteWith(ui.Cmd, ui.KeyK)
 	h.tt.Type("download")
@@ -230,6 +240,7 @@ func TestPaletteDisabledRowTakesNoHover(t *testing.T) {
 // The palette shows the group beside a command while searching, and headings
 // as section labels while browsing.
 func TestPaletteGroupHeadingsAreSectionLabelsWhileBrowsing(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openPaletteWith(ui.Cmd, ui.KeyK)
 	h.mustHave("TRANSFER", "NAVIGATE", "UNAVAILABLE HERE")
@@ -242,6 +253,7 @@ func TestPaletteGroupHeadingsAreSectionLabelsWhileBrowsing(t *testing.T) {
 // The popup of a select is an overlayPopover of listRows: the option under the
 // pointer or the arrows is highlighted, the current value checked.
 func TestSelectPopupUsesOverlayRows(t *testing.T) {
+	t.Parallel()
 	for _, theme := range []string{"light", "dark"} {
 		t.Run(theme, func(t *testing.T) {
 			value := "b"
@@ -304,6 +316,7 @@ func TestSelectPopupUsesOverlayRows(t *testing.T) {
 // A toast is the inverse chip of overlayTip, with its action, and the action
 // runs and closes it.
 func TestToastIsAnInverseChipWithAnAction(t *testing.T) {
+	t.Parallel()
 	for _, theme := range []string{"light", "dark"} {
 		t.Run(theme, func(t *testing.T) {
 			h := newHarness(t, theme)

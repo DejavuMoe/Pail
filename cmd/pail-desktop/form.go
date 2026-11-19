@@ -25,6 +25,7 @@ type inputOpts struct {
 	focus    bool // take the keyboard when it appears
 	width    float32
 	disabled bool
+	suffix   string // a unit after the text, inside the box ("MiB")
 }
 
 // inputBox is a 28px single-line text field. It returns the input element for
@@ -61,6 +62,9 @@ func inputBox(c *ui.Context, value *string, label, placeholder string, o inputOp
 		if o.disabled {
 			in.Disabled(true)
 		}
+		if o.suffix != "" {
+			ui.Text(c, o.suffix).FontSize(sizeSecondary).TextColor(k.TextSubtle).SingleLine().Shrink(0).MarginStart(6)
+		}
 	})
 	return in
 }
@@ -95,18 +99,20 @@ const (
 // segmentedOff is segmented with some segments switched off (dimmed, not
 // choosable); off may be shorter than labels.
 //
-// The track is a recessed Track well with a hairline; the current segment is
-// lifted out of it: Raised fill, BorderStrong outline, Text at weight 600.
-// Fill alone would differ by about 1.2:1, so the outline and the weight carry
-// the state (DESIGN.md "States").
+// The track is a recessed Track well, its border in its own colour so that the
+// control has one outline, not two; the current segment is lifted out of it
+// and looks like the outlined button it is: Raised fill, BorderStrong outline,
+// Text at weight 600. Fill alone would differ by about 1.2:1, so the outline
+// and the weight carry the state (DESIGN.md "States").
 func segmentedOff(c *ui.Context, sel *int, label string, off []bool, labels ...string) bool {
 	k := tk(c)
 	seg := ui.SegmentedBase(c.Key("seg:"+label), sel, len(labels))
-	seg.Track.Height(controlH).Padding(segPad).Gap(segPad).Radius(RadiusControl).Background(k.Track).Border(segBorder, k.Border).Label(label).Shrink(0)
+	seg.Track.Height(controlH).Padding(segPad).Gap(segPad).Radius(RadiusControl).Background(k.Track).Border(segBorder, k.Track).Label(label).Shrink(0)
+	thumb := markOf(seg.Track)
 	seg.Track.Children(func() {
 		for i, l := range labels {
 			disabled := i < len(off) && off[i]
-			segmentFace(c, seg.Segment(i), l, i == *sel, disabled)
+			segmentFace(c, thumb, seg.Segment(i), l, i == *sel, disabled)
 		}
 	})
 	return seg.Track.Changed()
@@ -126,8 +132,10 @@ func labelWidth(s string) float32 {
 	return w
 }
 
-// segmentFace styles one segment: see segmentedOff for the look.
-func segmentFace(c *ui.Context, s ui.Element, label string, on, disabled bool) {
+// segmentFace styles one segment: see segmentedOff for the look. The raised
+// thumb of the chosen one is its first child, and comes from the segment that
+// was chosen before (arrive); g is the control's mark.
+func segmentFace(c *ui.Context, g *markState, s ui.Element, label string, on, disabled bool) {
 	k := tk(c)
 	s.Grow(1).Shrink(0).Height(segmentH).Padding(0, 14).Radius(segmentRadii).Center().Label(label).Disabled(disabled).
 		MinWidth(labelWidth(label) + 34) // never ellipsize a short label (600 weight is wider)
@@ -135,14 +143,22 @@ func segmentFace(c *ui.Context, s ui.Element, label string, on, disabled bool) {
 	switch {
 	case disabled:
 		s.Opacity(0.4)
+		on = false
 	case on:
-		s.Background(k.Raised).Border(1, k.BorderStrong)
 		w, col = 600, k.Text
 	case s.Hovered():
 		s.Background(k.SurfaceHover)
 		col = k.Text
 	}
 	s.Children(func() {
+		if on {
+			// The segment goes under its neighbours and the thumb under the
+			// segment's label: it passes under every label it crosses.
+			s.ZIndex(-1)
+			arrive(c, g, label, s, func(thumb ui.Element) {
+				thumb.ZIndex(-1).Radius(segmentRadii).Background(k.Raised).Border(1, k.BorderStrong)
+			})
+		}
 		ui.Text(c, label).FontSize(sizeBody).FontWeight(w).TextColor(col).SingleLine()
 	})
 }
@@ -160,10 +176,12 @@ func segmentFace(c *ui.Context, s ui.Element, label string, on, disabled bool) {
 func segmentedAction(c *ui.Context, cur int, label string, labels ...string) (int, bool) {
 	k := tk(c)
 	chosen := -1
-	ui.Row(c.Key("segact:"+label)).Height(controlH).Padding(segPad).Gap(segPad).Radius(RadiusControl).Background(k.Track).Border(segBorder, k.Border).Label(label).Shrink(0).Children(func() {
+	track := ui.Row(c.Key("segact:"+label)).Height(controlH).Padding(segPad).Gap(segPad).Radius(RadiusControl).Background(k.Track).Border(segBorder, k.Track).Label(label).Shrink(0)
+	thumb := markOf(track)
+	track.Children(func() {
 		for i, l := range labels {
 			s := ui.ButtonBase(c.Key("segact:" + label + ":" + l))
-			segmentFace(c, s, l, i == cur, false)
+			segmentFace(c, thumb, s, l, i == cur, false)
 			if s.Clicked() && i != cur {
 				chosen = i
 			}

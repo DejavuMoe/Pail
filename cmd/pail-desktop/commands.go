@@ -181,6 +181,17 @@ var commandAliases = map[string]func(locales.Messages) string{
 	"selectall": locales.Messages.AliasSelectAll, "foldersize": locales.Messages.AliasFolderSize, "foldersizes": locales.Messages.AliasFolderSize,
 }
 
+// A command for each palette (colorsCmd in commandTable): "colors." and the
+// palette's name.
+func init() {
+	for _, dark := range []bool{false, true} {
+		for _, p := range palettesOf(dark) {
+			commandGroups["colors."+p.id] = groupView
+			commandAliases["colors."+p.id] = locales.Messages.AliasColors
+		}
+	}
+}
+
 // themeName is a theme mode's name.
 func themeName(m locales.Messages, mode string) string {
 	switch mode {
@@ -216,6 +227,16 @@ func commandTable() []command {
 	themeCmd := func(mode, icon string) command {
 		return command{ID: "theme." + mode, Icon: icon, Run: func(a *app) { a.setTheme(mode) },
 			Label: func(m locales.Messages) string { return m.CmdTheme(themeName(m, mode)) }}
+	}
+	// A palette is chosen for its theme, whichever theme shows: the command
+	// says which, and has that theme's icon.
+	colorsCmd := func(dark bool, p palette) command {
+		icon, label := "sun", locales.Messages.CmdLightColors
+		if dark {
+			icon, label = "moon", locales.Messages.CmdDarkColors
+		}
+		return command{ID: "colors." + p.id, Icon: icon, Run: func(a *app) { a.setColors(dark, p.id) },
+			Label: func(m locales.Messages) string { return label(m, p.name(m)) }}
 	}
 	langCmd := func(tag string) command {
 		id := "lang." + tag
@@ -316,6 +337,10 @@ func commandTable() []command {
 		themeCmd("system", "monitor"),
 		themeCmd("light", "sun"),
 		themeCmd("dark", "moon"),
+		colorsCmd(false, lightPalettes[0]),
+		colorsCmd(false, lightPalettes[1]),
+		colorsCmd(true, darkPalettes[0]),
+		colorsCmd(true, darkPalettes[1]),
 		langCmd(""),
 		langCmd("en"),
 		langCmd("zh-Hans"),

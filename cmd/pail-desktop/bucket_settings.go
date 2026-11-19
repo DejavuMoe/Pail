@@ -493,24 +493,11 @@ func (a *app) settingsNav(c *ui.Context) {
 	bs := &a.mg.bs
 	k := tk(c)
 	ui.Scroll(c).Width(bsNavW).Shrink(0).MinHeight(0).BorderWidth(0, 1, 0, 0).BorderColor(k.Border).ScrollbarInsets(0, scrollBarInset, 0, 0).Children(func() {
-		ui.Column(c).Padding(8, scrollGutter, 8, dialogPad-8).Gap(2).Children(func() {
+		list := ui.Column(c).Padding(8, scrollGutter, 8, dialogPad-8).Gap(2)
+		fill := markOf(list)
+		list.Children(func() {
 			for i, sec := range bsSections {
-				on := i == bs.section
-				row := ui.ButtonBase(c.Key("sec:"+sec.label())).Label(sec.label()).Height(28).Padding(0, 8).Radius(RadiusControl).AlignItems(ui.Center).Justify(ui.Start)
-				switch {
-				case on:
-					row.Background(k.ActiveFill)
-				case row.Hovered():
-					row.Background(k.SurfaceHover)
-				}
-				row.Children(func() {
-					w, col := 400, k.TextMuted
-					if on {
-						w, col = 600, k.Text
-					}
-					ui.Text(c, sec.label()).FontSize(sizeBody).FontWeight(w).TextColor(col).SingleLine()
-				})
-				if row.Clicked() {
+				if navRow(c, fill, "sec:"+sec.label(), sec.label(), i == bs.section).Clicked() {
 					bs.section = i
 				}
 			}

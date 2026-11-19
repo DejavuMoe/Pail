@@ -146,6 +146,7 @@ func (a *app) transfersPanel(c *ui.Context) {
 		ui.Row(c).Height(32).Padding(0, 8, 0, 16).Gap(16).AlignItems(ui.Center).Shrink(0).Children(func() {
 			ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeSecondary).TextColor(k.Text)
 			tabs := ui.TabsBase(c, &a.transTab, 3)
+			line := markOf(tabs.List)
 			tabs.List.Height(32).Gap(16).AlignItems(ui.Center).Children(func() {
 				for i, label := range []string{
 					locales.TransfersTabActive(fmt.Sprint(n[0])), locales.TransfersTabCompleted(fmt.Sprint(n[1])), locales.TransfersTabFailed(fmt.Sprint(n[2])),
@@ -162,7 +163,7 @@ func (a *app) transfersPanel(c *ui.Context) {
 						}
 						ui.Text(c, label).FontSize(sizeSecondary).FontWeight(w).TextColor(col).SingleLine().FontFeatures("tnum")
 						if on {
-							tabIndicator(c)
+							tabIndicator(c, line, i, tab)
 						}
 					})
 				}

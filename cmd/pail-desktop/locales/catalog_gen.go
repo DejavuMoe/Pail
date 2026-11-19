@@ -1300,6 +1300,16 @@ func (msgs Messages) AliasBucketSettings() string {
 	return Catalog.Format(msgs.locale, "aliasBucketSettings", nil)
 }
 
+// AliasColors says "palette colors colours scheme appearance tint"
+// in the language the app shows.
+func AliasColors() string { return In(i18n.Locale()).AliasColors() }
+
+// AliasColors says "palette colors colours scheme appearance tint"
+// in the language of msgs.
+func (msgs Messages) AliasColors() string {
+	return Catalog.Format(msgs.locale, "aliasColors", nil)
+}
+
 // AliasCopy says "duplicate"
 // in the language the app shows.
 func AliasCopy() string { return In(i18n.Locale()).AliasCopy() }
@@ -3532,6 +3542,16 @@ func (msgs Messages) CmdCut() string {
 	return Catalog.Format(msgs.locale, "cmdCut", nil)
 }
 
+// CmdDarkColors says "Dark colors: {name}"
+// in the language the app shows.
+func CmdDarkColors(name string) string { return In(i18n.Locale()).CmdDarkColors(name) }
+
+// CmdDarkColors says "Dark colors: {name}"
+// in the language of msgs.
+func (msgs Messages) CmdDarkColors(name string) string {
+	return Catalog.Format(msgs.locale, "cmdDarkColors", map[string]any{"name": name})
+}
+
 // CmdDelete says "Delete"
 // in the language the app shows.
 func CmdDelete() string { return In(i18n.Locale()).CmdDelete() }
@@ -3680,6 +3700,16 @@ func CmdLanguage(name string) string { return In(i18n.Locale()).CmdLanguage(name
 // in the language of msgs.
 func (msgs Messages) CmdLanguage(name string) string {
 	return Catalog.Format(msgs.locale, "cmdLanguage", map[string]any{"name": name})
+}
+
+// CmdLightColors says "Light colors: {name}"
+// in the language the app shows.
+func CmdLightColors(name string) string { return In(i18n.Locale()).CmdLightColors(name) }
+
+// CmdLightColors says "Light colors: {name}"
+// in the language of msgs.
+func (msgs Messages) CmdLightColors(name string) string {
+	return Catalog.Format(msgs.locale, "cmdLightColors", map[string]any{"name": name})
 }
 
 // CmdNewBucket says "New bucket…"
@@ -9186,16 +9216,6 @@ func (msgs Messages) SettingsPartHelp() string {
 	return Catalog.Format(msgs.locale, "settingsPartHelp", nil)
 }
 
-// SettingsPartRow says "Part size (MiB)"
-// in the language the app shows.
-func SettingsPartRow() string { return In(i18n.Locale()).SettingsPartRow() }
-
-// SettingsPartRow says "Part size (MiB)"
-// in the language of msgs.
-func (msgs Messages) SettingsPartRow() string {
-	return Catalog.Format(msgs.locale, "settingsPartRow", nil)
-}
-
 // SettingsProxy says "Proxy server"
 // in the language the app shows.
 func SettingsProxy() string { return In(i18n.Locale()).SettingsProxy() }
@@ -9384,6 +9404,16 @@ func SettingsRecentOpsHelp() string { return In(i18n.Locale()).SettingsRecentOps
 // in the language of msgs.
 func (msgs Messages) SettingsRecentOpsHelp() string {
 	return Catalog.Format(msgs.locale, "settingsRecentOpsHelp", nil)
+}
+
+// SettingsSections says "Sections"
+// in the language the app shows.
+func SettingsSections() string { return In(i18n.Locale()).SettingsSections() }
+
+// SettingsSections says "Sections"
+// in the language of msgs.
+func (msgs Messages) SettingsSections() string {
+	return Catalog.Format(msgs.locale, "settingsSections", nil)
 }
 
 // SettingsTheme says "Theme"
@@ -12896,4 +12926,84 @@ func VersionsVersions() string { return In(i18n.Locale()).VersionsVersions() }
 // in the language of msgs.
 func (msgs Messages) VersionsVersions() string {
 	return Catalog.Format(msgs.locale, "versionsVersions", nil)
+}
+
+// ColorsPaper says "Paper"
+// in the language the app shows.
+func ColorsPaper() string { return In(i18n.Locale()).ColorsPaper() }
+
+// ColorsPaper says "Paper"
+// in the language of msgs.
+func (msgs Messages) ColorsPaper() string {
+	return Catalog.Format(msgs.locale, "colorsPaper", nil)
+}
+
+// ColorsSky says "Sky"
+// in the language the app shows.
+func ColorsSky() string { return In(i18n.Locale()).ColorsSky() }
+
+// ColorsSky says "Sky"
+// in the language of msgs.
+func (msgs Messages) ColorsSky() string {
+	return Catalog.Format(msgs.locale, "colorsSky", nil)
+}
+
+// ColorsGraphite says "Graphite"
+// in the language the app shows.
+func ColorsGraphite() string { return In(i18n.Locale()).ColorsGraphite() }
+
+// ColorsGraphite says "Graphite"
+// in the language of msgs.
+func (msgs Messages) ColorsGraphite() string {
+	return Catalog.Format(msgs.locale, "colorsGraphite", nil)
+}
+
+// ColorsNight says "Night"
+// in the language the app shows.
+func ColorsNight() string { return In(i18n.Locale()).ColorsNight() }
+
+// ColorsNight says "Night"
+// in the language of msgs.
+func (msgs Messages) ColorsNight() string {
+	return Catalog.Format(msgs.locale, "colorsNight", nil)
+}
+
+// SettingsLightColors says "Light colors"
+// in the language the app shows.
+func SettingsLightColors() string { return In(i18n.Locale()).SettingsLightColors() }
+
+// SettingsLightColors says "Light colors"
+// in the language of msgs.
+func (msgs Messages) SettingsLightColors() string {
+	return Catalog.Format(msgs.locale, "settingsLightColors", nil)
+}
+
+// SettingsLightColorsHelp says "The colors of the light theme. Paper is the warm white Pail starts with; Sky is a clear white with a brighter blue."
+// in the language the app shows.
+func SettingsLightColorsHelp() string { return In(i18n.Locale()).SettingsLightColorsHelp() }
+
+// SettingsLightColorsHelp says "The colors of the light theme. Paper is the warm white Pail starts with; Sky is a clear white with a brighter blue."
+// in the language of msgs.
+func (msgs Messages) SettingsLightColorsHelp() string {
+	return Catalog.Format(msgs.locale, "settingsLightColorsHelp", nil)
+}
+
+// SettingsDarkColors says "Dark colors"
+// in the language the app shows.
+func SettingsDarkColors() string { return In(i18n.Locale()).SettingsDarkColors() }
+
+// SettingsDarkColors says "Dark colors"
+// in the language of msgs.
+func (msgs Messages) SettingsDarkColors() string {
+	return Catalog.Format(msgs.locale, "settingsDarkColors", nil)
+}
+
+// SettingsDarkColorsHelp says "The colors of the dark theme. Graphite is the warm dark gray Pail starts with; Night is a deep blue."
+// in the language the app shows.
+func SettingsDarkColorsHelp() string { return In(i18n.Locale()).SettingsDarkColorsHelp() }
+
+// SettingsDarkColorsHelp says "The colors of the dark theme. Graphite is the warm dark gray Pail starts with; Night is a deep blue."
+// in the language of msgs.
+func (msgs Messages) SettingsDarkColorsHelp() string {
+	return Catalog.Format(msgs.locale, "settingsDarkColorsHelp", nil)
 }

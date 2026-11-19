@@ -124,8 +124,7 @@ func (a *app) sidebarItem(c *ui.Context, id string, icon *ui.SVG, name, region s
 	switch {
 	case disabled:
 		row.Opacity(0.4)
-	case on:
-		row.Background(k.ActiveFill)
+	case on: // currentFill is its fill
 	case row.Hovered():
 		row.Background(k.SurfaceHover)
 	}
@@ -134,6 +133,7 @@ func (a *app) sidebarItem(c *ui.Context, id string, icon *ui.SVG, name, region s
 		w := 400
 		if on && !disabled {
 			ic, w = k.Accent, 600
+			currentFill(c, &a.navMark, id, row)
 		}
 		ui.Icon(c, icon).FontSize(14).TextColor(ic)
 		ui.Text(c, name).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)

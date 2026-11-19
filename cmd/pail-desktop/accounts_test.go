@@ -30,6 +30,7 @@ func (h *harness) fillAccount(name, endpoint, access, secret string) {
 }
 
 func TestWelcomeShownWithoutAccounts(t *testing.T) {
+	t.Parallel()
 	env, err := newDemoEnv(t.TempDir(), false)
 	if err != nil {
 		t.Fatal(err)
@@ -50,6 +51,7 @@ func TestWelcomeShownWithoutAccounts(t *testing.T) {
 }
 
 func TestAccountDialogValidation(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openAccountForm(false)
 	h.settle()
@@ -82,6 +84,7 @@ func TestAccountDialogValidation(t *testing.T) {
 }
 
 func TestAccountTestConnectionSuccessAndFailure(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openAccountForm(false)
 	h.fillAccount("Staging", h.env.Srv.URL, "demo", "demo-secret")
@@ -109,6 +112,7 @@ func TestAccountTestConnectionSuccessAndFailure(t *testing.T) {
 }
 
 func TestAccountSaveAddsAndSwitches(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openAccountForm(false)
 	h.fillAccount("Staging", h.env.Srv.URL, "demo", "demo-secret")
@@ -129,6 +133,7 @@ func TestAccountSaveAddsAndSwitches(t *testing.T) {
 }
 
 func TestAccountSwitcherMenuListsAccounts(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick(demoAccountName)
 	menu := h.menu()
@@ -147,6 +152,7 @@ func TestAccountSwitcherMenuListsAccounts(t *testing.T) {
 }
 
 func TestEditAccountKeepsSecretWhenLeftEmpty(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openAccountForm(true)
 	h.settle()
@@ -163,6 +169,7 @@ func TestEditAccountKeepsSecretWhenLeftEmpty(t *testing.T) {
 }
 
 func TestRemoveAccountConfirmsAndExplains(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	second, err := h.env.Svc.SaveAccount(core.Account{Name: "Second", Provider: core.ProviderS3, Endpoint: h.env.Srv.URL, PathStyle: true,
 		Credentials: core.CredStatic, AccessKeyID: "x"}, &core.Secrets{SecretAccessKey: "y"})
@@ -209,9 +216,10 @@ func (h *harness) showSetting(label string) {
 	}
 }
 
-// settingField clicks into the text field of a Settings row: the label is a
-// fixed 200px column and the control starts 16px after it.
-func (h *harness) settingField(label string) {
+// settingRowEnd is where the controls of a Settings row end, at the height of
+// its label: the right edge of the card less the inset of a row. The card is
+// settingsColW wide, or what the page leaves it.
+func (h *harness) settingRowEnd(label string) (x, y float32) {
 	h.t.Helper()
 	h.showSetting(label)
 	h.tt.Frame()
@@ -219,7 +227,30 @@ func (h *harness) settingField(label string) {
 	if !ok {
 		h.t.Fatalf("no settings row %q; have %q", label, h.tt.Texts())
 	}
-	h.tt.ClickAt(r.X+200+16+24, r.Y+r.H/2)
+	left := r.X - settingsRowPad - 1 // the card's outline, then the inset
+	right := min(left+settingsColW, h.a.lay.sidebarW+dividerW+h.a.lay.barW-settingsPad)
+	return right - 1 - settingsRowPad, r.Y + r.H/2
+}
+
+// settingField clicks into the number field of a Settings row: it is
+// settingsNumW wide and ends where the controls of the row end.
+func (h *harness) settingField(label string) {
+	h.t.Helper()
+	x, y := h.settingRowEnd(label)
+	h.tt.ClickAt(x-settingsNumW+16, y)
+	h.settle()
+}
+
+// fieldBefore clicks into the text field that ends 8px left of the button
+// showing text (a path and its "Choose…").
+func (h *harness) fieldBefore(text string) {
+	h.t.Helper()
+	h.tt.Frame()
+	r, ok := h.tt.Find(text)
+	if !ok {
+		h.t.Fatalf("no element shows %q; have %q", text, h.tt.Texts())
+	}
+	h.tt.ClickAt(r.X-8-40, r.Y+r.H/2)
 	h.settle()
 }
 
@@ -231,10 +262,11 @@ func (h *harness) editSetting(label, text string) {
 }
 
 func TestSettingsApplyAsTheyChange(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("Settings")
-	h.mustHave("APPEARANCE", "TRANSFERS", "DOWNLOADS", "Theme", "System", "Light", "Dark", "Concurrent uploads", "Concurrent downloads", "Bulk workers per task",
-		"Part size (MiB)", "Default download folder", "Choose…")
+	h.mustHave("Appearance", "Transfers", "Downloads", "Theme", "System", "Light", "Dark", "Concurrent uploads", "Concurrent downloads", "Bulk workers per task",
+		"Part size", "MiB", "Default download folder", "Choose…")
 	h.mustNotHave("Save", "Saved") // nothing to press, nothing saved yet
 	h.snap("settings-light")
 
@@ -249,7 +281,7 @@ func TestSettingsApplyAsTheyChange(t *testing.T) {
 
 	// A number is checked when Enter is pressed: an invalid one is explained,
 	// the field goes back to the saved value and nothing is written.
-	h.editSetting("Part size (MiB)", "1")
+	h.editSetting("Part size", "1")
 	h.mustHave("Enter a whole number from 5 to 5120 MiB")
 	if h.a.sf.part != "16" || h.env.Svc.Settings().PartSizeMiB != 16 {
 		t.Fatalf("an invalid part size stuck: field %q, saved %d", h.a.sf.part, h.env.Svc.Settings().PartSizeMiB)
@@ -261,7 +293,7 @@ func TestSettingsApplyAsTheyChange(t *testing.T) {
 	}
 
 	// A valid one saves on Enter...
-	h.editSetting("Part size (MiB)", "32")
+	h.editSetting("Part size", "32")
 	h.waitFor("part size saved", func() bool { return h.env.Svc.Settings().PartSizeMiB == 32 })
 	h.mustNotHave("Enter a whole number from 5 to 5120 MiB")
 	// ...and on losing the focus: click the next field instead of pressing Enter.
@@ -282,7 +314,9 @@ func TestSettingsApplyAsTheyChange(t *testing.T) {
 	h.a.pick = func(bool) []string { return []string{picked} }
 	h.mustClick("Choose…")
 	h.waitFor("folder saved", func() bool { return h.env.Svc.Settings().DefaultDownloadDir == picked })
-	h.editSetting("Default download folder", "relative/path")
+	h.showSetting("Default download folder")
+	h.fieldBefore("Choose…")
+	h.replaceAndEnter("relative/path")
 	h.mustHave("Use a full folder path")
 	if h.a.sf.dir != picked || h.env.Svc.Settings().DefaultDownloadDir != picked {
 		t.Fatalf("a relative folder stuck: %q", h.a.sf.dir)
@@ -300,6 +334,7 @@ func TestSettingsApplyAsTheyChange(t *testing.T) {
 
 // A failing save is explained under its control and the control goes back.
 func TestSettingsSaveFailureIsShownInline(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("Settings")
 	cfg := filepath.Join(h.env.Dir, "settings.json")
@@ -309,7 +344,7 @@ func TestSettingsSaveFailureIsShownInline(t *testing.T) {
 	if err := os.MkdirAll(cfg, 0o700); err != nil { // a folder where the file goes: the write fails
 		t.Fatal(err)
 	}
-	h.editSetting("Part size (MiB)", "64")
+	h.editSetting("Part size", "64")
 	h.waitFor("failure", func() bool { return strings.Contains(strings.Join(h.tt.Texts(), "\n"), "Could not save") })
 	if h.a.sf.part != "16" {
 		t.Errorf("the field kept %q after the save failed", h.a.sf.part)

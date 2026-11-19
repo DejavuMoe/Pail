@@ -30,9 +30,12 @@ func contrast(a, b ui.Color) float64 {
 // The floors behind DESIGN.md "Contrast": essential text 4.5:1 (WCAG AA),
 // tertiary text 3.5:1, control outlines and the switch-off track enough to
 // see the control, and every state fill at least 1.17:1 against what it sits
-// on (the second cue — outline, bar, weight — does the rest).
+// on (the second cue — outline, bar, weight — does the rest). Every palette
+// of both themes keeps them.
 func TestTokenContrastFloors(t *testing.T) {
-	for name, k := range map[string]tokens{"light": lightTokens, "dark": darkTokens} {
+	t.Parallel()
+	for name, p := range allPalettes() {
+		k := p.k
 		checks := []struct {
 			what   string
 			fg, bg ui.Color
@@ -49,6 +52,15 @@ func TestTokenContrastFloors(t *testing.T) {
 			{"AccentText on Accent", k.AccentText, k.Accent, 4.5},
 			{"DangerText on Danger", k.DangerText, k.Danger, 4.5},
 			{"Danger on Surface", k.Danger, k.Surface, 4.5},
+			// A card of Settings and what stands on it.
+			{"Text on Card", k.Text, k.Card, 7},
+			{"TextMuted on Card", k.TextMuted, k.Card, 4.5},
+			{"Danger on Card", k.Danger, k.Card, 4.5},
+			{"ControlOff on Card (switch off)", k.ControlOff, k.Card, 2},
+			{"Accent on Card (switch on)", k.Accent, k.Card, 3},
+			{"Warning on Surface", k.Warning, k.Surface, 3},
+			{"Success on Surface", k.Success, k.Surface, 3},
+			{"Focus on Background", k.Focus, k.Background, 3},
 			{"BorderStrong on Surface", k.BorderStrong, k.Surface, 1.8},
 			{"ControlOff on Surface", k.ControlOff, k.Surface, 2},
 			{"ActiveFill on Sidebar", k.ActiveFill, k.Sidebar, 1.17},

@@ -35,6 +35,25 @@ func TestFilterPaletteRanksPrefixThenWordThenSubstring(t *testing.T) {
 	}
 }
 
+// A choice is found by its value as well as by its name: "dark" is the dark
+// theme before it is the commands that begin with the word.
+func TestFilterPaletteRanksAChoiceByItsValue(t *testing.T) {
+	all := []palEntry{
+		pe("Dark colors: Night", "Dark colors: Night", groupView, true),
+		pe("Sidebar in the dark", "Sidebar in the dark", groupView, true), // a word of it
+		pe("Theme: Dark", "Theme: Dark", groupView, true),
+		pe("主题：深色", "Theme: Dark mode", groupView, true),
+	}
+	for query, want := range map[string][]string{
+		"dark": {"Dark colors: Night", "Theme: Dark", "主题：深色", "Sidebar in the dark"},
+		"深色":   {"主题：深色"},
+	} {
+		if got := labelsOf(filterPalette(all, query)); strings.Join(got, "|") != strings.Join(want, "|") {
+			t.Errorf("%q: ranking = %q, want %q", query, got, want)
+		}
+	}
+}
+
 func TestFilterPaletteEmptyQueryListsEnabledFirst(t *testing.T) {
 	all := []palEntry{
 		pe("A off", "A off", groupTransfer, false),

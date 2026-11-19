@@ -117,7 +117,7 @@ func main() {
 		// The window is made hidden and shows once its first frame is drawn
 		// (mygo draws it while hidden): it opens with its content on every
 		// platform, without a frame of the bare background.
-		wo := windowOptions(title(), opts.width, opts.height, ui.View(a.view))
+		wo := windowOptions(title(), opts.width, opts.height, a.colorsOf(false).k, a.colorsOf(true).k, ui.View(a.view))
 		wo.Hidden = true
 		win := mygo.NewWindow(wo)
 		win.OnReadyToShow(win.Show)

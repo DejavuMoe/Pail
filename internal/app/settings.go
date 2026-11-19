@@ -86,12 +86,31 @@ func (st Settings) withDefaults() Settings {
 	return st
 }
 
+// paletteName reports whether s has the shape of a palette's name: empty, or at
+// most 32 lower-case letters, digits and hyphens.
+func paletteName(s string) bool {
+	if len(s) > 32 {
+		return false
+	}
+	for _, r := range s {
+		if (r < 'a' || r > 'z') && (r < '0' || r > '9') && r != '-' {
+			return false
+		}
+	}
+	return true
+}
+
 // validate checks a fully defaulted Settings.
 func (st Settings) validate() error {
 	switch st.Theme {
 	case "system", "light", "dark":
 	default:
 		return fmt.Errorf("unknown theme %q", st.Theme)
+	}
+	for _, name := range []string{st.LightColors, st.DarkColors} {
+		if !paletteName(name) {
+			return fmt.Errorf("invalid palette name %q", name)
+		}
 	}
 	for name, v := range map[string]int{"upload limit": st.Limits.Upload, "download limit": st.Limits.Download, "other limit": st.Limits.Other, "bulk workers": st.BulkWorkers} {
 		if v < minLimit || v > maxLimit {

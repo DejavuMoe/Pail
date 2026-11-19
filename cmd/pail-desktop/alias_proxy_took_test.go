@@ -155,7 +155,7 @@ func (h *harness) pickProxyProtocol(row, current, name string) {
 func TestProxyFieldsAreAppliedTogether(t *testing.T) {
 	h := newHarness(t, "light")
 	h.openToolView("settings")
-	h.mustHave("NETWORK", "Proxy server", "From environment")
+	h.mustHave("Network", "Proxy server", "From environment")
 	h.mustNotHave("Host and port") // nothing to fill in while the environment decides
 	if h.hasExactText("Apply") {
 		t.Fatal("Apply shows with nothing to apply")
@@ -177,7 +177,8 @@ func TestProxyFieldsAreAppliedTogether(t *testing.T) {
 	h.snapBoth("settings-proxy-fields")
 
 	// Typing in the host field and pressing Enter applies; the port is missing.
-	h.settingField("Host and port")
+	h.showSetting("Host and port")
+	h.mustClick("Host name or IP address")
 	h.typeAndEnter("127.0.0.1")
 	h.mustHave("Enter a port from 1 to 65535")
 	if h.env.Svc.Settings().Proxy != (core.ProxySettings{}) {
@@ -240,7 +241,7 @@ func TestProxyFieldsAreAppliedTogether(t *testing.T) {
 	}
 
 	// Another setting keeps the proxy, and a new form shows it.
-	h.editSetting("Part size (MiB)", "24")
+	h.editSetting("Part size", "24")
 	h.waitFor("part size saved", func() bool { return h.env.Svc.Settings().PartSizeMiB == 24 })
 	if got := h.env.Svc.Settings().Proxy; got.Scheme != core.ProxySOCKS5 || !got.HasPassword {
 		t.Fatalf("saving another setting changed the proxy to %+v", got)

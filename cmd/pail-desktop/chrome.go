@@ -30,10 +30,11 @@ const (
 	authorURL  = "https://dejavu.moe"
 )
 
-// windowOptions are the options of the main window. Its background follows the
-// system appearance until the first frame, which avoids a flash of the wrong
-// color; the title bar is hidden so that the app draws it.
-func windowOptions(title string, w, h int, content mygo.Content) mygo.WindowOptions {
+// windowOptions are the options of the main window. Its background is that of
+// light or of dark, the palettes chosen, following the system appearance until
+// the first frame, which avoids a flash of the wrong color; the title bar is
+// hidden so that the app draws it.
+func windowOptions(title string, w, h int, light, dark tokens, content mygo.Content) mygo.WindowOptions {
 	style := mygo.TitleBarHidden
 	if runtime.GOOS == "darwin" {
 		style = mygo.TitleBarHiddenInset
@@ -41,7 +42,7 @@ func windowOptions(title string, w, h int, content mygo.Content) mygo.WindowOpti
 	return mygo.WindowOptions{
 		Title: title, Width: w, Height: h, MinWidth: 960, MinHeight: 600,
 		TitleBarStyle: style, TitleBarHeight: topBarH,
-		BackgroundColor: "light-dark(" + cssHex(lightTokens.Background) + ", " + cssHex(darkTokens.Background) + ")",
+		BackgroundColor: "light-dark(" + cssHex(light.Background) + ", " + cssHex(dark.Background) + ")",
 		Content:         content,
 	}
 }

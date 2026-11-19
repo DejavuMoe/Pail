@@ -84,6 +84,9 @@ func (a *app) paletteEntries() []palEntry {
 		if mode, ok := strings.CutPrefix(id, "theme."); ok {
 			e.current = a.themeMode() == mode
 		}
+		if name, ok := strings.CutPrefix(id, "colors."); ok {
+			e.current = a.colorsOf(false).id == name || a.colorsOf(true).id == name
+		}
 		if tag, ok := strings.CutPrefix(id, "lang."); ok {
 			e.current = a.lang == tag || tag == "system" && a.lang == ""
 		}
@@ -119,7 +122,9 @@ func searchText(parts ...string) string { return strings.ToLower(strings.Join(pa
 // label (in the shown language or in English), heading or aliases
 // (case-insensitive). Better matches come first: a label that starts with the
 // query, then one with a word that does, then one that contains it, then the
-// rest; among equal ones, what can run now before what cannot. With no query
+// rest; among equal ones, what can run now before what cannot. The label of a
+// choice ("Theme: Dark") starts with its value as well: "dark" finds the
+// theme before the commands that only begin with the word. With no query
 // the list keeps its group order, enabled commands first and the disabled
 // ones after, dimmed.
 func filterPalette(all []palEntry, query string) []palEntry {
@@ -146,7 +151,7 @@ func filterPalette(all []palEntry, query string) []palEntry {
 			s = 3
 			for _, label := range []string{strings.ToLower(e.label), strings.ToLower(e.english)} {
 				switch {
-				case strings.HasPrefix(label, whole):
+				case strings.HasPrefix(label, whole), strings.HasPrefix(choiceValue(label), whole):
 					s = min(s, 0)
 				case hasWordPrefix(label, whole):
 					s = min(s, 1)
@@ -168,6 +173,17 @@ func filterPalette(all []palEntry, query string) []palEntry {
 		out[i] = h.e
 	}
 	return out
+}
+
+// choiceValue is what follows the colon in the label of a choice ("Theme:
+// Dark", "主题：深色"), or s itself when it has no colon.
+func choiceValue(s string) string {
+	for _, sep := range []string{": ", "："} {
+		if _, v, ok := strings.Cut(s, sep); ok {
+			return v
+		}
+	}
+	return s
 }
 
 // hasWordPrefix reports whether a word of s (a run of letters or digits) starts

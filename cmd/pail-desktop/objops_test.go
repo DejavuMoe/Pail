@@ -91,6 +91,7 @@ func menuHas(menu []string, want ...string) []string {
 // ---- change storage class -------------------------------------------------------------------------
 
 func TestChangeStorageClassOfTheSelection(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.tt.ClickWith(ui.Shift, "manifest.json")
@@ -141,6 +142,7 @@ func TestChangeStorageClassOfTheSelection(t *testing.T) {
 }
 
 func TestChangeStorageClassOfAFolderCountsFirst(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	want := h.estimate(core.Selection{Location: h.loc(bkt), Keys: []string{"reports/"}})
 	if want.Objects < 5 {
@@ -175,6 +177,7 @@ func TestChangeStorageClassOfAFolderCountsFirst(t *testing.T) {
 }
 
 func TestChangeStorageClassOfAWholeBucketFromTheBucketMenu(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	if err := h.tt.RightClick("acme-media-archive"); err != nil {
 		t.Fatal(err)
@@ -205,6 +208,7 @@ func TestChangeStorageClassOfAWholeBucketFromTheBucketMenu(t *testing.T) {
 }
 
 func TestStorageClassFreeTextForCompatibleProviders(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.a.run("storageclass", "test")
@@ -225,6 +229,7 @@ func TestStorageClassFreeTextForCompatibleProviders(t *testing.T) {
 }
 
 func TestScopeCountSaysAtLeastWhenTruncated(t *testing.T) {
+	t.Parallel()
 	e := estState{state: delReady, est: core.Estimate{Objects: 100000, Bytes: 1 << 30, Truncated: true}}
 	if got := e.summary(); got != "at least 100,000 objects · 1.0 GB" {
 		t.Errorf("summary = %q", got)
@@ -238,6 +243,7 @@ func TestScopeCountSaysAtLeastWhenTruncated(t *testing.T) {
 // ---- change encryption ----------------------------------------------------------------------------
 
 func TestChangeEncryptionAES256AndNone(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.rightClickChoose("manifest.json", "Change encryption…")
@@ -265,6 +271,7 @@ func TestChangeEncryptionAES256AndNone(t *testing.T) {
 }
 
 func TestChangeEncryptionKMSKeyIsTyped(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.a.run("encryption", "test")
@@ -283,6 +290,7 @@ func TestChangeEncryptionKMSKeyIsTyped(t *testing.T) {
 }
 
 func TestSSECIsDisabledOverHTTPWithAReason(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if err := h.env.Svc.SetSecret("sse-key", base64.StdEncoding.EncodeToString(make([]byte, 32))); err != nil {
 		t.Fatal(err)
@@ -310,6 +318,7 @@ func TestSSECIsDisabledOverHTTPWithAReason(t *testing.T) {
 }
 
 func TestEndpointHTTPS(t *testing.T) {
+	t.Parallel()
 	for ep, want := range map[string]bool{
 		"": true, "https://s3.example.com": true, "HTTPS://S3.EXAMPLE.COM": true,
 		"http://127.0.0.1:9000": false, "s3.example.com": false,
@@ -323,6 +332,7 @@ func TestEndpointHTTPS(t *testing.T) {
 // ---- bucket download, copy and move -----------------------------------------------------------------
 
 func TestDownloadBucketFromTheBucketMenu(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	dest := t.TempDir()
 	asked := make(chan bool, 1)
@@ -343,6 +353,7 @@ func TestDownloadBucketFromTheBucketMenu(t *testing.T) {
 }
 
 func TestCopyContentsToAnotherBucket(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.rightClickChoose("acme-media-archive", "Copy contents to…")
 	h.mustHave("Copy contents to…", "Target bucket", "Target prefix", "If an object already exists", "3 objects", "Copy contents", "Cancel")
@@ -371,6 +382,7 @@ func TestCopyContentsToAnotherBucket(t *testing.T) {
 }
 
 func TestCopyContentsRefusesBadPrefixAndNeedsATarget(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.openBucketCopy("acme-media-archive", false)
 	h.settle()
@@ -391,6 +403,7 @@ func TestCopyContentsRefusesBadPrefixAndNeedsATarget(t *testing.T) {
 }
 
 func TestMoveContentsNeedsTheExtraConfirmation(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	before := h.countObjects("acme-website")
 	h.rightClickChoose("acme-website", "Move contents to…")
@@ -447,6 +460,7 @@ func expiresOf(t *testing.T, u string) string {
 }
 
 func TestSignedURLPresets(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.openSignedFor("manifest.json")
@@ -465,6 +479,7 @@ func TestSignedURLPresets(t *testing.T) {
 }
 
 func TestSignedURLResultCopiesAndShowsExpiry(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openSignedFor("manifest.json")
 	h.mustClick("Generate")
@@ -494,6 +509,7 @@ func TestSignedURLResultCopiesAndShowsExpiry(t *testing.T) {
 }
 
 func TestSignedURLCustomExpiryIsChecked(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openSignedFor("manifest.json")
 	h.mustClick("Custom")
@@ -548,6 +564,7 @@ func TestSignedURLCustomExpiryIsChecked(t *testing.T) {
 }
 
 func TestSignedURLPutUploads(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.openSignedFor("README.txt")
@@ -572,6 +589,7 @@ func TestSignedURLPutUploads(t *testing.T) {
 }
 
 func TestSignedURLVersionIDIsPrefilledFromTheVersionsTab(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.openVersioned()
 	h.mustClick("notes.txt")
@@ -611,6 +629,7 @@ func TestSignedURLVersionIDIsPrefilledFromTheVersionsTab(t *testing.T) {
 }
 
 func TestSignedURLForSeveralObjects(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.tt.ClickWith(ui.Shift, "manifest.json")
@@ -663,6 +682,7 @@ func (h *harness) flatObjects(bucket, prefix string) int {
 }
 
 func TestFlatViewListsNestedKeysWithRelativeNames(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	want := h.flatObjects(bkt, "")
 	if want < 5000 {
@@ -731,6 +751,7 @@ func TestFlatViewListsNestedKeysWithRelativeNames(t *testing.T) {
 }
 
 func TestFlatViewIsOffInDeletedViewAndAnotherBucket(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.openVersioned()
 	h.a.toggleFlat()
@@ -758,6 +779,7 @@ func TestFlatViewIsOffInDeletedViewAndAnotherBucket(t *testing.T) {
 }
 
 func TestFlatEntries(t *testing.T) {
+	t.Parallel()
 	in := []core.Entry{
 		{Key: "a/b/c.txt", Name: "c.txt"}, {Key: "a/d/", Name: "d", Folder: true}, {Key: "a/e.txt", Name: "e.txt"},
 	}
@@ -785,6 +807,7 @@ func (h *harness) previewOf(key string) {
 }
 
 func TestPreviewJSONIsPrettyPrintedInTheEditor(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.PutObject(bkt, "compact.json", []byte(`{"b":[1,2,{"c":null}],"a":"x"}`), "application/json", nil)
 	h.previewOf("compact.json")
@@ -801,6 +824,7 @@ func TestPreviewJSONIsPrettyPrintedInTheEditor(t *testing.T) {
 }
 
 func TestPreviewCSVIsATableWithABoldHeader(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openPrefix("reports/")
 	h.settle()
@@ -819,6 +843,7 @@ func TestPreviewCSVIsATableWithABoldHeader(t *testing.T) {
 }
 
 func TestPreviewBinaryIsAHexDump(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	body := make([]byte, 6000)
 	for i := range body {
@@ -848,6 +873,7 @@ func TestPreviewBinaryIsAHexDump(t *testing.T) {
 }
 
 func TestPreviewLargeTextSaysItIsLimited(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.PutObject(bkt, "big.txt", []byte(strings.Repeat("lorem ipsum dolor sit amet\n", 60_000)), "text/plain", nil)
 	h.previewOf("big.txt")
@@ -863,6 +889,7 @@ func TestPreviewLargeTextSaysItIsLimited(t *testing.T) {
 }
 
 func TestPreviewXMLMarkdownAndUnknownText(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	for key, body := range map[string]string{"feed.xml": "<a><b>1</b></a>\n", "notes.md": "# Title\n\nSome *text*\n", "NOTES": "plain text without an extension\n"} {
 		h.env.Srv.PutObject(bkt, key, []byte(body), "application/octet-stream", nil)
@@ -877,6 +904,7 @@ func TestPreviewXMLMarkdownAndUnknownText(t *testing.T) {
 }
 
 func TestBuildPreview(t *testing.T) {
+	t.Parallel()
 	var rows strings.Builder
 	rows.WriteString("a,b\n")
 	for i := 0; i < 300; i++ {
@@ -951,12 +979,13 @@ func TestBuildPreview(t *testing.T) {
 // ---- settings ---------------------------------------------------------------------------------------
 
 func TestSettingsLogSwitchPersistsAndOpensTheLogFolder(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	opened := make(chan string, 2)
 	h.a.openPath = func(p string) error { opened <- p; return nil }
 	h.a.openTool("settings")
 	h.settle()
-	h.mustHave("DIAGNOSTICS", "Write diagnostic log", "Open log folder")
+	h.mustHave("Diagnostics", "Write diagnostic log", "Open log folder")
 	if h.env.Svc.Settings().LogToFile {
 		t.Fatal("the log starts on")
 	}
@@ -973,7 +1002,7 @@ func TestSettingsLogSwitchPersistsAndOpensTheLogFolder(t *testing.T) {
 		t.Errorf("settings.json = %s (%v)", raw, err)
 	}
 	// Changing another setting keeps it.
-	h.editSetting("Part size (MiB)", "24")
+	h.editSetting("Part size", "24")
 	h.waitFor("part size saved", func() bool { return h.env.Svc.Settings().PartSizeMiB == 24 })
 	if !h.env.Svc.Settings().LogToFile {
 		t.Error("saving another setting turned the log off")
@@ -1002,6 +1031,7 @@ func TestSettingsLogSwitchPersistsAndOpensTheLogFolder(t *testing.T) {
 }
 
 func TestOpenLogFolderFailureIsReported(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.openPath = func(string) error { return fmt.Errorf("no file manager") }
 	h.a.openTool("settings")

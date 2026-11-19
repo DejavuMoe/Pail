@@ -30,20 +30,16 @@ var settingsI18NAllow = map[string]bool{
 	"dev":                              true, // the build version
 	"Dejavu Moe":                       true, // the author, a name
 	"github.com/DejavuMoe/Pail":        true, // the repository address
+	"MiB":                              true, // units: the same in every language
+	"KiB/s":                            true,
 }
 
-// clickSettingSwitch clicks the switch of a Settings row. The label column is
-// 200px wide and 16px of gap follow it; a "?" sits after the label text, so
-// the switch is found from the left edge of the label, not from its text end.
+// clickSettingSwitch clicks the switch of a Settings row: it is the last
+// control of the row, 36px wide.
 func (h *harness) clickSettingSwitch(label string) {
 	h.t.Helper()
-	h.showSetting(label)
-	h.tt.Frame()
-	r, ok := h.tt.Find(label)
-	if !ok {
-		h.t.Fatalf("no element shows %q; have %q", label, h.tt.Texts())
-	}
-	h.tt.ClickAt(r.X+200+16+18, r.Y+r.H/2)
+	x, y := h.settingRowEnd(label)
+	h.tt.ClickAt(x-18, y)
 	h.settle()
 }
 
@@ -201,12 +197,12 @@ func TestI18NSettings(t *testing.T) {
 	h.a.setLanguage("zh-Hans")
 	h.settle()
 	h.mustHave("外观", "语言", "简体中文")
-	h.mustNotHave("APPEARANCE")
+	h.mustNotHave("Appearance")
 	if h.a.lang != "zh-Hans" {
 		t.Fatalf("lang = %q", h.a.lang)
 	}
 	h.a.setLanguage("")
 	h.settle()
-	h.mustHave("APPEARANCE", "Language", "Follow system")
+	h.mustHave("Appearance", "Language", "Follow system")
 	h.mustNotHave("外观")
 }

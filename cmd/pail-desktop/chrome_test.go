@@ -29,7 +29,8 @@ func (h *harness) openPaletteWith(mods ui.Modifiers, key ui.Key) {
 // ---- window options and menu -----------------------------------------------------------------
 
 func TestWindowOptionsHideTheTitleBarOnEveryPlatform(t *testing.T) {
-	o := windowOptions("Pail", 1440, 900, nil)
+	t.Parallel()
+	o := windowOptions("Pail", 1440, 900, lightTokens, darkTokens, nil)
 	if o.TitleBarStyle != mygo.TitleBarHidden && o.TitleBarStyle != mygo.TitleBarHiddenInset {
 		t.Errorf("title bar style = %q", o.TitleBarStyle)
 	}
@@ -39,12 +40,17 @@ func TestWindowOptionsHideTheTitleBarOnEveryPlatform(t *testing.T) {
 	if o.BackgroundColor != "light-dark(#FBFAF8, #1A1A18)" {
 		t.Errorf("background = %q", o.BackgroundColor)
 	}
+	// The window opens in the palettes chosen, not in the default ones.
+	if o := windowOptions("Pail", 1440, 900, skyTokens, nightTokens, nil); o.BackgroundColor != "light-dark(#FFFFFF, #0F151C)" {
+		t.Errorf("background with Sky and Night = %q", o.BackgroundColor)
+	}
 	if o.MinWidth != 960 || o.MinHeight != 600 {
 		t.Errorf("minimum size = %dx%d", o.MinWidth, o.MinHeight)
 	}
 }
 
 func TestNativeMenuBarOnlyOnMacOS(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	for _, goos := range []string{"windows", "linux", "freebsd"} {
 		set := 0
@@ -64,6 +70,7 @@ func TestNativeMenuBarOnlyOnMacOS(t *testing.T) {
 // ---- theme sync --------------------------------------------------------------------------------
 
 func TestThemeIsSyncedWithTheSystem(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "dark") // --theme dark
 	got := h.recordTheme()
 	h.a.themeSynced = "" // main syncs before the window exists; the first frame may too
@@ -98,6 +105,7 @@ func TestThemeIsSyncedWithTheSystem(t *testing.T) {
 // ---- the ⋯ menu ----------------------------------------------------------------------------------
 
 func TestMoreMenuHasTheAppCommands(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("More")
 	h.tt.Frame()
@@ -178,6 +186,7 @@ func TestMoreMenuHasTheAppCommands(t *testing.T) {
 // ---- the command palette -------------------------------------------------------------------------
 
 func TestPaletteListsEveryCommandAndBuckets(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openPaletteWith(ui.Cmd, ui.KeyK)
 	entries := h.a.paletteEntries()
@@ -218,6 +227,7 @@ func TestPaletteListsEveryCommandAndBuckets(t *testing.T) {
 }
 
 func TestPaletteFiltersRunsAndCloses(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	got := h.recordTheme()
 	h.openPaletteWith(ui.Cmd|ui.Shift, ui.KeyP)
@@ -272,6 +282,7 @@ func TestPaletteFiltersRunsAndCloses(t *testing.T) {
 }
 
 func TestPaletteKeyboardAndMouse(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openPaletteWith(ui.Cmd, ui.KeyK)
 	entries := filterPalette(h.a.paletteEntries(), "")
@@ -314,6 +325,7 @@ func TestPaletteKeyboardAndMouse(t *testing.T) {
 }
 
 func TestPaletteDisabledCommandsAreDimmedAndDoNotRun(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	var dl *palEntry
 	for _, e := range h.a.paletteEntries() {
@@ -363,6 +375,7 @@ func TestPaletteDisabledCommandsAreDimmedAndDoNotRun(t *testing.T) {
 }
 
 func TestPaletteDoesNotOpenBehindADialogAndShowsVaultCommandsWhenApplicable(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.newFolder = true
 	h.settle()
@@ -388,6 +401,7 @@ func TestPaletteDoesNotOpenBehindADialogAndShowsVaultCommandsWhenApplicable(t *t
 // ---- about and shortcuts -------------------------------------------------------------------
 
 func TestAboutDialog(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.run("about", "test")
 	h.settle()
@@ -421,10 +435,11 @@ func TestAboutDialog(t *testing.T) {
 }
 
 func TestSettingsAboutSection(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openTool("settings")
 	h.settle()
-	h.mustHave("ABOUT", "Version", version, "Author", "Dejavu Moe", "Repository", "github.com/DejavuMoe/Pail", "License", "MIT License")
+	h.mustHave("About", "Version", version, "Author", "Dejavu Moe", "Repository", "github.com/DejavuMoe/Pail", "License", "MIT License")
 	urls := make(chan string, 2)
 	h.a.openURL = func(u string) error { urls <- u; return nil }
 	h.tt.Scroll(700, 300, 0, 3000) // the About section is the last one
@@ -446,6 +461,7 @@ func TestSettingsAboutSection(t *testing.T) {
 }
 
 func TestShortcutsDialogListsTheCommandTable(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.run("shortcuts", "test")
 	h.settle()
@@ -467,6 +483,7 @@ func TestShortcutsDialogListsTheCommandTable(t *testing.T) {
 // The toolbar keeps clear of the system window buttons at its right end and
 // the account switcher of the traffic lights at the left end of the sidebar.
 func TestTopBarKeepsClearOfWindowControls(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	for _, sz := range auditSizes {
 		h.resize(sz.w, sz.h)
@@ -515,6 +532,7 @@ func TestTopBarKeepsClearOfWindowControls(t *testing.T) {
 // password dialog (a security change) without anyone asking. Only an explicit
 // activation of "Encrypted vault" may open it.
 func TestCredentialStorageOnlyOpensTheDialogWhenAsked(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.openTool("settings")
 	h.settle()
@@ -527,6 +545,7 @@ func TestCredentialStorageOnlyOpensTheDialogWhenAsked(t *testing.T) {
 		}
 	}
 	noDialog("the first frames")
+	h.showSetting("Credential storage")
 	r, ok := h.tt.Find("Encrypted vault")
 	if !ok {
 		t.Fatal("no Encrypted vault segment")
@@ -566,6 +585,7 @@ func TestCredentialStorageOnlyOpensTheDialogWhenAsked(t *testing.T) {
 
 	// An explicit click does open it, and Escape followed by a focus return
 	// plus idle frames does not reopen it.
+	h.showSetting("Credential storage")
 	h.mustClick("Encrypted vault")
 	if !h.a.vu.create.open {
 		t.Fatal("clicking Encrypted vault did not open the dialog")

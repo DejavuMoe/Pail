@@ -39,9 +39,10 @@ func (h *harness) vaultState() core.VaultState { return h.a.svc.VaultState() }
 func TestVaultSwitchDialogValidationAndSuccess(t *testing.T) {
 	h := newHarness(t, "light")
 	h.openToolView("settings")
-	h.mustHave("SECURITY", "Credential storage", "System keychain", "Encrypted vault", "Stored in "+keychainName())
+	h.mustHave("Security", "Credential storage", "System keychain", "Encrypted vault", "Stored in "+keychainName())
 	h.mustNotHave("Lock now", "Change master password…", "Auto-lock")
 
+	h.showSetting("Credential storage")
 	h.mustClick("Encrypted vault")
 	if !h.a.vu.create.open {
 		t.Fatal("choosing the vault did not open the dialog")
@@ -95,6 +96,7 @@ func TestVaultCreateDialogWordingPerPlatform(t *testing.T) {
 func TestVaultCreateEscapeAndCancelLeaveTheBackend(t *testing.T) {
 	h := newHarness(t, "light")
 	h.openToolView("settings")
+	h.showSetting("Credential storage")
 	h.mustClick("Encrypted vault")
 	h.a.vu.create.pw = "typed but not saved"
 	h.tt.Key(0, ui.KeyEscape)
@@ -102,6 +104,7 @@ func TestVaultCreateEscapeAndCancelLeaveTheBackend(t *testing.T) {
 	if h.a.vu.create.open || h.a.vu.create.pw != "" {
 		t.Fatalf("Escape left the dialog: %+v", h.a.vu.create)
 	}
+	h.showSetting("Credential storage")
 	h.mustClick("Encrypted vault")
 	h.mustClick("Cancel")
 	if h.a.vu.create.open || h.a.svc.SecretBackend() != core.SecretBackendKeyring {
@@ -121,6 +124,7 @@ func TestVaultLockNowShowsTheIndicator(t *testing.T) {
 
 	h.tt.Scroll(700, 300, 0, 300) // the Security section lies below the first screen
 	h.tt.Frame()
+	h.showSetting("Credential storage")
 	h.mustClick("Lock now")
 	h.waitFor("locked", func() bool { return !h.vaultState().Unlocked && h.tt.HasText("Vault locked") })
 	h.mustHave("Vault locked", "Locked", "Unlock…")
@@ -274,6 +278,7 @@ func TestVaultSwitchBackToKeychainLocked(t *testing.T) {
 	h.toVault()
 	h.lockNow()
 	h.openToolView("settings")
+	h.showSetting("Credential storage")
 	h.mustClick("System keychain")
 	h.mustHave("Use the system keychain?", "Master password", "Move to keychain", keychainName())
 	h.a.vu.toKeychain.pw = "nope nope nope"
@@ -302,6 +307,7 @@ func TestVaultSwitchBackToKeychainUnlockedNeedsNoPassword(t *testing.T) {
 	h := newHarness(t, "light")
 	h.toVault()
 	h.openToolView("settings")
+	h.showSetting("Credential storage")
 	h.mustClick("System keychain")
 	h.mustHave("Use the system keychain?", "Move to keychain")
 	if h.a.vu.toKeychain.needPW || h.tt.Focused("Master password") {

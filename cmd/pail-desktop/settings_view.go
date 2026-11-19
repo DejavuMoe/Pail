@@ -59,34 +59,34 @@ func conflictChoices() []choice {
 	}
 }
 
-// numSetting is a whole-number setting edited in a text field. The labels and
+// numSetting is a whole-number setting edited in a text field. The label and
 // the help are functions: they say their text in the language shown now.
 type numSetting struct {
-	key                       string
-	rowLabel, inputLabel, tip func() string
-	lo, hi                    int
-	unit                      string
-	text                      func(f *settingsForm) *string
-	get                       func(core.Settings) int
-	set                       func(*core.Settings, int)
+	key        string
+	label, tip func() string
+	lo, hi     int
+	unit       string
+	text       func(f *settingsForm) *string
+	get        func(core.Settings) int
+	set        func(*core.Settings, int)
 }
 
 var numSettings = []numSetting{
-	{"upload", locales.SettingsUploads, locales.SettingsUploads, locales.SettingsUploadsHelp, 1, 64, "",
+	{"upload", locales.SettingsUploads, locales.SettingsUploadsHelp, 1, 64, "",
 		func(f *settingsForm) *string { return &f.upload }, func(s core.Settings) int { return s.Limits.Upload }, func(s *core.Settings, n int) { s.Limits.Upload = n }},
-	{"download", locales.SettingsDownloadsN, locales.SettingsDownloadsN, locales.SettingsDownloadsNHelp, 1, 64, "",
+	{"download", locales.SettingsDownloadsN, locales.SettingsDownloadsNHelp, 1, 64, "",
 		func(f *settingsForm) *string { return &f.download }, func(s core.Settings) int { return s.Limits.Download }, func(s *core.Settings, n int) { s.Limits.Download = n }},
-	{"other", locales.SettingsOther, locales.SettingsOther, locales.SettingsOtherHelp, 1, 64, "",
+	{"other", locales.SettingsOther, locales.SettingsOtherHelp, 1, 64, "",
 		func(f *settingsForm) *string { return &f.other }, func(s core.Settings) int { return s.Limits.Other }, func(s *core.Settings, n int) { s.Limits.Other = n }},
-	{"workers", locales.SettingsWorkers, locales.SettingsWorkers, locales.SettingsWorkersHelp, 1, 64, "",
+	{"workers", locales.SettingsWorkers, locales.SettingsWorkersHelp, 1, 64, "",
 		func(f *settingsForm) *string { return &f.workers }, func(s core.Settings) int { return s.BulkWorkers }, func(s *core.Settings, n int) { s.BulkWorkers = n }},
-	{"part", locales.SettingsPartRow, locales.SettingsPart, locales.SettingsPartHelp, 5, 5120, " MiB",
+	{"part", locales.SettingsPart, locales.SettingsPartHelp, 5, 5120, " MiB",
 		func(f *settingsForm) *string { return &f.part }, func(s core.Settings) int { return s.PartSizeMiB }, func(s *core.Settings, n int) { s.PartSizeMiB = n }},
-	{"upRate", locales.SettingsUploadRate, locales.SettingsUploadRate, locales.SettingsRateHelp, 0, core.MaxBandwidthKiBps, " KiB/s",
+	{"upRate", locales.SettingsUploadRate, locales.SettingsRateHelp, 0, core.MaxBandwidthKiBps, " KiB/s",
 		func(f *settingsForm) *string { return &f.upRate }, func(s core.Settings) int { return s.UploadKiBps }, func(s *core.Settings, n int) { s.UploadKiBps = n }},
-	{"downRate", locales.SettingsDownloadRate, locales.SettingsDownloadRate, locales.SettingsRateHelp, 0, core.MaxBandwidthKiBps, " KiB/s",
+	{"downRate", locales.SettingsDownloadRate, locales.SettingsRateHelp, 0, core.MaxBandwidthKiBps, " KiB/s",
 		func(f *settingsForm) *string { return &f.downRate }, func(s core.Settings) int { return s.DownloadKiBps }, func(s *core.Settings, n int) { s.DownloadKiBps = n }},
-	{"recentOps", locales.SettingsRecentOps, locales.SettingsRecentOps, locales.SettingsRecentOpsHelp, core.MinRecentOps, core.MaxRecentOps, "",
+	{"recentOps", locales.SettingsRecentOps, locales.SettingsRecentOpsHelp, core.MinRecentOps, core.MaxRecentOps, "",
 		func(f *settingsForm) *string { return &f.recentOps }, func(s core.Settings) int { return s.RecentOps }, func(s *core.Settings, n int) { s.RecentOps = n }},
 }
 
@@ -221,6 +221,36 @@ func (a *app) setTheme(mode string) {
 	a.applySetting("theme", func(st *core.Settings) { st.Theme = mode }, func() { a.opts.theme = a.svc.Settings().Theme })
 }
 
+// colorsOf is the palette chosen for the dark theme or for the light one.
+func (a *app) colorsOf(dark bool) palette {
+	if dark {
+		return paletteOf(true, a.darkColors)
+	}
+	return paletteOf(false, a.lightColors)
+}
+
+// setColors gives the dark theme or the light one the palette id, at once,
+// and saves the choice.
+func (a *app) setColors(dark bool, id string) {
+	if a.colorsOf(dark).id == id {
+		return
+	}
+	key := "lightColors"
+	if dark {
+		key = "darkColors"
+		a.darkColors = id
+	} else {
+		a.lightColors = id
+	}
+	a.applySetting(key, func(st *core.Settings) {
+		if dark {
+			st.DarkColors = id
+		} else {
+			st.LightColors = id
+		}
+	}, func() { a.lightColors, a.darkColors = a.svc.Settings().LightColors, a.svc.Settings().DarkColors })
+}
+
 // setLogToFile switches the diagnostic log at once and saves the choice.
 func (a *app) setLogToFile(on bool) {
 	a.applySetting("log", func(st *core.Settings) { st.LogToFile = on }, func() { a.sf.logOn = a.svc.Settings().LogToFile })
@@ -264,45 +294,15 @@ func (a *app) chooseDownloadDir() {
 }
 
 // ---- view -----------------------------------------------------------------------------------
-
-// settingsRow is a 200px label column and a control, 40px apart.
-func settingsRow(c *ui.Context, label, err string, control func()) {
-	settingsRowHelp(c, label, "", err, control)
-}
-
-// settingsRowHelp is settingsRow with a "?" after the label when help is set.
-func settingsRowHelp(c *ui.Context, label, help, err string, control func()) {
-	k := tk(c)
-	ui.Column(c.Key("srow:" + label)).Gap(4).Children(func() {
-		ui.Row(c).MinHeight(28).Gap(16).AlignItems(ui.Center).Children(func() {
-			if help == "" {
-				ui.Text(c, label).FontSize(sizeBody).TextColor(k.Text).Width(200).Shrink(0)
-			} else {
-				ui.Row(c).Width(200).Shrink(0).Gap(2).AlignItems(ui.Center).Children(func() {
-					ui.Text(c, label).FontSize(sizeBody).TextColor(k.Text).SingleLine().Shrink(1).MinWidth(0).Tooltip(label)
-					helpIcon(c, help)
-				})
-			}
-			control()
-		})
-		if err != "" {
-			ui.Text(c, err).FontSize(sizeSecondary).TextColor(k.Danger).MarginStart(216)
-		}
-	})
-}
-
-func settingsSection(c *ui.Context, title string) {
-	ui.Column(c.Key("ssec:"+title)).Gap(8).Margin(8, 0, 0, 0).Children(func() {
-		sectionLabel(c, strings.ToUpper(title))
-		hairline(c)
-	})
-}
+//
+// The rows and cards are in settings_layout.go.
 
 // savedFor is how long the "Saved" mark stays beside its control.
 const savedFor = 2500 * time.Millisecond
 
-// savedMark is the quiet "Saved" confirmation at the end of a setting's
-// control, for savedFor after the setting was saved.
+// savedMark is the quiet "Saved" confirmation before a setting's control, for
+// savedFor after the setting was saved. It stands at the left of the control,
+// so the control keeps its place at the edge of the card.
 func (a *app) savedMark(c *ui.Context, key string) {
 	t, ok := a.sf.saved[key]
 	if !ok {
@@ -338,10 +338,10 @@ func (a *app) commitOnLeave(key string, in ui.Element, commit func()) {
 
 func (a *app) numberRow(c *ui.Context, ns numSetting) {
 	f := &a.sf
-	settingsRowHelp(c, ns.rowLabel(), ns.tip(), f.errs[ns.key], func() {
-		in := inputBox(c, ns.text(f), ns.inputLabel(), "", inputOpts{width: 96, invalid: f.errs[ns.key] != ""})
-		a.commitOnLeave(ns.key, in, func() { a.commitNumber(ns) })
+	a.settingsRowHelp(c, ns.label(), ns.tip(), f.errs[ns.key], func() {
 		a.savedMark(c, ns.key)
+		in := inputBox(c, ns.text(f), ns.label(), "", inputOpts{width: settingsNumW, invalid: f.errs[ns.key] != "", suffix: strings.TrimSpace(ns.unit)})
+		a.commitOnLeave(ns.key, in, func() { a.commitNumber(ns) })
 	})
 }
 
@@ -349,25 +349,82 @@ func (a *app) settingsView(c *ui.Context) {
 	if !a.sf.loaded {
 		a.loadSettingsForm()
 	}
+	n := &a.srail
+	if !n.bp.set {
+		n.bp.at = settingsRailNeed
+	}
+	rail := !n.bp.update(a.lay.barW)
+	ui.Row(c.Key("settings")).Grow(1).MinHeight(0).AlignItems(ui.Stretch).Children(func() {
+		if rail {
+			a.settingsRailView(c, n.current())
+		}
+		left := float32(settingsPad)
+		if rail {
+			left = 8 // the rail's own padding parts it from the column
+		}
+		page := ui.Scroll(c).TrackScroll(&n.scroll).Grow(1).MinWidth(0).MinHeight(0).ScrollbarInsets(0, 2, 0, 0)
+		n.viewY = page.Bounds().Y
+		page.Children(func() {
+			ui.Column(c).MaxWidth(settingsColW+left+settingsPad).Padding(settingsPad-settingsGroupGap, settingsPad, settingsPad+8, left).Children(func() {
+				a.appearanceSection(c)
+				a.transfersSection(c)
+				a.downloadsSection(c)
+				a.networkSection(c)
+				a.securitySection(c)
+				a.diagnosticsSection(c)
+				a.aboutSection(c)
+			})
+		})
+		n.lasY = n.scroll.Y
+	})
+}
+
+// colorsRow is the row that chooses the palette of the dark theme or of the
+// light one: a picture of each, as the theme row has.
+func (a *app) colorsRow(c *ui.Context, dark bool, label, help string) {
+	key := "lightColors"
+	if dark {
+		key = "darkColors"
+	}
+	a.settingsRowHelp(c, label, help, a.sf.errs[key], func() {
+		a.savedMark(c, key)
+		ps := palettesOf(dark)
+		picks := make([]themePick, len(ps))
+		sel := 0
+		for i, p := range ps {
+			picks[i] = themePick{p.label(), p.k, nil}
+			if p.id == a.colorsOf(dark).id {
+				sel = i
+			}
+		}
+		if themePicker(c, &sel, label, picks) {
+			a.setColors(dark, ps[sel].id)
+		}
+	})
+}
+
+func (a *app) appearanceSection(c *ui.Context) {
 	f := &a.sf
-	ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
-		ui.Column(c).Width(640).MaxWidth(640).Padding(24, 24, 32, 24).Margin(0, 0).Gap(12).Children(func() {
-			settingsSection(c, locales.SettingsAppearance())
-			settingsRowHelp(c, locales.SettingsTheme(), locales.SettingsThemeHelp(), f.errs["theme"], func() {
-				// The mode lives in the app (the ⋯ menu and the palette change it
+	a.settingsGroup(c, "appearance", func() {
+		a.settingsCard(c, func() {
+			a.settingsRowHelp(c, locales.SettingsTheme(), locales.SettingsThemeHelp(), f.errs["theme"], func() {
+				a.savedMark(c, "theme")
+				// The mode lives in the app (the menu and the palette change it
 				// too), so the control shows it each frame.
 				sel := max(0, slices.Index(themeModes, a.themeMode()))
-				th := themeLabels()
-				if segmented(c, &sel, locales.SettingsTheme(), th...) {
+				light, dark := a.colorsOf(false).k, a.colorsOf(true).k
+				labels := themeLabels()
+				if themePicker(c, &sel, locales.SettingsTheme(), []themePick{{labels[0], light, &dark}, {labels[1], light, nil}, {labels[2], dark, nil}}) {
 					a.setTheme(themeModes[sel])
 				}
-				a.savedMark(c, "theme")
 			})
-			settingsRowHelp(c, locales.SettingsLanguage(), locales.SettingsLanguageHelp(), "", func() {
+			a.colorsRow(c, false, locales.SettingsLightColors(), locales.SettingsLightColorsHelp())
+			a.colorsRow(c, true, locales.SettingsDarkColors(), locales.SettingsDarkColorsHelp())
+			a.settingsRowHelp(c, locales.SettingsLanguage(), locales.SettingsLanguageHelp(), "", func() {
 				// The choice lives in the app (a.lang); the select edits a copy so
 				// that it shows the real language each frame.
 				lang := a.lang
-				if selectBox(c, locales.SettingsLanguage(), &lang, languageChoices(), 160) {
+				if selectBox(c, locales.SettingsLanguage(), &lang, languageChoices(), settingsSelW) {
 					a.setLanguage(lang)
 				}
 			})
@@ -375,75 +432,90 @@ func (a *app) settingsView(c *ui.Context) {
 			if runtime.GOOS == "darwin" {
 				trayLabel = locales.SettingsTrayMac()
 			}
-			settingsRowHelp(c, trayLabel, locales.SettingsTrayHelp(), f.errs["tray"], func() {
+			a.settingsRowHelp(c, trayLabel, locales.SettingsTrayHelp(), f.errs["tray"], func() {
+				a.savedMark(c, "tray")
 				// The choice lives in the app (a.tray.on); the switch edits a copy.
 				on := a.tray.on
 				if switchControl(c, &on, trayLabel).Changed() {
 					a.setTrayShown(on)
 				}
-				a.savedMark(c, "tray")
 			})
 			if a.tray.on {
-				settingsRowHelp(c, locales.SettingsQuitIdle(), locales.SettingsQuitIdleHelp(), f.errs["quitIdle"], func() {
+				a.settingsRowHelp(c, locales.SettingsQuitIdle(), locales.SettingsQuitIdleHelp(), f.errs["quitIdle"], func() {
+					a.savedMark(c, "quitIdle")
 					on := a.tray.quitIdle
 					if switchControl(c, &on, locales.SettingsQuitIdle()).Changed() {
 						a.setQuitWhenIdle(on)
 					}
-					a.savedMark(c, "quitIdle")
 				})
 			}
-			settingsSection(c, locales.SettingsTransfers())
-			for _, ns := range numSettings[:4] {
+		})
+	})
+}
+
+func (a *app) transfersSection(c *ui.Context) {
+	f := &a.sf
+	a.settingsGroup(c, "transfers", func() {
+		a.settingsCard(c, func() {
+			for _, ns := range numSettings[:7] {
 				a.numberRow(c, ns)
 			}
-			a.numberRow(c, numSettings[4])
-			a.numberRow(c, numSettings[5])
-			a.numberRow(c, numSettings[6])
-			settingsRowHelp(c, locales.SettingsConflictRow(), locales.SettingsConflictHelp(), f.errs["conflict"], func() {
-				if selectBox(c, locales.SettingsConflictLabel(), &f.conflict, conflictChoices(), 240) {
+			a.settingsRowHelp(c, locales.SettingsConflictRow(), locales.SettingsConflictHelp(), f.errs["conflict"], func() {
+				a.savedMark(c, "conflict")
+				if selectBox(c, locales.SettingsConflictLabel(), &f.conflict, conflictChoices(), settingsSelW) {
 					a.commitConflict()
 				}
-				a.savedMark(c, "conflict")
 			})
-			settingsSection(c, locales.SettingsDownloads())
-			settingsRowHelp(c, locales.SettingsDir(), locales.SettingsDirHelp(), f.errs["dir"], func() {
-				ui.Row(c).Gap(8).AlignItems(ui.Center).Grow(1).MinWidth(0).Children(func() {
-					ui.Box(c).Grow(1).MinWidth(0).Children(func() {
-						in := inputBox(c, &f.dir, locales.SettingsDir(), locales.SettingsDirPlaceholder(), inputOpts{invalid: f.errs["dir"] != "", mono: f.dir != ""})
-						a.commitOnLeave("dir", in, a.commitDir)
-					})
-					if secondaryButton(c, locales.CommonChoose(), false).Clicked() {
-						a.chooseDownloadDir()
-					}
-					if f.dir != "" {
-						ghostButton(c, icons.Get("x"), "", locales.SettingsClear(), false).Label(locales.SettingsClearLabel()).OnClick(func() {
-							f.dir = ""
-							a.commitDir()
-						})
-					}
-					a.savedMark(c, "dir")
+		})
+	})
+}
+
+func (a *app) downloadsSection(c *ui.Context) {
+	f := &a.sf
+	a.settingsGroup(c, "downloads", func() {
+		a.settingsCard(c, func() {
+			a.settingsRowHelp(c, locales.SettingsDir(), locales.SettingsDirHelp(), f.errs["dir"], func() {
+				a.savedMark(c, "dir")
+				ui.Box(c).Basis(settingsWideW).Shrink(1).MinWidth(120).Children(func() {
+					in := inputBox(c, &f.dir, locales.SettingsDir(), locales.SettingsDirPlaceholder(), inputOpts{invalid: f.errs["dir"] != "", mono: f.dir != ""})
+					a.commitOnLeave("dir", in, a.commitDir)
 				})
+				if secondaryButton(c, locales.CommonChoose(), false).Shrink(0).Clicked() {
+					a.chooseDownloadDir()
+				}
+				if f.dir != "" {
+					ghostButton(c, icons.Get("x"), "", locales.SettingsClear(), false).Label(locales.SettingsClearLabel()).Shrink(0).OnClick(func() {
+						f.dir = ""
+						a.commitDir()
+					})
+				}
 			})
-			a.networkSection(c)
-			a.securitySection(c)
-			settingsSection(c, locales.SettingsDiagnostics())
-			settingsRowHelp(c, locales.SettingsLog(), locales.SettingsLogHelp(), f.errs["log"], func() {
+		})
+	})
+}
+
+func (a *app) diagnosticsSection(c *ui.Context) {
+	f := &a.sf
+	a.settingsGroup(c, "diagnostics", func() {
+		a.settingsCard(c, func() {
+			a.settingsRowHelp(c, locales.SettingsLog(), locales.SettingsLogHelp(), f.errs["log"], func() {
+				a.savedMark(c, "log")
 				if switchControl(c, &f.logOn, locales.SettingsLog()).Changed() {
 					a.setLogToFile(f.logOn)
 				}
-				a.savedMark(c, "log")
 			})
-			settingsRow(c, locales.SettingsLogFiles(), "", func() {
-				ghostButton(c, icons.Get("folder-open"), locales.SettingsOpenLogDir(), locales.SettingsOpenLogDirTip(), false).Margin(0, 0, 0, -8).OnClick(a.openLogDir)
+			a.settingsRow(c, locales.SettingsLogFiles(), "", func() {
+				if secondaryButton(c, locales.SettingsOpenLogDir(), false).Tooltip(locales.SettingsOpenLogDirTip()).Clicked() {
+					a.openLogDir()
+				}
 			})
 			a.numberRow(c, numSettings[7])
-			settingsRowHelp(c, locales.SettingsKeepRecentOps(), locales.SettingsKeepRecentOpsHelp(), f.errs["keepOps"], func() {
+			a.settingsRowHelp(c, locales.SettingsKeepRecentOps(), locales.SettingsKeepRecentOpsHelp(), f.errs["keepOps"], func() {
+				a.savedMark(c, "keepOps")
 				if switchControl(c, &f.keepOps, locales.SettingsKeepRecentOps()).Changed() {
 					a.setKeepRecentOps(f.keepOps)
 				}
-				a.savedMark(c, "keepOps")
 			})
-			a.aboutSection(c)
 		})
 	})
 }

@@ -389,7 +389,7 @@ func TestRecentOperationsSettings(t *testing.T) {
 	h.a.openTool("settings")
 	h.settle()
 	h.showSetting("Recent operations to keep")
-	h.mustHave("DIAGNOSTICS", "Recent operations to keep", "Keep on account switch")
+	h.mustHave("Diagnostics", "Recent operations to keep", "Keep on account switch")
 	if st := h.env.Svc.Settings(); st.RecentOps != 100 || st.KeepRecentOps || h.a.sf.recentOps != "100" || h.a.sf.keepOps {
 		t.Fatalf("defaults: %+v, form %q %v", st, h.a.sf.recentOps, h.a.sf.keepOps)
 	}
@@ -419,7 +419,7 @@ func TestRecentOperationsSettings(t *testing.T) {
 		t.Error("the switch does not show on")
 	}
 	// Saving another setting keeps both.
-	h.editSetting("Part size (MiB)", "24")
+	h.editSetting("Part size", "24")
 	h.waitFor("part size saved", func() bool { return h.env.Svc.Settings().PartSizeMiB == 24 })
 	if st := h.env.Svc.Settings(); st.RecentOps != 250 || !st.KeepRecentOps {
 		t.Errorf("another setting reset them: %+v", st)

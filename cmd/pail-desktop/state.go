@@ -86,6 +86,9 @@ type app struct {
 	quit        func()
 	themeSet    func(mygo.ThemeSource)
 	themeSynced string // the mode themeSet was last called with
+	// lightColors and darkColors name the palette of each theme (theme.go), as
+	// saved; "" and a name the app does not know are the default one.
+	lightColors, darkColors string
 	// progressSet shows the transfers' progress on the taskbar button (the
 	// Dock icon on macOS) with Window.SetProgressBar; progressShown is what
 	// it was last called with. Injected by main and replaced in tests.
@@ -132,6 +135,7 @@ type app struct {
 	crumbH       ui.Handle  // the last breadcrumb: where Esc in the filter goes
 	filter       pathFilter // the folder filter of a compact path bar (pathbar.go)
 	navSel       string     // sidebar choice: "b:<bucket>" or "t:<tool>"
+	navMark      markState  // the fill of the sidebar's current row (currentFill)
 	tool         string     // "" when the object browser shows
 	scope        Scope
 	sizes        folderSizes // the folder sizes asked for (foldersize.go)
@@ -203,8 +207,9 @@ type app struct {
 	af        acctForm
 	confirm   confirmState
 	sf        settingsForm
-	vu        vaultUI   // the encrypted vault (vault_ui.go)
-	tl        toolState // the tool views (tools.go and the *_tool.go files)
+	srail     settingsRail // the Settings page: its scrolling and its rail (settings_layout.go)
+	vu        vaultUI      // the encrypted vault (vault_ui.go)
+	tl        toolState    // the tool views (tools.go and the *_tool.go files)
 
 	mg     mgmt        // editing, versions, clipboard and bucket dialogs (mgmt.go)
 	objOps objOpsState // class, encryption, bucket copy, signed URL and flat listing (objops.go, bucket_copy.go, rewrite_storage.go, signedurl.go, flatlist.go)
@@ -259,6 +264,7 @@ func newApp(svc *core.Service, opts options) *app {
 	if a.opts.theme == "" {
 		a.opts.theme = svc.Settings().Theme
 	}
+	a.lightColors, a.darkColors = svc.Settings().LightColors, svc.Settings().DarkColors
 	a.tray.on = !svc.Settings().HideTrayIcon
 	a.tray.quitIdle = svc.Settings().QuitWhenIdle
 	a.collapseTools = svc.Settings().CollapseTools

@@ -14,29 +14,28 @@ const (
 )
 
 // switchControl is a 36x20 switch: ControlOff track while off, Accent while
-// on, a white knob that moves with the state.
+// on, a white knob at the side of its state. *on changes in the frame of the
+// click; the knob slides to its side and the Accent fades over the track
+// (slideTo, fadeTo), both in frames that only paint.
 func switchControl(c *ui.Context, on *bool, label string) ui.Element {
 	k := tk(c)
 	sw := ui.SwitchBase(c, on).Label(label).Size(switchW, switchH).Radius(switchH / 2).FocusRing(false)
-	target := float32(0)
+	const in = 2 // between the track's edge and the knob
+	const d = switchH - 2*in
+	side := float32(0)
 	if *on {
-		target = 1
+		side = switchW - switchH
 	}
-	pos := target // the knob's place: 0 left, 1 right
-	track := k.ControlOff
-	if *on {
-		track = k.Accent
-	}
-	sw.Background(track)
-	if sw.Hovered() {
-		sw.Border(1, k.BorderStrong.Alpha(0.5))
-	}
-	sw.Draw(func(p *ui.Painter, r ui.Rect) {
-		const in = 2
-		d := r.H - 2*in
-		knob := ui.Rect{X: r.X + in + pos*(r.W-r.H), Y: r.Y + in, W: d, H: d}
-		p.Shadow(knob, d/2, 0, 1, 3, 0, k.KnobShadow)
-		p.Fill(knob, k.Knob, d/2)
+	hovered := sw.Hovered()
+	sw.Background(k.ControlOff).Children(func() {
+		full := func() ui.Element {
+			return ui.Box(c).Absolute().Left(0).Top(0).Right(0).Bottom(0).Radius(switchH / 2)
+		}
+		fadeTo(full().Background(k.Accent), *on)
+		if hovered {
+			full().Border(1, k.BorderStrong.Alpha(0.5))
+		}
+		slideTo(ui.Box(c).Absolute().Left(in).Top(in).Size(d, d).Radius(d/2).Background(k.Knob).Shadow(0, 1, 3, 0, k.KnobShadow), side)
 	})
 	// Read before drawing: a frame that only paints (an overlay fading in,
 	// motion.go) draws again without building, when an Element handle no longer

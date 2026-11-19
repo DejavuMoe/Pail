@@ -13,7 +13,7 @@ import (
 
 func TestSettingsSaveLoadRoundTrip(t *testing.T) {
 	s, dir := newTestServiceDir(t, "", nil)
-	want := Settings{Theme: "dark", Limits: Limits{3, 4, 5}, BulkWorkers: 6, PartSizeMiB: 32,
+	want := Settings{Theme: "dark", LightColors: "sky", DarkColors: "night", Limits: Limits{3, 4, 5}, BulkWorkers: 6, PartSizeMiB: 32,
 		DefaultDownloadDir: t.TempDir(), Conflict: ConflictSkip, ShowVersions: true, LogToFile: true,
 		SecretBackend: SecretBackendKeyring, VaultAutoLockMinutes: 20, RecentOps: 250, KeepRecentOps: true, CollapseTools: true}
 	if err := s.SaveSettings(want); err != nil {
@@ -42,6 +42,8 @@ func TestSaveSettingsFillsZeroValuesAndValidates(t *testing.T) {
 	}
 	bad := []Settings{
 		{Theme: "neon"},
+		{LightColors: "Sky Blue"},
+		{DarkColors: "../night"},
 		{Limits: Limits{Upload: -1}},
 		{Limits: Limits{Other: 1000}},
 		{BulkWorkers: 500},

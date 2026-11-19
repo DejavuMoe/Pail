@@ -456,15 +456,6 @@ func (a *app) submitReset() {
 
 // ---- Settings: Security -------------------------------------------------------------------------
 
-// settingsNote is a muted note under a row's control, one text per line.
-func settingsNote(c *ui.Context, lines ...string) {
-	ui.Column(c.Key("snote:" + lines[0])).MarginStart(216).Children(func() {
-		for _, s := range lines {
-			ui.Text(c, s).FontSize(sizeSecondary).TextColor(tk(c).TextMuted)
-		}
-	})
-}
-
 // warnNotice is a Warning-tinted line with a triangle icon; the text keeps the
 // Text color so it reads at full contrast.
 func warnNotice(c *ui.Context, msg string) {
@@ -497,34 +488,42 @@ func autoLockChoices(cur int) []choice {
 }
 
 func (a *app) securitySection(c *ui.Context) {
+	u := &a.vu
+	a.settingsGroup(c, "security", func() {
+		if u.keyringDown && !a.vaultMode() {
+			warnNotice(c, locales.VaultNoKeychain())
+		}
+		if r := u.lastReset; r != nil {
+			a.resetNotice(c, r)
+		}
+		a.settingsCard(c, func() { a.securityRows(c) })
+	})
+}
+
+// securityRows are the rows of the Security card.
+func (a *app) securityRows(c *ui.Context) {
 	k := tk(c)
 	u := &a.vu
-	settingsSection(c, locales.VaultSecurity())
-	if u.keyringDown && !a.vaultMode() {
-		warnNotice(c, locales.VaultNoKeychain())
-	}
-	if r := u.lastReset; r != nil {
-		a.resetNotice(c, r)
-	}
 	cur := 0
+	// The note under the label says where the secrets are now. The vault's has
+	// two lines, so the algorithm names never break at their hyphens.
+	notes := []string{locales.VaultStoredIn(keychainName())}
 	if a.vaultMode() {
 		cur = 1
+		notes = []string{locales.VaultEncryptedWith(), "(Argon2id, XChaCha20-Poly1305)"}
 	}
-	settingsRowHelp(c, locales.VaultStorage(), locales.VaultStorageHelp(keychainName()), "", func() {
+	a.settingsRowHelp(c, locales.VaultStorage(), locales.VaultStorageHelp(keychainName()), "", func() {
 		// The control shows the real backend each frame; activating the other
 		// segment only opens the dialog that does the move (segmentedAction:
 		// nothing but a click, Enter or Space on it does).
 		if sel, ok := segmentedAction(c, cur, locales.VaultStorage(), locales.VaultSystemKeychain(), locales.VaultEncryptedVault()); ok {
 			a.askBackend(sel)
 		}
-	})
+	}, notes...)
 	if !a.vaultMode() {
-		settingsNote(c, locales.VaultStoredIn(keychainName()))
 		return
 	}
-	// Two lines, so the algorithm names never break at their hyphens.
-	settingsNote(c, locales.VaultEncryptedWith(), "(Argon2id, XChaCha20-Poly1305)")
-	settingsRow(c, locales.VaultRowVault(), "", func() {
+	a.settingsRow(c, locales.VaultRowVault(), "", func() {
 		unlocked := u.state.Unlocked
 		icon, text := "lock", locales.VaultStateLocked()
 		if unlocked {
@@ -542,7 +541,7 @@ func (a *app) securitySection(c *ui.Context) {
 			a.askUnlock("settings", nil)
 		}
 	})
-	settingsRow(c, locales.VaultMasterPassword(), "", func() {
+	a.settingsRow(c, locales.VaultMasterPassword(), "", func() {
 		if secondaryButton(c, locales.VaultChangePasswordEllipsis(), false).Clicked() {
 			a.vu.change = pwDialog{open: true}
 		}
@@ -550,13 +549,13 @@ func (a *app) securitySection(c *ui.Context) {
 			a.openReset()
 		}
 	})
-	settingsRowHelp(c, locales.VaultAutoLock(), locales.VaultAutoLockHelp(), "", func() {
+	a.settingsRowHelp(c, locales.VaultAutoLock(), locales.VaultAutoLockHelp(), "", func() {
+		a.savedMark(c, "autolock")
 		val := strconv.Itoa(u.state.AutoLockMinutes)
-		if selectBox(c, locales.VaultAutoLock(), &val, autoLockChoices(u.state.AutoLockMinutes), 160) {
+		if selectBox(c, locales.VaultAutoLock(), &val, autoLockChoices(u.state.AutoLockMinutes), settingsSelW) {
 			n, _ := strconv.Atoi(val)
 			a.setAutoLock(n)
 		}
-		a.savedMark(c, "autolock")
 	})
 }
 

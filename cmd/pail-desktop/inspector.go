@@ -28,6 +28,7 @@ func (a *app) inspectorTabBar(c *ui.Context) {
 	tabs := ui.TabsBase(c, &a.inspTab, len(inspectorTabs))
 	// 9 in, so the first 14px icon (7 inside its 28px tab) stands on the body's
 	// 16px edge.
+	line := markOf(tabs.List)
 	tabs.List.Height(40).Gap(4).Padding(0, 9).AlignItems(ui.Center).Children(func() {
 		for i, t := range inspectorTabs {
 			tab := tabs.Tab(i).Size(28, 28).Radius(RadiusControl).Label(t.label()).Tooltip(t.label()).Center()
@@ -42,7 +43,7 @@ func (a *app) inspectorTabBar(c *ui.Context) {
 				}
 				ui.Icon(c, icons.Get(t.icon)).FontSize(14).TextColor(col)
 				if on {
-					tabIndicator(c)
+					tabIndicator(c, line, i, tab)
 				}
 			})
 		}

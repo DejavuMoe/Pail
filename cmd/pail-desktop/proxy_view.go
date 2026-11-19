@@ -120,14 +120,20 @@ func (a *app) applyProxy() {
 // optional user name and password.
 func (a *app) networkSection(c *ui.Context) {
 	f := &a.sf.proxy
-	k := tk(c)
 	saved := a.svc.Settings().Proxy
-	settingsSection(c, locales.SettingsNetwork())
-	settingsRowHelp(c, locales.SettingsProxy(), locales.SettingsProxyHelp(), "", func() {
-		if selectBox(c, locales.SettingsProxyProtocol(), &f.scheme, proxyChoices(), 180) {
+	a.settingsGroup(c, "network", func() {
+		a.settingsCard(c, func() { a.proxyRows(c, f, saved) })
+	})
+}
+
+// proxyRows are the rows of the Network card.
+func (a *app) proxyRows(c *ui.Context, f *proxyForm, saved core.ProxySettings) {
+	k := tk(c)
+	a.settingsRowHelp(c, locales.SettingsProxy(), locales.SettingsProxyHelp(), "", func() {
+		a.savedMark(c, "proxy")
+		if selectBox(c, locales.SettingsProxyProtocol(), &f.scheme, proxyChoices(), settingsSelW) {
 			f.tried, f.err = false, ""
 		}
-		a.savedMark(c, "proxy")
 	})
 	if f.scheme == "" && !f.differs(saved) {
 		return
@@ -144,24 +150,22 @@ func (a *app) networkSection(c *ui.Context) {
 		case core.ProxyUserMissing, core.ProxyUserInvalid:
 			userErr = proxyProblemText(pr)
 		}
-		settingsRow(c, locales.SettingsProxyAddress(), addrErr, func() {
-			ui.Row(c).Gap(8).AlignItems(ui.Center).Grow(1).MinWidth(0).Children(func() {
-				ui.Box(c).Grow(1).MinWidth(0).Children(func() {
-					in := inputBox(c, &f.host, locales.SettingsProxyHost(), locales.SettingsProxyHost(), inputOpts{
-						invalid: addrErr != "" && pr != core.ProxyPortInvalid, mono: f.host != ""})
-					if in.Submitted() {
-						a.applyProxy()
-					}
-				})
-				in := inputBox(c, &f.port, locales.SettingsProxyPort(), locales.SettingsProxyPort(), inputOpts{
-					width: 96, invalid: pr == core.ProxyPortInvalid, mono: f.port != ""})
+		a.settingsRow(c, locales.SettingsProxyAddress(), addrErr, func() {
+			ui.Box(c).Basis(settingsWideW - 96 - 8).Shrink(1).MinWidth(120).Children(func() {
+				in := inputBox(c, &f.host, locales.SettingsProxyHost(), locales.SettingsProxyHost(), inputOpts{
+					invalid: addrErr != "" && pr != core.ProxyPortInvalid, mono: f.host != ""})
 				if in.Submitted() {
 					a.applyProxy()
 				}
 			})
+			in := inputBox(c, &f.port, locales.SettingsProxyPort(), locales.SettingsProxyPort(), inputOpts{
+				width: 96, invalid: pr == core.ProxyPortInvalid, mono: f.port != ""})
+			if in.Submitted() {
+				a.applyProxy()
+			}
 		})
-		settingsRow(c, locales.SettingsProxyUser(), userErr, func() {
-			in := inputBox(c, &f.user, locales.SettingsProxyUser(), "", inputOpts{width: 240, invalid: pr == core.ProxyUserInvalid})
+		a.settingsRow(c, locales.SettingsProxyUser(), userErr, func() {
+			in := inputBox(c, &f.user, locales.SettingsProxyUser(), "", inputOpts{width: settingsSelW, invalid: pr == core.ProxyUserInvalid})
 			if in.Submitted() {
 				a.applyProxy()
 			}
@@ -170,8 +174,8 @@ func (a *app) networkSection(c *ui.Context) {
 		if saved.HasPassword && f.pass == "" && strings.TrimSpace(f.user) == saved.Username {
 			hint = locales.SettingsProxyPasswordSaved()
 		}
-		settingsRow(c, locales.SettingsProxyPassword(), "", func() {
-			in := inputBox(c, &f.pass, locales.SettingsProxyPassword(), hint, inputOpts{width: 240, password: true, invalid: pr == core.ProxyUserMissing})
+		a.settingsRow(c, locales.SettingsProxyPassword(), "", func() {
+			in := inputBox(c, &f.pass, locales.SettingsProxyPassword(), hint, inputOpts{width: settingsSelW, password: true, invalid: pr == core.ProxyUserMissing})
 			if in.Submitted() {
 				a.applyProxy()
 			}
@@ -180,8 +184,8 @@ func (a *app) networkSection(c *ui.Context) {
 	if !f.differs(saved) {
 		return // the fields show the saved proxy: nothing to apply
 	}
-	ui.Column(c.Key("proxy-apply")).Gap(4).MarginStart(216).Children(func() {
-		if primaryButton(c, locales.SettingsProxyApply(), f.busy).AlignSelf(ui.Start).Clicked() {
+	a.settingsActions(c, "proxy-apply", func() {
+		if primaryButton(c, locales.SettingsProxyApply(), f.busy).Clicked() {
 			a.applyProxy()
 		}
 		if f.err != "" {

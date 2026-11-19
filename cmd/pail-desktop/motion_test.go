@@ -18,9 +18,11 @@ import (
 // The tests of the motion (motion.go): the tester's clock stands still unless
 // the test moves it, so each one says exactly how far into an animation it
 // looks. The behaviour tests run with the animations off (options.still); these
-// run with them on. The rule they hold: overlays fade in where they rest and
-// go at once, a progress bar's fill eases, and every other change of state is
-// in place in the frame it happens.
+// run with them on. The rule they hold: a change of state is in place in the
+// frame it happens; the mark of the current item travels to it and a switch's
+// knob slides (marks_test.go), colours cross-fade (palette_test.go), overlays
+// fade in where they rest and go at once, a progress bar's fill eases, and
+// nothing else animates.
 
 // newMotionHarness is newHarness with the animations playing.
 func newMotionHarness(t *testing.T, theme string) *harness {
@@ -74,6 +76,7 @@ func (h *harness) snapMotion(name string) {
 }
 
 func TestMotionSnapshots(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("PAIL_UI_SNAPSHOT_DIR") == "" {
 		t.Skip("PAIL_UI_SNAPSHOT_DIR is not set")
 	}
@@ -139,6 +142,7 @@ func (h *harness) rectOf(text string) ui.Rect {
 // on their way 60ms in, and once it has arrived the window asks for no more
 // frames.
 func TestDialogFadesInWhereItRests(t *testing.T) {
+	t.Parallel()
 	still := newHarness(t, "light")
 	still.a.openNewFolder()
 	still.settle()
@@ -168,6 +172,7 @@ func TestDialogFadesInWhereItRests(t *testing.T) {
 // With the system asking for less motion the dialog is still where it rests in
 // its first frame, and it still fades (mygo keeps opacity).
 func TestReduceMotionKeepsTheFade(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	h.tt.SetPreferences(ui.Preferences{ReduceMotion: true})
 	h.a.openNewFolder()
@@ -190,6 +195,7 @@ func TestReduceMotionKeepsTheFade(t *testing.T) {
 
 // A button of a dialog works while the dialog is still fading in.
 func TestDialogButtonsWorkMidFade(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	h.a.openNewFolder()
 	h.tt.Frame()
@@ -209,6 +215,7 @@ func TestDialogButtonsWorkMidFade(t *testing.T) {
 // A dialog that closes is gone in that frame: nothing of it is drawn, it holds
 // neither the focus nor the pointer, and the window asks for no frames.
 func TestClosingDialogIsGoneAtOnce(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	h.a.openNewFolder()
 	h.settle()
@@ -252,6 +259,7 @@ func (h *harness) openTestMenuMotion(x, y float32, items func(m *menuBuilder)) {
 // A menu answers the keyboard while it fades in, shows where it rests from its
 // first frame, and is gone in the frame it closes.
 func TestMenuWorksMidFadeAndGoesAtOnce(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	var log []string
 	h.openTestMenuMotion(500, 300, testItems(&log))
@@ -279,6 +287,9 @@ func TestMenuWorksMidFadeAndGoesAtOnce(t *testing.T) {
 	if m.open || h.tt.HasText("Alpha") {
 		t.Error("the menu is still there after a choice")
 	}
+	if h.tt.FramePending() {
+		t.Error("the window keeps asking for frames after the menu went")
+	}
 	if err := h.tt.Click("acme-backups"); err != nil {
 		t.Fatal(err)
 	}
@@ -286,44 +297,12 @@ func TestMenuWorksMidFadeAndGoesAtOnce(t *testing.T) {
 	if h.a.scope.Bucket != "acme-backups" {
 		t.Errorf("the closed menu took the click: bucket %q", h.a.scope.Bucket)
 	}
-	if h.tt.FramePending() {
-		t.Error("the window keeps asking for frames after the menu went")
-	}
 }
 
 // What the user changes shows in the frame it changes, with no animation left
-// running: the inspector's tab underline, the transfers panel, the selection
-// bar, a switch's knob and the "Saved" mark.
+// running: the transfers panel, the selection bar and the "Saved" mark.
 func TestStateChangesShowAtOnce(t *testing.T) {
-	t.Run("tab underline", func(t *testing.T) {
-		h := newMotionHarness(t, "light")
-		h.mustClick("manifest.json")
-		k := tokensFor(false)
-		underline := func() (x0 float32, ok bool) {
-			img := h.tt.Image()
-			r := h.rectOf("Overview")
-			y := int(r.Y + r.H - 1)
-			for x := 1120; x < 1440; x++ {
-				if near(img.RGBAAt(x, y), k.Accent, 6) {
-					return float32(x), true
-				}
-			}
-			return 0, false
-		}
-		from, ok := underline()
-		if !ok {
-			t.Fatal("no underline under the Overview tab")
-		}
-		if err := h.tt.Click("Headers"); err != nil {
-			t.Fatal(err)
-		}
-		h.tt.Frame()
-		to, _ := underline()
-		want := h.rectOf("Headers")
-		if to == from || to < want.X-4 || to > want.X+4 {
-			t.Errorf("in the frame after the click the underline is at %.0f, the Headers tab at %.0f", to, want.X)
-		}
-	})
+	t.Parallel()
 	t.Run("transfers panel", func(t *testing.T) {
 		h := newMotionHarness(t, "light")
 		seedTasks(h)
@@ -369,37 +348,6 @@ func TestStateChangesShowAtOnce(t *testing.T) {
 			t.Error("the bar is still there in the frame the choice was cleared")
 		}
 	})
-	t.Run("switch", func(t *testing.T) {
-		on := false
-		view := func(c *ui.Context) {
-			k := applyTheme(c, "light")
-			ui.Column(c).Fill().Background(k.Background).Padding(20).Children(func() { switchControl(c, &on, "Test switch") })
-		}
-		tt := ui.NewTester(view, 200, 80)
-		tt.Frame()
-		k := tokensFor(false)
-		knob := func() float32 {
-			var sum, n float32
-			for x := 20; x < 20+switchW; x++ {
-				if near(tt.Image().RGBAAt(x, 20+switchH/2), k.Knob, 3) {
-					sum, n = sum+float32(x), n+1
-				}
-			}
-			if n == 0 {
-				t.Fatal("no knob drawn")
-			}
-			return sum / n
-		}
-		from := knob()
-		on = true
-		tt.Frame()
-		if to := knob(); to-from < switchW-switchH-2 {
-			t.Errorf("in the frame it was turned on the knob went from %.1f to %.1f", from, to)
-		}
-		if tt.FramePending() {
-			t.Error("the switch asks for frames: it animates")
-		}
-	})
 	t.Run("saved mark", func(t *testing.T) {
 		a := &app{}
 		a.sf.saved = map[string]time.Time{}
@@ -425,6 +373,7 @@ func TestStateChangesShowAtOnce(t *testing.T) {
 
 // What the pointer is over takes its fill in the next frame, not over time.
 func TestHoverFillIsImmediate(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	k := tokensFor(false)
 	r := h.rectOf("Refresh") // the icon-only button: a 28px square, its label the text
@@ -438,6 +387,7 @@ func TestHoverFillIsImmediate(t *testing.T) {
 // Resizing the window animates nothing: the layout is where a settled frame
 // puts it in the very frame of the new size.
 func TestResizeStartsNoTransitions(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	seedTasks(h)
 	h.mustClick("manifest.json")
@@ -466,6 +416,7 @@ func TestResizeStartsNoTransitions(t *testing.T) {
 // a toast and a menu are where they rest in the frame that shows them, and
 // the window asks for no frames once the fades are done.
 func TestReduceMotionMovesNothing(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	seedTasks(h)
 	h.tt.SetPreferences(ui.Preferences{ReduceMotion: true})
@@ -501,6 +452,7 @@ func TestReduceMotionMovesNothing(t *testing.T) {
 // Every motion comes to rest: once a palette, a toast and the transfers panel
 // have come and gone, the window asks for no frames.
 func TestMotionComesToRest(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	seedTasks(h)
 	h.tt.Key(ui.Cmd, ui.KeyK)
@@ -525,6 +477,7 @@ func TestMotionComesToRest(t *testing.T) {
 
 // A toast fades in where it rests.
 func TestToastFadesInPlace(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	h.a.toast("Hello motion")
 	h.tt.Frame()
@@ -539,6 +492,7 @@ func TestToastFadesInPlace(t *testing.T) {
 // The progress bar's fill eases to a new fraction rather than jumping, then
 // rests exactly there.
 func TestProgressBarEasesToANewFraction(t *testing.T) {
+	t.Parallel()
 	frac := 0.2
 	view := func(c *ui.Context) {
 		k := applyTheme(c, "light")
@@ -582,6 +536,7 @@ func TestProgressBarEasesToANewFraction(t *testing.T) {
 // moment, as browsers do) and rests exactly a notch further; with reduced
 // motion the table is there at once.
 func TestWheelGlidesTheObjectTable(t *testing.T) {
+	t.Parallel()
 	for _, reduce := range []bool{false, true} {
 		t.Run("reduce="+strconv.FormatBool(reduce), func(t *testing.T) {
 			h := newMotionHarness(t, "light")
@@ -611,6 +566,7 @@ func TestWheelGlidesTheObjectTable(t *testing.T) {
 
 // A count that changes is replaced in that frame: no digits roll.
 func TestCountsDoNotRoll(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	h.rest()
 	if n := len(h.a.rows); n < 4 {
@@ -626,6 +582,7 @@ func TestCountsDoNotRoll(t *testing.T) {
 // The strip of the collapsed transfers panel shows three counts, each its own
 // element.
 func TestCollapsedTransfersCountsAreSeparate(t *testing.T) {
+	t.Parallel()
 	h := newMotionHarness(t, "light")
 	seedTasks(h)
 	h.a.transfersOpen = false
@@ -636,10 +593,12 @@ func TestCollapsedTransfersCountsAreSeparate(t *testing.T) {
 	}
 }
 
-// Only motion.go animates, and the progress bar's fill: any other view that
-// asks mygo for an animation, a transition or a rolling count breaks the rule
-// of docs/dev/design.md "Motion" and must go through those two.
+// Only motion.go animates, and the progress bar's fill: a view that wants a
+// mark to travel or a colour to fade calls arrive, slideTo, fadeTo or fadeIn,
+// and any other that asks mygo for an animation, a transition or a rolling
+// count breaks the rule of docs/dev/design.md "Motion".
 func TestOnlyTheTokenMoves(t *testing.T) {
+	t.Parallel()
 	anim := regexp.MustCompile(`\.(AnimatePose|AnimateTo|AnimateColor|Transition|ContentTransition)\(|ui\.Animation\{|SpringOptions`)
 	allowed := map[string]string{
 		"motion.go":    "",
