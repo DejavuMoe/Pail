@@ -4,6 +4,25 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.6.3] - 2026-11-19
+
+### Added
+
+- Two more color palettes: Sky for the light theme and Night for the dark theme, next to the existing Paper and Graphite. Choose one for each theme in **Settings › Appearance** or in the command palette. The window follows the theme with the palette chosen for it.
+
+### Changed
+
+- Settings shows its sections in a list beside the page. Choose a section to go to it. Each section is a group of rows with the control at the right edge.
+- The theme is chosen from three previews: System, Light and Dark.
+- Part size and the speed limits show their unit inside the field.
+- The mark of the current item moves to the item you choose: the raised segment of a segmented control, the highlighted row in the sidebar and in Settings, the underline of a tab. A switch slides, and colors fade when the theme or its palette changes. With the system's reduce motion setting nothing moves.
+- A long object key in a list (a confirmation, a sync preview, multipart uploads, signed URLs) is cut at its start, so the file name stays visible. Point at it to read the whole key.
+- On macOS, the percentage beside the menu bar icon keeps its width while the number changes.
+
+### Fixed
+
+- Starting Pail again right after quitting no longer waits indefinitely when saving the unfinished transfers or stopping the tasks hangs. Pail now exits after at most 8 seconds.
+
 ## [0.6.2] - 2026-11-11
 
 ### Added
