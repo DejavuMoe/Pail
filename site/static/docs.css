@@ -319,6 +319,11 @@
   .prose table { font-size: 13.5px; }
   .prose th, .prose td { padding: 8px 10px; }
 }
+/* Below the 360px the site is designed for, a long file name may break
+   anywhere rather than push the page sideways. */
+@media (max-width: 359px) {
+  .prose code .tok { white-space: normal; overflow-wrap: anywhere; }
+}
 
 /* ---------- Forced colours ---------- */
 @media (forced-colors: active) {

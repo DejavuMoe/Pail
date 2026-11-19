@@ -7,6 +7,8 @@ import (
 	"path"
 	"regexp"
 	"strings"
+	"unicode"
+	"unicode/utf8"
 
 	"github.com/yuin/goldmark"
 	"github.com/yuin/goldmark/ast"
@@ -230,6 +232,11 @@ func (r *siteRenderer) renderCode(w util.BufWriter, src []byte, node ast.Node, e
 // renderCodeSpan wraps every run of non-space characters of an inline code span
 // in <span class="tok">. The stylesheet keeps a token on one line, so the span
 // breaks only at spaces and never inside a flag such as --vault-password-stdin.
+//
+// Chinese text has no space before a span, and a line may not break before the
+// hyphen of a flag, so a list such as `--mode`、`--compare`、`--exclude` would be
+// one unbreakable run that is wider than a phone. A <wbr> before the span gives
+// the line a place to break there.
 func (r *siteRenderer) renderCodeSpan(w util.BufWriter, src []byte, node ast.Node, entering bool) (ast.WalkStatus, error) {
 	if !entering {
 		return ast.WalkContinue, nil
@@ -247,6 +254,11 @@ func (r *siteRenderer) renderCodeSpan(w util.BufWriter, src []byte, node ast.Nod
 			code.WriteByte(' ')
 		} else {
 			code.Write(value)
+		}
+	}
+	if prev, ok := node.PreviousSibling().(*ast.Text); ok && !prev.SoftLineBreak() && !prev.HardLineBreak() {
+		if last, _ := utf8.DecodeLastRune(prev.Segment.Value(src)); unicode.Is(unicode.Han, last) || strings.ContainsRune("、，。；：）", last) {
+			_, _ = w.WriteString("<wbr>")
 		}
 	}
 	_, _ = w.WriteString("<code>")

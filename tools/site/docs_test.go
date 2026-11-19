@@ -399,6 +399,20 @@ func TestMarkdownRendering(t *testing.T) {
 		}
 	}
 
+	// After Chinese text a span gets a place to break before it; after a space or
+	// an opening bracket it does not.
+	for md, want := range map[string]string{
+		"`--mode`、`--compare`": `</code>、<wbr><code><span class="tok">--compare</span></code>`,
+		"加上`--yes`":            `加上<wbr><code>`,
+		"use `--yes` (`-y`)":   `<p>use <code><span class="tok">--yes</span></code> (<code>`,
+		"（`gzip`）":             `<p>（<code>`,
+	} {
+		out, _, err = render("", md)
+		if err != nil || !strings.Contains(out, want) {
+			t.Errorf("break before code span %q: %v\n%s", md, err, out)
+		}
+	}
+
 	// A link that names a site page by its file path shows the page title.
 	out, _, err = render("", "See [docs/cli.md](docs/cli.md#flags), [docs/status.md](docs/status.md) and [the CLI](docs/cli.md).")
 	if err != nil {

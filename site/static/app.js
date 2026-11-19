@@ -52,13 +52,14 @@
   /* ---------- Download source ---------- */
   var dl = $('.dl');
   var sourceRadios = $$('input[name="source"]');
-  function applySource(source) {
+  function applySource(source, changed) {
     if (!dl) return;
     var base = dl.getAttribute(source === 'mirror' ? 'data-mirror-base' : 'data-github-base');
     $$('[data-asset]', dl).forEach(function (a) { a.href = base + a.getAttribute('data-asset'); });
     sourceRadios.forEach(function (r) { r.checked = r.value === source; });
     var note = $('[data-source-note]', dl);
     if (note) note.textContent = source === 'mirror' ? t('sourceMirrorNote') : t('sourceGithubNote');
+    if (note && changed) { note.classList.remove('is-changed'); void note.offsetWidth; note.classList.add('is-changed'); }
   }
   // Without data-mirror-base this version is not on the mirror: the page
   // has no source control and the links stay on GitHub.
@@ -67,7 +68,7 @@
       r.addEventListener('change', function () {
         if (!r.checked) return;
         store('pail-source', r.value);
-        applySource(r.value);
+        applySource(r.value, true);
       });
     });
     applySource(read('pail-source') === 'mirror' ? 'mirror' : 'github');
@@ -94,14 +95,16 @@
     r.addEventListener('change', function () {
       if (!r.checked) return;
       store('pail-theme', r.value);
-      applyTheme(r.value);
+      // Cross-fade the switch where view transitions exist; elsewhere it is instant.
+      if (document.startViewTransition && !reduced.matches) document.startViewTransition(function () { applyTheme(r.value); });
+      else applyTheme(r.value);
     });
   });
   onChange(darkMQ, function () {
     if (root.getAttribute('data-theme-pref') === 'system') applyTheme('system');
   });
 
-  /* ---------- Header, current section, reveal ---------- */
+  /* ---------- Header, current section ---------- */
   var header = $('.site-header');
   function onScroll() { if (header) header.classList.toggle('is-scrolled', window.scrollY > 8); }
   window.addEventListener('scroll', onScroll, { passive: true });
@@ -123,21 +126,35 @@
     $$('main section[id]').forEach(function (s) { sectionObserver.observe(s); });
   }
 
-  var reveals = $$('.reveal');
-  if (hasIO) {
-    var revealObserver = new IntersectionObserver(function (entries) {
-      entries.forEach(function (en) {
-        if (en.isIntersecting) { en.target.classList.add('is-in'); revealObserver.unobserve(en.target); }
-      });
-    }, { threshold: 0.12 });
-    reveals.forEach(function (el) {
-      var siblings = $$(':scope > .reveal', el.parentElement);
-      el.style.transitionDelay = (Math.max(0, siblings.indexOf(el)) % 3) * 60 + 'ms';
-      revealObserver.observe(el);
+  /* ---------- Demo video ---------- */
+  // The video keeps preload="none", and Chrome's own centre play button does
+  // nothing until the browser has loaded something. The page shows its own
+  // play button over the poster instead and hands over to the native controls
+  // once the video starts. Without JavaScript the native controls stay.
+  (function () {
+    var frame = $('.demo-frame');
+    var video = frame && $('video', frame);
+    var btn = frame && $('.demo-play', frame);
+    if (!video || !btn) return;
+    var started = false;
+    function start() {
+      if (started) return;
+      started = true;
+      var hadFocus = document.activeElement === btn;
+      video.controls = true;
+      btn.classList.add('is-leaving');
+      setTimeout(function () { btn.hidden = true; }, reduced.matches ? 0 : 300);
+      if (hadFocus) video.focus({ preventScroll: true });
+    }
+    video.controls = false;
+    btn.hidden = false;
+    btn.addEventListener('click', function () {
+      start();
+      var p = video.play();
+      if (p && p.catch) p.catch(function () {});
     });
-  } else {
-    reveals.forEach(function (el) { el.classList.add('is-in'); });
-  }
+    video.addEventListener('play', start);
+  })();
 
   /* ---------- Demos (run only while visible) ---------- */
   var motionSync = []; // re-evaluate every demo when the reduced-motion preference changes
@@ -268,8 +285,32 @@
       })();
     })();
   }
+  // On narrow screens the tabs scroll sideways: fade the edge that has more
+  // tabs behind it, and bring the chosen tab fully into view.
+  var tabStrip = term ? $('.term-tabs', term) : null;
+  function syncTabFade() {
+    if (!tabStrip) return;
+    var max = tabStrip.scrollWidth - tabStrip.clientWidth;
+    tabStrip.classList.toggle('fade-start', tabStrip.scrollLeft > 2);
+    tabStrip.classList.toggle('fade-end', tabStrip.scrollLeft < max - 2);
+  }
+  function revealTab(tab) {
+    if (!tabStrip || tabStrip.scrollWidth <= tabStrip.clientWidth) return;
+    var sr = tabStrip.getBoundingClientRect(), tr = tab.getBoundingClientRect(), pad = 36, dx = 0;
+    if (tr.left < sr.left + pad) dx = tr.left - sr.left - pad;
+    else if (tr.right > sr.right - pad) dx = tr.right - sr.right + pad;
+    if (!dx) return;
+    if (tabStrip.scrollBy) tabStrip.scrollBy({ left: dx, behavior: reduced.matches ? 'auto' : 'smooth' });
+    else tabStrip.scrollLeft += dx;
+  }
+  if (tabStrip) {
+    tabStrip.addEventListener('scroll', syncTabFade, { passive: true });
+    window.addEventListener('resize', syncTabFade);
+    syncTabFade();
+  }
   termTabs.forEach(function (tab, i) {
     tab.addEventListener('click', function () {
+      revealTab(tab);
       termTabs.forEach(function (x) { x.setAttribute('aria-selected', String(x === tab)); x.tabIndex = x === tab ? 0 : -1; });
       $('#term-panel').setAttribute('aria-labelledby', tab.id);
       renderTerminal(tab.getAttribute('data-term'), true);

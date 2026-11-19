@@ -69,8 +69,7 @@ func TestCopyRules(t *testing.T) {
 			t.Errorf("%s: %v", f.path, err)
 			continue
 		}
-		var report func(rule, where, snippet string)
-		report = func(rule, where, snippet string) {
+		report := func(rule, where, snippet string) {
 			t.Errorf("%s%s: %s: %s", f.path, where, rule, snippet)
 		}
 		if strings.HasSuffix(f.path, ".json") {

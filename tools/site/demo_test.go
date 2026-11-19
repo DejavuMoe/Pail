@@ -101,7 +101,8 @@ func TestScriptHasNoHandWrittenExamples(t *testing.T) {
 	}
 }
 
-// The prototype is the approved design; it must show the same recording.
+// A recording that is empty, repeats an id or does not start with its own
+// command is refused.
 func TestLoadCLIDemoRejectsBadRecordings(t *testing.T) {
 	for name, body := range map[string]string{
 		"empty":     `{"examples":[]}`,

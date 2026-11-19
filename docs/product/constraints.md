@@ -20,7 +20,7 @@ Scope: the public landing site at https://pail.download (`site/`, built by `tool
 
 ## Must preserve
 
-- Colors come from the Graphite & Paper tokens in `cmd/pail-desktop/theme.go`.
+- Colors come from the Paper and Graphite palettes, the defaults of the app, in `cmd/pail-desktop/theme.go`.
 - Light and dark follow the system by default; a manual System / Light / Dark control persists the choice.
 - Selected, current and on states use at least two cues, as in `docs/dev/design.md`.
 - One solid primary button per view.
@@ -49,7 +49,8 @@ Scope: the public landing site at https://pail.download (`site/`, built by `tool
 - Forbidden: stock photography, hand-drawn SVG illustration, emoji, gradient or blurred-blob backgrounds, grain overlays, glows, cursor spotlights, announcement pills, uppercase eyebrow labels above headings, oversized decorative wordmarks, faux window controls.
 - Standards: every page passes html-validate (W3C HTML) with no exceptions; native controls before ARIA roles. Follow MDN guidance for `prefers-reduced-motion`, `prefers-contrast`, `forced-colors` and `theme-color`.
 - Accessibility: text contrast 4.5:1 (3:1 for display sizes), visible focus rings, skip link, labelled controls, `lang` on the document.
-- Motion: one load sequence, scroll-linked hero tilt, demos only while visible, all disabled under reduced motion. The falling object keys are hidden below 680px. Animated demos never change the size of any box (no layout shift): fixed-size containers, tabular numerals, and state changes by color, background and border only. Docs pages have no entrance animation.
+- Layout: the landing page is one narrow column (1040px at most). Each section starts with its heading and a short text, left-aligned and no wider than 640px, with the thing it describes below at the full column width; the download section is centred. Short items (features, privacy points) are a grid of bordered cells with a small icon, title and sentence, three or two across, one across on phones; the two features with a demo are wider cards with the demo below the text. The hero keeps to a version line, the title, one sentence, two buttons and one line naming the platforms; the tested services are a row of names under the screenshot, with the custom-endpoint note below them. The hero has a faint dot grid that fades out downward; there is no other background decoration.
+- Motion: one load sequence in the hero (the version line, title, text, buttons and facts rise 12px one after another, then the screenshot), no entrance animation on scroll, demos only while visible, all disabled under reduced motion. Animated demos never change the size of any box (no layout shift): fixed-size containers, tabular numerals, and state changes by color, background and border only. Docs pages have no entrance animation.
 
 ## Privacy and multimodal evidence
 
