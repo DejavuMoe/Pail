@@ -2,7 +2,7 @@
 
 [English](cli.md) | 简体中文
 
-`pail` 与桌面应用使用同一套账户、已保存的同步作业和机密：它共用桌面应用的配置目录和机密存储（系统钥匙串或加密保险库）。账户、加密保险库和设置既可以在桌面应用中管理，也可以用命令行管理。请求经由桌面应用**设置 › 网络**里保存的代理发送；没有设置时，`pail` 沿用环境变量 `HTTP_PROXY`、`HTTPS_PROXY` 和 `NO_PROXY`。
+`pail` 与桌面应用使用同一套账户、已保存的同步任务和机密：它共用桌面应用的配置目录和机密存储（系统钥匙串或加密保险库）。账户、加密保险库和设置既可以在桌面应用中管理，也可以用命令行管理。账户有自己的代理时，请求经由它发送，否则经由桌面应用**设置 › 网络**里保存的代理；两者都没有时，`pail` 沿用环境变量 `HTTP_PROXY`、`HTTPS_PROXY` 和 `NO_PROXY`。
 
 发布包使用带版本的文件名，例如 `pail-v<version>-windows-amd64.exe`。下文假设程序安装后名为 `pail`（Windows 上为 `pail.exe`），也可以直接运行完整文件名。
 
@@ -61,16 +61,16 @@ pail du s3://bucket[/prefix/]                       # 前缀下的对象数和�
 pail tags get|set s3://bucket/key ...               # 对象标签，见"对象"
 pail acl get|set s3://bucket/key ...                # 对象 ACL
 pail props get|set s3://bucket/key ...              # 标头和元数据
-pail storage-class s3://bucket/key CLASS [-r]       # 更改存储类型
+pail storage-class s3://bucket/key CLASS [-r]       # 更改存储类别
 pail archive-restore s3://bucket/key [-r] [--days N] [--tier T]
                                                     # 从 Glacier 或 Deep Archive 取回
-pail multipart ls|abort s3://bucket[/prefix/] ...   # 未完成的分片上传
+pail multipart ls|abort s3://bucket[/prefix/] ...   # 未完成的分段上传
 pail cloudfront ls|invalidate ...                   # CloudFront，仅限 AWS 账户
 pail settings get [KEY] | set KEY VALUE             # 与桌面应用共用的设置
 pail sync LOCAL s3://bucket/prefix/ [SYNC FLAGS]    # 单向同步：上传
 pail sync s3://bucket/prefix/ LOCAL [SYNC FLAGS]    # 单向同步：下载
 pail sync --job NAME [--dry-run]
-pail sync job ls|add|rm ...                         # 已保存的同步作业
+pail sync job ls|add|rm ...                         # 已保存的同步任务
 pail version
 ```
 
@@ -89,7 +89,7 @@ pail version
 - `versions` 列出一层文件夹，包含删除标记。
 - `restore --version-id` 把旧版本恢复为当前版本。`restore --deleted` 恢复前缀下最新记录为删除标记的对象键（加 `-r` 包含子文件夹）。版本历史会保留。
 - `sync` 做单向同步。`--mode` 为 `new`、`new_changed`（默认）或 `mirror`，`mirror` 还会删除。`--compare` 为 `size_time`（默认）、`size` 或 `checksum`。`--exclude GLOB` 跳过相对路径匹配该通配符的文件，可重复使用。`--no-rules` 不应用上传规则。`--dry-run` 输出计划后退出，不做任何修改。
-- `sync --job NAME` 运行已保存的同步作业，除非给出 `--account`，否则使用该作业的账户。`sync job ls`、`sync job add` 和 `sync job rm` 管理已保存的作业，见"管理"。
+- `sync --job NAME` 运行已保存的同步任务，除非给出 `--account`，否则使用该任务的账户。`sync job ls`、`sync job add` 和 `sync job rm` 管理已保存的任务，见"管理"。
 
 使用 `--json` 时，`vault status` 和 `url` 的对象结构：
 
@@ -100,11 +100,15 @@ pail version
 
 `kind` 为 `cdn` 或 `public`。
 
-使用 `--json` 时，下列命令每行输出一个对象，最后是汇总。各行的 `type`：
+使用 `--json` 时，命令每行输出一个对象，最后是汇总。各行的 `type`：
 
 | 命令 | type |
 | --- | --- |
 | `accounts`、`account ls`、`account show` | `account` |
+| `buckets`、不带路径的 `ls` | `bucket` |
+| `ls` | `folder` 或 `object` |
+| `versions` | `version` |
+| `presign` | `presign` |
 | `stat`、`props get` | `object` |
 | `du` | `du` |
 | `tags get` | `tag` |
@@ -115,6 +119,8 @@ pail version
 | `cloudfront invalidate` | `invalidation` |
 | `settings get` | `setting` |
 | `bucket alias` | `alias` |
+| `sync`，计划中的每一步 | `action` |
+| `cp`、`mv`、`rm`、`sync` 等修改对象的命令 | 每个对象一个 `item`，未成功的任务另有一个 `task` |
 
 `cat` 直接写出对象内容，没有 JSON 形式。
 
@@ -153,7 +159,7 @@ pail account rm [NAME]
 - `edit` 只修改给出的参数。`--rename NEW` 重命名账户。开关用 `--path-style=false` 关闭。给出空值，例如 `--cdn-url ""`，会清空该字段。
 - `show` 输出账户设置，不含机密。静态账户还会说明私有访问密钥是已保存还是缺失。
 - `test` 列出已保存账户的存储桶，或它指定的存储桶的文件夹。
-- `rm` 先要求确认，再删除账户及其保存的机密。存储桶和对象不受影响。该账户已保存的同步作业会保留，但无法再运行。
+- `rm` 先要求确认，再删除账户及其保存的机密。存储桶和对象不受影响。该账户已保存的同步任务会保留，但无法再运行。
 
 账户参数对应桌面应用账户对话框中的字段：
 
@@ -217,24 +223,24 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 
 这些命令处理单个对象。`stat`、`cat`、`tags` 和 `acl` 可以用 `--version-id` 指定版本。
 
-- `stat` 输出大小、修改时间、ETag、存储类型、标头、元数据、标签和加密方式。
+- `stat` 输出大小、修改时间、ETag、存储类别、标头、元数据、标签和加密方式。
 - `cat` 原样把对象的字节写到 stdout，不输出其他内容，因此可以接管道或重定向到文件。错误写到 stderr。
 - `mkdir` 创建文件夹，即一个名为 `prefix/` 的空对象。
-- `du` 统计前缀下的对象，不给前缀时统计整个存储桶。它会列出前缀下的所有内容，所以前缀越大耗时越长。旧版本、删除标记和未完成的分片上传不计入。
+- `du` 统计前缀下的对象，不给前缀时统计整个存储桶。它会列出前缀下的所有内容，所以前缀越大耗时越长。旧版本、删除标记和未完成的分段上传不计入。
 - `tags get` 以 `KEY=VALUE` 行输出标签。`tags set s3://bucket/key K=V ...` 替换全部标签；`--merge` 保留已有标签，并添加或替换给出的标签。`tags set --clear` 在确认后删除全部标签。S3 每个对象最多允许 10 个标签。
 - `acl get` 输出所有者和授权。`acl set s3://bucket/key CANNED` 应用预设 ACL：`private`、`public-read`、`public-read-write`、`authenticated-read`、`aws-exec-read`、`bucket-owner-read` 或 `bucket-owner-full-control`。关闭了 ACL 的存储桶会报告不支持 ACL。
 - `props set` 修改标头和用户元数据：`--content-type`、`--content-encoding`、`--content-language`、`--content-disposition`、`--cache-control`、`--expires`（HTTP 日期）、`--metadata KEY=VALUE`（可重复，键用小写）、`--delete-header NAME` 和 `--delete-metadata KEY`。给出空值，例如 `--cache-control ""`，会删除该标头。`props get` 与 `stat` 相同。
-- `storage-class s3://bucket/key CLASS` 更改存储类型，例如 `STANDARD_IA` 或 `GLACIER_IR`。
-- `archive-restore s3://bucket/key` 把存储类型为 `GLACIER` 或 `DEEP_ARCHIVE` 的对象取回 `--days` 天（默认 7，最多 365）。`--tier` 为 `standard`（默认）、`bulk` 或 `expedited`；Deep Archive 不支持 `expedited`。命令在提交取回请求后返回，取回本身需要几分钟到几小时，`stat` 的 `restore` 显示进度。其他存储类型的对象和正在取回的对象会跳过。取回由服务商另行收费。
+- `storage-class s3://bucket/key CLASS` 更改存储类别，例如 `STANDARD_IA` 或 `GLACIER_IR`。
+- `archive-restore s3://bucket/key` 把存储类别为 `GLACIER` 或 `DEEP_ARCHIVE` 的对象取回 `--days` 天（默认 7，最多 365）。`--tier` 为 `standard`（默认）、`bulk` 或 `expedited`；Deep Archive 不支持 `expedited`。命令在提交取回请求后返回，取回本身需要几分钟到几小时，`stat` 的 `restore` 显示进度。其他存储类别的对象和正在取回的对象会跳过。取回由服务商另行收费。
 
 `props set` 和 `storage-class` 会原地重写对象，因此对象的修改时间会变化，开启版本控制的存储桶会多出一个新版本。加上 `-r` 时，它们作用于前缀下的所有对象，并会先输出范围、要求确认。
 
 ## 管理
 
 - `bucket alias s3://bucket NAME` 设置桌面应用中显示的存储桶名称。`NAME` 为空或使用 `--clear` 会移除别名。省略 `NAME` 时输出当前别名。别名只保存在 Pail 的配置中，存储服务上没有任何变化，命令仍然使用真实的存储桶名称。
-- `multipart ls s3://bucket[/prefix/]` 列出未完成的分片上传，包括开始时间、存储类型、上传 ID 和对象键。`multipart abort` 使用同样的路径，在确认后中止这些上传，并丢弃已上传的分片。`--older-than D` 只处理开始于 `D` 之前的上传，例如 `36h` 或 `7d`。
-- `sync job ls` 列出已保存的同步作业。`sync job add NAME LOCAL s3://bucket/prefix/` 保存一个上传作业，`sync job add NAME s3://bucket/prefix/ LOCAL` 保存一个下载作业，`--mode`、`--compare`、`--exclude` 和 `--no-rules` 与 `sync` 相同。本地文件夹必须已存在。`sync job rm NAME` 在确认后删除已保存的作业，本地文件和对象不受影响。用 `sync --job NAME` 运行作业。
-- `cloudfront ls` 列出账户的 CloudFront 分配；`--bucket B` 只保留源站在该存储桶的分配。`cloudfront invalidate DISTRIBUTION PATH...` 先输出分配和路径并要求确认，再创建失效。它只适用于 AWS 账户。
+- `multipart ls s3://bucket[/prefix/]` 列出未完成的分段上传，包括开始时间、存储类别、上传 ID 和对象键。`multipart abort` 使用同样的路径，在确认后中止这些上传，并丢弃已上传的分段。`--older-than D` 只处理开始于 `D` 之前的上传，例如 `36h` 或 `7d`。
+- `sync job ls` 列出已保存的同步任务。`sync job add NAME LOCAL s3://bucket/prefix/` 保存一个上传任务，`sync job add NAME s3://bucket/prefix/ LOCAL` 保存一个下载任务，`--mode`、`--compare`、`--exclude` 和 `--no-rules` 与 `sync` 相同。本地文件夹必须已存在。`sync job rm NAME` 在确认后删除已保存的任务，本地文件和对象不受影响。用 `sync --job NAME` 运行任务。
+- `cloudfront ls` 列出账户的 CloudFront 分配；`--bucket B` 只保留源站在该存储桶的分配。`cloudfront invalidate DISTRIBUTION PATH...` 先输出分配和路径并要求确认，再创建失效。它只适用于 AWS 账户。CloudFront 还没有在真实 AWS 账户上测试过。
 - `settings get` 以 `KEY VALUE` 输出所有设置；`settings get KEY` 只输出值。`settings set KEY VALUE` 修改一项。它们就是桌面应用的设置。
 
 | 设置 | 取值 |
@@ -244,7 +250,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 | `download-limit` | 并行下载数，1 到 64 |
 | `other-limit` | 其他任务的并行数，1 到 64 |
 | `bulk-workers` | 一个批量任务内的工作线程数，1 到 64 |
-| `part-size-mib` | 分片大小，单位 MiB，5 到 5120 |
+| `part-size-mib` | 分段大小，单位 MiB，5 到 5120 |
 | `upload-kibps` | 上传限速，单位 KiB/s，所有账户共用，0 表示不限 |
 | `download-kibps` | 下载限速，单位 KiB/s，所有账户共用，0 表示不限 |
 | `download-dir` | 默认下载文件夹，留空表示没有 |
@@ -258,7 +264,8 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 | `keep-recent-ops` | `on` 或 `off` |
 | `secret-backend` | 只读。用 `vault init` 和 `vault backend` 更改。 |
 
-代理不在 `settings` 里，请在桌面应用中设置。
+所有账户共用的代理不在 `settings` 里，请在桌面应用中设置。账户自己的代理用 `account edit --proxy` 设置。
+
 ## 进度与输出
 
 每完成一个项目，stderr 上输出一行（`done`、`skipped`、`FAILED`、`UNKNOWN` 或 `unprocessed`），最后是一行汇总。在终端中，会有一行实时显示项目数、字节数和速度。需要机器可读的结果时使用 `--json`；否则 stdout 只输出列表、URL 和同步计划。
@@ -274,7 +281,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 | 退出码 | 含义 |
 | --- | --- |
 | 0 | 成功。跳过的项目算作成功。 |
-| 1 | 失败：出错、任务失败、所有项目都失败，或确认被拒绝。 |
+| 1 | 失败：出错、任务失败、所有项目都失败、确认被拒绝，或超过了 `--timeout` 的时长。 |
 | 2 | 用法错误或输入无效；需要确认但没有终端且没有 `--yes`；或加密保险库已锁定而无法询问密码（没有终端，也没有 `--vault-password-stdin`）。 |
 | 3 | 部分失败：部分项目成功，其余失败、结果未知（不会重试）或未处理。 |
 | 130 | 被 Ctrl+C 中断。运行中的任务被取消，并有最多 10 秒的时间停止。未完成的下载写入临时文件，这些文件会被删除。 |

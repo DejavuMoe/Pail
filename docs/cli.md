@@ -2,7 +2,7 @@
 
 English | [简体中文](cli.zh-CN.md)
 
-`pail` works with the same accounts, saved sync jobs and secrets as the desktop app. It shares the desktop app's configuration directory and secret store (the OS keychain or the encrypted vault). Accounts, the encrypted vault and the settings can be managed from the command line as well as in the desktop app. Requests go through the proxy saved in the desktop app's **Settings › Network**; without one, `pail` follows the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables.
+`pail` works with the same accounts, saved sync jobs and secrets as the desktop app. It shares the desktop app's configuration directory and secret store (the OS keychain or the encrypted vault). Accounts, the encrypted vault and the settings can be managed from the command line as well as in the desktop app. Requests go through the account's own proxy when it has one, otherwise through the proxy saved in the desktop app's **Settings › Network**. Without either, `pail` follows the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables.
 
 Release archives use versioned filenames, for example `pail-v<version>-windows-amd64.exe`. The examples below assume you installed the program as `pail` (`pail.exe` on Windows); you can also run the full filename.
 
@@ -100,11 +100,15 @@ JSON shapes of `vault status` and `url` with `--json`:
 
 `kind` is `cdn` or `public`.
 
-With `--json`, each of these commands prints one object per row, then the summary. The `type` of the rows:
+With `--json`, a command prints one object per row, then the summary. The `type` of the rows:
 
 | Command | Type |
 | --- | --- |
 | `accounts`, `account ls`, `account show` | `account` |
+| `buckets`, `ls` without a path | `bucket` |
+| `ls` | `folder` or `object` |
+| `versions` | `version` |
+| `presign` | `presign` |
 | `stat`, `props get` | `object` |
 | `du` | `du` |
 | `tags get` | `tag` |
@@ -115,6 +119,8 @@ With `--json`, each of these commands prints one object per row, then the summar
 | `cloudfront invalidate` | `invalidation` |
 | `settings get` | `setting` |
 | `bucket alias` | `alias` |
+| `sync`, for each step of the plan | `action` |
+| `cp`, `mv`, `rm`, `sync` and other commands that change objects | `item` for each object, and `task` for a task that did not succeed |
 
 `cat` writes the raw object and has no JSON form.
 
@@ -258,7 +264,8 @@ These commands act on one object. `stat`, `cat`, `tags` and `acl` take `--versio
 | `keep-recent-ops` | `on` or `off` |
 | `secret-backend` | Read only. Change it with `vault init` and `vault backend`. |
 
-The proxy is not part of `settings`; set it in the desktop app.
+The proxy for all accounts is not part of `settings`; set it in the desktop app. An account's own proxy is set with `account edit --proxy`.
+
 ## Progress and output
 
 One line per finished item goes to stderr (`done`, `skipped`, `FAILED`, `UNKNOWN` or `unprocessed`), followed by a summary line. On a terminal a live line shows items, bytes and speed. For machine-readable results use `--json`; otherwise stdout carries only listings, URLs and the sync plan.
@@ -274,7 +281,7 @@ These commands ask in the same way: `account rm`, `sync job rm`, `multipart abor
 | Code | Meaning |
 | --- | --- |
 | 0 | Success. Skipped items count as success. |
-| 1 | Failure: an error, a failed task, every item failed, or the confirmation was declined. |
+| 1 | Failure: an error, a failed task, every item failed, the confirmation was declined, or the `--timeout` ran out. |
 | 2 | Usage error or invalid input; confirmation required but no terminal and no `--yes`; or the encrypted vault is locked and the password cannot be asked for (no terminal and no `--vault-password-stdin`). |
 | 3 | Partial failure: some items succeeded and others failed, have an unknown outcome (not retried) or were not processed. |
 | 130 | Interrupted with Ctrl+C. Running tasks are cancelled and get up to 10 s to stop. Unfinished downloads are written to temporary files that are removed. |
