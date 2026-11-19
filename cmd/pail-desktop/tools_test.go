@@ -30,6 +30,7 @@ func (h *harness) openToolView(id string) {
 }
 
 func TestToolsAreEnabledAndOpenFromTheSidebar(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.tt.Frame()
 	for _, id := range []string{"sync", "cloudfront", "rules", "mime", "multipart", "settings"} {
@@ -53,6 +54,7 @@ func TestToolsAreEnabledAndOpenFromTheSidebar(t *testing.T) {
 // ---- upload rules ---------------------------------------------------------------------------
 
 func TestRulesEditReorderSaveAndDraftResult(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openToolView("rules")
 	rs := &h.a.tl.rules
@@ -142,6 +144,7 @@ func TestRulesEditReorderSaveAndDraftResult(t *testing.T) {
 }
 
 func TestSecretsAddDeleteAndReferenceSelect(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openToolView("rules")
 	h.a.rulesAdd()
@@ -185,6 +188,7 @@ func TestSecretsAddDeleteAndReferenceSelect(t *testing.T) {
 }
 
 func TestRuleEncryptionAndZipPasswordReferences(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if err := h.a.svc.SetSecret("ssec-key", "x"); err != nil {
 		t.Fatal(err)
@@ -216,6 +220,7 @@ func TestRuleEncryptionAndZipPasswordReferences(t *testing.T) {
 // ---- MIME types ---------------------------------------------------------------------------------
 
 func TestMIMEAddEditDeleteSaveAndTest(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openToolView("mime")
 	m := &h.a.tl.mime
@@ -286,6 +291,7 @@ func startMultipart(t *testing.T, h *harness, key string) {
 }
 
 func TestMultipartListAndAbort(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openToolView("multipart")
 	m := &h.a.tl.mp
@@ -320,6 +326,7 @@ func TestMultipartListAndAbort(t *testing.T) {
 }
 
 func TestMultipartNeedsABucketSelection(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.openTool("multipart")
 	h.a.scope = Scope{AccountID: h.a.accountID}
@@ -331,6 +338,7 @@ func TestMultipartNeedsABucketSelection(t *testing.T) {
 // ---- CloudFront ---------------------------------------------------------------------------------------
 
 func TestCloudFrontNeedsAnAWSAccount(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openToolView("cloudfront")
 	h.mustHave("CloudFront is available for AWS accounts")
@@ -391,6 +399,7 @@ func (f *fakeCF) set(status string) {
 }
 
 func TestCloudFrontInvalidationFlowWithAFake(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	fake := &fakeCF{}
 	h.a.tl.cf.api = fake
@@ -466,6 +475,7 @@ func waitTasksDone(h *harness) {
 }
 
 func TestSyncJobPreviewRunAndMirrorWarning(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	dir := t.TempDir()
 	os.WriteFile(filepath.Join(dir, "a.txt"), []byte("alpha"), 0o600)
@@ -586,6 +596,7 @@ func TestSyncJobPreviewRunAndMirrorWarning(t *testing.T) {
 }
 
 func TestSyncDownloadDeleteConfirmMentionsTrash(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openToolView("sync")
 	s := &h.a.tl.sync
@@ -605,6 +616,7 @@ func TestSyncDownloadDeleteConfirmMentionsTrash(t *testing.T) {
 }
 
 func TestSyncDeleteJobAsksFirst(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if _, err := h.a.svc.SaveSyncJob(core.SyncJob{Name: "J", LocalDir: t.TempDir(), Remote: Scope{AccountID: h.env.Account.ID, Bucket: "acme-website"}, Direction: "upload"}); err != nil {
 		t.Fatal(err)
@@ -623,6 +635,7 @@ func TestSyncDeleteJobAsksFirst(t *testing.T) {
 // ---- transfers panel ---------------------------------------------------------------------------------------
 
 func TestTransfersCollapseWithoutTasksAndExpandOnANewTask(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if h.a.transfersOpen {
 		t.Fatal("the panel is open with no tasks")
@@ -669,6 +682,7 @@ func TestTransfersCollapseWithoutTasksAndExpandOnANewTask(t *testing.T) {
 }
 
 func TestSyncUnsavedEditsAskBeforeLeaving(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if _, err := h.a.svc.SaveSyncJob(core.SyncJob{Name: "Docs", LocalDir: t.TempDir(), Remote: Scope{AccountID: h.env.Account.ID, Bucket: "acme-website"}, Direction: "upload"}); err != nil {
 		t.Fatal(err)
@@ -718,6 +732,7 @@ func TestSyncUnsavedEditsAskBeforeLeaving(t *testing.T) {
 }
 
 func TestInvalidateOnlyForAWSAccounts(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	if err := h.tt.RightClick("manifest.json"); err != nil {
@@ -748,6 +763,7 @@ func TestInvalidateOnlyForAWSAccounts(t *testing.T) {
 }
 
 func TestRenameSelectsTheBaseName(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.a.run("rename", "test")
@@ -774,6 +790,7 @@ func TestRenameSelectsTheBaseName(t *testing.T) {
 // body: no list pane with an empty state of its own, no header with a second way
 // to create, and no detail pane with a third.
 func TestListToolsShowOneEmptyStateOverTheBody(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		tool, title, sub, action string
 		gone                     []string
@@ -813,6 +830,7 @@ func TestListToolsShowOneEmptyStateOverTheBody(t *testing.T) {
 // With no rule chosen there is nothing to manage or save, so the footer under
 // the editor is left out; it comes back for changes that still need saving.
 func TestRulesFooterOnlyWhenThereIsSomethingToDo(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openToolView("rules")
 	h.mustClick("Add rule")
@@ -838,6 +856,7 @@ func TestRulesFooterOnlyWhenThereIsSomethingToDo(t *testing.T) {
 // The key of the rules' test strip takes the room the bucket leaves, to the
 // content padding.
 func TestRulesTestKeyFillsTheStrip(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.openToolView("rules")
 	bucket, ok1 := h.tt.Find(locales.RulesTestBucket())
@@ -860,6 +879,7 @@ func TestRulesTestKeyFillsTheStrip(t *testing.T) {
 // segment's corner is concentric with the track's: the control radius less the
 // track's border and padding.
 func TestSegmentedControlMatchesTheControlHeight(t *testing.T) {
+	t.Parallel()
 	if controlH != 28 {
 		t.Errorf("controlH = %d, want 28 (design.md: controls are 28 high)", controlH)
 	}
@@ -875,6 +895,7 @@ func TestSegmentedControlMatchesTheControlHeight(t *testing.T) {
 }
 
 func TestCloudFrontDisableAsksFirst(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	fake := &fakeCF{}
 	h.a.tl.cf.api = fake

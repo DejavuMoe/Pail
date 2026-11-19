@@ -35,6 +35,7 @@ func zoomText(h *harness, z float32) string {
 // The picture fills the inspector's width up to its padding, as before it
 // could zoom, and its size line says how large it shows.
 func TestImagePreviewFitsThePanel(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	r := h.openImagePreview()
 	fw := h.a.previewImageW()
@@ -53,6 +54,7 @@ func TestImagePreviewFitsThePanel(t *testing.T) {
 
 // A pinch zooms at the pointer: what was under it stays under it.
 func TestPinchZoomsTheImageAtThePointer(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	r := h.openImagePreview()
 	px, py := r.X+r.W*0.75, r.Y+r.H*0.25
@@ -85,6 +87,7 @@ func TestPinchZoomsTheImageAtThePointer(t *testing.T) {
 // Zoomed in, scrolling pans the picture inside its frame; the buttons step
 // the zoom about the frame's centre and stop at the ends.
 func TestZoomedImagePansAndSteps(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	r := h.openImagePreview()
 	h.mustClick("Zoom in")
@@ -140,6 +143,7 @@ func TestZoomedImagePansAndSteps(t *testing.T) {
 // The wheel with Ctrl held zooms a step a notch, a touchpad as far as it
 // moves; without Ctrl the scrolling is the frame's.
 func TestCtrlWheelZoomsTheImage(t *testing.T) {
+	t.Parallel()
 	var p previewState
 	const fw, fh = 288, 180
 	if !p.zoomInput(ui.InputEvent{Kind: ui.InputScroll, DY: -100, Mods: ui.Ctrl, X: 144, Y: 90}, fw, fh) || p.zoomed() != zoomStep {

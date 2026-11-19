@@ -42,6 +42,7 @@ func refuseConfigWrite(t *testing.T, h *harness, name string) {
 }
 
 func TestSettingsLatestIntentSurvivesPendingSave(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.loadSettingsForm()
 	initial := h.a.svc.Settings()
@@ -76,6 +77,7 @@ func TestSettingsLatestIntentSurvivesPendingSave(t *testing.T) {
 }
 
 func TestSettingsStaleFailureDoesNotRevertLaterIntent(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.loadSettingsForm()
 	refuseConfigWrite(t, h, "settings.json")
@@ -95,6 +97,7 @@ func TestSettingsStaleFailureDoesNotRevertLaterIntent(t *testing.T) {
 }
 
 func TestSettingsImmediateChoicesKeepLatestIntent(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.loadSettingsForm()
 	h.a.settingsMu.Lock()
@@ -117,6 +120,7 @@ func TestSettingsImmediateChoicesKeepLatestIntent(t *testing.T) {
 }
 
 func TestMultipartReentryRejectsOldResult(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	startMultipart(t, h, "old.bin")
 	h.a.mpEnter()
@@ -153,6 +157,7 @@ func (f *controlledCF) Invalidate(ctx context.Context, acct, dist string, paths 
 }
 
 func TestCloudFrontReentryRejectsOldResults(t *testing.T) {
+	t.Parallel()
 	for _, request := range []string{"distributions", "invalidations"} {
 		t.Run(request, func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -181,6 +186,7 @@ func TestCloudFrontReentryRejectsOldResults(t *testing.T) {
 }
 
 func TestNewBucketCompletionPreservesReopenedDialog(t *testing.T) {
+	t.Parallel()
 	for _, fail := range []bool{false, true} {
 		t.Run(map[bool]string{false: "success", true: "failure"}[fail], func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -224,6 +230,7 @@ func TestNewBucketCompletionPreservesReopenedDialog(t *testing.T) {
 }
 
 func TestCloudFrontCompletionPreservesReopenedDialog(t *testing.T) {
+	t.Parallel()
 	for _, fail := range []bool{false, true} {
 		t.Run(map[bool]string{false: "success", true: "failure"}[fail], func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -251,6 +258,7 @@ func TestCloudFrontCompletionPreservesReopenedDialog(t *testing.T) {
 }
 
 func TestAccountCompletionPreservesReopenedDialog(t *testing.T) {
+	t.Parallel()
 	for _, fail := range []bool{false, true} {
 		t.Run(map[bool]string{false: "success", true: "failure"}[fail], func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -278,6 +286,7 @@ func TestAccountCompletionPreservesReopenedDialog(t *testing.T) {
 }
 
 func TestTagSavePreservesOtherObjectDraft(t *testing.T) {
+	t.Parallel()
 	for _, fail := range []bool{false, true} {
 		t.Run(map[bool]string{false: "success", true: "failure"}[fail], func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -313,6 +322,7 @@ func TestTagSavePreservesOtherObjectDraft(t *testing.T) {
 }
 
 func TestMIMESavePreservesLaterEdits(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.mimeEnter()
 	h.a.tl.mime.rows = []mimeRow{{".audit", "text/plain"}}
@@ -331,6 +341,7 @@ func TestMIMESavePreservesLaterEdits(t *testing.T) {
 }
 
 func TestDraftSaveFailuresPreserveCurrentInput(t *testing.T) {
+	t.Parallel()
 	t.Run("mime", func(t *testing.T) {
 		h := newHarness(t, "light")
 		h.a.mimeEnter()
@@ -371,6 +382,7 @@ func TestDraftSaveFailuresPreserveCurrentInput(t *testing.T) {
 }
 
 func TestTagSavePreservesLaterEditsOnSameObject(t *testing.T) {
+	t.Parallel()
 	for _, edit := range []string{"value", "remove", "add", "inline"} {
 		t.Run(edit, func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -422,6 +434,7 @@ func TestTagSavePreservesLaterEditsOnSameObject(t *testing.T) {
 }
 
 func TestMultipartAbortPartialUsesActualResults(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	startMultipart(t, h, "abort-ok.bin")
 	startMultipart(t, h, "abort-denied.bin")
@@ -463,6 +476,7 @@ func TestMultipartAbortPartialUsesActualResults(t *testing.T) {
 }
 
 func TestRetryScanFollowsNewTransfers(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	p := filepath.Join(t.TempDir(), "retry-scan.txt")
 	h.a.uploadPaths([]string{p})
@@ -486,6 +500,7 @@ func TestRetryScanFollowsNewTransfers(t *testing.T) {
 }
 
 func TestRetryScanOutcomeSurvivesHistoryEviction(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	st := h.a.svc.Settings()
 	st.Limits.Upload = 1
@@ -538,6 +553,7 @@ func TestRetryScanOutcomeSurvivesHistoryEviction(t *testing.T) {
 }
 
 func TestRetryScanWatchSurvivesRemovalBeforeRegistration(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	st := h.a.svc.Settings()
 	st.Limits.Upload = 2
@@ -649,6 +665,7 @@ func TestRetryScanWatchSurvivesRemovalBeforeRegistration(t *testing.T) {
 }
 
 func TestSyncSavePreservesLaterEdits(t *testing.T) {
+	t.Parallel()
 	for _, existing := range []bool{false, true} {
 		t.Run(map[bool]string{false: "new", true: "existing"}[existing], func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -680,6 +697,7 @@ func TestSyncSavePreservesLaterEdits(t *testing.T) {
 }
 
 func TestRetryRefreshesListingAndRecentOperation(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
 		if r.Method == http.MethodPut && strings.HasSuffix(r.URL.Path, "/retry-refresh.txt") {
@@ -721,6 +739,7 @@ func TestRetryRefreshesListingAndRecentOperation(t *testing.T) {
 }
 
 func TestRetryDownloadKeepsOriginalDestination(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	dir := t.TempDir()
 	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
@@ -766,6 +785,7 @@ func TestRetryDownloadKeepsOriginalDestination(t *testing.T) {
 }
 
 func TestMultipartAbortReportsTerminalOutcome(t *testing.T) {
+	t.Parallel()
 	for _, status := range []core.Status{core.StatusSucceeded, core.StatusFailed, core.StatusPartiallyFailed, core.StatusCanceled} {
 		t.Run(status.String(), func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -804,6 +824,7 @@ func TestMultipartAbortReportsTerminalOutcome(t *testing.T) {
 }
 
 func TestCloudFrontSlowPollDoesNotStarve(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.tool = "cloudfront"
 	h.a.tl.cf = cfState{api: &controlledCF{}, acct: "A", invFor: "dist-A", invs: []cloud.Invalidation{{ID: "inv-A", Status: "InProgress"}}}
@@ -823,6 +844,7 @@ func TestCloudFrontSlowPollDoesNotStarve(t *testing.T) {
 }
 
 func TestCloudFrontPollRecoversAndSelectionInvalidates(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	api := &controlledCF{invErr: errors.New("poll denied")}
 	h.a.tool = "cloudfront"
@@ -849,6 +871,7 @@ func TestCloudFrontPollRecoversAndSelectionInvalidates(t *testing.T) {
 }
 
 func TestTrayUploadAvailabilityFollowsNavigation(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openTool("settings")
 	h.settle()

@@ -31,6 +31,7 @@ func (h *harness) restrictKey() {
 }
 
 func TestNamedBucketsConnectAndOpenTheirFolder(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", false)
 	h.restrictKey()
 	h.a.openAccountForm(false)
@@ -113,6 +114,7 @@ func TestNamedBucketsConnectAndOpenTheirFolder(t *testing.T) {
 }
 
 func TestDeniedBucketListOffersNamingBuckets(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", false)
 	h.restrictKey()
 	second, err := h.env.Svc.SaveAccount(core.Account{Name: "Restricted", Provider: core.ProviderS3, Endpoint: h.env.Srv.URL, PathStyle: true,

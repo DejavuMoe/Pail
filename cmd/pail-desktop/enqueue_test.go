@@ -8,6 +8,7 @@ import (
 
 // Work that finishes after the window closed must not hang on a full queue.
 func TestEnqueueAfterStopDoesNotBlock(t *testing.T) {
+	t.Parallel()
 	ctx, cancel := context.WithCancel(context.Background())
 	a := &app{ctx: ctx, pending: make(chan func(), 1)}
 	a.enqueue(func() {}) // fills the queue

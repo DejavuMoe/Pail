@@ -36,10 +36,6 @@ const (
 	scrollBarInset = 2
 )
 
-// dialogScrolls remembers, per dialog, whether its body overflowed in the
-// previous frame, which decides whether the dividers show.
-var dialogScrolls = map[string]*ui.ScrollState{}
-
 // dialog shows one 440px card over the Scrim backdrop: a fixed title, a
 // scrolling body and a fixed footer.
 func dialog(c *ui.Context, open *bool, title string, body, footer func()) {
@@ -58,12 +54,11 @@ func dialogW(c *ui.Context, open *bool, title string, width float32, body, foote
 	if body == nil {
 		body = func() {}
 	}
-	st := dialogScrolls[title]
-	if st == nil {
-		st = &ui.ScrollState{}
-		dialogScrolls[title] = st
-	}
 	modalLayer(c, title, open, k.Scrim, func(backdrop, panel ui.Element) {
+		// Whether the body overflowed in the previous frame decides whether
+		// the dividers show. The dialog keeps it while it is open; it is not
+		// shared with other windows' (or tests') dialogs of the same title.
+		st := ui.Local(panel, "body-scroll", func() ui.ScrollState { return ui.ScrollState{} })
 		dialogFrame(c, panel, width, winH)
 		dialogHeader(c, title, nil)
 		overflow := st.MaxY > 0
@@ -155,7 +150,7 @@ func (a *app) deleteDialog(c *ui.Context) {
 					ui.Text(c, locales.DialogsMore(groupInt(len(d.keys)-5))).FontSize(sizeSecondary).TextColor(k.TextMuted)
 					break
 				}
-				mono(ui.Text(c, key).FontSize(sizeSecondary).TextColor(k.Text).SingleLine())
+				mono(ui.Text(c, key).FontSize(sizeSecondary).TextColor(k.Text).SingleLine().TruncateStart().Tooltip(key))
 			}
 		})
 		ui.Column(c).Gap(2).Children(func() {

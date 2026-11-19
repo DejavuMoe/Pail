@@ -17,6 +17,13 @@ import (
 
 var testLocale atomic.Value // string
 
+// TestMain sets what the whole process shares. Most tests call t.Parallel():
+// each has its own harness, demo server and mygo Tester (Testers run in
+// parallel since mygo v0.10). A test that changes what the process shares (the
+// locale, through setLocale or the app's localeSet; nativeMenus; goos) stays
+// sequential, and so does every test in a file with such tests: Go runs all
+// sequential tests before any parallel one resumes, so they never overlap, and
+// the parallel ones see English.
 func TestMain(m *testing.M) {
 	// The suites drive the in-window menus on every platform; the native
 	// path has its own test (TestNativeMenusOnMacOS).

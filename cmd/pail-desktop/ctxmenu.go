@@ -591,12 +591,10 @@ func (a *app) menuPanel(c *ui.Context, panel ui.Element, li int, winH float32) [
 	overlayPanel(c, panel, overlayPopover)
 	fadeIn(c, panel)
 	panel.Clicked() // a press on the panel's padding stays in it
+	// mygo (v0.10) holds an attached panel to the room the window has, so a
+	// tall one is that high and its rows scroll; the gutter is kept for the
+	// bar.
 	tall := menuHeight(lv.items) > maxH
-	if tall {
-		// mygo does not hold an attached element to its MaxHeight: the panel
-		// takes the room the window has and its rows scroll.
-		panel.Height(maxH)
-	}
 	lv.box = panel.Bounds()
 	slot := false
 	for _, it := range lv.items {

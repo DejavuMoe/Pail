@@ -13,6 +13,7 @@ import (
 )
 
 func TestSkippedTransfersAreNotAnnouncedAsCompleted(t *testing.T) {
+	t.Parallel()
 	for _, direction := range []string{"upload", "download"} {
 		t.Run(direction, func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -73,6 +74,7 @@ func TestSkippedTransfersAreNotAnnouncedAsCompleted(t *testing.T) {
 }
 
 func TestUploadOutcomeSurvivesHistoryEviction(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	st := h.a.svc.Settings()
 	st.Limits.Upload = 1

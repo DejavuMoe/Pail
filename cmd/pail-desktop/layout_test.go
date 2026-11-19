@@ -14,6 +14,7 @@ import (
 // A width that wobbles within 10 DIPs of a threshold, from whichever side the
 // layout started on, must not flip the tier; a clear crossing must.
 func TestBreakpointDoesNotFlipWithinHysteresis(t *testing.T) {
+	t.Parallel()
 	for _, at := range []float32{tbLabelsNeed, compactBelow, colsAllNeed, colsFourNeed} {
 		for _, start := range []float32{at - 100, at + 100} {
 			b := breakpoint{at: at}
@@ -40,6 +41,7 @@ func TestBreakpointDoesNotFlipWithinHysteresis(t *testing.T) {
 }
 
 func TestBreakpointSwitchesPastTheBand(t *testing.T) {
+	t.Parallel()
 	const at = 560
 	b := breakpoint{at: at}
 	if b.update(at + 100) {
@@ -65,6 +67,7 @@ func TestBreakpointSwitchesPastTheBand(t *testing.T) {
 // A drag that sweeps the whole range changes the tiers once per threshold and
 // then back once, not on every pixel.
 func TestLayoutTiersChangeOncePerCrossing(t *testing.T) {
+	t.Parallel()
 	s := newLayoutState()
 	in := layoutIn{winW: 1500, sidebarW: 248, inspW: 320, inspector: true}
 	flips, last := 0, s.metrics(in)
@@ -93,6 +96,7 @@ func TestLayoutTiersChangeOncePerCrossing(t *testing.T) {
 }
 
 func TestLayoutTiersFollowTheWidth(t *testing.T) {
+	t.Parallel()
 	s := newLayoutState()
 	wide := s.metrics(layoutIn{winW: 1600, sidebarW: 248, inspW: 320, inspector: true})
 	if wide.tbCompact || wide.compact || wide.colTier != 0 {
@@ -107,6 +111,7 @@ func TestLayoutTiersFollowTheWidth(t *testing.T) {
 // The pieces of a row add up to the window, whatever the stored widths: the
 // views lay out by these numbers, so they must agree with what the Splits do.
 func TestLayoutMetricsPartitionTheWindow(t *testing.T) {
+	t.Parallel()
 	for _, w := range []float32{960, 1100, 1440, 2000} {
 		for _, insp := range []bool{false, true} {
 			s := newLayoutState()
@@ -154,6 +159,7 @@ func leastWidth(cols []ui.TableColumn) float32 {
 // takes over, so that the table never scrolls sideways: a column that runs out
 // of room would clip its text, the date of the last one first.
 func TestObjectColumnsFitTheirTier(t *testing.T) {
+	t.Parallel()
 	s := newLayoutState()
 	min960 := s.metrics(layoutIn{winW: 960, sidebarW: 248, inspW: 320, inspector: true, barRight: 138}).centerW
 	// Tier 2 is shown below colsFourNeed-hysteresis; at 960 it gets min960.
@@ -185,6 +191,7 @@ func TestObjectColumnsFitTheirTier(t *testing.T) {
 // At the smallest window the last cell of a row ends before the inspector's
 // divider with a gap, not at or under it, and the table does not scroll sideways.
 func TestObjectTableKeepsItsLastColumnClearAtTheMinimumWindow(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.inspectorOpen = true
 	h.resize(960, 600)
@@ -220,6 +227,7 @@ func TestObjectTableKeepsItsLastColumnClearAtTheMinimumWindow(t *testing.T) {
 // stays while it has the keyboard or text, and folds again once it lost the
 // keyboard empty, or on Esc.
 func TestCompactPathBarFoldsTheFolderFilter(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.inspectorOpen = true
 	h.resize(960, 600)
@@ -309,6 +317,7 @@ func TestCompactPathBarFoldsTheFolderFilter(t *testing.T) {
 // The panels keep the width they were given at the smallest window: there is no
 // one-time narrowing any more.
 func TestPanelsAreNotNarrowedAtTheMinimumWindow(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	for _, sz := range auditSizes {
@@ -324,6 +333,7 @@ func TestPanelsAreNotNarrowedAtTheMinimumWindow(t *testing.T) {
 // The path bar of a frame is as wide as the metrics say it is, in the frame
 // that follows the resize, not one frame later.
 func TestLayoutUsesTheCurrentFrameSize(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	for _, w := range []int{1440, 1300, 1180, 1100, 1010, 960, 1200, 1440} {
 		h.tt.SetSize(w, 700)
@@ -342,6 +352,7 @@ func TestLayoutUsesTheCurrentFrameSize(t *testing.T) {
 // users have: the label is as wide as it is in a wide panel, never the lone
 // ellipsis a zero-width label draws.
 func TestInspectorHeaderLabelsKeepTheirWidth(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.mustClick("Headers")
@@ -379,6 +390,7 @@ func TestInspectorHeaderLabelsKeepTheirWidth(t *testing.T) {
 // The dividers are never painted in the accent colour: hover is BorderStrong,
 // and a divider that just moved is TextSubtle.
 func TestSplitDividersAvoidTheAccent(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.a.transfersOpen = true // its divider exists only while the panel is open

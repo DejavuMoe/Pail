@@ -11,6 +11,7 @@ import (
 // of finished tasks (notifications, list refresh) must run from that turn, not
 // wait for a frame that comes when the window is shown again.
 func TestFollowRunsWhileWindowHidden(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	a := h.a
 	hidden := true
@@ -45,6 +46,7 @@ func TestFollowRunsWhileWindowHidden(t *testing.T) {
 // With the window shown the follow-up still runs once, and its toast is
 // the in-window toast.
 func TestFollowRunsOnceWhileWindowShown(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	a := h.a
 	var notes []string

@@ -15,6 +15,7 @@ import (
 // Views name radii through the constants of theme.go: a numeric literal in a
 // .Radius( call outside theme.go is a bare radius (design.md principle 5).
 func TestNoBareRadiusOutsideTheme(t *testing.T) {
+	t.Parallel()
 	bare := regexp.MustCompile(`\.Radius\(\s*[0-9]`)
 	files, err := filepath.Glob("*.go")
 	if err != nil {
@@ -39,6 +40,7 @@ func TestNoBareRadiusOutsideTheme(t *testing.T) {
 // Short plain listings show the drop hint under the last row; filters, the
 // deleted view and a window with no room for it do not.
 func TestDropHintShowsOnlyInShortPlainListings(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.settle()
 	hint := locales.ObjectsDropHint()
@@ -75,6 +77,7 @@ func TestDropHintShowsOnlyInShortPlainListings(t *testing.T) {
 // Folders show the same dash in every column they have no value for; Type keeps
 // its word.
 func TestFolderRowsDashTheirEmptyCells(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.inspectorOpen = false
 	h.settle()
@@ -98,6 +101,7 @@ func TestFolderRowsDashTheirEmptyCells(t *testing.T) {
 // Every tool's list header is the same strip: the create action is a labelled
 // ghost button, the rest are 28px icon buttons.
 func TestToolListHeadersShareOneShape(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if _, err := h.a.svc.SaveSyncJob(core.SyncJob{Name: "J", LocalDir: t.TempDir(), Remote: Scope{AccountID: h.env.Account.ID, Bucket: "acme-website"}, Direction: "upload"}); err != nil {
 		t.Fatal(err)

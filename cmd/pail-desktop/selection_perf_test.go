@@ -6,6 +6,7 @@ import (
 )
 
 func TestSoleSelected(t *testing.T) {
+	t.Parallel()
 	a := benchApp(5)
 	if _, one := a.soleSelected(); one {
 		t.Fatal("five chosen rows reported as one")
@@ -26,6 +27,7 @@ func TestSoleSelected(t *testing.T) {
 
 // A selection signature tells selections apart, whatever their size.
 func TestSelectionSigDistinguishes(t *testing.T) {
+	t.Parallel()
 	for _, n := range []int{3, sigExactMax, sigExactMax + 1, 500} {
 		a := benchApp(n + 2)
 		a.sel.Clear()
@@ -51,6 +53,7 @@ func TestSelectionSigDistinguishes(t *testing.T) {
 // The shared selection summary follows every change: through sel, a search
 // that hides chosen rows, and a touch for what mygo's table does on its own.
 func TestSelectionSummaryFollowsChanges(t *testing.T) {
+	t.Parallel()
 	a := benchApp(6) // all six chosen; even sizes are 0, 2, 4
 	check := func(when string, files int, bytes int64) {
 		t.Helper()

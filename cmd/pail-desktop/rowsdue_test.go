@@ -8,6 +8,7 @@ import (
 )
 
 func TestRowsDueThrottlesOnlyWhileLoading(t *testing.T) {
+	t.Parallel()
 	a := &app{post: func(func()) {}} // the wake-up timer finds nobody to wake
 	a.rowsDirty = true
 
@@ -40,6 +41,7 @@ func TestRowsDueThrottlesOnlyWhileLoading(t *testing.T) {
 }
 
 func TestRowsDueSortChangeIsImmediate(t *testing.T) {
+	t.Parallel()
 	a := &app{post: func(func()) {}, loading: true}
 	a.rebuildRows()
 	a.sort = ui.SortOrder{Column: "size"}

@@ -46,6 +46,7 @@ func (h *harness) openVersioned() {
 // ---- permissions ------------------------------------------------------------------------------
 
 func TestCannedACLPublicNeedsConfirmation(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.mustClick("Permissions")
@@ -85,6 +86,7 @@ func TestCannedACLPublicNeedsConfirmation(t *testing.T) {
 }
 
 func TestACLUnsupportedShowsEmptyState(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.SetUnsupported("acl")
 	h.mustClick("manifest.json")
@@ -98,6 +100,7 @@ func TestACLUnsupportedShowsEmptyState(t *testing.T) {
 // ---- versions ---------------------------------------------------------------------------------
 
 func TestVersionsTabListsAndRestores(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.openVersioned()
 	h.mustClick("notes.txt")
@@ -127,6 +130,7 @@ func TestVersionsTabListsAndRestores(t *testing.T) {
 }
 
 func TestVersionsDeletePermanentlyAsksFirst(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.openVersioned()
 	h.mustClick("config")
@@ -156,6 +160,7 @@ func TestVersionsDeletePermanentlyAsksFirst(t *testing.T) {
 }
 
 func TestVersionsMultiSelectDeleteAndDownload(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	dest := t.TempDir()
 	st := h.env.Svc.Settings()
@@ -199,6 +204,7 @@ func TestVersionsMultiSelectDeleteAndDownload(t *testing.T) {
 }
 
 func TestVersionsTabShowsDeleteMarkers(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.openVersioned()
 	h.mustClick("report.pdf")
@@ -219,6 +225,7 @@ func TestVersionsTabShowsDeleteMarkers(t *testing.T) {
 }
 
 func TestVersionsTabFailureHasRetry(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.openVersioned()
 	h.env.Srv.SetUnsupported("versions")
@@ -235,6 +242,7 @@ func TestVersionsTabFailureHasRetry(t *testing.T) {
 // ---- deleted items ---------------------------------------------------------------------------
 
 func TestShowDeletedAndRestore(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.openVersioned()
 	h.waitFor("versioning known", func() bool { return h.a.versioned(h.a.accountID, demoVersioned) })
@@ -276,6 +284,7 @@ func TestShowDeletedAndRestore(t *testing.T) {
 }
 
 func TestRestoreAllDeletedInFolder(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.env.Srv.DeleteObject(demoVersioned, "report.pdf")
 	h.env.Srv.DeleteObject(demoVersioned, "notes.txt")
@@ -298,6 +307,7 @@ func TestRestoreAllDeletedInFolder(t *testing.T) {
 }
 
 func TestShowDeletedDisabledWithoutVersioning(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.waitFor("versioning known", func() bool { _, ok := h.a.versioningOf(h.a.accountID, bkt); return ok })
 	h.tt.Click("Show deleted")
@@ -310,6 +320,7 @@ func TestShowDeletedDisabledWithoutVersioning(t *testing.T) {
 // ---- clipboard ---------------------------------------------------------------------------------
 
 func TestCopyAndPasteIntoAnotherFolder(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.tt.Key(ui.Cmd, ui.KeyC)
@@ -333,6 +344,7 @@ func TestCopyAndPasteIntoAnotherFolder(t *testing.T) {
 }
 
 func TestCutAndPasteMovesObjectsAndFolders(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.tt.Key(ui.Cmd, ui.KeyX)
@@ -368,6 +380,7 @@ func TestCutAndPasteMovesObjectsAndFolders(t *testing.T) {
 // Pasting from another account is attempted (the objects stream through
 // Pail); a source account that no longer exists fails the copy.
 func TestPasteAcrossAccountsIsAttempted(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.a.run("copy", "test")
@@ -390,6 +403,7 @@ func TestPasteAcrossAccountsIsAttempted(t *testing.T) {
 }
 
 func TestPasteConflictIsReported(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	st := h.env.Svc.Settings()
 	st.Conflict = core.ConflictSkip
@@ -443,6 +457,7 @@ func (h *harness) drag(from, to string) {
 }
 
 func TestDragRowOntoFolderMoves(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	// The drop is the decision, as Cut and Paste: no question, a toast after.
@@ -457,6 +472,7 @@ func TestDragRowOntoFolderMoves(t *testing.T) {
 }
 
 func TestDragRowOntoFileDoesNothing(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.drag("README.txt", "manifest.json")
@@ -469,6 +485,7 @@ func TestDragRowOntoFileDoesNothing(t *testing.T) {
 }
 
 func TestDragRowOntoBreadcrumbMovesUp(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openPrefix("assets/images/")
 	h.settle()
@@ -484,6 +501,7 @@ func TestDragRowOntoBreadcrumbMovesUp(t *testing.T) {
 // ---- rename ------------------------------------------------------------------------------------
 
 func TestRenameObjectInline(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.tt.Key(0, ui.KeyF2)
@@ -517,6 +535,7 @@ func TestRenameObjectInline(t *testing.T) {
 }
 
 func TestRenameUnchangedAndEscapeCloseQuietly(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.a.run("rename", "test")
@@ -537,6 +556,7 @@ func TestRenameUnchangedAndEscapeCloseQuietly(t *testing.T) {
 }
 
 func TestRenameFolderMovesEverythingBelow(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("reports")
 	h.tt.Key(0, ui.KeyF2)

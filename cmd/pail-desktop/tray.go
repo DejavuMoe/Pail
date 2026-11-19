@@ -10,7 +10,6 @@ import (
 	"log"
 	"math"
 	"runtime"
-	"strings"
 	"time"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
@@ -139,9 +138,7 @@ func (t *trayIcon) set(on bool) {
 	case on && t.tray == nil:
 		img, template := trayImage()
 		t.menu = t.buildMenu()
-		tray, err := mygo.NewTray(mygo.TrayOptions{
-			ID: "pail", Icon: img, IconIsTemplate: template, ToolTip: "Pail", Menu: t.menu,
-		})
+		tray, err := mygo.NewTray(trayOptions(img, template, t.menu))
 		if err != nil {
 			// No notification area (a Linux desktop without AppIndicator):
 			// closing the window quits, as it did before.
@@ -158,6 +155,22 @@ func (t *trayIcon) set(on bool) {
 		t.a.tray.refresh = nil
 		t.tray.Destroy()
 		t.tray, t.menu = nil, nil
+	}
+}
+
+// trayID names the icon across launches (TrayOptions.ID): macOS puts it back
+// where the user dragged it, Windows keeps whether it shows on the taskbar or
+// in the overflow, and a Linux panel (KDE Plasma) keeps its settings for it.
+// It must not change between releases.
+const trayID = "pail"
+
+// trayOptions is how the icon is made. Its title (the percentage beside the
+// macOS icon) is drawn monospaced, so the item keeps its width as the digits
+// change (trayTitle).
+func trayOptions(img []byte, template bool, menu *mygo.Menu) mygo.TrayOptions {
+	return mygo.TrayOptions{
+		ID: trayID, Icon: img, IconIsTemplate: template, ToolTip: "Pail", Menu: menu,
+		MonospacedTitle: true,
 	}
 }
 
@@ -213,14 +226,14 @@ func (t *trayIcon) refresh(status string) {
 	}
 }
 
-// trayTitle is the percentage beside the macOS icon while transfers run, its
-// digits padded with figure spaces so that the item keeps its width.
+// trayTitle is the percentage beside the macOS icon while transfers run,
+// always four characters ("  7%", "100%"): the tray draws its title
+// monospaced (trayOptions), so the item keeps its width.
 func trayTitle(p mygo.ProgressBar) string {
 	if p.State != mygo.ProgressNormal {
 		return ""
 	}
-	s := fmt.Sprintf("%3d%%", int(math.Floor(p.Value*100)))
-	return strings.ReplaceAll(s, " ", " ")
+	return fmt.Sprintf("%3d%%", int(math.Floor(p.Value*100)))
 }
 
 // open shows the window in front, restored if it was minimized.

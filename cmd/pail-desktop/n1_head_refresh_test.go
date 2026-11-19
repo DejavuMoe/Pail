@@ -80,6 +80,7 @@ const (
 // A save of the headers of one object dropped the unsaved header draft of the
 // object chosen while the save ran.
 func TestN1PropsSavePreservesOtherObjectDraft(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	started, release := holdRequests(t, h, isCopy)
 	p := h.chooseForHeaders("manifest.json")
@@ -116,6 +117,7 @@ func TestN1PropsSavePreservesOtherObjectDraft(t *testing.T) {
 // A save of the headers kept the edits made while it ran, on the same object,
 // over the values it saved.
 func TestN1PropsSaveKeepsLaterEditsOnSameObject(t *testing.T) {
+	t.Parallel()
 	for _, edit := range []string{"header", "change", "metadata", "inline"} {
 		t.Run(edit, func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -191,6 +193,7 @@ func TestN1PropsSaveKeepsLaterEditsOnSameObject(t *testing.T) {
 // A storage-class rewrite reloaded the details on show whatever object they
 // were, and the unsaved edits of the object went with them.
 func TestN1StorageClassRewriteKeepsDrafts(t *testing.T) {
+	t.Parallel()
 	for _, which := range []string{"other", "same"} {
 		t.Run(which, func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -227,6 +230,7 @@ func TestN1StorageClassRewriteKeepsDrafts(t *testing.T) {
 // The same for a draft of the Tags tab: a rewrite of the object keeps it, and
 // the tags read afresh become its base.
 func TestN1StorageClassRewriteKeepsTagDraft(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	started, release := holdRequests(t, h, isCopy)
 	h.chooseForHeaders("manifest.json")
@@ -256,6 +260,7 @@ func TestN1StorageClassRewriteKeepsTagDraft(t *testing.T) {
 // A rename that ended while another object was chosen took the selection to
 // the renamed object, and the other object's draft with it.
 func TestN1RenameKeepsOtherSelectionAndDraft(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	started, release := holdRequests(t, h, isCopy)
 	h.chooseForHeaders("manifest.json")
@@ -281,6 +286,7 @@ func TestN1RenameKeepsOtherSelectionAndDraft(t *testing.T) {
 // The renamed object is still chosen, under its new name, when nothing else
 // was chosen meanwhile.
 func TestN1RenameSelectsTheNewName(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.chooseForHeaders("manifest.json")
 	h.a.mg.ren = renameState{key: "manifest.json", name: "manifest-2.json"}
@@ -294,6 +300,7 @@ func TestN1RenameSelectsTheNewName(t *testing.T) {
 // Restoring or deleting a version of one object reset the details, the drafts
 // and the version selection of the object chosen while it ran.
 func TestN1VersionActionsKeepOtherObjectState(t *testing.T) {
+	t.Parallel()
 	for _, action := range []string{"restore", "delete"} {
 		t.Run(action, func(t *testing.T) {
 			h := newRawHarness(t, "light", true)
@@ -348,6 +355,7 @@ func TestN1VersionActionsKeepOtherObjectState(t *testing.T) {
 // rebaseItems keeps each kind of edit over a new base and drops what the new
 // base already holds.
 func TestN1RebaseItems(t *testing.T) {
+	t.Parallel()
 	items := []kvItem{
 		{key: "a", val: "1", baseVal: "1"},                  // unedited, still there: follows the base
 		{key: "b", val: "x", baseVal: "1", touched: true},   // changed, the base now holds it

@@ -3,6 +3,7 @@ package main
 import "testing"
 
 func TestRestoreFromArchiveDialog(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if !h.env.Srv.SetStorageClass(bkt, "README.txt", "GLACIER") {
 		t.Fatal("no README.txt in the demo bucket")

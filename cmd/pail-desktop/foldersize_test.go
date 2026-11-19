@@ -6,6 +6,7 @@ import (
 	"net/http"
 	"runtime"
 	"slices"
+	"strings"
 	"testing"
 
 	core "github.com/DejavuMoe/Pail/internal/app"
@@ -51,6 +52,7 @@ func (h *harness) sizeState(folder string) int {
 }
 
 func TestFolderSizesAreCalculatedOnRequest(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.seedSizes()
 	// Nothing is listed below a folder until asked: its Size shows a dash.
@@ -121,6 +123,7 @@ func TestFolderSizesAreCalculatedOnRequest(t *testing.T) {
 // commands must stay available after a size is known so it can be measured
 // again.
 func TestFolderSizeCanBeCalculatedAgain(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.seedSizes()
 	h.a.setSingle("fs/alpha/")
@@ -173,6 +176,7 @@ func TestFolderSizeCanBeCalculatedAgain(t *testing.T) {
 }
 
 func TestFolderSizesGoStaleWithChangesAboveAndBelow(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.seedSizes()
 	h.runCmd("foldersizes")
@@ -194,6 +198,7 @@ func TestFolderSizesGoStaleWithChangesAboveAndBelow(t *testing.T) {
 }
 
 func TestFolderSizeFailureIsShownAndCanBeRetried(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.seedSizes()
 	h.env.Srv.Inject(failListing("fs/beta/"))
@@ -216,6 +221,7 @@ func TestFolderSizeFailureIsShownAndCanBeRetried(t *testing.T) {
 }
 
 func TestTrayStatusFollowsTransfers(t *testing.T) {
+	t.Parallel()
 	if got := trayStatus(nil); got != "No transfers in progress" {
 		t.Fatalf("idle: %q", got)
 	}
@@ -229,7 +235,10 @@ func TestTrayStatusFollowsTransfers(t *testing.T) {
 	if got := trayStatus([]Task{{ID: "1", Kind: core.KindUpload, Status: core.StatusQueued}}); got != "1 transfer in progress" {
 		t.Fatalf("queued: %q", got)
 	}
-	if got := trayTitle(mygo.ProgressBar{State: mygo.ProgressNormal, Value: 0.07}); got != "  7%" {
+	if got := trayTitle(mygo.ProgressBar{State: mygo.ProgressNormal, Value: 0.07}); got != "  7%" {
+		t.Fatalf("title %q", got)
+	}
+	if got := trayTitle(mygo.ProgressBar{State: mygo.ProgressNormal, Value: 1}); got != "100%" {
 		t.Fatalf("title %q", got)
 	}
 	if trayTitle(mygo.ProgressBar{}) != "" {
@@ -237,7 +246,28 @@ func TestTrayStatusFollowsTransfers(t *testing.T) {
 	}
 }
 
+// The icon keeps one ID across launches (where the user put it, whether it
+// shows) and draws its title monospaced, so the macOS item keeps its width
+// whatever the digits are; the title is then padded with ordinary spaces.
+func TestTrayOptionsKeepTheIconsPlaceAndWidth(t *testing.T) {
+	t.Parallel()
+	o := trayOptions(nil, true, nil)
+	if o.ID != "pail" {
+		t.Errorf("the icon's ID is %q, want the released \"pail\"", o.ID)
+	}
+	if !o.MonospacedTitle {
+		t.Error("the title is not monospaced: the macOS item would change width")
+	}
+	for _, v := range []float64{0, 0.07, 0.42, 1} {
+		got := trayTitle(mygo.ProgressBar{State: mygo.ProgressNormal, Value: v})
+		if n := len([]rune(got)); n != 4 || strings.ContainsRune(got, ' ') {
+			t.Errorf("title %q for %v: want 4 characters padded with ordinary spaces", got, v)
+		}
+	}
+}
+
 func TestTrayGlyphIsATemplate(t *testing.T) {
+	t.Parallel()
 	img, err := png.Decode(bytes.NewReader(trayGlyph(32)))
 	if err != nil {
 		t.Fatal(err)
@@ -275,6 +305,7 @@ func TestTrayGlyphIsATemplate(t *testing.T) {
 }
 
 func TestToastsBecomeNotificationsWhileTheWindowIsHidden(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	var sent []string
 	shown := false
@@ -292,6 +323,7 @@ func TestToastsBecomeNotificationsWhileTheWindowIsHidden(t *testing.T) {
 }
 
 func TestTraySettingIsSavedAndApplied(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if !h.a.tray.on {
 		t.Fatal("the icon is off by default")
@@ -318,6 +350,7 @@ func TestTraySettingIsSavedAndApplied(t *testing.T) {
 }
 
 func TestCloseQuitsWhenIdleOnlyIfAsked(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if !h.a.closeHides() {
 		t.Fatal("closing hides to the tray by default")

@@ -11,6 +11,7 @@ import (
 // A save that gave up waiting for another Pail process shows the localized
 // sentence, not the English sentinel text.
 func TestHumanErrorConfigBusy(t *testing.T) {
+	t.Parallel()
 	err := fmt.Errorf("save account: %w", core.ErrConfigLocked)
 	if got, want := humanError(err), locales.TypesConfigBusy(); got != want {
 		t.Fatalf("humanError = %q, want %q", got, want)

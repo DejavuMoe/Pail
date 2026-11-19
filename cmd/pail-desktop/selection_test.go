@@ -24,6 +24,7 @@ func (h *harness) expectChosen(want ...string) {
 }
 
 func TestSelectAllState(t *testing.T) {
+	t.Parallel()
 	for _, tc := range []struct {
 		chosen, n int
 		want      checkState
@@ -39,6 +40,7 @@ func TestSelectAllState(t *testing.T) {
 // A row's box adds the row to the choice or takes it out, leaving the others;
 // a click elsewhere on a row still chooses it alone.
 func TestRowCheckBoxTogglesOneRow(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.mustClick("Select manifest.json")
@@ -60,6 +62,7 @@ func TestRowCheckBoxTogglesOneRow(t *testing.T) {
 
 // Shift-clicking a box chooses the rows from the one last clicked to it.
 func TestShiftClickOnABoxExtends(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("assets")
 	if err := h.tt.ClickWith(ui.Shift, "Select logs"); err != nil {
@@ -72,6 +75,7 @@ func TestShiftClickOnABoxExtends(t *testing.T) {
 // The header box chooses every row shown, or none once all are; the rows the
 // filter hides are not chosen.
 func TestSelectAllBox(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	n := len(h.a.rows)
 	h.mustClick("Select all")
@@ -109,6 +113,7 @@ func TestSelectAllBox(t *testing.T) {
 
 // Esc in the table clears the choice, but not while a row is renamed.
 func TestEscClearsTheChoice(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.mustClick("Select manifest.json")
@@ -133,6 +138,7 @@ func TestEscClearsTheChoice(t *testing.T) {
 // The selection bar shows for two or more rows: their count, the size of the
 // objects and the folders among them; Clear selection folds it away.
 func TestSelectionBar(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.mustNotHave("1 item selected")
@@ -160,6 +166,7 @@ func TestSelectionBar(t *testing.T) {
 
 // "⋯" in the selection bar opens the table's menu for the choice.
 func TestSelectionBarMoreMenu(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.mustClick("Select manifest.json")
@@ -174,6 +181,7 @@ func TestSelectionBarMoreMenu(t *testing.T) {
 // At the smallest window the bar fits beside the inspector: Clear selection,
 // its last button, ends inside it.
 func TestSelectionBarAtMinSize(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	sz := auditSize{"960x600", 960, 600}
 	h.resize(sz.w, sz.h)
@@ -219,6 +227,7 @@ func (h *harness) dragTo(x0, y0, x1, y1 float32) {
 
 // A drag down the check box column adds the rows it passes to the choice.
 func TestCheckColumnDragAdds(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	x, y0 := h.rowMid("assets")
@@ -234,6 +243,7 @@ func TestCheckColumnDragAdds(t *testing.T) {
 // A drag from the blank space below the rows draws a rectangle and chooses
 // the rows it reaches, in place of the choice; with Ctrl/Cmd, besides it.
 func TestBlankSpaceDragSelects(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("assets")
 	_, last := h.rowMid("README.txt")
@@ -273,6 +283,7 @@ func TestBlankSpaceDragSelects(t *testing.T) {
 // A press below the rows that does not move clears the choice, unless with
 // Ctrl/Cmd; one that moves less than the slop is still a click.
 func TestBlankSpaceClick(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.mustClick("Select manifest.json")
@@ -287,6 +298,7 @@ func TestBlankSpaceClick(t *testing.T) {
 
 // Esc gives up a drag: the choice goes back to what it was before the press.
 func TestEscGivesUpADrag(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	x, y0 := h.rowMid("assets")
@@ -308,6 +320,7 @@ func TestEscGivesUpADrag(t *testing.T) {
 // A press the system cancels commits nothing: no box toggles, no click in
 // blank space clears the choice, and a drag gives back the choice it found.
 func TestCanceledPressCommitsNothing(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	x, y := h.rowMid("assets")
@@ -340,6 +353,7 @@ func TestCanceledPressCommitsNothing(t *testing.T) {
 // Held below the list, a drag scrolls it and goes on choosing the rows that
 // come into view.
 func TestDragSelectScrolls(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openPrefix("logs/access/")
 	h.settle()

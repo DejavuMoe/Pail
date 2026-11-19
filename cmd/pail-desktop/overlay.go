@@ -190,9 +190,8 @@ func listSeparator(c *ui.Context) ui.Element {
 // keeps mygo's timing, pausing and stacking (the newest three). Call it once
 // per frame, after the dialogs, so toasts float above them.
 //
-// mygo (v0.6.0) offers no such hook for tooltips: Element.Tooltip draws its own
-// radius (5) and shadow. The tooltip takes the Inverse colours of the theme
-// (applyTheme); its radius and shadow stay mygo's.
+// Tooltips are not drawn here: they are mygo's own (Element.Tooltip), with its
+// delay, place, radius and shadow, in the theme's Inverse colours (applyTheme).
 func toastViewport(c *ui.Context) {
 	k := tk(c)
 	winW, _ := c.Size()

@@ -169,18 +169,57 @@ func main() {
 	}
 
 	a.close()
-	if stopDemo != nil {
-		stopDemo() // stops the service, the server and removes the temp dir
-		return
+	// The single instance lock is the process's until it exits (mygo
+	// v0.10): a launch meanwhile waits, without a word, for this one to
+	// end. So the work after the window has gone is bounded: past
+	// quitDeadline the process exits all the same and the launch goes on.
+	if !finishWithin(quitDeadline, func() {
+		if stopDemo != nil {
+			stopDemo() // stops the service, the server and removes the temp dir
+			return
+		}
+		// Unfinished transfers are offered again, paused, at the next start.
+		if err := svc.SaveTransfers(); err != nil {
+			log.Printf("save transfers: %v", err)
+		}
+		ctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		defer cancel()
+		if err := svc.Shutdown(ctx); err != nil {
+			log.Printf("shutdown: %v", err)
+		}
+	}) {
+		log.Printf("shutdown did not finish within %v: exiting so that a new Pail can start", quitDeadline)
 	}
-	// Unfinished transfers are offered again, paused, at the next start.
-	if err := svc.SaveTransfers(); err != nil {
-		log.Printf("save transfers: %v", err)
-	}
-	ctx, cancel := context.WithTimeout(context.Background(), 5*time.Second)
-	defer cancel()
-	if err := svc.Shutdown(ctx); err != nil {
-		log.Printf("shutdown: %v", err)
+}
+
+const (
+	// shutdownTimeout is how long running transfers have to stop cleanly
+	// (abort their multipart uploads, remove their temporary files) as
+	// Pail quits.
+	shutdownTimeout = 5 * time.Second
+	// quitDeadline bounds all the work after the window has gone: the
+	// shutdown above, and what does not heed its context (a keychain or
+	// vault call that hangs). Until the process exits, a second launch
+	// waits for its single instance lock.
+	quitDeadline = shutdownTimeout + 3*time.Second
+)
+
+// finishWithin runs work and waits for it at most d, reporting whether it
+// finished. Work that is still running when it returns goes on until the
+// process exits.
+func finishWithin(d time.Duration, work func()) bool {
+	done := make(chan struct{})
+	go func() {
+		defer close(done)
+		work()
+	}()
+	t := time.NewTimer(d)
+	defer t.Stop()
+	select {
+	case <-done:
+		return true
+	case <-t.C:
+		return false
 	}
 }
 

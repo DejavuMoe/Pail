@@ -228,6 +228,7 @@ func dialogCases() []auditCase {
 // TestDialogFootersReachableAtMinSize opens every dialog in the smallest
 // window: each footer button must be fully inside it.
 func TestDialogFootersReachableAtMinSize(t *testing.T) {
+	t.Parallel()
 	sz := auditSizes[1]
 	for _, c := range dialogCases() {
 		t.Run(c.name, func(t *testing.T) {
@@ -242,6 +243,7 @@ func TestDialogFootersReachableAtMinSize(t *testing.T) {
 
 // TestUXAudit renders the whole app for visual review.
 func TestUXAudit(t *testing.T) {
+	t.Parallel()
 	if os.Getenv("PAIL_UI_SNAPSHOT_DIR") == "" {
 		t.Skip("set PAIL_UI_SNAPSHOT_DIR to write the audit PNGs")
 	}

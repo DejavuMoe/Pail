@@ -10,6 +10,7 @@ import (
 // The background poll of the invalidations showed the spinner and disabled
 // Refresh every time it ran; only a refresh the user asks for shows loading.
 func TestF13SilentPollShowsNoLoading(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.tool = "cloudfront"
 	cf := &h.a.tl.cf
@@ -48,6 +49,7 @@ func TestF13SilentPollShowsNoLoading(t *testing.T) {
 
 // A failed background poll stays silent, but one the user joined reports.
 func TestF13SilentPollErrorReportsOnlyWhenAsked(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.tool = "cloudfront"
 	cf := &h.a.tl.cf

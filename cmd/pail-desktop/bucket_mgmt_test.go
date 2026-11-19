@@ -29,6 +29,7 @@ func (h *harness) hasBucket(name string) bool { return slices.Contains(h.env.Srv
 // ---- create ----------------------------------------------------------------------------------
 
 func TestBucketNameRules(t *testing.T) {
+	t.Parallel()
 	for name, want := range map[string]bool{
 		"acme-data": true, "a1b": true, "my.bucket.name": true, "123": true,
 		"ab": false, "": false, "Acme": false, "-acme": false, "acme-": false, "acme_data": false,
@@ -42,6 +43,7 @@ func TestBucketNameRules(t *testing.T) {
 }
 
 func TestCreateBucketValidatesLiveAndSelectsTheNewOne(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.mustClick("New bucket")
 	h.mustHave("Create bucket", "Name", "Region", "Object Lock", "Create", "Cancel")
@@ -71,6 +73,7 @@ func TestCreateBucketValidatesLiveAndSelectsTheNewOne(t *testing.T) {
 }
 
 func TestCreateBucketWithObjectLockAndDuplicateName(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.run("newbucket", "test")
 	h.settle()
@@ -101,6 +104,7 @@ func TestCreateBucketWithObjectLockAndDuplicateName(t *testing.T) {
 // ---- delete ----------------------------------------------------------------------------------
 
 func TestDeleteBucketNeedsTheNameTyped(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.env.Srv.CreateBucket("acme-tiny", false)
 	h.a.loadBuckets(false)
@@ -148,6 +152,7 @@ func TestDeleteBucketNeedsTheNameTyped(t *testing.T) {
 }
 
 func TestDeleteBucketNotEmptyOffersEmptying(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.openDeleteBucket("acme-website")
 	h.settle()
@@ -190,6 +195,7 @@ func (h *harness) countObjects(bucket string) int {
 // ---- empty -----------------------------------------------------------------------------------
 
 func TestEmptyBucketCountsFirstAndOffersVersions(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.openEmptyBucket("acme-media-archive")
 	h.waitFor("counted", func() bool { return h.a.mg.eb.state == delReady })
@@ -220,6 +226,7 @@ func TestEmptyBucketCountsFirstAndOffersVersions(t *testing.T) {
 }
 
 func TestEmptyBucketWithoutCheckboxKeepsVersions(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.openEmptyBucket(demoVersioned)
 	h.waitFor("counted", func() bool { return h.a.mg.eb.state == delReady })
@@ -237,6 +244,7 @@ func TestEmptyBucketWithoutCheckboxKeepsVersions(t *testing.T) {
 // ---- settings --------------------------------------------------------------------------------
 
 func TestBucketSettingsVersioningForm(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.run("bucketsettings", "test")
 	h.settle()
@@ -269,6 +277,7 @@ func TestBucketSettingsVersioningForm(t *testing.T) {
 }
 
 func TestBucketSettingsPolicyJSON(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.run("bucketsettings", "test")
 	h.settle()
@@ -320,6 +329,7 @@ func TestBucketSettingsPolicyJSON(t *testing.T) {
 }
 
 func TestBucketSettingsUnsupportedAndDenied(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.SetUnsupported("cors")
 	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
@@ -344,6 +354,7 @@ func TestBucketSettingsUnsupportedAndDenied(t *testing.T) {
 }
 
 func TestBucketSettingsSimpleForms(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openBucketSettings(bkt)
 	h.settle()
@@ -392,6 +403,7 @@ func TestBucketSettingsSimpleForms(t *testing.T) {
 }
 
 func TestBucketSettingsCloseAndEscape(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openBucketSettings(bkt)
 	h.settle()
@@ -411,6 +423,7 @@ func TestBucketSettingsCloseAndEscape(t *testing.T) {
 // ---- account form ----------------------------------------------------------------------------
 
 func TestNewAccountStartsWithPathStyle(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openAccountForm(false)
 	h.settle()

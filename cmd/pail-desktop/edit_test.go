@@ -55,6 +55,7 @@ func (h *harness) waitToast(text string) {
 // ---- headers and metadata -----------------------------------------------------------------
 
 func TestEditHeadersAndMetadataOfOneObject(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	before, _ := h.env.Srv.Object(bkt, "manifest.json")
 	h.mustClick("manifest.json")
@@ -108,6 +109,7 @@ func TestEditHeadersAndMetadataOfOneObject(t *testing.T) {
 }
 
 func TestRevertDropsTheEdits(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.mustClick("Headers")
@@ -128,6 +130,7 @@ func TestRevertDropsTheEdits(t *testing.T) {
 }
 
 func TestVersionedBucketSaveNote(t *testing.T) {
+	t.Parallel()
 	h := newRawHarness(t, "light", true)
 	h.a.openBucket(demoVersioned)
 	h.settle()
@@ -154,6 +157,7 @@ func TestVersionedBucketSaveNote(t *testing.T) {
 }
 
 func TestMultiSelectEditShowsMixedAndSaysHowMany(t *testing.T) {
+	t.Parallel()
 
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
@@ -197,6 +201,7 @@ func TestMultiSelectEditShowsMixedAndSaysHowMany(t *testing.T) {
 }
 
 func TestMultiSelectClearsAMixedField(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
 	h.tt.ClickWith(ui.Shift, "manifest.json")
@@ -212,6 +217,7 @@ func TestMultiSelectClearsAMixedField(t *testing.T) {
 }
 
 func TestReadOnlyObjectShowsReason(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	req, _ := http.NewRequest(http.MethodPut, h.env.Srv.URL+"/"+bkt+"/secret.bin", strings.NewReader("sealed"))
 	req.Header.Set("x-amz-server-side-encryption-customer-algorithm", "AES256")
@@ -238,6 +244,7 @@ func TestReadOnlyObjectShowsReason(t *testing.T) {
 // ---- tags -----------------------------------------------------------------------------------------
 
 func TestEditTags(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.mustClick("Tags")
@@ -268,6 +275,7 @@ func TestEditTags(t *testing.T) {
 }
 
 func TestTagsDraftDoesNotFollowBucket(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	const otherBucket = "acme-backups"
 	h.env.Srv.PutObject(otherBucket, "manifest.json", []byte("backup"), "application/json", nil)
@@ -308,6 +316,7 @@ func TestTagsDraftDoesNotFollowBucket(t *testing.T) {
 }
 
 func TestTagsDraftClearsWhenSelectionChanges(t *testing.T) {
+	t.Parallel()
 	for _, mode := range []string{"none", "folder", "multiple"} {
 		t.Run(mode, func(t *testing.T) {
 			h := newHarness(t, "light")
@@ -337,6 +346,7 @@ func TestTagsDraftClearsWhenSelectionChanges(t *testing.T) {
 }
 
 func TestTagsLimitAndDuplicateKey(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.mustClick("Tags")
@@ -363,6 +373,7 @@ func TestTagsLimitAndDuplicateKey(t *testing.T) {
 }
 
 func TestTagsUnsupportedStillShowsNote(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.SetUnsupported("tagging")
 	h.mustClick("manifest.json")

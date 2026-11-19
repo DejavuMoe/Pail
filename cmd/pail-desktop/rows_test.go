@@ -22,6 +22,7 @@ func FuzzCompareNames(f *testing.F) {
 }
 
 func TestRebuildRowsPreservesNamesAndStableTies(t *testing.T) {
+	t.Parallel()
 	a := &app{sort: ui.SortOrder{Column: "name"}, raw: []Entry{
 		{Key: "z", Name: "Zoo", Size: 9},
 		{Key: "k1", Name: "K", Size: 2},

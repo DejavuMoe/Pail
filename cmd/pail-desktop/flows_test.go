@@ -49,6 +49,7 @@ func writeTemp(t *testing.T, name string, data []byte) string {
 // ---- inspector ---------------------------------------------------------------------------------
 
 func TestInspectorHeadersAndOverview(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.mustHave("Overview", "ETag", "Key", "URI", "URL", "application/json")
@@ -62,6 +63,7 @@ func TestInspectorHeadersAndOverview(t *testing.T) {
 }
 
 func TestTagsUnsupportedShowsMutedNote(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.SetUnsupported("tagging")
 	h.mustClick("manifest.json")
@@ -70,6 +72,7 @@ func TestTagsUnsupportedShowsMutedNote(t *testing.T) {
 }
 
 func TestPreviewTextAndImage(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.mustClick("Preview")
@@ -98,6 +101,7 @@ func TestPreviewTextAndImage(t *testing.T) {
 // ---- upload and download ------------------------------------------------------------------------
 
 func TestUploadCreatesTaskAndObject(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	data := bytes.Repeat([]byte("Pail"), 4096)
 	p := writeTemp(t, "hello.bin", data)
@@ -119,6 +123,7 @@ func TestUploadCreatesTaskAndObject(t *testing.T) {
 }
 
 func TestUploadFolderKeepsStructure(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	dir := filepath.Join(t.TempDir(), "photos")
 	if err := os.MkdirAll(filepath.Join(dir, "sub"), 0o700); err != nil {
@@ -134,6 +139,7 @@ func TestUploadFolderKeepsStructure(t *testing.T) {
 }
 
 func TestUploadFailureCanBeRetried(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
 		if r.Method == http.MethodPut && strings.HasSuffix(r.URL.Path, "/boom.txt") {
@@ -161,6 +167,7 @@ func TestUploadFailureCanBeRetried(t *testing.T) {
 }
 
 func TestCancelButtonStopsRunningTransfer(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
 		if r.Method == http.MethodPut && strings.HasSuffix(r.URL.Path, "/slow.txt") {
@@ -189,6 +196,7 @@ func TestCancelButtonStopsRunningTransfer(t *testing.T) {
 }
 
 func TestTaskbarProgressOfActiveTasks(t *testing.T) {
+	t.Parallel()
 	bar := func(v float64) mygo.ProgressBar { return mygo.ProgressBar{State: mygo.ProgressNormal, Value: v} }
 	for _, c := range []struct {
 		name  string
@@ -216,6 +224,7 @@ func TestTaskbarProgressOfActiveTasks(t *testing.T) {
 }
 
 func TestTaskbarProgressWithoutRendering(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	var shown []mygo.ProgressBar
 	h.a.progressSet = func(p mygo.ProgressBar) { shown = append(shown, p) }
@@ -229,6 +238,7 @@ func TestTaskbarProgressWithoutRendering(t *testing.T) {
 }
 
 func TestTaskbarProgressFollowsATransfer(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	var shown []mygo.ProgressBar
 	h.a.progressSet = func(p mygo.ProgressBar) { shown = append(shown, p) }
@@ -259,6 +269,7 @@ func TestTaskbarProgressFollowsATransfer(t *testing.T) {
 }
 
 func TestDownloadWritesFileAndOffersShowInFolder(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	dest := t.TempDir()
 	st := h.env.Svc.Settings()
@@ -291,6 +302,7 @@ func TestDownloadWritesFileAndOffersShowInFolder(t *testing.T) {
 }
 
 func TestDownloadAsksForFolderWithoutDefault(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	dest := t.TempDir()
 	asked := make(chan bool, 1)
@@ -309,6 +321,7 @@ func TestDownloadAsksForFolderWithoutDefault(t *testing.T) {
 // ---- delete -------------------------------------------------------------------------------------------
 
 func TestDeleteOpensConfirmAndCancelCloses(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.tt.Key(0, ui.KeyDelete)
@@ -328,6 +341,7 @@ func TestDeleteOpensConfirmAndCancelCloses(t *testing.T) {
 }
 
 func TestDeleteConfirmedRemovesObject(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.tt.Key(0, ui.KeyDelete)
@@ -347,6 +361,7 @@ func TestDeleteConfirmedRemovesObject(t *testing.T) {
 }
 
 func TestDeleteFolderCountsFirst(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	// Hold the count back so the "Counting…" state is observable.
 	release := make(chan struct{})
@@ -387,6 +402,7 @@ func TestDeleteFolderCountsFirst(t *testing.T) {
 }
 
 func TestDeleteWithFailedCountStaysPossible(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
 		if r.Method == http.MethodGet && strings.Contains(r.URL.RawQuery, "list-type=2") && strings.Contains(r.URL.RawQuery, "reports") {
@@ -409,6 +425,7 @@ func TestDeleteWithFailedCountStaysPossible(t *testing.T) {
 // ---- new folder -----------------------------------------------------------------------------------------
 
 func TestNewFolderValidationAndCreate(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	if h.a.folderError("assets") == "" || h.a.folderError("a/b") == "" || h.a.folderError("") == "" {
 		t.Error("invalid folder names accepted")
@@ -437,6 +454,7 @@ func TestNewFolderValidationAndCreate(t *testing.T) {
 // user cancels, reopens and types again, the old answer may not close the new
 // dialog or write its error into it.
 func TestNewFolderStaleAnswerKeepsReopenedDialog(t *testing.T) {
+	t.Parallel()
 	for _, fail := range []bool{false, true} {
 		name := "success"
 		if fail {
@@ -504,6 +522,7 @@ func TestNewFolderStaleAnswerKeepsReopenedDialog(t *testing.T) {
 // ---- copying ----------------------------------------------------------------------------------------------
 
 func TestCopyKeyURIURLAndSigned(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	for _, c := range []struct{ id, want string }{

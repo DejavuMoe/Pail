@@ -22,6 +22,7 @@ func near(got color.Color, want ui.Color, tol int) bool {
 // A chosen row keeps the Selection fill when the window goes inactive: the
 // dark text on it stays readable.
 func TestChosenRowKeepsSelectionInactive(t *testing.T) {
+	t.Parallel()
 	for _, theme := range []string{"light", "dark"} {
 		t.Run(theme, func(t *testing.T) {
 			h := newHarness(t, theme)
@@ -45,6 +46,7 @@ func TestChosenRowKeepsSelectionInactive(t *testing.T) {
 // ControlOff, the on track Accent, a checked box is Accent filled and an
 // unchecked one is not (DESIGN.md "States").
 func TestSwitchAndCheckboxStatesAreDistinct(t *testing.T) {
+	t.Parallel()
 	for _, dark := range []bool{false, true} {
 		theme := "light"
 		if dark {

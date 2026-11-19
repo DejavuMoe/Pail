@@ -40,6 +40,7 @@ func (h *harness) runCmd(id string) {
 }
 
 func TestCDNInspectorRowCopyAndOpen(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	opened := h.opener()
 	h.mustClick("manifest.json")
@@ -65,6 +66,7 @@ func TestCDNInspectorRowCopyAndOpen(t *testing.T) {
 }
 
 func TestCDNOpenFailureIsReported(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openURL = func(string) error { return fmt.Errorf("no browser") }
 	h.setCDN(testCDN)
@@ -74,6 +76,7 @@ func TestCDNOpenFailureIsReported(t *testing.T) {
 }
 
 func TestCDNCommandsFollowTheSelection(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	opened := h.opener()
 	h.setCDN(testCDN)
@@ -128,6 +131,7 @@ func TestCDNCommandsFollowTheSelection(t *testing.T) {
 }
 
 func TestCDNContextMenuAndBucketFilter(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	menuOf := func() []string {
 		t.Helper()
@@ -170,6 +174,7 @@ func TestCDNContextMenuAndBucketFilter(t *testing.T) {
 }
 
 func TestCDNContextMenuChoose(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.setCDN("https://{bucket}.cdn.example.com/{key}")
 	h.rightClickChoose("manifest.json", "Copy link", "Copy CDN URL")
@@ -179,6 +184,7 @@ func TestCDNContextMenuChoose(t *testing.T) {
 }
 
 func TestSignedURLDialogCopiesTheCDNURLWhenConfigured(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.mustClick("manifest.json")
 	h.a.run("copysigned", "test")
@@ -202,6 +208,7 @@ func TestSignedURLDialogCopiesTheCDNURLWhenConfigured(t *testing.T) {
 }
 
 func TestUploadToastOffersTheCDNLinkForOneFile(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.setCDN(testCDN)
 	p := writeTemp(t, "hello cdn+1.txt", []byte("hi"))
@@ -214,6 +221,7 @@ func TestUploadToastOffersTheCDNLinkForOneFile(t *testing.T) {
 }
 
 func TestUploadToastHasNoCDNActionForSeveralFilesOrNoCDN(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	a := writeTemp(t, "one.txt", []byte("1"))
 	b := writeTemp(t, "two.txt", []byte("2"))
@@ -238,6 +246,7 @@ func TestUploadToastHasNoCDNActionForSeveralFilesOrNoCDN(t *testing.T) {
 // ---- account dialog ----------------------------------------------------------------------------
 
 func TestAccountDialogCDNFieldsSaveAndFill(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openAccountForm(true)
 	h.settle()
@@ -270,6 +279,7 @@ func TestAccountDialogCDNFieldsSaveAndFill(t *testing.T) {
 }
 
 func TestAccountDialogCDNValidation(t *testing.T) {
+	t.Parallel()
 	h := newHarness(t, "light")
 	h.a.openAccountForm(true)
 	h.settle()
