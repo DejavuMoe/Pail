@@ -483,7 +483,6 @@ func bkCopyAttributesEqual(a, b *s3.HeadObjectOutput) bool {
 		aws.ToString(a.ContentLanguage) == aws.ToString(b.ContentLanguage) &&
 		aws.ToString(a.CacheControl) == aws.ToString(b.CacheControl) &&
 		aws.ToString(a.ExpiresString) == aws.ToString(b.ExpiresString) &&
-		aws.ToTime(a.Expires).Equal(aws.ToTime(b.Expires)) &&
 		aws.ToString(a.WebsiteRedirectLocation) == aws.ToString(b.WebsiteRedirectLocation) &&
 		bkCopyClass(string(a.StorageClass)) == bkCopyClass(string(b.StorageClass))
 }

@@ -11,7 +11,6 @@ import (
 	"fmt"
 	"hash"
 	"io"
-	"io/ioutil"
 	"sort"
 	"strings"
 	"testing"
@@ -283,7 +282,7 @@ func testZip64(t testing.TB, size int64) *rleBuffer {
 			t.Fatal("read:", err)
 		}
 	}
-	gotEnd, err := ioutil.ReadAll(rc)
+	gotEnd, err := io.ReadAll(rc)
 	if err != nil {
 		t.Fatal("read end:", err)
 	}

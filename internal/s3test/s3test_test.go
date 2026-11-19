@@ -244,7 +244,7 @@ func TestPutGetHeadMetadata(t *testing.T) {
 		aws.ToString(h.ContentDisposition) != "attachment" || aws.ToString(h.ContentLanguage) != "en" ||
 		h.Metadata["color"] != "blue" || h.Metadata["owner"] != "me" || h.StorageClass != types.StorageClassStandardIa ||
 		h.ServerSideEncryption != types.ServerSideEncryptionAwsKms || aws.ToString(h.SSEKMSKeyId) != "key-1" ||
-		h.Expires == nil || !h.Expires.Equal(exp) || aws.ToInt32(h.TagCount) != 2 {
+		storage.HeadExpires(h) == nil || !storage.HeadExpires(h).Equal(exp) || aws.ToInt32(h.TagCount) != 2 {
 		t.Fatalf("head: %+v", h)
 	}
 	if h.LastModified == nil || h.LastModified.Nanosecond() != 0 {

@@ -35,6 +35,7 @@ func TestLargeCopyRangesMetadataAndAbort(t *testing.T) {
 					w.Header().Set("Content-Length", fmt.Sprint(size))
 					w.Header().Set("Content-Type", "text/plain")
 					w.Header().Set("X-Amz-Meta-Custom", "preserved")
+					w.Header().Set("Expires", "Wed, 21 Oct 2037 07:28:00 GMT")
 					w.Header().Set("ETag", `"source-etag"`)
 					w.Header().Set("X-Amz-Version-Id", "pinned-version")
 				case r.Method == "GET" && q.Has("tagging"):
@@ -43,7 +44,7 @@ func TestLargeCopyRangesMetadataAndAbort(t *testing.T) {
 					}
 					fmt.Fprint(w, `<Tagging><TagSet><Tag><Key>hello</Key><Value>world +</Value></Tag></TagSet></Tagging>`)
 				case r.Method == "POST" && q.Has("uploads"):
-					if r.Header.Get("X-Amz-Meta-Custom") != "preserved" || r.Header.Get("Content-Type") != "text/plain" {
+					if r.Header.Get("X-Amz-Meta-Custom") != "preserved" || r.Header.Get("Content-Type") != "text/plain" || r.Header.Get("Expires") != "Wed, 21 Oct 2037 07:28:00 GMT" {
 						t.Error("source metadata was not copied")
 					}
 					if r.Header.Get("X-Amz-Tagging") != "hello=world+%2B" {

@@ -7,12 +7,14 @@ import (
 	"net/http"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 	"github.com/aws/aws-sdk-go-v2/service/s3/types"
 
 	"github.com/DejavuMoe/Pail/internal/s3test"
+	"github.com/DejavuMoe/Pail/internal/storage"
 )
 
 // crossEnv is newS3Env plus a second account on a second in-memory server.
@@ -31,9 +33,14 @@ func TestCopyBetweenAccounts(t *testing.T) {
 	e, srv2, acc2 := crossEnv(t)
 	e.srv.CreateBucket("src", false)
 	srv2.CreateBucket("dst", false)
-	e.srv.PutObject("src", "a/one.txt", []byte("first"), "text/plain", map[string]string{"owner": "me"})
 	e.srv.PutObject("src", "a/sub/two.bin", bytes.Repeat([]byte("x"), 7<<20), "application/octet-stream", nil)
 	ctx := context.Background()
+	expires := time.Date(2037, 10, 21, 7, 28, 0, 0, time.UTC)
+	if _, err := e.sdk().PutObject(ctx, &s3.PutObjectInput{Bucket: aws.String("src"), Key: aws.String("a/one.txt"),
+		Body: strings.NewReader("first"), ContentType: aws.String("text/plain"), Metadata: map[string]string{"owner": "me"},
+		Expires: &expires}); err != nil {
+		t.Fatal(err)
+	}
 	if _, err := e.sdk().PutObjectTagging(ctx, &s3.PutObjectTaggingInput{Bucket: aws.String("src"), Key: aws.String("a/one.txt"),
 		Tagging: &types.Tagging{TagSet: []types.Tag{{Key: aws.String("team"), Value: aws.String("x y")}}}}); err != nil {
 		t.Fatal(err)
@@ -58,7 +65,8 @@ func TestCopyBetweenAccounts(t *testing.T) {
 		t.Fatal(err)
 	}
 	h, err := c2.S3().HeadObject(ctx, &s3.HeadObjectInput{Bucket: aws.String("dst"), Key: aws.String("in/a/one.txt")})
-	if err != nil || aws.ToString(h.ContentType) != "text/plain" || h.Metadata["owner"] != "me" {
+	if err != nil || aws.ToString(h.ContentType) != "text/plain" || h.Metadata["owner"] != "me" ||
+		storage.HeadExpires(h) == nil || !storage.HeadExpires(h).Equal(expires) {
 		t.Fatalf("attributes not copied: %+v %v", h, err)
 	}
 	tags, err := c2.S3().GetObjectTagging(ctx, &s3.GetObjectTaggingInput{Bucket: aws.String("dst"), Key: aws.String("in/a/one.txt")})

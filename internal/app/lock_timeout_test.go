@@ -69,17 +69,17 @@ func startLockHolder(t *testing.T, test, dir string) {
 
 // callWithin runs f and fails the test if it has not returned after limit:
 // before the fix the lock wait had no bound at all.
-func callWithin(t *testing.T, limit time.Duration, f func() error) (error, time.Duration) {
+func callWithin(t *testing.T, limit time.Duration, f func() error) (time.Duration, error) {
 	t.Helper()
 	start := time.Now()
 	ch := make(chan error, 1)
 	go func() { ch <- f() }()
 	select {
 	case err := <-ch:
-		return err, time.Since(start)
+		return time.Since(start), err
 	case <-time.After(limit):
 		t.Fatalf("still waiting for the lock after %v", limit)
-		return nil, 0
+		return 0, nil
 	}
 }
 
@@ -95,7 +95,7 @@ func TestLockAccountWriteGivesUpWhileAnotherProcessHoldsIt(t *testing.T) {
 	shortConfigLockTimeout(t, 400*time.Millisecond)
 	startLockHolder(t, test, dir)
 
-	err, took := callWithin(t, 10*time.Second, func() error {
+	took, err := callWithin(t, 10*time.Second, func() error {
 		_, err := s.SaveAccount(Account{Name: "X", Credentials: CredAnonymous}, nil)
 		return err
 	})
@@ -113,7 +113,7 @@ func TestLockAccountWriteGivesUpWhileAnotherProcessHoldsIt(t *testing.T) {
 	shortConfigLockTimeout(t, time.Minute)
 	ctx, cancel := context.WithTimeout(context.Background(), 200*time.Millisecond)
 	defer cancel()
-	err, _ = callWithin(t, 10*time.Second, func() error {
+	_, err = callWithin(t, 10*time.Second, func() error {
 		return s.SetSecretBackend(ctx, SecretBackendVault, testPW)
 	})
 	if !errors.Is(err, context.DeadlineExceeded) {
@@ -122,7 +122,7 @@ func TestLockAccountWriteGivesUpWhileAnotherProcessHoldsIt(t *testing.T) {
 
 	// Once the other process lets go, writes succeed again.
 	os.WriteFile(filepath.Join(dir, "release"), nil, 0o600)
-	err, _ = callWithin(t, 30*time.Second, func() error {
+	_, err = callWithin(t, 30*time.Second, func() error {
 		_, err := s.SaveAccount(Account{Name: "X", Credentials: CredAnonymous}, nil)
 		return err
 	})
@@ -150,7 +150,7 @@ func TestLockVaultWriteGivesUpWhileAnotherProcessHoldsIt(t *testing.T) {
 	shortConfigLockTimeout(t, 400*time.Millisecond)
 	startLockHolder(t, test, dir)
 
-	err, took := callWithin(t, 10*time.Second, func() error { return v.Set("k2", "v2") })
+	took, err := callWithin(t, 10*time.Second, func() error { return v.Set("k2", "v2") })
 	if !errors.Is(err, ErrConfigLocked) || !IsKind(err, ErrConflict) {
 		t.Fatalf("want ErrConfigLocked (Conflict), got %v", err)
 	}
@@ -162,7 +162,7 @@ func TestLockVaultWriteGivesUpWhileAnotherProcessHoldsIt(t *testing.T) {
 		t.Fatalf("read while another process holds the lock: %q, %v", got, err)
 	}
 	os.WriteFile(filepath.Join(dir, "release"), nil, 0o600)
-	err, _ = callWithin(t, 30*time.Second, func() error { return v.Set("k2", "v2") })
+	_, err = callWithin(t, 30*time.Second, func() error { return v.Set("k2", "v2") })
 	if err != nil {
 		t.Fatal(err)
 	}

@@ -7,7 +7,6 @@ package zip
 import (
 	"bytes"
 	"io"
-	"io/ioutil"
 	"math/rand"
 	"os"
 	"testing"
@@ -167,7 +166,7 @@ func testReadFile(t *testing.T, f *File, wt *WriteTest) {
 	if err != nil {
 		t.Fatal("opening:", err)
 	}
-	b, err := ioutil.ReadAll(rc)
+	b, err := io.ReadAll(rc)
 	if err != nil {
 		t.Fatal("reading:", err)
 	}

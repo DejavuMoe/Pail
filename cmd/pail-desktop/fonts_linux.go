@@ -31,8 +31,13 @@ var interMedium []byte
 //go:embed fonts/Inter-SemiBold.ttf
 var interSemiBold []byte
 
+// interLicense is the licence the fonts come under. Nothing reads it: the
+// embed keeps the text next to the fonts and fails the build if it is gone.
+//
 //go:embed fonts/OFL.txt
 var interLicense string
+
+var _ = interLicense
 
 // uiFont is the theme's font family.
 const uiFont = "Inter"

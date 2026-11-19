@@ -140,7 +140,7 @@ func TestDetectDecode(t *testing.T) {
 	} {
 		// The hints that make the magic bytes count.
 		hints := decodeHints{Compression: "gzip"}
-		if tc.data != nil && len(tc.data) > 0 && tc.data[0] == 'P' {
+		if len(tc.data) > 0 && tc.data[0] == 'P' {
 			hints = decodeHints{Compression: "aes-zip"}
 		}
 		got, err := detectDecode(bytes.NewReader(tc.data), int64(len(tc.data)), tc.in, hints)

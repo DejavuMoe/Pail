@@ -39,7 +39,6 @@ const maxRenameAttempts = 999
 // A 412 at commit means the destination changed after the decision; callers
 // report it as a failed item (for rename they may resolve once more).
 func resolveRemoteConflict(ctx context.Context, c *storage.Client, bucket, key string, policy ConflictPolicy, srcSize int64, srcModified time.Time) (conflictDecision, error) {
-	const op = "ResolveConflict"
 	if policy == ConflictOverwrite {
 		return conflictDecision{Key: key}, nil
 	}

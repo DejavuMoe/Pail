@@ -117,7 +117,7 @@ func (c *Client) copyMultipart(ctx context.Context, in *s3.CopyObjectInput, size
 		create.ContentEncoding = head.ContentEncoding
 		create.ContentLanguage = head.ContentLanguage
 		create.ContentType = head.ContentType
-		create.Expires = head.Expires
+		create.Expires = HeadExpires(head)
 	}
 	var sourceTags *s3.GetObjectTaggingInput
 	var tagString string

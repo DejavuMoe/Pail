@@ -53,7 +53,7 @@ func (s *Service) bkStreamCopy(ctx context.Context, src, dst *storage.Client, p 
 		ContentDisposition: head.ContentDisposition,
 		ContentLanguage:    head.ContentLanguage,
 		CacheControl:       head.CacheControl,
-		Expires:            head.Expires,
+		Expires:            storage.HeadExpires(head),
 		Metadata:           head.Metadata,
 		StorageClass:       bkCopyClass(o.StorageClass),
 	}

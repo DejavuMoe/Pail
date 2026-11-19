@@ -493,15 +493,15 @@ func TestRewriteIgnoredByServerFails(t *testing.T) {
 	srv := s3test.New()
 	t.Cleanup(srv.Close)
 	target, _ := url.Parse(srv.URL)
-	proxy := httputil.NewSingleHostReverseProxy(target)
-	direct := proxy.Director
-	proxy.Director = func(r *http.Request) {
-		direct(r)
-		if r.Header.Get("x-amz-copy-source") != "" {
-			r.Header.Del("x-amz-storage-class")
-			r.Header.Del("x-amz-server-side-encryption")
+	// Keep the client's Host header: it is part of the SigV4 signature.
+	proxy := &httputil.ReverseProxy{Rewrite: func(pr *httputil.ProxyRequest) {
+		pr.SetURL(target)
+		pr.Out.Host = pr.In.Host
+		if pr.Out.Header.Get("x-amz-copy-source") != "" {
+			pr.Out.Header.Del("x-amz-storage-class")
+			pr.Out.Header.Del("x-amz-server-side-encryption")
 		}
-	}
+	}}
 	ps := httptest.NewServer(proxy)
 	t.Cleanup(ps.Close)
 	s := newTestService(t, nil)

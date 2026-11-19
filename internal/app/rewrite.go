@@ -121,8 +121,6 @@ func bkSelfCopy(bucket, key string, h *s3.HeadObjectOutput, class string) *s3.Co
 		if t, err := http.ParseTime(*h.ExpiresString); err == nil {
 			in.Expires = aws.Time(t)
 		}
-	} else if h.Expires != nil {
-		in.Expires = h.Expires
 	}
 	if class != "" && class != string(types.StorageClassStandard) {
 		in.StorageClass = types.StorageClass(class)

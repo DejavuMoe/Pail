@@ -96,16 +96,16 @@ func TestMultipartListFolderPrefixIgnoredByServer(t *testing.T) {
 	srv := s3test.New()
 	t.Cleanup(srv.Close)
 	target, _ := url.Parse(srv.URL)
-	proxy := httputil.NewSingleHostReverseProxy(target)
-	direct := proxy.Director
-	proxy.Director = func(r *http.Request) {
-		direct(r)
-		q := r.URL.Query()
+	// Keep the client's Host header: it is part of the SigV4 signature.
+	proxy := &httputil.ReverseProxy{Rewrite: func(pr *httputil.ProxyRequest) {
+		pr.SetURL(target)
+		pr.Out.Host = pr.In.Host
+		q := pr.Out.URL.Query()
 		if q.Has("uploads") && q.Get("prefix") != "" {
 			q.Set("prefix", q.Get("prefix")+"\x00no-such-key")
-			r.URL.RawQuery = q.Encode()
+			pr.Out.URL.RawQuery = q.Encode()
 		}
-	}
+	}}
 	ps := httptest.NewServer(proxy)
 	t.Cleanup(ps.Close)
 	s := newTestService(t, nil)

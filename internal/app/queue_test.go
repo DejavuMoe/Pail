@@ -531,8 +531,7 @@ func TestCancelGroup(t *testing.T) {
 func TestRetryItemsOnlyFailedAndUnprocessed(t *testing.T) {
 	s := newTestService(t, nil)
 	var retried atomic.Value
-	var spec taskSpec
-	spec = taskSpec{Kind: KindOther, Group: "G", Title: "Delete 4", Work: func(_ context.Context, r *run) error {
+	spec := taskSpec{Kind: KindOther, Group: "G", Title: "Delete 4", Work: func(_ context.Context, r *run) error {
 		r.Item(ItemResult{Key: "ok", Status: ItemSucceeded})
 		r.Item(ItemResult{Key: "bad", Status: ItemFailed, Err: "denied"})
 		r.Item(ItemResult{Key: "unk", Status: ItemUnknown})

@@ -204,10 +204,8 @@ func (s *Service) Head(ctx context.Context, loc Location, key, versionID string)
 	for k, v := range h.Metadata {
 		info.Metadata[strings.ToLower(k)] = v
 	}
+	// The raw header: the SDK only derives its parsed Expires from this value.
 	expires := aws.ToString(h.ExpiresString)
-	if expires == "" && h.Expires != nil {
-		expires = h.Expires.UTC().Format(time.RFC1123)
-	}
 	info.Headers = []Header{
 		{headerNames[0], aws.ToString(h.ContentType)},
 		{headerNames[1], aws.ToString(h.ContentEncoding)},
