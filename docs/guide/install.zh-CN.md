@@ -19,27 +19,27 @@ Pail 为每个系统提供一个压缩包，里面有桌面应用和命令行工
 
 ### 压缩包里有什么
 
-每个压缩包解压后是一个同名文件夹。以 0.6.3 版的 Linux x64 为例：
+每个压缩包解压后是一个同名文件夹。以 0.6.4 版的 Linux x64 为例：
 
 ```text
-Pail-v0.6.3-linux-amd64/
-  pail-desktop-v0.6.3-linux-amd64    桌面应用
-  pail-v0.6.3-linux-amd64            命令行工具
+Pail-v0.6.4-linux-amd64/
+  pail-desktop-v0.6.4-linux-amd64    桌面应用
+  pail-v0.6.4-linux-amd64            命令行工具
   pail.desktop                       启动器条目
   pail.png                           图标
   LICENSE
 ```
 
-Windows 的压缩包里是 `pail-desktop-v0.6.3-windows-amd64.exe`、`pail-v0.6.3-windows-amd64.exe` 和许可证。macOS 的压缩包里是 `Pail.app`、命令行工具 `pail-v0.6.3-darwin-arm64`（或 `-darwin-amd64`）和许可证。
+Windows 的压缩包里是 `pail-desktop-v0.6.4-windows-amd64.exe`、`pail-v0.6.4-windows-amd64.exe` 和许可证。macOS 的压缩包里是 `Pail.app`、命令行工具 `pail-v0.6.4-darwin-arm64`（或 `-darwin-amd64`）和许可证。
 
 ## 校验下载
 
 每个版本都有一个 `SHA256SUMS` 文件，每个压缩包占一行。计算压缩包的 SHA-256，与对应的那一行比较：
 
 ```sh
-sha256sum Pail-v0.6.3-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.6.3-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.6.3-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.6.4-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.6.4-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.6.4-windows-amd64.zip         # Windows PowerShell
 ```
 
 在 Linux 上，把 `SHA256SUMS` 和压缩包放在同一个文件夹里，`sha256sum` 可以直接比较，一致时输出 `OK`：
@@ -52,16 +52,16 @@ sha256sum --check --ignore-missing SHA256SUMS
 
 ## 可执行文件的名字
 
-可执行文件的名字带版本号和平台，例如 `pail-v0.6.3-windows-amd64.exe`。本指南把它们写作 `pail-desktop` 和 `pail`。可以给文件改名、创建别名，或者直接使用完整文件名。
+可执行文件的名字带版本号和平台，例如 `pail-v0.6.4-windows-amd64.exe`。本指南把它们写作 `pail-desktop` 和 `pail`。可以给文件改名、创建别名，或者直接使用完整文件名。
 
 ```sh
-mv pail-desktop-v0.6.3-linux-amd64 pail-desktop
-mv pail-v0.6.3-linux-amd64 pail
+mv pail-desktop-v0.6.4-linux-amd64 pail-desktop
+mv pail-v0.6.4-linux-amd64 pail
 ```
 
 ```powershell
-Rename-Item pail-desktop-v0.6.3-windows-amd64.exe pail-desktop.exe
-Rename-Item pail-v0.6.3-windows-amd64.exe pail.exe
+Rename-Item pail-desktop-v0.6.4-windows-amd64.exe pail-desktop.exe
+Rename-Item pail-v0.6.4-windows-amd64.exe pail.exe
 ```
 
 想在任意终端里使用 `pail`，就把它放进 `PATH` 中的某个文件夹。
@@ -82,13 +82,13 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 
 ### Linux
 
-解压后启动 `pail-desktop-v0.6.3-linux-amd64`。托盘图标需要 `libayatana-appindicator3`；没有它时，关闭窗口就会退出 Pail。
+解压后启动 `pail-desktop-v0.6.4-linux-amd64`。托盘图标需要 `libayatana-appindicator3`；没有它时，关闭窗口就会退出 Pail。
 
-`pail.desktop` 按名字启动 `pail-desktop-v0.6.3-linux-amd64`，不带文件夹路径，图标名是 `pail`。要让 Pail 出现在应用列表里，把可执行文件复制到 `PATH` 中的文件夹，再把条目和图标（256 × 256 像素）复制到主目录下的常用位置：
+`pail.desktop` 按名字启动 `pail-desktop-v0.6.4-linux-amd64`，不带文件夹路径，图标名是 `pail`。要让 Pail 出现在应用列表里，把可执行文件复制到 `PATH` 中的文件夹，再把条目和图标（256 × 256 像素）复制到主目录下的常用位置：
 
 ```sh
 mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/256x256/apps
-cp pail-desktop-v0.6.3-linux-amd64 pail-v0.6.3-linux-amd64 ~/.local/bin/
+cp pail-desktop-v0.6.4-linux-amd64 pail-v0.6.4-linux-amd64 ~/.local/bin/
 cp pail.desktop ~/.local/share/applications/
 cp pail.png ~/.local/share/icons/hicolor/256x256/apps/
 ```

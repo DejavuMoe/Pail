@@ -19,27 +19,27 @@ macOS 11 or later is needed. There are no 32-bit builds.
 
 ### What the archive holds
 
-Each archive unpacks into a folder of the same name. For version 0.6.3 on Linux x64:
+Each archive unpacks into a folder of the same name. For version 0.6.4 on Linux x64:
 
 ```text
-Pail-v0.6.3-linux-amd64/
-  pail-desktop-v0.6.3-linux-amd64    desktop app
-  pail-v0.6.3-linux-amd64            command-line tool
+Pail-v0.6.4-linux-amd64/
+  pail-desktop-v0.6.4-linux-amd64    desktop app
+  pail-v0.6.4-linux-amd64            command-line tool
   pail.desktop                       launcher entry
   pail.png                           icon
   LICENSE
 ```
 
-The Windows archives hold `pail-desktop-v0.6.3-windows-amd64.exe`, `pail-v0.6.3-windows-amd64.exe` and the license. The macOS archives hold `Pail.app`, the command-line tool `pail-v0.6.3-darwin-arm64` (or `-darwin-amd64`) and the license.
+The Windows archives hold `pail-desktop-v0.6.4-windows-amd64.exe`, `pail-v0.6.4-windows-amd64.exe` and the license. The macOS archives hold `Pail.app`, the command-line tool `pail-v0.6.4-darwin-arm64` (or `-darwin-amd64`) and the license.
 
 ## Check the download
 
 Each release has a `SHA256SUMS` file with one line per archive. Compute the archive's SHA-256 hash and compare it with its line:
 
 ```sh
-sha256sum Pail-v0.6.3-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.6.3-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.6.3-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.6.4-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.6.4-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.6.4-windows-amd64.zip         # Windows PowerShell
 ```
 
 On Linux, with `SHA256SUMS` in the same folder as the archive, `sha256sum` can do the comparison and print `OK`:
@@ -52,16 +52,16 @@ sha256sum --check --ignore-missing SHA256SUMS
 
 ## Executable names
 
-The executables are named with the version and the platform, for example `pail-v0.6.3-windows-amd64.exe`. This guide calls them `pail-desktop` and `pail`. Rename them, create aliases, or run the full file names.
+The executables are named with the version and the platform, for example `pail-v0.6.4-windows-amd64.exe`. This guide calls them `pail-desktop` and `pail`. Rename them, create aliases, or run the full file names.
 
 ```sh
-mv pail-desktop-v0.6.3-linux-amd64 pail-desktop
-mv pail-v0.6.3-linux-amd64 pail
+mv pail-desktop-v0.6.4-linux-amd64 pail-desktop
+mv pail-v0.6.4-linux-amd64 pail
 ```
 
 ```powershell
-Rename-Item pail-desktop-v0.6.3-windows-amd64.exe pail-desktop.exe
-Rename-Item pail-v0.6.3-windows-amd64.exe pail.exe
+Rename-Item pail-desktop-v0.6.4-windows-amd64.exe pail-desktop.exe
+Rename-Item pail-v0.6.4-windows-amd64.exe pail.exe
 ```
 
 To use `pail` from any terminal, put it in a folder that is on your `PATH`.
@@ -82,13 +82,13 @@ The executables are not signed. If SmartScreen says "Windows protected your PC",
 
 ### Linux
 
-Unpack the archive and start `pail-desktop-v0.6.3-linux-amd64`. The tray icon needs `libayatana-appindicator3`; without it, closing the window quits Pail.
+Unpack the archive and start `pail-desktop-v0.6.4-linux-amd64`. The tray icon needs `libayatana-appindicator3`; without it, closing the window quits Pail.
 
-The `pail.desktop` entry starts `pail-desktop-v0.6.3-linux-amd64` by name, without a folder, and uses the icon name `pail`. To list Pail among your applications, copy the executables to a folder on your `PATH`, and the entry and the icon (256 × 256 pixels) to the usual places in your home folder:
+The `pail.desktop` entry starts `pail-desktop-v0.6.4-linux-amd64` by name, without a folder, and uses the icon name `pail`. To list Pail among your applications, copy the executables to a folder on your `PATH`, and the entry and the icon (256 × 256 pixels) to the usual places in your home folder:
 
 ```sh
 mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/256x256/apps
-cp pail-desktop-v0.6.3-linux-amd64 pail-v0.6.3-linux-amd64 ~/.local/bin/
+cp pail-desktop-v0.6.4-linux-amd64 pail-v0.6.4-linux-amd64 ~/.local/bin/
 cp pail.desktop ~/.local/share/applications/
 cp pail.png ~/.local/share/icons/hicolor/256x256/apps/
 ```

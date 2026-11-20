@@ -4,7 +4,7 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
-## [Unreleased]
+## [0.6.4] - 2026-11-21
 
 ### Changed
 
@@ -23,6 +23,7 @@ All notable changes to this project are documented in this file. The format foll
 ### Fixed
 
 - Pointing at **Show deleted** or **Flat** while it is unavailable now shows why, for example that the bucket has no versions.
+- The usage line of `pail restore` said a prefix takes an optional `-r`. It now lists the three forms: a key with `--version-id`, a key with `--deleted`, and a prefix with `--deleted -r`.
 
 ### Removed
 
