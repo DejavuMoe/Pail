@@ -72,7 +72,6 @@ func DecryptAES256ZIP(ctx context.Context, dst io.Writer, src io.ReaderAt, size 
 		return "", 0, fmt.Errorf("inconsistent ZIP member headers")
 	}
 	f.SetPassword(password)
-	f.DeferAuth = false
 	// The first pass authenticates the entire ciphertext before Open returns.
 	rc, err := f.Open()
 	if err != nil {

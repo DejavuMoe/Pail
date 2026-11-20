@@ -12,7 +12,6 @@ import (
 	"hash"
 	"hash/crc32"
 	"io"
-	"os"
 )
 
 var (
@@ -22,14 +21,8 @@ var (
 )
 
 type Reader struct {
-	r       io.ReaderAt
 	File    []*File
 	Comment string
-}
-
-type ReadCloser struct {
-	f *os.File
-	Reader
 }
 
 type File struct {
@@ -41,26 +34,6 @@ type File struct {
 
 func (f *File) hasDataDescriptor() bool {
 	return f.Flags&0x8 != 0
-}
-
-// OpenReader will open the Zip file specified by name and return a ReadCloser.
-func OpenReader(name string) (*ReadCloser, error) {
-	f, err := os.Open(name)
-	if err != nil {
-		return nil, err
-	}
-	fi, err := f.Stat()
-	if err != nil {
-		f.Close()
-		return nil, err
-	}
-	r := new(ReadCloser)
-	if err := r.init(f, fi.Size()); err != nil {
-		f.Close()
-		return nil, err
-	}
-	r.f = f
-	return r, nil
 }
 
 // NewReader returns a new Reader reading from r, which is assumed to
@@ -81,7 +54,6 @@ func (z *Reader) init(r io.ReaderAt, size int64) error {
 	if end.directoryRecords > uint64(size)/fileHeaderLen {
 		return fmt.Errorf("archive/zip: TOC declares impossible %d files in %d byte zip", end.directoryRecords, size)
 	}
-	z.r = r
 	z.File = make([]*File, 0, end.directoryRecords)
 	z.Comment = end.comment
 	rs := io.NewSectionReader(r, 0, size)
@@ -113,11 +85,6 @@ func (z *Reader) init(r io.ReaderAt, size int64) error {
 	return nil
 }
 
-// Close closes the Zip file, rendering it unusable for I/O.
-func (rc *ReadCloser) Close() error {
-	return rc.f.Close()
-}
-
 // DataOffset returns the offset of the file's possibly-compressed
 // data, relative to the beginning of the zip file.
 //
@@ -145,23 +112,22 @@ func (f *File) Open() (rc io.ReadCloser, err error) {
 	rr := io.NewSectionReader(f.zipr, f.headerOffset+bodyOffset, size)
 	// check for encryption
 	if f.IsEncrypted() {
-
+		// Legacy ZipCrypto (no WinZip AES extra field) is not supported.
 		if f.ae == 0 {
-			if r, err = ZipCryptoDecryptor(rr, f.password()); err != nil {
-				return
-			}
-		} else if r, err = newDecryptionReader(rr, f); err != nil {
+			err = ErrAlgorithm
+			return
+		}
+		if r, err = newDecryptionReader(rr, f); err != nil {
 			return
 		}
 	} else {
 		r = rr
 	}
-	dcomp := decompressor(f.Method)
-	if dcomp == nil {
+	rc, ok := decompressor(f.Method, r)
+	if !ok {
 		err = ErrAlgorithm
 		return
 	}
-	rc = dcomp(r)
 	// If AE-2, skip CRC and possible dataDescriptor
 	if f.isAE2() {
 		return

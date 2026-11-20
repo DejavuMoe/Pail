@@ -9,41 +9,30 @@ import (
 	"crypto/aes"
 	"crypto/cipher"
 	"crypto/hmac"
+	"crypto/pbkdf2"
 	"crypto/rand"
 	"crypto/sha1"
 	"crypto/subtle"
 	"errors"
 	"hash"
 	"io"
-
-	"golang.org/x/crypto/pbkdf2"
 )
 
+// EncryptionMethod selects the WinZip AES key size. Only AES-256 is supported.
 type EncryptionMethod int
 
 const (
-	StandardEncryption EncryptionMethod = 1
-	AES128Encryption   EncryptionMethod = 2
-	AES192Encryption   EncryptionMethod = 3
-	AES256Encryption   EncryptionMethod = 4
+	AES256Encryption EncryptionMethod = 4
 
-	// AES key lengths
-	aes128 = 16
-	aes192 = 24
-	aes256 = 32
+	aes256Strength = 3  // WinZip AES strength byte for AES-256
+	aes256         = 32 // AES-256 key length
 )
 
 func aesKeyLen(strength byte) int {
-	switch strength {
-	case 1:
-		return aes128
-	case 2:
-		return aes192
-	case 3:
+	if strength == aes256Strength {
 		return aes256
-	default:
-		return 0
 	}
+	return 0
 }
 
 // Encryption/Decryption Errors
@@ -147,25 +136,14 @@ func xorBytes(dst, a, b []byte) int {
 	return n
 }
 
-// newAuthReader returns either a buffered or streaming authentication reader.
-// Buffered authentication is recommended. Streaming authentication is only
-// recommended if: 1. you buffer the data yourself and wait for authentication
-// before streaming to another source such as the network, or 2. you just don't
-// care about authenticating unknown ciphertext before use :).
-func newAuthReader(akey []byte, data, adata io.Reader, streaming bool) io.Reader {
-	ar := authReader{
+// newAuthReader returns a streaming authentication reader. It reports
+// ErrAuthentication at EOF, so newDecryptionReader drains it before any
+// plaintext is produced.
+func newAuthReader(akey []byte, data, adata io.Reader) io.Reader {
+	return &authReader{
 		data:  data,
 		adata: adata,
 		mac:   hmac.New(sha1.New, akey),
-		err:   nil,
-		auth:  false,
-	}
-	if streaming {
-		return &ar
-	}
-	return &bufferedAuthReader{
-		ar,
-		new(bytes.Buffer),
 	}
 }
 
@@ -175,7 +153,6 @@ type authReader struct {
 	adata io.Reader // the authentication code to read
 	mac   hash.Hash // hmac hash
 	err   error
-	auth  bool
 }
 
 func (a *authReader) Read(p []byte) (int, error) {
@@ -214,57 +191,11 @@ func (a *authReader) Read(p []byte) (int, error) {
 	return n, a.err
 }
 
-// buffered authentication
-type bufferedAuthReader struct {
-	authReader
-	buf *bytes.Buffer // buffer to store data to authenticate
-}
-
-func (a *bufferedAuthReader) Read(b []byte) (int, error) {
-	// check for sticky error
-	if a.err != nil {
-		return 0, a.err
-	}
-	// make sure we have auth'ed before we send any data
-	if !a.auth {
-		_, err := io.Copy(a.buf, a.data)
-		if err != nil {
-			a.err = err
-			return 0, a.err
-		}
-		ab := new(bytes.Buffer)
-		nn, err := io.Copy(ab, a.adata)
-		if err != nil {
-			a.err = err
-			return 0, a.err
-		} else if nn != 10 {
-			a.err = ErrDecryption
-			return 0, a.err
-		}
-		_, err = a.mac.Write(a.buf.Bytes())
-		if err != nil {
-			a.err = err
-			return 0, a.err
-		}
-		if !a.checkAuthentication(ab.Bytes()) {
-			a.err = ErrAuthentication
-			return 0, a.err
-		}
-	}
-	// so we've authenticated the data, now just pass it on.
-	n, err := a.buf.Read(b)
-	if err != nil {
-		a.err = err
-	}
-	return n, a.err
-}
-
 func (a *authReader) checkAuthentication(authcode []byte) bool {
 	expectedAuthCode := a.mac.Sum(nil)
 	// Truncate at the first 10 bytes
 	expectedAuthCode = expectedAuthCode[:10]
-	a.auth = subtle.ConstantTimeCompare(expectedAuthCode, authcode) > 0
-	return a.auth
+	return subtle.ConstantTimeCompare(expectedAuthCode, authcode) > 0
 }
 
 func checkPasswordVerification(pwvv, pwv []byte) bool {
@@ -272,13 +203,16 @@ func checkPasswordVerification(pwvv, pwv []byte) bool {
 	return b
 }
 
-func generateKeys(password, salt []byte, keySize int) (encKey, authKey, pwv []byte) {
+func generateKeys(password, salt []byte, keySize int) (encKey, authKey, pwv []byte, err error) {
 	totalSize := (keySize * 2) + 2 // enc + auth + pv sizes
-	key := pbkdf2.Key(password, salt, 1000, totalSize, sha1.New)
+	key, err := pbkdf2.Key(sha1.New, string(password), salt, 1000, totalSize)
+	if err != nil {
+		return nil, nil, nil, err
+	}
 	encKey = key[:keySize]
 	authKey = key[keySize : keySize*2]
 	pwv = key[keySize*2:]
-	return
+	return encKey, authKey, pwv, nil
 }
 
 // newDecryptionReader returns an authenticated, decryption reader
@@ -299,7 +233,10 @@ func newDecryptionReader(r *io.SectionReader, f *File) (io.Reader, error) {
 	if f.password == nil {
 		return nil, ErrPassword
 	}
-	decKey, authKey, pwv := generateKeys(f.password(), salt, keyLen)
+	decKey, authKey, pwv, err := generateKeys(f.password(), salt, keyLen)
+	if err != nil {
+		return nil, err
+	}
 	if !checkPasswordVerification(pwv, pwvv) {
 		return nil, ErrPassword
 	}
@@ -314,18 +251,13 @@ func newDecryptionReader(r *io.SectionReader, f *File) (io.Reader, error) {
 	authcode := io.NewSectionReader(r, authOff, 10)
 	// Pail: consume and authenticate the complete immutable ciphertext first.
 	// Then rewind the same SectionReader and decrypt without buffering the file.
-	// Never set DeferAuth from the public rules API.
-	ar := newAuthReader(authKey, data, authcode, true)
-	if !f.DeferAuth {
-		if _, err := io.Copy(io.Discard, ar); err != nil {
-			return nil, err
-		}
-		if _, err := data.Seek(0, io.SeekStart); err != nil {
-			return nil, err
-		}
-		ar = data
+	if _, err := io.Copy(io.Discard, newAuthReader(authKey, data, authcode)); err != nil {
+		return nil, err
 	}
-	dr := decryptStream(decKey, ar)
+	if _, err := data.Seek(0, io.SeekStart); err != nil {
+		return nil, err
+	}
+	dr := decryptStream(decKey, data)
 	if dr == nil {
 		return nil, ErrDecryption
 	}
@@ -405,7 +337,10 @@ func newEncryptionWriter(w io.Writer, password passwordFn, fw *fileWriter, aesst
 	if err != nil {
 		return nil, errors.New("zip: unable to generate random salt")
 	}
-	ekey, akey, pwv := generateKeys(password(), salt[:], keysize)
+	ekey, akey, pwv, err := generateKeys(password(), salt[:], keysize)
+	if err != nil {
+		return nil, err
+	}
 	fw.hmac = hmac.New(sha1.New, akey)
 	aw := &authWriter{
 		hmac: fw.hmac,
@@ -449,16 +384,12 @@ func (h *FileHeader) writeWinZipExtra() {
 	h.Extra = append(h.Extra, buf[:]...)
 }
 
-// SetEncryptionMethod sets the encryption method.
+// SetEncryptionMethod sets the encryption method. Only AES256Encryption is
+// accepted; CreateHeader rejects a password-protected header without it.
 func (h *FileHeader) SetEncryptionMethod(enc EncryptionMethod) {
-	h.encryption = enc
-	switch enc {
-	case AES128Encryption:
-		h.aesStrength = 1
-	case AES192Encryption:
-		h.aesStrength = 2
-	case AES256Encryption:
-		h.aesStrength = 3
+	h.aesStrength = 0
+	if enc == AES256Encryption {
+		h.aesStrength = aes256Strength
 	}
 }
 
@@ -479,18 +410,3 @@ func (h *FileHeader) SetPassword(password string) {
 // PasswordFn is a function that returns the password
 // as a byte slice
 type passwordFn func() []byte
-
-// Encrypt adds a file to the zip file using the provided name.
-// It returns a Writer to which the file contents should be written. File
-// contents will be encrypted with AES-256 using the given password. The
-// file's contents must be written to the io.Writer before the next call
-// to Create, CreateHeader, or Close.
-func (w *Writer) Encrypt(name string, password string, enc EncryptionMethod) (io.Writer, error) {
-	fh := &FileHeader{
-		Name:   name,
-		Method: Deflate,
-	}
-	fh.SetPassword(password)
-	fh.SetEncryptionMethod(enc)
-	return w.CreateHeader(fh)
-}

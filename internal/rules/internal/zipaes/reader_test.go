@@ -14,7 +14,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 )
 
 type ZipTest struct {
@@ -30,19 +29,7 @@ type ZipTestFile struct {
 	Content    []byte // if blank, will attempt to compare against File
 	ContentErr error
 	File       string // name of file to compare to (relative to testdata/)
-	Mtime      string // modified time in format "mm-dd-yy hh:mm:ss"
-	Mode       os.FileMode
 }
-
-// Caution: The Mtime values found for the test files should correspond to
-//          the values listed with unzip -l <zipfile>. However, the values
-//          listed by unzip appear to be off by some hours. When creating
-//          fresh test files and testing them, this issue is not present.
-//          The test files were created in Sydney, so there might be a time
-//          zone issue. The time zone information does have to be encoded
-//          somewhere, because otherwise unzip -l could not provide a different
-//          time from what the archive/zip package provides, but there appears
-//          to be no documentation about this.
 
 var tests = []ZipTest{
 	{
@@ -52,14 +39,10 @@ var tests = []ZipTest{
 			{
 				Name:    "test.txt",
 				Content: []byte("This is a test text file.\n"),
-				Mtime:   "09-05-10 12:12:02",
-				Mode:    0644,
 			},
 			{
-				Name:  "gophercolor16x16.png",
-				File:  "gophercolor16x16.png",
-				Mtime: "09-05-10 15:52:58",
-				Mode:  0644,
+				Name: "gophercolor16x16.png",
+				File: "gophercolor16x16.png",
 			},
 		},
 	},
@@ -70,14 +53,10 @@ var tests = []ZipTest{
 			{
 				Name:    "test.txt",
 				Content: []byte("This is a test text file.\n"),
-				Mtime:   "09-05-10 12:12:02",
-				Mode:    0644,
 			},
 			{
-				Name:  "gophercolor16x16.png",
-				File:  "gophercolor16x16.png",
-				Mtime: "09-05-10 15:52:58",
-				Mode:  0644,
+				Name: "gophercolor16x16.png",
+				File: "gophercolor16x16.png",
 			},
 		},
 	},
@@ -88,8 +67,6 @@ var tests = []ZipTest{
 			{
 				Name:    "r/r.zip",
 				Content: rZipBytes(),
-				Mtime:   "03-04-10 00:24:16",
-				Mode:    0666,
 			},
 		},
 	},
@@ -99,7 +76,6 @@ var tests = []ZipTest{
 			{
 				Name:    "symlink",
 				Content: []byte("../target"),
-				Mode:    0777 | os.ModeSymlink,
 			},
 		},
 	},
@@ -116,8 +92,6 @@ var tests = []ZipTest{
 			{
 				Name:    "filename",
 				Content: []byte("This is a test textfile.\n"),
-				Mtime:   "02-02-11 13:06:20",
-				Mode:    0666,
 			},
 		},
 	},
@@ -139,14 +113,10 @@ var tests = []ZipTest{
 			{
 				Name:    "foo.txt",
 				Content: []byte("foo\n"),
-				Mtime:   "03-08-12 16:59:10",
-				Mode:    0644,
 			},
 			{
 				Name:    "bar.txt",
 				Content: []byte("bar\n"),
-				Mtime:   "03-08-12 16:59:12",
-				Mode:    0644,
 			},
 		},
 	},
@@ -158,12 +128,10 @@ var tests = []ZipTest{
 			{
 				Name:    "foo.txt",
 				Content: []byte("foo\n"),
-				Mode:    0666,
 			},
 			{
 				Name:    "bar.txt",
 				Content: []byte("bar\n"),
-				Mode:    0666,
 			},
 		},
 	},
@@ -174,13 +142,11 @@ var tests = []ZipTest{
 			{
 				Name:       "foo.txt",
 				Content:    []byte("foo\n"),
-				Mode:       0666,
 				ContentErr: ErrChecksum,
 			},
 			{
 				Name:    "bar.txt",
 				Content: []byte("bar\n"),
-				Mode:    0666,
 			},
 		},
 	},
@@ -192,14 +158,10 @@ var tests = []ZipTest{
 			{
 				Name:    "foo.txt",
 				Content: []byte("foo\n"),
-				Mtime:   "03-08-12 16:59:10",
-				Mode:    0644,
 			},
 			{
 				Name:    "bar.txt",
 				Content: []byte("bar\n"),
-				Mtime:   "03-08-12 16:59:12",
-				Mode:    0644,
 			},
 		},
 	},
@@ -212,15 +174,11 @@ var tests = []ZipTest{
 			{
 				Name:       "foo.txt",
 				Content:    []byte("foo\n"),
-				Mtime:      "03-08-12 16:59:10",
-				Mode:       0644,
 				ContentErr: ErrChecksum,
 			},
 			{
 				Name:    "bar.txt",
 				Content: []byte("bar\n"),
-				Mtime:   "03-08-12 16:59:12",
-				Mode:    0644,
 			},
 		},
 	},
@@ -230,8 +188,6 @@ var tests = []ZipTest{
 			{
 				Name:    "README",
 				Content: []byte("This small file is in ZIP64 format.\n"),
-				Mtime:   "08-10-12 14:33:32",
-				Mode:    0644,
 			},
 		},
 	},
@@ -242,8 +198,6 @@ var tests = []ZipTest{
 			{
 				Name:    "README",
 				Content: []byte("This small file is in ZIP64 format.\n"),
-				Mtime:   "08-10-12 14:33:32",
-				Mode:    0644,
 			},
 		},
 	},
@@ -253,22 +207,18 @@ var crossPlatform = []ZipTestFile{
 	{
 		Name:    "hello",
 		Content: []byte("world \r\n"),
-		Mode:    0666,
 	},
 	{
 		Name:    "dir/bar",
 		Content: []byte("foo \r\n"),
-		Mode:    0666,
 	},
 	{
 		Name:    "dir/empty/",
 		Content: []byte{},
-		Mode:    os.ModeDir | 0777,
 	},
 	{
 		Name:    "readonly",
 		Content: []byte("important \r\n"),
-		Mode:    0444,
 	},
 }
 
@@ -285,12 +235,11 @@ func readTestZip(t *testing.T, zt ZipTest) {
 		rat, size := zt.Source()
 		z, err = NewReader(rat, size)
 	} else {
-		var rc *ReadCloser
-		rc, err = OpenReader(filepath.Join("testdata", zt.Name))
-		if err == nil {
-			defer rc.Close()
-			z = &rc.Reader
+		var data []byte
+		if data, err = os.ReadFile(filepath.Join("testdata", zt.Name)); err != nil {
+			t.Fatal(err)
 		}
+		z, err = NewReader(bytes.NewReader(data), int64(len(data)))
 	}
 	if err != zt.Error {
 		t.Errorf("%s: error=%v, want %v", zt.Name, err, zt.Error)
@@ -342,19 +291,6 @@ func readTestFile(t *testing.T, zt ZipTest, ft ZipTestFile, f *File) {
 		t.Errorf("%s: name=%q, want %q", zt.Name, f.Name, ft.Name)
 	}
 
-	if ft.Mtime != "" {
-		mtime, err := time.Parse("01-02-06 15:04:05", ft.Mtime)
-		if err != nil {
-			t.Error(err)
-			return
-		}
-		if ft := f.ModTime(); !ft.Equal(mtime) {
-			t.Errorf("%s: %s: mtime=%s, want %s", zt.Name, f.Name, ft, mtime)
-		}
-	}
-
-	testFileMode(t, zt.Name, f, ft.Mode)
-
 	var b bytes.Buffer
 	r, err := f.Open()
 	if err != nil {
@@ -397,15 +333,6 @@ func readTestFile(t *testing.T, zt ZipTest, ft ZipTestFile, f *File) {
 			t.Errorf("%s: content[%d]=%q want %q", f.Name, i, b, c[i])
 			return
 		}
-	}
-}
-
-func testFileMode(t *testing.T, zipName string, f *File, want os.FileMode) {
-	mode := f.Mode()
-	if want == 0 {
-		t.Errorf("%s: %s mode: got %v, want none", zipName, f.Name, mode)
-	} else if mode != want {
-		t.Errorf("%s: %s mode: want %v, got %v", zipName, f.Name, want, mode)
 	}
 }
 

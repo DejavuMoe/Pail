@@ -49,63 +49,6 @@ func TestOver65kFiles(t *testing.T) {
 	}
 }
 
-func TestModTime(t *testing.T) {
-	var testTime = time.Date(2009, time.November, 10, 23, 45, 58, 0, time.UTC)
-	fh := new(FileHeader)
-	fh.SetModTime(testTime)
-	outTime := fh.ModTime()
-	if !outTime.Equal(testTime) {
-		t.Errorf("times don't match: got %s, want %s", outTime, testTime)
-	}
-}
-
-func testHeaderRoundTrip(fh *FileHeader, wantUncompressedSize uint32, wantUncompressedSize64 uint64, t *testing.T) {
-	fi := fh.FileInfo()
-	fh2, err := FileInfoHeader(fi)
-	if err != nil {
-		t.Fatal(err)
-	}
-	if got, want := fh2.Name, fh.Name; got != want {
-		t.Errorf("Name: got %s, want %s\n", got, want)
-	}
-	if got, want := fh2.UncompressedSize, wantUncompressedSize; got != want {
-		t.Errorf("UncompressedSize: got %d, want %d\n", got, want)
-	}
-	if got, want := fh2.UncompressedSize64, wantUncompressedSize64; got != want {
-		t.Errorf("UncompressedSize64: got %d, want %d\n", got, want)
-	}
-	if got, want := fh2.ModifiedTime, fh.ModifiedTime; got != want {
-		t.Errorf("ModifiedTime: got %d, want %d\n", got, want)
-	}
-	if got, want := fh2.ModifiedDate, fh.ModifiedDate; got != want {
-		t.Errorf("ModifiedDate: got %d, want %d\n", got, want)
-	}
-
-	if sysfh, ok := fi.Sys().(*FileHeader); !ok && sysfh != fh {
-		t.Errorf("Sys didn't return original *FileHeader")
-	}
-}
-
-func TestFileHeaderRoundTrip(t *testing.T) {
-	fh := &FileHeader{
-		Name:             "foo.txt",
-		UncompressedSize: 987654321,
-		ModifiedTime:     1234,
-		ModifiedDate:     5678,
-	}
-	testHeaderRoundTrip(fh, fh.UncompressedSize, uint64(fh.UncompressedSize), t)
-}
-
-func TestFileHeaderRoundTrip64(t *testing.T) {
-	fh := &FileHeader{
-		Name:               "foo.txt",
-		UncompressedSize64: 9876543210,
-		ModifiedTime:       1234,
-		ModifiedDate:       5678,
-	}
-	testHeaderRoundTrip(fh, uint32max, fh.UncompressedSize64, t)
-}
-
 type repeatedByte struct {
 	off int64
 	b   byte

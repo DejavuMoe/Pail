@@ -14,7 +14,6 @@ import (
 )
 
 // TODO(adg): support zip file comments
-// TODO(adg): support specifying deflate level
 
 // Writer implements a zip file writer.
 type Writer struct {
@@ -42,23 +41,6 @@ func (w *Writer) RegisterCompressor(method uint16, comp Compressor) {
 		w.compressors = make(map[uint16]Compressor)
 	}
 	w.compressors[method] = comp
-}
-
-// SetOffset sets the offset of the beginning of the zip data within the
-// underlying writer. It should be used when the zip data is appended to an
-// existing file, such as a binary executable.
-// It must be called before any data is written.
-func (w *Writer) SetOffset(n int64) {
-	if w.cw.count != 0 {
-		panic("zip: SetOffset called after data was written")
-	}
-	w.cw.count = n
-}
-
-// Flush flushes any buffered data to the underlying writer.
-// Calling Flush is not normally necessary; calling Close is sufficient.
-func (w *Writer) Flush() error {
-	return w.cw.w.(*bufio.Writer).Flush()
 }
 
 // Close finishes writing the zip file by writing the central directory.
@@ -187,27 +169,12 @@ func (w *Writer) Close() error {
 	return w.cw.w.(*bufio.Writer).Flush()
 }
 
-// Create adds a file to the zip file using the provided name.
-// It returns a Writer to which the file contents should be written.
-// The name must be a relative path: it must not start with a drive
-// letter (e.g. C:) or leading slash, and only forward slashes are
-// allowed.
-// The file's contents must be written to the io.Writer before the next
-// call to Create, CreateHeader, or Close.
-func (w *Writer) Create(name string) (io.Writer, error) {
-	header := &FileHeader{
-		Name:   name,
-		Method: Deflate,
-	}
-	return w.CreateHeader(header)
-}
-
 // CreateHeader adds a file to the zip file using the provided FileHeader
 // for the file metadata.
 // It returns a Writer to which the file contents should be written.
 //
 // The file's contents must be written to the io.Writer before the next
-// call to Create, CreateHeader, or Close. The provided FileHeader fh
+// call to CreateHeader or Close. The provided FileHeader fh
 // must not be modified after a call to CreateHeader.
 func (w *Writer) CreateHeader(fh *FileHeader) (io.Writer, error) {
 	if w.last != nil && !w.last.closed {
@@ -242,22 +209,17 @@ func (w *Writer) CreateHeader(fh *FileHeader) (io.Writer, error) {
 	// check for password
 	var sw io.Writer = fw.compCount
 	if fh.password != nil {
-		if fh.encryption == StandardEncryption {
-			ew, err := ZipCryptoEncryptor(sw, fh.password, fw)
-			if err != nil {
-				return nil, err
-			}
-			sw = ew
-		} else {
-			// we have a password and need to encrypt.
-			fh.writeWinZipExtra()
-			fh.Method = 99 // ok to change, we've gotten the comp and wrote extra
-			ew, err := newEncryptionWriter(sw, fh.password, fw, fh.aesStrength)
-			if err != nil {
-				return nil, err
-			}
-			sw = ew
+		if fh.aesStrength != aes256Strength {
+			return nil, errors.New("zip: only AES-256 encryption is supported")
 		}
+		// we have a password and need to encrypt.
+		fh.writeWinZipExtra()
+		fh.Method = 99 // ok to change, we've gotten the comp and wrote extra
+		ew, err := newEncryptionWriter(sw, fh.password, fw, fh.aesStrength)
+		if err != nil {
+			return nil, err
+		}
+		sw = ew
 	}
 	var err error
 	fw.comp, err = comp(sw)
@@ -334,7 +296,7 @@ func (w *fileWriter) close() error {
 		return err
 	}
 	// if encrypted grab the hmac and write it out
-	if w.header.IsEncrypted() && w.header.encryption != StandardEncryption {
+	if w.hmac != nil {
 		authCode := w.hmac.Sum(nil)
 		authCode = authCode[:10]
 		_, err := w.compCount.Write(authCode)
@@ -345,7 +307,7 @@ func (w *fileWriter) close() error {
 	// update FileHeader
 	fh := w.header.FileHeader
 	// ae-2 we don't write out CRC
-	if !fh.IsEncrypted() || fh.encryption == StandardEncryption {
+	if w.hmac == nil {
 		fh.CRC32 = w.crc32.Sum32()
 	}
 	fh.CompressedSize64 = uint64(w.compCount.count)
