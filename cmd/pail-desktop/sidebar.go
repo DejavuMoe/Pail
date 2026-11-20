@@ -61,7 +61,7 @@ func (a *app) accountButton(c *ui.Context) {
 			if ac.SecretMissing {
 				secretBadge(c)
 			} else {
-				ui.Text(c, sub).FontSize(sizeLabel).TextColor(k.TextSubtle).SingleLine()
+				ui.Text(c, sub).FontSize(sizeSecondary).TextColor(k.TextSubtle).SingleLine()
 			}
 		})
 		ui.Icon(c, icons.Get("chevron-down")).FontSize(14).TextColor(k.TextMuted)
@@ -89,7 +89,7 @@ func secretBadge(c *ui.Context) {
 	ui.Row(c).Height(16).Padding(0, 5).Gap(3).Radius(RadiusSmall).AlignItems(ui.Center).AlignSelf(ui.Start).
 		Background(k.Warning.Alpha(0.14)).Border(1, k.Warning.Alpha(0.45)).Children(func() {
 		ui.Icon(c, icons.Get("triangle-alert")).FontSize(10).TextColor(k.Warning)
-		ui.Text(c, locales.SidebarSecretMissing()).FontSize(sizeLabel).FontWeight(500).TextColor(k.Text).SingleLine()
+		ui.Text(c, locales.SidebarSecretMissing()).FontSize(sizeSecondary).FontWeight(500).TextColor(k.Text).SingleLine()
 	})
 }
 
@@ -107,7 +107,7 @@ func sidebarLabel(c *ui.Context, title string, count int, trailing func()) {
 	ui.Row(c).Padding(16, 16, 6, 16).Gap(6).AlignItems(ui.Center).Children(func() {
 		sectionLabel(c, title)
 		if count > 0 {
-			ui.Text(c, groupInt(count)).FontSize(sizeLabel).TextColor(k.TextSubtle)
+			ui.Text(c, groupInt(count)).FontSize(sizeSecondary).TextColor(k.TextSubtle)
 		}
 		ui.Spacer(c)
 		if trailing != nil {
@@ -132,19 +132,18 @@ func (a *app) sidebarItem(c *ui.Context, id string, icon *ui.SVG, name, region s
 	}
 	row.Children(func() {
 		ic := k.TextMuted
-		w := 400
 		if on && !disabled {
-			ic, w = k.Accent, 600
+			ic = k.Accent
 			currentFill(c, &a.navMark, id, row)
 		}
 		ui.Icon(c, icon).FontSize(14).TextColor(ic)
-		ui.Text(c, name).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)
+		ui.Text(c, name).FontSize(sizeBody).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)
 		if region != "" {
 			rc := k.TextSubtle
 			if on && !disabled {
 				rc = k.TextMuted // TextSubtle on ActiveFill is under 3:1
 			}
-			ui.Text(c, region).FontSize(sizeLabel).TextColor(rc).SingleLine().Shrink(0)
+			ui.Text(c, region).FontSize(sizeSecondary).TextColor(rc).SingleLine().Shrink(0)
 		}
 	})
 	if !disabled && row.Clicked() {

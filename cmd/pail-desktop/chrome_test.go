@@ -38,12 +38,8 @@ func TestWindowOptionsHideTheTitleBarOnEveryPlatform(t *testing.T) {
 	if o.TitleBarHeight != 44 {
 		t.Errorf("title bar height = %d, want the 44px of the toolbar", o.TitleBarHeight)
 	}
-	if o.BackgroundColor != "light-dark(#FBFAF8, #1A1A18)" {
+	if o.BackgroundColor != "light-dark(#FBFAF8, #1C1C1A)" {
 		t.Errorf("background = %q", o.BackgroundColor)
-	}
-	// The window opens in the palettes chosen, not in the default ones.
-	if o := windowOptions("Pail", 1440, 900, skyTokens, nightTokens, nil); o.BackgroundColor != "light-dark(#FFFFFF, #0F151C)" {
-		t.Errorf("background with Sky and Night = %q", o.BackgroundColor)
 	}
 	if o.MinWidth != 960 || o.MinHeight != 600 {
 		t.Errorf("minimum size = %dx%d", o.MinWidth, o.MinHeight)
@@ -205,19 +201,19 @@ func TestPaletteListsEveryCommandAndBuckets(t *testing.T) {
 		}
 	}
 	for _, b := range demoBuckets {
-		if !have["Open bucket "+b.Name] {
-			t.Errorf("the palette lacks %q", "Open bucket "+b.Name)
+		if !have[b.Name] {
+			t.Errorf("the palette lacks bucket %q", b.Name)
 		}
 	}
-	// A shortcut is drawn as one keycap per key (Ctrl, U), so the keys are
-	// looked for one by one; Esc is a keycap too.
-	uploadKeys, paletteKeys := []string{"Ctrl", "U"}, []string{"Ctrl", "K"}
+	// A shortcut is one piece of text (Ctrl+U); Esc is a keycap.
+	uploadKeys, paletteKeys := "Ctrl+U", "Ctrl+K"
 	if runtime.GOOS == "darwin" {
-		uploadKeys, paletteKeys = []string{"⌘", "U"}, []string{"⌘", "K"}
+		uploadKeys, paletteKeys = "⌘U", "⌘K"
 	}
-	h.mustHave("Upload files", "Settings", "Theme: Dark", "Open bucket acme-assets", "Esc")
-	h.mustHave(uploadKeys...)
-	h.mustHave(paletteKeys...)
+	// Browsing, a choice is one row with its value; the values wait in its scope.
+	h.mustHave("Upload files", "Settings", "Esc", uploadKeys, paletteKeys)
+	h.mustHave("Theme", "Language", "Open bucket acme-assets") // further down the list
+	h.mustNotHave("Theme: Dark", "Language: English")
 	h.mustNotHave("Lock Vault") // the vault is not in use: not applicable
 	h.snap("palette-open-light")
 	h.tt.Key(0, ui.KeyEscape)
@@ -282,11 +278,63 @@ func TestPaletteFiltersRunsAndCloses(t *testing.T) {
 	}
 }
 
+// A choice's row opens its values with the one in use under the cursor;
+// Backspace in the empty box goes back, and a value runs like a command.
+func TestPaletteChoiceOpensItsValues(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	got := h.recordTheme()
+	h.openPaletteWith(ui.Cmd, ui.KeyK)
+	h.tt.Type("theme")
+	h.settle()
+	h.mustHave("Theme", "Theme: Dark") // a search shows the values too
+	h.tt.Key(0, ui.KeyEnter)           // the choice leads its values
+	h.settle()
+	if h.a.pal.scope != "theme" || !h.a.pal.open {
+		t.Fatalf("the Theme row left scope %q (open %v)", h.a.pal.scope, h.a.pal.open)
+	}
+	h.mustHave("Theme: System", "Theme: Light", "Theme: Dark")
+	h.mustNotHave("Upload files", "Language")
+	entries := filterPalette(paletteScoped(h.a.paletteEntries(), "theme", ""), "")
+	if e := entries[h.a.pal.cur]; e.label != "Theme: Light" {
+		t.Errorf("the cursor opens on %q, want the theme in use", e.label)
+	}
+	h.snap("palette-scope-theme")
+	// Backspace that empties the box stays; the next one goes back.
+	h.tt.Type("d")
+	h.settle()
+	h.tt.KeyDown(ui.KeyBackspace)
+	h.settle()
+	h.tt.KeyUp(ui.KeyBackspace)
+	h.settle()
+	if h.a.pal.scope != "theme" || h.a.pal.query != "" {
+		t.Fatalf("Backspace on \"d\": scope %q query %q", h.a.pal.scope, h.a.pal.query)
+	}
+	h.tt.KeyDown(ui.KeyBackspace)
+	h.settle()
+	h.tt.KeyUp(ui.KeyBackspace)
+	h.settle()
+	if h.a.pal.scope != "" {
+		t.Fatalf("Backspace left the scope %q", h.a.pal.scope)
+	}
+	h.mustHave("Upload files")
+	h.tt.Type("theme")
+	h.tt.Key(0, ui.KeyEnter)
+	h.settle()
+	h.tt.Key(0, ui.KeyDown)
+	h.tt.Key(0, ui.KeyEnter)
+	h.settle()
+	if h.a.pal.open || h.a.opts.theme != "dark" {
+		t.Fatalf("Enter on Theme: Dark: open=%v theme=%q", h.a.pal.open, h.a.opts.theme)
+	}
+	_ = got
+}
+
 func TestPaletteKeyboardAndMouse(t *testing.T) {
 	t.Parallel()
 	h := newHarness(t, "light")
 	h.openPaletteWith(ui.Cmd, ui.KeyK)
-	entries := filterPalette(h.a.paletteEntries(), "")
+	entries := filterPalette(paletteScoped(h.a.paletteEntries(), "", ""), "")
 	cur := firstEnabled(entries)
 	if h.a.pal.cur != cur || !entries[cur].enabled {
 		t.Fatalf("cursor starts at %d, want the first enabled row %d", h.a.pal.cur, cur)

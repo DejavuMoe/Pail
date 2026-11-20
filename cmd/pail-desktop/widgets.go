@@ -33,7 +33,7 @@ func sectionTitle(c *ui.Context, s string) ui.Element {
 
 // sectionLabel is an 11px source-list group label ("BUCKETS", "TOOLS").
 func sectionLabel(c *ui.Context, s string) ui.Element {
-	return ui.Text(c, s).FontSize(sizeLabel).FontWeight(600).TextColor(tk(c).TextSubtle).SingleLine()
+	return ui.Text(c, s).FontSize(sizeSecondary).FontWeight(500).TextColor(tk(c).TextMuted).SingleLine()
 }
 
 // mutedText is 12px secondary text.
@@ -235,7 +235,7 @@ func tabIndicator(c *ui.Context, g *markState, id any, tab ui.Element) {
 // label on its way.
 func currentFill(c *ui.Context, g *markState, id any, row ui.Element) {
 	row.ZIndex(-1)
-	arrive(c, g, id, row, func(m ui.Element) { m.ZIndex(-1).Radius(RadiusControl).Background(tk(c).ActiveFill) })
+	arrive(c, g, id, row, func(m ui.Element) { m.ZIndex(-1).Radius(RadiusControl).Background(tk(c).Selection) })
 }
 
 // well styles el as a block of read-only content set into a surface (a list

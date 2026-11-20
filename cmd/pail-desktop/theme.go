@@ -3,16 +3,13 @@ package main
 import (
 	"sync/atomic"
 
-	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
-	"github.com/egoist/mygo/i18n"
 	"github.com/egoist/mygo/ui"
 )
 
 // tokens is a set of design tokens (docs/dev/design.md): the colours of one
-// palette. Each theme has two palettes to choose from in Settings: Paper and
-// Sky for the light theme, Graphite and Night for the dark one (lightPalettes,
-// darkPalettes). This file is the only place in cmd/pail-desktop that names
-// colors; views read the ones their window shows through tk or the helpers
+// theme. Pail has one palette per theme: Paper for the light theme (lightTokens)
+// and Graphite for the dark one (darkTokens). This file is the only place in
+// cmd/pail-desktop that names colors; views read the ones their window shows through tk or the helpers
 // below.
 //
 // Color discipline: neutrals carry the interface. The accent appears only in
@@ -23,7 +20,7 @@ import (
 // on a fill alone. Neutral fills differ by too little (about 1.2:1), so every
 // on-state adds a second cue: a raised segment with a border, an Accent icon,
 // the Selection hue, or a heavier weight with Text instead of TextMuted.
-// theme_test.go enforces the contrast floors for every palette.
+// theme_test.go enforces the contrast floors for both palettes.
 type tokens struct {
 	Background, Sidebar, Surface         ui.Color // canvas, source list, inputs and buttons
 	Card                                 ui.Color // a group of rows set on the canvas (Settings); controls on it stay Surface
@@ -78,20 +75,19 @@ const (
 // controlH is the height of a control: input, select, button, segmented track.
 const controlH = 28
 
-// Paper and Graphite are the palettes Pail starts with: warm paper whites under
-// a graphite ink, and the same graphite turned over for the dark theme. Their
-// accent is the steel blue of the icon. A palette name the app does not know
-// falls back to them.
+// Paper and Graphite are Pail's palettes: warm paper whites under a graphite
+// ink, and the same graphite turned over for the dark theme. Their accent is
+// the steel blue of the icon.
 var lightTokens = tokens{
 	Background: ui.Hex("#FBFAF8"), Sidebar: ui.Hex("#F3F1EC"), Surface: ui.Hex("#FFFFFF"), Card: ui.Hex("#FFFFFF"),
-	SurfaceHover: ui.Hex("#EFEDE8"), SurfacePressed: ui.Hex("#E6E3DD"), ActiveFill: ui.Hex("#E3DFD6"),
-	Track: ui.Hex("#EAE7E0"), Raised: ui.Hex("#FFFFFF"), ControlOff: ui.Hex("#B9B3A7"),
-	Border: ui.Hex("#E7E4DE"), BorderStrong: ui.Hex("#C4BFB4"),
-	Text: ui.Hex("#1D1C1A"), TextMuted: ui.Hex("#6B675F"), TextSubtle: ui.Hex("#857F75"),
+	SurfaceHover: ui.Hex("#EFEDE8"), SurfacePressed: ui.Hex("#E5E3DE"), ActiveFill: ui.Hex("#E1DFD9"),
+	Track: ui.Hex("#E9E7E2"), Raised: ui.Hex("#FFFFFF"), ControlOff: ui.Hex("#B6B3AD"),
+	Border: ui.Hex("#E6E4E0"), BorderStrong: ui.Hex("#C2BFB9"),
+	Text: ui.Hex("#1D1C1A"), TextMuted: ui.Hex("#65615A"), TextSubtle: ui.Hex("#857F75"),
 	Accent: ui.Hex("#34598F"), AccentHover: ui.Hex("#2B4B79"), AccentPressed: ui.Hex("#243F66"),
 	AccentText: ui.Hex("#FFFFFF"),
-	Selection:  ui.Hex("#DCE4EF"), Focus: ui.Hex("#5C82BA"), FolderIcon: ui.Hex("#6F8BB3"),
-	Danger: ui.Hex("#B3402E"), DangerText: ui.Hex("#FFFFFF"),
+	Selection:  ui.Hex("#D6E1EF"), Focus: ui.Hex("#5C82BA"), FolderIcon: ui.Hex("#6F8BB3"),
+	Danger: ui.Hex("#A93A29"), DangerText: ui.Hex("#FFFFFF"),
 	Warning: ui.Hex("#A0691A"), Success: ui.Hex("#3B7653"),
 	Scrim: ui.Hex("#141311").Alpha(0.32), ScrimSoft: ui.Hex("#141311").Alpha(0.12),
 	// A shadow on paper is warm, as the paper is.
@@ -101,15 +97,15 @@ var lightTokens = tokens{
 }
 
 var darkTokens = tokens{
-	Background: ui.Hex("#1A1A18"), Sidebar: ui.Hex("#151513"), Surface: ui.Hex("#21211F"), Card: ui.Hex("#1F1F1D"),
-	SurfaceHover: ui.Hex("#292926"), SurfacePressed: ui.Hex("#31302D"), ActiveFill: ui.Hex("#33322F"),
-	Track: ui.Hex("#121210"), Raised: ui.Hex("#34332F"), ControlOff: ui.Hex("#57554F"),
-	Border: ui.Hex("#2E2D2A"), BorderStrong: ui.Hex("#4C4A45"),
-	Text: ui.Hex("#EAE8E3"), TextMuted: ui.Hex("#A29E96"), TextSubtle: ui.Hex("#85817A"),
+	Background: ui.Hex("#1C1C1A"), Sidebar: ui.Hex("#151412"), Surface: ui.Hex("#252422"), Card: ui.Hex("#21201E"),
+	SurfaceHover: ui.Hex("#2D2D2A"), SurfacePressed: ui.Hex("#353431"), ActiveFill: ui.Hex("#373734"),
+	Track: ui.Hex("#151412"), Raised: ui.Hex("#3F3E3B"), ControlOff: ui.Hex("#57554F"),
+	Border: ui.Hex("#33322F"), BorderStrong: ui.Hex("#51504B"),
+	Text: ui.Hex("#EAE8E3"), TextMuted: ui.Hex("#A6A29A"), TextSubtle: ui.Hex("#85817A"),
 	Accent: ui.Hex("#86A8D8"), AccentHover: ui.Hex("#9DBAE3"), AccentPressed: ui.Hex("#7096CB"),
 	AccentText: ui.Hex("#12161C"),
 	Selection:  ui.Hex("#2A3747"), Focus: ui.Hex("#86A8D8"), FolderIcon: ui.Hex("#7E9BC2"),
-	Danger: ui.Hex("#E0806C"), DangerText: ui.Hex("#1A1A18"),
+	Danger: ui.Hex("#EA8F7B"), DangerText: ui.Hex("#1A1A18"),
 	Warning: ui.Hex("#D7A955"), Success: ui.Hex("#82BE98"),
 	Scrim: ui.Hex("#000000").Alpha(0.5), ScrimSoft: ui.Hex("#000000").Alpha(0.28),
 	ShadowPopover: ui.Transparent, ShadowDialog: ui.Transparent,
@@ -117,93 +113,13 @@ var darkTokens = tokens{
 	Knob: ui.Hex("#FFFFFF"), KnobShadow: ui.RGBA(0, 0, 0, 0.3),
 }
 
-// Sky and Night are the other pair: a clear day and the night after it. The
-// canvas is white, not a grey, and every neutral leans to the one hue of the
-// accent (a cerulean, about 205 degrees), which is what keeps so light a
-// palette from looking washed out. Night is that hue after dark: an ink blue
-// with the accent lit.
-var skyTokens = tokens{
-	Background: ui.Hex("#FFFFFF"), Sidebar: ui.Hex("#F1F7FB"), Surface: ui.Hex("#FFFFFF"), Card: ui.Hex("#F6FAFD"),
-	SurfaceHover: ui.Hex("#E8F1F8"), SurfacePressed: ui.Hex("#DAE7F2"), ActiveFill: ui.Hex("#D5E6F3"),
-	Track: ui.Hex("#E0EBF4"), Raised: ui.Hex("#FFFFFF"), ControlOff: ui.Hex("#9FB2C4"),
-	Border: ui.Hex("#E1EAF2"), BorderStrong: ui.Hex("#A9BCCE"),
-	Text: ui.Hex("#0C1B2A"), TextMuted: ui.Hex("#4A6074"), TextSubtle: ui.Hex("#6A7F93"),
-	Accent: ui.Hex("#0B6FB8"), AccentHover: ui.Hex("#095F9E"), AccentPressed: ui.Hex("#084F84"),
-	AccentText: ui.Hex("#FFFFFF"),
-	Selection:  ui.Hex("#D2E8FA"), Focus: ui.Hex("#3D9BE0"), FolderIcon: ui.Hex("#3E92D2"),
-	Danger: ui.Hex("#B93A2B"), DangerText: ui.Hex("#FFFFFF"),
-	Warning: ui.Hex("#9A6412"), Success: ui.Hex("#1F7A5C"),
-	Scrim: ui.Hex("#0A1622").Alpha(0.30), ScrimSoft: ui.Hex("#0A1622").Alpha(0.10),
-	ShadowPopover: ui.Hex("#0C3054").Alpha(0.14), ShadowDialog: ui.Hex("#0C3054").Alpha(0.20),
-	Inverse: ui.Hex("#12222F"), InverseText: ui.Hex("#EEF6FC"),
-	Knob: ui.Hex("#FFFFFF"), KnobShadow: ui.Hex("#0C3054").Alpha(0.3),
-}
-
-var nightTokens = tokens{
-	Background: ui.Hex("#0F151C"), Sidebar: ui.Hex("#0A0F15"), Surface: ui.Hex("#161E28"), Card: ui.Hex("#131A23"),
-	SurfaceHover: ui.Hex("#1E2935"), SurfacePressed: ui.Hex("#263342"), ActiveFill: ui.Hex("#283848"),
-	Track: ui.Hex("#080C11"), Raised: ui.Hex("#2A3949"), ControlOff: ui.Hex("#4B5C6E"),
-	Border: ui.Hex("#212C39"), BorderStrong: ui.Hex("#3D4E60"),
-	Text: ui.Hex("#E4EEF6"), TextMuted: ui.Hex("#94A6B8"), TextSubtle: ui.Hex("#73869A"),
-	Accent: ui.Hex("#6EC1F2"), AccentHover: ui.Hex("#8BCFF6"), AccentPressed: ui.Hex("#58AEE2"),
-	AccentText: ui.Hex("#08131C"),
-	Selection:  ui.Hex("#1A3852"), Focus: ui.Hex("#6EC1F2"), FolderIcon: ui.Hex("#62B2E6"),
-	Danger: ui.Hex("#F0806E"), DangerText: ui.Hex("#0F151C"),
-	Warning: ui.Hex("#DDB05C"), Success: ui.Hex("#7FCB9F"),
-	Scrim: ui.Hex("#000000").Alpha(0.5), ScrimSoft: ui.Hex("#000000").Alpha(0.28),
-	ShadowPopover: ui.Transparent, ShadowDialog: ui.Transparent,
-	Inverse: ui.Hex("#E4EEF6"), InverseText: ui.Hex("#0F151C"),
-	Knob: ui.Hex("#FFFFFF"), KnobShadow: ui.RGBA(0, 0, 0, 0.3),
-}
-
-// palette is one set of colours a theme can show. id is what settings.json
-// keeps (lightColors, darkColors): a released id stays, or the files that name
-// it lose their choice.
-type palette struct {
-	id   string
-	name func(locales.Messages) string
-	k    tokens
-}
-
-// label is the palette's name in the language the app shows.
-func (p palette) label() string { return p.name(locales.In(i18n.Locale())) }
-
-// lightPalettes and darkPalettes are the palettes of the two themes, in the
-// order Settings shows them. The first of each is the default: what an empty or
-// unknown name gets.
-var (
-	lightPalettes = []palette{
-		{"paper", locales.Messages.ColorsPaper, lightTokens},
-		{"sky", locales.Messages.ColorsSky, skyTokens},
-	}
-	darkPalettes = []palette{
-		{"graphite", locales.Messages.ColorsGraphite, darkTokens},
-		{"night", locales.Messages.ColorsNight, nightTokens},
-	}
-)
-
-// palettesOf returns the palettes of the dark theme or of the light one.
-func palettesOf(dark bool) []palette {
+// tokensFor returns the palette of a theme.
+func tokensFor(dark bool) tokens {
 	if dark {
-		return darkPalettes
+		return darkTokens
 	}
-	return lightPalettes
+	return lightTokens
 }
-
-// paletteOf returns the palette id of a theme: its first for a name it does
-// not have.
-func paletteOf(dark bool, id string) palette {
-	ps := palettesOf(dark)
-	for _, p := range ps {
-		if p.id == id {
-			return p
-		}
-	}
-	return ps[0]
-}
-
-// tokensFor returns the default palette of a theme.
-func tokensFor(dark bool) tokens { return palettesOf(dark)[0].k }
 
 // each calls fn with every colour of k, in the order of the fields.
 // TestEachTokenIsListed keeps the list whole.
@@ -229,12 +145,12 @@ const (
 )
 
 // frame is the colours a window shows in the frame being built. A window keeps
-// one for as long as it is open (frameOf): applyColors fills it at the start
+// one for as long as it is open (frameOf): applyTheme fills it at the start
 // of every frame and tk reads it for the rest of that frame.
 type frame struct {
 	c   *ui.Context
 	k   tokens
-	set bool   // applyColors has run for the window
+	set bool   // applyTheme has run for the window
 	n   uint64 // how many builds it has started: arrive tells from it what the build before drew
 }
 
@@ -260,15 +176,11 @@ func frameOf(c *ui.Context) *frame {
 	return f
 }
 
-// applyTheme is applyColors with the default palettes.
-func applyTheme(c *ui.Context, mode string) tokens { return applyColors(c, mode, "", "") }
-
-// applyColors sets the frame's ui.Theme and tokens. mode is "system", "light"
-// or "dark"; "system" follows the desktop. light and dark name the palette of
-// each theme. The theme is rebuilt on every frame, so a change of the system's
-// appearance is picked up at once; the colours of another mode or palette come
-// in over a moment (easeTokens).
-func applyColors(c *ui.Context, mode, light, dark string) tokens {
+// applyTheme sets the frame's ui.Theme and tokens. mode is "system", "light"
+// or "dark"; "system" follows the desktop. The theme is rebuilt on every frame,
+// so a change of the system's appearance is picked up at once; the colours of
+// the other mode come in over a moment (easeTokens).
+func applyTheme(c *ui.Context, mode string) tokens {
 	isDark := c.Theme().Dark
 	switch mode {
 	case "light":
@@ -276,11 +188,7 @@ func applyColors(c *ui.Context, mode, light, dark string) tokens {
 	case "dark":
 		isDark = true
 	}
-	name := light
-	if isDark {
-		name = dark
-	}
-	k := easeTokens(c, paletteOf(isDark, name).k)
+	k := easeTokens(c, tokensFor(isDark))
 	f := frameOf(c)
 	f.k, f.set = k, true
 	f.n++
@@ -306,8 +214,8 @@ func applyColors(c *ui.Context, mode, light, dark string) tokens {
 	return k
 }
 
-// tk returns the tokens of the frame: those applyColors set for the window, or
-// the default palette of the frame's theme in a window it has not run for.
+// tk returns the tokens of the frame: those applyTheme set for the window, or
+// the palette of the frame's theme in a window it has not run for.
 func tk(c *ui.Context) tokens {
 	if f := frameOf(c); f.set {
 		return f.k

@@ -66,9 +66,6 @@ type app struct {
 	appTasks
 	appCommands
 
-	// lightColors and darkColors name the palette of each theme (theme.go), as
-	// saved; "" and a name the app does not know are the default one.
-	lightColors, darkColors string
 	// lang is the language choice ("" follows the system); localeSet shows it
 	// and langSave keeps it (i18n.go).
 	lang string
@@ -315,7 +312,6 @@ func newApp(svc *core.Service, opts options) *app {
 	if a.opts.theme == "" {
 		a.opts.theme = svc.Settings().Theme
 	}
-	a.lightColors, a.darkColors = svc.Settings().LightColors, svc.Settings().DarkColors
 	a.tray.on = !svc.Settings().HideTrayIcon
 	a.tray.quitIdle = svc.Settings().QuitWhenIdle
 	a.collapseTools = svc.Settings().CollapseTools

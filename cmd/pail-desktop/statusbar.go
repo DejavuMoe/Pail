@@ -101,7 +101,7 @@ func (a *app) tookIndicator(c *ui.Context, count func(key, s string)) {
 		b.Background(k.SurfaceHover)
 	}
 	b.Children(func() {
-		ui.Icon(c, icons.Get("timer")).FontSize(12).TextColor(k.TextMuted)
+		ui.Icon(c, icons.Get("history")).FontSize(12).TextColor(k.TextMuted) // it opens the recent operations
 		if text != "" {
 			count("took", text)
 		}

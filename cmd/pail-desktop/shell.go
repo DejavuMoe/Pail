@@ -19,7 +19,7 @@ func (a *app) view(c *ui.Context) {
 	if a.opts.still {
 		c.DisableAnimations()
 	}
-	k := applyColors(c, a.opts.theme, a.lightColors, a.darkColors)
+	k := applyTheme(c, a.opts.theme)
 	a.sel.touch() // mygo may have changed the choice between frames
 	a.syncTheme()
 	a.drain()

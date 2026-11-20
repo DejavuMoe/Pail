@@ -221,36 +221,6 @@ func (a *app) setTheme(mode string) {
 	a.applySetting("theme", func(st *core.Settings) { st.Theme = mode }, func() { a.opts.theme = a.svc.Settings().Theme })
 }
 
-// colorsOf is the palette chosen for the dark theme or for the light one.
-func (a *app) colorsOf(dark bool) palette {
-	if dark {
-		return paletteOf(true, a.darkColors)
-	}
-	return paletteOf(false, a.lightColors)
-}
-
-// setColors gives the dark theme or the light one the palette id, at once,
-// and saves the choice.
-func (a *app) setColors(dark bool, id string) {
-	if a.colorsOf(dark).id == id {
-		return
-	}
-	key := "lightColors"
-	if dark {
-		key = "darkColors"
-		a.darkColors = id
-	} else {
-		a.lightColors = id
-	}
-	a.applySetting(key, func(st *core.Settings) {
-		if dark {
-			st.DarkColors = id
-		} else {
-			st.LightColors = id
-		}
-	}, func() { a.lightColors, a.darkColors = a.svc.Settings().LightColors, a.svc.Settings().DarkColors })
-}
-
 // setLogToFile switches the diagnostic log at once and saves the choice.
 func (a *app) setLogToFile(on bool) {
 	a.applySetting("log", func(st *core.Settings) { st.LogToFile = on }, func() { a.sf.logOn = a.svc.Settings().LogToFile })
@@ -383,30 +353,6 @@ func (a *app) settingsView(c *ui.Context) {
 	})
 }
 
-// colorsRow is the row that chooses the palette of the dark theme or of the
-// light one: a picture of each, as the theme row has.
-func (a *app) colorsRow(c *ui.Context, dark bool, label, help string) {
-	key := "lightColors"
-	if dark {
-		key = "darkColors"
-	}
-	a.settingsRowHelp(c, label, help, a.sf.errs[key], func() {
-		a.savedMark(c, key)
-		ps := palettesOf(dark)
-		picks := make([]themePick, len(ps))
-		sel := 0
-		for i, p := range ps {
-			picks[i] = themePick{p.label(), p.k, nil}
-			if p.id == a.colorsOf(dark).id {
-				sel = i
-			}
-		}
-		if themePicker(c, &sel, label, picks) {
-			a.setColors(dark, ps[sel].id)
-		}
-	})
-}
-
 func (a *app) appearanceSection(c *ui.Context) {
 	f := &a.sf
 	a.settingsGroup(c, "appearance", func() {
@@ -416,14 +362,12 @@ func (a *app) appearanceSection(c *ui.Context) {
 				// The mode lives in the app (the menu and the palette change it
 				// too), so the control shows it each frame.
 				sel := max(0, slices.Index(themeModes, a.themeMode()))
-				light, dark := a.colorsOf(false).k, a.colorsOf(true).k
+				light, dark := lightTokens, darkTokens
 				labels := themeLabels()
 				if themePicker(c, &sel, locales.SettingsTheme(), []themePick{{labels[0], light, &dark}, {labels[1], light, nil}, {labels[2], dark, nil}}) {
 					a.setTheme(themeModes[sel])
 				}
 			})
-			a.colorsRow(c, false, locales.SettingsLightColors(), locales.SettingsLightColorsHelp())
-			a.colorsRow(c, true, locales.SettingsDarkColors(), locales.SettingsDarkColorsHelp())
 			a.settingsRowHelp(c, locales.SettingsLanguage(), locales.SettingsLanguageHelp(), "", func() {
 				// The choice lives in the app (a.lang); the select edits a copy so
 				// that it shows the real language each frame.

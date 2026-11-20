@@ -1,9 +1,6 @@
 package main
 
 import (
-	"strings"
-	"unicode/utf8"
-
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/egoist/mygo/ui"
 )
@@ -79,21 +76,23 @@ type rowSpec struct {
 	IconSlot  bool    // reserve the icon's room when Icon is nil, so labels of a list line up
 	Label     string  // 13px Text
 	Secondary string  // 12px TextMuted after the label (a group, a region)
-	Shortcut  string  // "Ctrl+Shift+P" or "⌘⇧P": drawn as one keycap per key
-	Checked   bool    // the current value: Accent check and weight 600 (two cues)
+	Shortcut  string  // "Ctrl+Shift+P" or "⌘⇧P": 12px text, TextSubtle (TextMuted on the cursor row)
+	Checked   bool    // the current value: an Accent check
 	Disabled  bool    // opacity 0.4, no hover, not clickable
 	// Highlighted is the cursor: the row the keyboard is on or the pointer is
-	// over, one look for both (SurfaceHover), as native menus do. It is not the
+	// over, one look for both (ActiveFill, a step deeper than a hover, so the
+	// keyboard's cursor is easy to find), as native menus do. It is not the
 	// current value (Checked) and does not use Selection.
 	Highlighted bool
 	Submenu     bool // a trailing chevron: activating the row opens a submenu
+	Danger      bool // a destructive action: icon and label in Danger
 }
 
 // listRow styles row as a list row and fills it. row is an element the caller
 // made, with its own key and behaviour: a ui.ButtonBase for a command or menu
 // item, or sel.Item(value) for a select option. The row is 28px high with 8px
 // side padding, radius RadiusRow (concentric with a popover), and from left to right shows the icon, the label,
-// the secondary text, the keycaps, the check and the submenu chevron.
+// the secondary text, the shortcut, the check and the submenu chevron.
 func listRow(c *ui.Context, row ui.Element, s rowSpec) ui.Element {
 	k := tk(c)
 	row.Height(listRowH).Padding(0, 8).Gap(8).Radius(RadiusRow).AlignItems(ui.Center).Shrink(0).Disabled(s.Disabled)
@@ -101,28 +100,32 @@ func listRow(c *ui.Context, row ui.Element, s rowSpec) ui.Element {
 	case s.Disabled:
 		row.Opacity(0.4)
 	case s.Highlighted:
-		row.Background(k.SurfaceHover)
+		row.Background(k.ActiveFill)
 	}
 	if s.Shortcut != "" {
 		row.Description(s.Shortcut)
 	}
 	return row.Children(func() {
+		icon, ink := k.TextMuted, k.Text
+		if s.Danger {
+			icon, ink = k.Danger, k.Danger
+		}
 		switch {
 		case s.Icon != nil:
-			ui.Icon(c, s.Icon).FontSize(14).TextColor(k.TextMuted).Shrink(0)
+			ui.Icon(c, s.Icon).FontSize(14).TextColor(icon).Shrink(0)
 		case s.IconSlot:
 			ui.Box(c).Size(14, 14).Shrink(0)
 		}
-		w := 400
-		if s.Checked {
-			w = 600
-		}
-		ui.Text(c, s.Label).FontSize(sizeBody).FontWeight(w).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)
+		ui.Text(c, s.Label).FontSize(sizeBody).TextColor(ink).SingleLine().Grow(1).MinWidth(0)
 		if s.Secondary != "" {
 			mutedText(c, s.Secondary).SingleLine().Shrink(1).MinWidth(0)
 		}
-		for _, key := range shortcutKeys(s.Shortcut) {
-			keycap(c, key, s.Highlighted)
+		if s.Shortcut != "" {
+			ink := k.TextSubtle
+			if s.Highlighted {
+				ink = k.TextMuted // TextSubtle on ActiveFill falls under its 3.5:1 floor
+			}
+			ui.Text(c, s.Shortcut).FontSize(sizeSecondary).TextColor(ink).SingleLine().Shrink(0).FontFeatures("tnum")
 		}
 		if s.Checked {
 			ui.Icon(c, icons.Get("check")).FontSize(14).TextColor(k.Accent).Shrink(0)
@@ -133,50 +136,14 @@ func listRow(c *ui.Context, row ui.Element, s rowSpec) ui.Element {
 	})
 }
 
-// keycap is one key of a shortcut: 12px TextSubtle in a 20px-high box with a
-// 1px outline and radius 4. A single character makes it square. on says the
-// cap sits on a highlighted row: there the hairline Border would vanish into
-// SurfaceHover and TextSubtle falls under its 3.5:1 floor, so the outline
-// steps up to BorderStrong and the text to TextMuted.
-func keycap(c *ui.Context, label string, on bool) ui.Element {
+// keycap is a key to press, drawn as a key (the Esc of the command palette's
+// search box): 12px TextSubtle in a 20px-high box with a 1px outline and
+// radius 4. Shortcuts in menus are plain text (listRow).
+func keycap(c *ui.Context, label string) ui.Element {
 	k := tk(c)
-	edge, ink := k.Border, k.TextSubtle
-	if on {
-		edge, ink = k.BorderStrong, k.TextMuted
-	}
-	return ui.Row(c).Height(20).MinWidth(20).Padding(0, 4).Radius(RadiusKeycap).Border(1, edge).Center().Shrink(0).Children(func() {
-		ui.Text(c, label).FontSize(sizeSecondary).TextColor(ink).SingleLine()
+	return ui.Row(c).Height(20).MinWidth(20).Padding(0, 4).Radius(RadiusKeycap).Border(1, k.Border).Center().Shrink(0).Children(func() {
+		ui.Text(c, label).FontSize(sizeSecondary).TextColor(k.TextSubtle).SingleLine()
 	})
-}
-
-// shortcutKeys splits a shortcut as the command table spells it into its
-// keys: "Ctrl+Shift+P" into Ctrl, Shift, P; "⌘⇧P" (macOS) into ⌘, ⇧, P; a
-// lone "F5", "Del" or "Backspace" stays whole.
-func shortcutKeys(s string) []string {
-	if s == "" {
-		return nil
-	}
-	if strings.Contains(s, "+") && s != "+" {
-		var keys []string
-		for _, p := range strings.Split(s, "+") {
-			if p != "" {
-				keys = append(keys, p)
-			}
-		}
-		return keys
-	}
-	var keys []string
-	for s != "" {
-		r, n := utf8.DecodeRuneInString(s)
-		if !strings.ContainsRune("⌘⌥⇧⌃", r) {
-			break
-		}
-		keys, s = append(keys, string(r)), s[n:]
-	}
-	if s != "" {
-		keys = append(keys, s)
-	}
-	return keys
 }
 
 // listSeparator is the 1px Border line between groups of rows, with 4px above

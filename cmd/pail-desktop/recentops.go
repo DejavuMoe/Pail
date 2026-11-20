@@ -213,14 +213,14 @@ func (a *app) opRow(c *ui.Context, e opEntry, withAccount bool, now time.Time) {
 		Label(e.label()).Children(func() {
 		ui.Icon(c, icons.Get(icon)).FontSize(14).TextColor(col).Shrink(0)
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(2).Children(func() {
-			ui.Text(c, e.name()).FontSize(sizeBody).FontWeight(500).TextColor(k.Text).SingleLine()
+			ui.Text(c, e.name()).FontSize(sizeBody).TextColor(k.Text).SingleLine()
 			if detail != "" {
 				ui.Text(c, detail).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().Tooltip(detail)
 			}
 		})
 		ui.Column(c).Shrink(0).AlignItems(ui.End).Gap(2).Children(func() {
-			ui.Text(c, e.took()).FontSize(sizeBody).FontWeight(500).TextColor(k.Text).SingleLine()
-			ui.Text(c, e.clock(now)).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine()
+			ui.Text(c, e.took()).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().FontFeatures("tnum")
+			ui.Text(c, e.clock(now)).FontSize(sizeSecondary).TextColor(k.TextSubtle).SingleLine().FontFeatures("tnum")
 		})
 	})
 }

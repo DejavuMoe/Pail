@@ -110,7 +110,7 @@ func (a *app) transfersBar(c *ui.Context) {
 	}
 	bar.Children(func() {
 		ui.Icon(c, icons.Get("chevron-up")).FontSize(14).TextColor(k.TextMuted)
-		ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeSecondary).TextColor(k.Text)
+		ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeBody).TextColor(k.Text)
 		// Three counts, each its own text.
 		for i, s := range []string{
 			locales.TransfersSummaryActive(fmt.Sprint(n[0])), locales.TransfersSummaryCompleted(fmt.Sprint(n[1])), locales.TransfersSummaryFailed(fmt.Sprint(n[2])),
@@ -144,7 +144,7 @@ func (a *app) transfersPanel(c *ui.Context) {
 	n := countTasks(a.tasks)
 	ui.Column(c).Fill().MinHeight(0).Background(k.Background).BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Children(func() {
 		ui.Row(c).Height(32).Padding(0, 8, 0, 16).Gap(16).AlignItems(ui.Center).Shrink(0).Children(func() {
-			ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeSecondary).TextColor(k.Text)
+			ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeBody).TextColor(k.Text)
 			tabs := ui.TabsBase(c, &a.transTab, 3)
 			line := markOf(tabs.List)
 			tabs.List.Height(32).Gap(16).AlignItems(ui.Center).Children(func() {
@@ -157,7 +157,7 @@ func (a *app) transfersPanel(c *ui.Context) {
 						col, w := k.TextMuted, 400
 						switch {
 						case on:
-							col, w = k.Text, 600
+							col, w = k.Text, 500
 						case tab.Hovered():
 							col = k.Text
 						}

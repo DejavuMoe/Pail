@@ -36,6 +36,15 @@ type paletteState struct {
 	// already over it as the palette opens moves nothing.
 	ptr     [2]float32
 	ptrSeen bool
+	// scope is the choice being made ("theme", "lang") after its row was
+	// chosen: the list shows only that choice's values. "" is the whole list.
+	// toCurrent puts the cursor on the value in use once, as the scope opens.
+	scope     string
+	toCurrent bool
+	// backHeld is whether Backspace was down in the last frame: a press in the
+	// empty box of a scope goes back (the box takes the key itself, so the
+	// palette watches the key instead of asking for a shortcut).
+	backHeld bool
 }
 
 // palEntry is one row of the palette. label is the localized text shown;
@@ -43,13 +52,60 @@ type paletteState struct {
 // group is the group id (commands.go) and heading its localized name; hay is
 // everything the query is matched against, lower-cased. icon is the Lucide
 // name of the command's icon.
+//
+// A choice (the theme, the language) is one row while browsing: a picker
+// (picker names the choice) that shows the value in use (detail) and opens
+// the scope of the values. Each value (choice names its choice) is a row of
+// that scope, and of a search, where "dark" finds Theme: Dark at once.
 type palEntry struct {
 	label, english, group, heading, hay, shortcut, icon string
 	enabled, current                                    bool // current: the active choice of a group, shown with a check
 	run                                                 func()
+	choice, picker, detail                              string
+	name                                                string // the accessible name, when not the label
 }
 
+// paletteChoices are the choices the palette shows as a picker each.
+var paletteChoices = []string{"theme", "lang"}
+
 func (a *app) openPalette() { a.pal = paletteState{open: true} }
+
+// choiceTitle is the name of a choice of the palette ("Theme").
+func choiceTitle(m locales.Messages, choice string) string {
+	if choice == "lang" {
+		return m.SettingsLanguage()
+	}
+	return m.SettingsTheme()
+}
+
+// paletteScoped keeps the rows the palette shows for its scope and query: the
+// values of the scope's choice; while browsing, the pickers instead of the
+// values; while searching, both.
+func paletteScoped(all []palEntry, scope, query string) []palEntry {
+	browse := strings.TrimSpace(query) == ""
+	var out []palEntry
+	for _, e := range all {
+		switch {
+		case scope != "":
+			if e.choice != scope {
+				continue
+			}
+		case browse && e.choice != "":
+			continue
+		}
+		out = append(out, e)
+	}
+	return out
+}
+
+// openPaletteScope shows the values of a choice with the one in use under the
+// cursor; scope "" goes back to the whole list.
+func (a *app) openPaletteScope(scope string) {
+	p := &a.pal
+	p.scope, p.query, p.toCurrent = scope, "", scope != ""
+	p.seen = "\x00" // the list is a new one: pick the cursor afresh
+	p.scroll = ui.ScrollState{}
+}
 
 // paletteEntries lists what the palette can run now: the commands of the
 // table that apply (a command with a Visible test that fails is left out) and
@@ -58,6 +114,31 @@ func (a *app) openPalette() { a.pal = paletteState{open: true} }
 func (a *app) paletteEntries() []palEntry {
 	m, en := locales.In(i18n.Locale()), locales.In("en")
 	var out []palEntry
+	// The pickers lead their group, so a search for "theme" puts the choice
+	// before its values.
+	for _, ch := range paletteChoices {
+		e := palEntry{label: choiceTitle(m, ch), english: choiceTitle(en, ch), group: groupView, heading: groupName(m, groupView), enabled: true, picker: ch}
+		var words []string
+		for _, tag := range appLanguages {
+			lm := locales.In(tag)
+			words = append(words, choiceTitle(lm, ch), groupName(lm, groupView))
+			if ch == "theme" {
+				words = append(words, lm.AliasTheme())
+			} else {
+				words = append(words, lm.AliasLanguage())
+			}
+		}
+		if ch == "theme" {
+			e.icon, e.detail = "sun", themeName(m, a.themeMode())
+		} else {
+			e.icon, e.detail = "globe", m.LanguageFollowSystem()
+			if a.lang != "" {
+				e.detail = i18n.Autonym(a.lang)
+			}
+		}
+		e.hay = searchText(words...)
+		out = append(out, e)
+	}
 	for i := range a.commands {
 		cmd := &a.commands[i]
 		if cmd.Visible != nil && !cmd.Visible(a) {
@@ -82,13 +163,10 @@ func (a *app) paletteEntries() []palEntry {
 		}
 		e.hay = searchText(words...)
 		if mode, ok := strings.CutPrefix(id, "theme."); ok {
-			e.current = a.themeMode() == mode
-		}
-		if name, ok := strings.CutPrefix(id, "colors."); ok {
-			e.current = a.colorsOf(false).id == name || a.colorsOf(true).id == name
+			e.choice, e.current = "theme", a.themeMode() == mode
 		}
 		if tag, ok := strings.CutPrefix(id, "lang."); ok {
-			e.current = a.lang == tag || tag == "system" && a.lang == ""
+			e.choice, e.current = "lang", a.lang == tag || tag == "system" && a.lang == ""
 		}
 		out = append(out, e)
 	}
@@ -96,12 +174,13 @@ func (a *app) paletteEntries() []palEntry {
 		for _, b := range a.buckets {
 			name, shown := b.Name, a.bucketLabel(b.Name)
 			e := palEntry{
-				label: m.PaletteOpenBucket(shown), english: en.PaletteOpenBucket(shown),
-				group: groupNavigate, heading: groupName(m, groupNavigate), icon: "database", enabled: true,
+				label: shown, english: shown, name: m.PaletteOpenBucket(shown),
+				group: groupBuckets, heading: groupName(m, groupBuckets), icon: "database", enabled: true,
 				current: a.tool == "" && a.scope.Bucket == name,
 				run:     func() { a.openBucket(name) },
 			}
-			e.hay = searchText(e.label, e.english, e.heading, groupName(en, groupNavigate), b.Region, "browse", name) // the real name finds it too
+			// "open bucket" in either language and the real name find it too.
+			e.hay = searchText(shown, m.PaletteOpenBucket(shown), en.PaletteOpenBucket(shown), e.heading, groupName(en, groupBuckets), b.Region, "browse", name)
 			out = append(out, e)
 		}
 	}
@@ -239,6 +318,10 @@ func (a *app) runPalette(e palEntry) {
 	if !e.enabled {
 		return
 	}
+	if e.picker != "" {
+		a.openPaletteScope(e.picker)
+		return
+	}
 	a.pal.open = false
 	a.post(e.run)
 }
@@ -250,10 +333,24 @@ func (a *app) paletteDialog(c *ui.Context) {
 	}
 	k := tk(c)
 	winW, winH := c.Size()
-	entries := filterPalette(a.paletteEntries(), p.query)
+	// Backspace pressed in a scope whose box was already empty goes back.
+	held := c.KeyDown(ui.KeyBackspace)
+	if held && !p.backHeld && p.scope != "" && p.query == "" {
+		a.openPaletteScope("")
+	}
+	p.backHeld = held
+	entries := filterPalette(paletteScoped(a.paletteEntries(), p.scope, p.query), p.query)
 	if p.query != p.seen {
 		p.seen, p.cur = p.query, firstEnabled(entries)
 		p.scroll = ui.ScrollState{}
+	}
+	if p.toCurrent {
+		p.toCurrent, p.reveal = false, true
+		for i, e := range entries {
+			if e.current {
+				p.cur = i
+			}
+		}
 	}
 	p.cur = max(0, min(p.cur, len(entries)-1))
 
@@ -284,14 +381,25 @@ func (a *app) paletteDialog(c *ui.Context) {
 			p.open = false // the key that opened it closes it
 		}
 
+		placeholder := locales.PaletteSearch()
+		if p.scope != "" {
+			placeholder = choiceTitle(locales.In(i18n.Locale()), p.scope)
+		}
 		ui.Row(c).Height(paletteHeaderH).Padding(0, 16).Gap(8).AlignItems(ui.Center).Shrink(0).Children(func() {
-			ui.Icon(c, icons.Get("search")).FontSize(14).TextColor(k.TextMuted).Shrink(0)
-			in := ui.TextInputBase(c.Key("palette-input"), &p.query).Label(locales.PaletteLabel()).
-				Placeholder(locales.PaletteSearch()).FontSize(sizeBody).Grow(1).MinWidth(0).AutoFocus()
+			if p.scope != "" {
+				// Back to the whole list; the arrow stands where the search icon was.
+				if iconButton(c.Key("palette-back"), icons.Get("arrow-left"), locales.PaletteBack()).Margin(0, -5).Clicked() {
+					a.openPaletteScope("")
+				}
+			} else {
+				ui.Icon(c, icons.Get("search")).FontSize(14).TextColor(k.TextMuted).Shrink(0)
+			}
+			in := ui.TextInputBase(c.Key("palette-input:"+p.scope), &p.query).Label(locales.PaletteLabel()).
+				Placeholder(placeholder).FontSize(sizeBody).Grow(1).MinWidth(0).AutoFocus()
 			if in.Submitted() && len(entries) > 0 {
 				a.runPalette(entries[p.cur])
 			}
-			keycap(c, locales.PaletteEsc(), false)
+			keycap(c, locales.PaletteEsc())
 		})
 		hairline(c).Shrink(0)
 		if len(entries) == 0 {
@@ -316,15 +424,19 @@ func (a *app) paletteDialog(c *ui.Context) {
 					// the commands that cannot run here follow after one more label.
 					// Searching ranks across groups, so the group is shown beside the
 					// command instead.
+					// A choice's own scope has no headings: it is one group.
 					unavailable := browse && !e.enabled && (i == 0 || entries[i-1].enabled)
 					switch {
+					case p.scope != "":
 					case unavailable:
 						paletteLabel(c, locales.PaletteUnavailable(), i == 0)
 					case browse && e.enabled && (i == 0 || entries[i-1].group != e.group):
 						paletteLabel(c, e.heading, i == 0)
 					}
-					secondary := ""
-					if !browse || !e.enabled {
+					// Beside the label: the value a picker has now, or the group
+					// where the list does not show it.
+					secondary := e.detail
+					if (!browse || !e.enabled) && p.scope == "" {
 						secondary = e.heading
 					}
 					a.paletteRow(c, e, i, secondary, moved)
@@ -334,8 +446,8 @@ func (a *app) paletteDialog(c *ui.Context) {
 	})
 }
 
-// paletteLabel is a section label of the list: 11px, upper case, 12px of room
-// above unless it is the first.
+// paletteLabel is a section label of the list, upper case as the sidebar's
+// (in English), with 12px of room above unless it is the first.
 func paletteLabel(c *ui.Context, text string, first bool) {
 	top := float32(12)
 	if first {
@@ -352,7 +464,11 @@ func paletteLabel(c *ui.Context, text string, first bool) {
 // frame: the row under it takes the cursor.
 func (a *app) paletteRow(c *ui.Context, e palEntry, i int, secondary string, moved bool) {
 	p := &a.pal
-	row := ui.ButtonBase(c.Key("pal:" + e.group + ":" + e.english)).Label(e.label)
+	name := e.label
+	if e.name != "" {
+		name = e.name
+	}
+	row := ui.ButtonBase(c.Key("pal:" + e.group + ":" + e.english)).Label(name)
 	if moved && e.enabled && row.Hovered() && p.cur != i {
 		p.cur = i
 		c.AnimationFrame() // the row that had the cursor, above this one, was drawn before it moved
@@ -360,7 +476,7 @@ func (a *app) paletteRow(c *ui.Context, e palEntry, i int, secondary string, mov
 	current := i == p.cur
 	listRow(c, row, rowSpec{
 		Icon: icons.Get(e.icon), Label: e.label, Secondary: secondary, Shortcut: e.shortcut,
-		Checked: e.current, Disabled: !e.enabled, Highlighted: current && e.enabled,
+		Checked: e.current, Disabled: !e.enabled, Highlighted: current && e.enabled, Submenu: e.picker != "",
 	})
 	if current && p.reveal {
 		row.ScrollIntoView()

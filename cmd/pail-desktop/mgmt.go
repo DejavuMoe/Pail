@@ -246,7 +246,7 @@ func valueButton(c *ui.Context, key, text string, subtle, monospace, editable bo
 func badge(c *ui.Context, label string) ui.Element {
 	k := tk(c)
 	return ui.Box(c.Key("badge:"+label)).Padding(1, 6).Radius(RadiusSmall).Background(k.ActiveFill).Shrink(0).Center().Children(func() {
-		ui.Text(c, label).FontSize(sizeLabel).FontWeight(500).TextColor(k.TextMuted).SingleLine()
+		ui.Text(c, label).FontSize(sizeSecondary).FontWeight(500).TextColor(k.TextMuted).SingleLine()
 	})
 }
 

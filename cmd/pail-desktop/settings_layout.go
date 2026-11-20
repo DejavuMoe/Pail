@@ -114,8 +114,8 @@ func (n *settingsRail) spied() string {
 }
 
 // navRow is one row of a list of sections (the Settings rail, the nav of the
-// bucket settings dialog): 28px high, ActiveFill and Text at weight 600 for
-// the current one, TextMuted for the others (two cues). The fill comes from
+// bucket settings dialog): 28px high, ActiveFill and Text for the current
+// one, TextMuted for the others (two cues). The fill comes from
 // the row that was current before; g is the list's mark.
 func navRow(c *ui.Context, g *markState, key, label string, on bool) ui.Element {
 	k := tk(c)
@@ -124,12 +124,12 @@ func navRow(c *ui.Context, g *markState, key, label string, on bool) ui.Element 
 		row.Background(k.SurfaceHover)
 	}
 	return row.Children(func() {
-		w, col := 400, k.TextMuted
+		col := k.TextMuted
 		if on {
-			w, col = 600, k.Text
+			col = k.Text
 			currentFill(c, g, key, row)
 		}
-		ui.Text(c, label).FontSize(sizeBody).FontWeight(w).TextColor(col).SingleLine()
+		ui.Text(c, label).FontSize(sizeBody).TextColor(col).SingleLine()
 	})
 }
 
@@ -169,7 +169,7 @@ func (a *app) settingsGroup(c *ui.Context, id string, body func()) {
 		n.tops[id] = b.Y - n.viewY + n.lasY
 	}
 	col.Children(func() {
-		ui.Text(c, title).FontSize(sizeSecondary).FontWeight(600).TextColor(tk(c).TextMuted).SingleLine().MarginStart(2)
+		sectionLabel(c, title).MarginStart(2)
 		body()
 	})
 }
@@ -197,12 +197,18 @@ func (a *app) settingsRowHelp(c *ui.Context, label, help, err string, control fu
 		hairline(c)
 	}
 	a.srail.rows++
-	ui.Row(c.Key("srow:"+label)).MinHeight(settingsRowH).Padding(8, settingsRowPad).Gap(16).AlignItems(ui.Center).Children(func() {
+	row := ui.Row(c.Key("srow:"+label)).MinHeight(settingsRowH).Padding(8, settingsRowPad).Gap(16).AlignItems(ui.Center)
+	row.Children(func() {
 		ui.Column(c).Grow(1).Shrink(1).MinWidth(0).Gap(1).Children(func() {
 			ui.Row(c).Gap(2).MinHeight(helpHitSize).AlignItems(ui.Center).Children(func() {
 				ui.Text(c, label).FontSize(sizeBody).TextColor(k.Text).SingleLine().Shrink(1).MinWidth(0).Tooltip(label)
 				if help != "" {
-					helpIcon(c, help)
+					// The "?" of every row at once is noise: it shows on the row
+					// under the pointer or with the keyboard on it, and keeps its
+					// room meanwhile, so nothing moves.
+					if q := helpIcon(c, help); !row.Hovered() && !q.FocusVisible() {
+						q.Opacity(0)
+					}
 				}
 			})
 			for _, s := range notes {
@@ -281,11 +287,11 @@ func themePicker(c *ui.Context, sel *int, label string, picks []themePick) bool 
 						}
 					})
 				})
-				fw, col := 500, k.TextMuted
+				col := k.TextMuted
 				if on {
-					fw, col = 600, k.Text
+					col = k.Text
 				}
-				ui.Text(c, pk.label).FontSize(sizeSecondary).FontWeight(fw).TextColor(col).SingleLine()
+				ui.Text(c, pk.label).FontSize(sizeSecondary).FontWeight(500).TextColor(col).SingleLine()
 			})
 		}
 	})

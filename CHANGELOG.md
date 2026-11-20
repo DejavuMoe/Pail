@@ -12,10 +12,21 @@ All notable changes to this project are documented in this file. The format foll
 - When folders are among the selected items, or in the current folder, the inspector labels the sum "Size of objects": it counts only the objects, because S3 stores no size for a folder.
 - **Settings** has its own row at the foot of the sidebar, below the tools, and stays there when the tools group is folded.
 - The Settings page keeps its column in the middle of a wide window.
+- The command palette shows **Theme** and **Language** as one row each, with the current value beside it. Choose one to see its values, and press Backspace or the arrow to go back. Typing still finds a value directly, for example "dark". Buckets have their own group, **Go to bucket**, listed by name.
+- Shortcuts in menus and in the command palette are plain text, for example `Ctrl+Shift+U`.
+- Section headings, bucket regions and counts are a size larger, and the current item of a list is no longer bold. In **Recent operations**, how long an operation took is shown in gray.
+- The current bucket, tool and Settings section are marked in the same blue as selected rows. The grays of the light theme no longer turn yellow as they get darker, and the dark theme sets the sidebar, the list and panels further apart.
+- In Settings, the **?** beside a setting shows when you point at its row.
+- **Delete** is red in menus.
+- An empty **Sync jobs** or **Upload rules** page shows **New job** or **Add rule** as the main button.
 
 ### Fixed
 
 - Pointing at **Show deleted** or **Flat** while it is unavailable now shows why, for example that the bucket has no versions.
+
+### Removed
+
+- The Sky and Night color palettes. The light theme is always Paper and the dark theme always Graphite; if you had chosen Sky or Night, Pail now shows Paper or Graphite.
 
 ## [0.6.3] - 2026-11-19
 

@@ -34,12 +34,11 @@ func contrast(a, b ui.Color) float64 {
 // The floors behind DESIGN.md "Contrast": essential text 4.5:1 (WCAG AA),
 // tertiary text 3.5:1, control outlines and the switch-off track enough to
 // see the control, and every state fill at least 1.17:1 against what it sits
-// on (the second cue — outline, bar, weight — does the rest). Every palette
-// of both themes keeps them.
+// on (the second cue — outline, bar, weight — does the rest). Both palettes
+// keep them.
 func TestTokenContrastFloors(t *testing.T) {
 	t.Parallel()
-	for name, p := range allPalettes() {
-		k := p.k
+	for name, k := range map[string]tokens{"paper": lightTokens, "graphite": darkTokens} {
 		checks := []struct {
 			what   string
 			fg, bg ui.Color
@@ -73,11 +72,15 @@ func TestTokenContrastFloors(t *testing.T) {
 			{"Selection on Background", k.Selection, k.Background, 1.2},
 			{"Selection on Surface (palette row)", k.Selection, k.Surface, 1.17},
 			// Overlay rows (overlay.go): the highlight is the cursor's one look.
-			{"SurfaceHover on Surface (highlighted row)", k.SurfaceHover, k.Surface, 1.1},
-			{"Text on SurfaceHover", k.Text, k.SurfaceHover, 7},
-			{"TextMuted on SurfaceHover (icon, group)", k.TextMuted, k.SurfaceHover, 4.5},
-			{"BorderStrong on SurfaceHover (keycap outline)", k.BorderStrong, k.SurfaceHover, 1.3},
-			{"Accent on SurfaceHover (check)", k.Accent, k.SurfaceHover, 4.5},
+			{"ActiveFill on Surface (highlighted row)", k.ActiveFill, k.Surface, 1.2},
+			{"Text on ActiveFill", k.Text, k.ActiveFill, 7},
+			{"TextMuted on ActiveFill (icon, group, shortcut)", k.TextMuted, k.ActiveFill, 4.5},
+			{"Accent on ActiveFill (check)", k.Accent, k.ActiveFill, 4.5},
+			{"Danger on ActiveFill (destructive menu row)", k.Danger, k.ActiveFill, 4.5},
+			// The current item of the sidebar and of Settings' rail: Selection.
+			{"Selection on Sidebar (current item)", k.Selection, k.Sidebar, 1.17},
+			{"Text on Selection", k.Text, k.Selection, 7},
+			{"TextMuted on Selection (region)", k.TextMuted, k.Selection, 4.5},
 			// The object table's check boxes: filled on chosen and hovered rows.
 			{"Accent on Selection (chosen row's box)", k.Accent, k.Selection, 3},
 			{"Accent on SurfaceHover (hovered row's box)", k.Accent, k.SurfaceHover, 3},

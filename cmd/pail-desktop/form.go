@@ -140,14 +140,14 @@ func labelWidth(s string) float32 {
 func segmentFace(c *ui.Context, g *markState, s ui.Element, label string, on, disabled bool) {
 	k := tk(c)
 	s.Grow(1).Shrink(0).Height(segmentH).Padding(0, 14).Radius(segmentRadii).Center().Label(label).Disabled(disabled).
-		MinWidth(labelWidth(label) + 34) // never ellipsize a short label (600 weight is wider)
+		MinWidth(labelWidth(label) + 34) // never ellipsize a short label
 	w, col := 500, k.TextMuted
 	switch {
 	case disabled:
 		s.Opacity(0.4)
 		on = false
 	case on:
-		w, col = 600, k.Text
+		w, col = 500, k.Text
 	case s.Hovered():
 		s.Background(k.SurfaceHover)
 		col = k.Text
@@ -283,13 +283,14 @@ func emptyLines(c *ui.Context, icon, title, sub string) {
 
 // emptyAction is the one empty state of a list-and-detail tool whose list has
 // no items yet: centred over the whole body (the list pane and the detail pane
-// together), with a secondary button that creates the first item. A tool shows
+// together), with a primary button that creates the first item: it is the
+// one thing to do there. A tool shows
 // it instead of the split, so there is no list header and no second empty
 // state beside it.
 func emptyAction(c *ui.Context, icon, title, sub, action string, create func()) {
 	ui.Column(c.Key("empty-action")).Grow(1).MinHeight(0).Center().Gap(4).Children(func() {
 		emptyLines(c, icon, title, sub)
-		if secondaryButton(c, action, false).Margin(12, 0, 0, 0).Clicked() {
+		if primaryButton(c, action, false).Margin(12, 0, 0, 0).Clicked() {
 			create()
 		}
 	})

@@ -15,7 +15,7 @@ import (
 // buttons. A call site describes its menu once with a menuBuilder; macOS shows
 // the description as the system's menu (the platform's convention), Windows
 // and Linux draw it in the window, in the look of the other overlays, with
-// icons and keycaps.
+// icons and shortcuts.
 
 // nativeMenus says the system draws the menus: macOS. The tests turn it off,
 // so that they drive the in-window menus on every platform, and back on for
@@ -48,6 +48,7 @@ type menuItem struct {
 	disabled  bool
 	separator bool
 	submenu   bool
+	danger    bool // destroys data: drawn in Danger (in-window only)
 	sub       []*menuItem
 	action    func()
 }
@@ -88,6 +89,7 @@ func (m *menuBuilder) Submenu(label string, build func(m *menuBuilder)) *menuIte
 func (m *menuBuilder) Command(a *app, id, from string) *menuItem {
 	cmd := a.cmd(id)
 	it := m.Item(cmd.text(), func() { a.run(id, from) }).Icon(cmd.Icon).Disabled(!a.enabled(cmd))
+	it.danger = cmd.Danger
 	if len(cmd.Chords) > 0 {
 		it.Shortcut(cmd.Chords[0])
 	}
@@ -674,6 +676,7 @@ func (a *app) menuRow(c *ui.Context, li, i int, slot, moved bool) ui.Element {
 	listRow(c, row, rowSpec{
 		Icon: ic, IconSlot: slot, Label: it.label, Shortcut: shortcut,
 		Checked: it.checked, Disabled: it.disabled, Highlighted: lv.cur == i && !it.disabled, Submenu: it.submenu,
+		Danger: it.danger,
 	})
 	if lv.cur == i && lv.reveal {
 		row.ScrollIntoView()

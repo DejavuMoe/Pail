@@ -587,7 +587,7 @@ func ghostToggleButton(c *ui.Context, icon *ui.SVG, label, tip string, on, disab
 	return b.Children(func() {
 		col, w := k.TextMuted, 400
 		if on {
-			col, w = k.Text, 600
+			col, w = k.Text, 500
 		}
 		ui.Icon(c, icon).FontSize(14).TextColor(col)
 		if !iconOnly {

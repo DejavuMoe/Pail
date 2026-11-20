@@ -6,34 +6,12 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
-	"slices"
 	"strings"
 	"testing"
 	"time"
 
 	"github.com/egoist/mygo/ui"
 )
-
-func TestShortcutKeysSplitsOneCapPerKey(t *testing.T) {
-	t.Parallel()
-	for in, want := range map[string][]string{
-		"":             nil,
-		"F5":           {"F5"},
-		"Del":          {"Del"},
-		"Backspace":    {"Backspace"},
-		"Ctrl+U":       {"Ctrl", "U"},
-		"Ctrl+Shift+P": {"Ctrl", "Shift", "P"},
-		"Alt+Up":       {"Alt", "Up"},
-		"⌘U":           {"⌘", "U"},
-		"⌘⇧P":          {"⌘", "⇧", "P"},
-		"⌥Up":          {"⌥", "Up"},
-		"⌘":            {"⌘"},
-	} {
-		if got := shortcutKeys(in); !slices.Equal(got, want) {
-			t.Errorf("shortcutKeys(%q) = %q, want %q", in, got, want)
-		}
-	}
-}
 
 // The colour discipline of docs/dev/design.md: no view names a colour. Everything
 // comes from theme.go through tk.
@@ -64,18 +42,13 @@ func TestNoColourLiteralsOutsideTheme(t *testing.T) {
 // shadow cannot be seen) by an outline, and the radii step 6, 8, 10.
 func TestOverlayTokens(t *testing.T) {
 	t.Parallel()
-	for _, p := range lightPalettes {
-		if p.k.ShadowPopover.A == 0 || p.k.ShadowDialog.A == 0 {
-			t.Errorf("%s: a light palette needs both overlay shadows", p.id)
-		}
-		if p.k.ShadowDialog.A <= p.k.ShadowPopover.A {
-			t.Errorf("%s: a dialog floats higher than a popover: its shadow must be the stronger", p.id)
-		}
+	if l := lightTokens; l.ShadowPopover.A == 0 || l.ShadowDialog.A == 0 {
+		t.Error("the light palette needs both overlay shadows")
+	} else if l.ShadowDialog.A <= l.ShadowPopover.A {
+		t.Error("a dialog floats higher than a popover: its shadow must be the stronger")
 	}
-	for _, p := range darkPalettes {
-		if p.k.ShadowPopover.A != 0 || p.k.ShadowDialog.A != 0 {
-			t.Errorf("%s: a dark palette draws an outline, not a shadow", p.id)
-		}
+	if d := darkTokens; d.ShadowPopover.A != 0 || d.ShadowDialog.A != 0 {
+		t.Error("the dark palette draws an outline, not a shadow")
 	}
 	if !(RadiusKeycap < RadiusControl && RadiusControl < RadiusPopover && RadiusPopover < RadiusDialog) {
 		t.Error("radii must step keycap < control < popover < dialog")
@@ -165,8 +138,8 @@ func paletteRowAt(h *harness, label string) (y float32) {
 const palLeft, palRight = (testW-paletteW)/2 + 8 + 4, (testW+paletteW)/2 - scrollGutter
 
 // The palette's rows have one look for "the cursor is here", whether the
-// keyboard or the pointer put it there: SurfaceHover, never Selection. The
-// active choice is a different cue: an Accent check (and weight 600).
+// keyboard or the pointer put it there: ActiveFill, never Selection. The
+// active choice is a different cue: an Accent check.
 func TestPaletteHighlightIsOneLookAndCurrentChoiceIsChecked(t *testing.T) {
 	t.Parallel()
 	for _, theme := range []string{"light", "dark"} {
@@ -174,7 +147,7 @@ func TestPaletteHighlightIsOneLookAndCurrentChoiceIsChecked(t *testing.T) {
 			h := newHarness(t, theme)
 			k := tokensFor(theme == "dark")
 			h.openPaletteWith(ui.Cmd, ui.KeyK)
-			h.tt.Type("theme")
+			h.tt.Type("theme:") // the values, not the choice
 			h.settle()
 			rows := []string{"Theme: System", "Theme: Light", "Theme: Dark"}
 			fill := func(label string) color.Color { return px(h.tt.Image(), palLeft, paletteRowAt(h, label)) }
@@ -188,12 +161,12 @@ func TestPaletteHighlightIsOneLookAndCurrentChoiceIsChecked(t *testing.T) {
 				}
 			}
 			// The keyboard's cursor starts on the first row.
-			expect("cursor on the first row", map[string]ui.Color{rows[0]: k.SurfaceHover, rows[1]: k.Surface, rows[2]: k.Surface})
+			expect("cursor on the first row", map[string]ui.Color{rows[0]: k.ActiveFill, rows[1]: k.Surface, rows[2]: k.Surface})
 
 			// The pointer takes the cursor when it moves onto a row: the same fill.
 			h.tt.Move(testW/2, paletteRowAt(h, rows[2]))
 			h.settle()
-			expect("pointer over the third row", map[string]ui.Color{rows[0]: k.Surface, rows[1]: k.Surface, rows[2]: k.SurfaceHover})
+			expect("pointer over the third row", map[string]ui.Color{rows[0]: k.Surface, rows[1]: k.Surface, rows[2]: k.ActiveFill})
 			if h.a.pal.cur != 2 {
 				t.Errorf("the pointer left the cursor on row %d, want 2", h.a.pal.cur)
 			}
@@ -202,7 +175,7 @@ func TestPaletteHighlightIsOneLookAndCurrentChoiceIsChecked(t *testing.T) {
 			h.tt.Key(0, ui.KeyUp)
 			h.settle()
 			h.tt.Frame()
-			expect("keyboard Up with the pointer at rest", map[string]ui.Color{rows[0]: k.Surface, rows[1]: k.SurfaceHover, rows[2]: k.Surface})
+			expect("keyboard Up with the pointer at rest", map[string]ui.Color{rows[0]: k.Surface, rows[1]: k.ActiveFill, rows[2]: k.Surface})
 			if h.a.pal.cur != 1 {
 				t.Errorf("the cursor is on row %d after Up, want 1", h.a.pal.cur)
 			}
@@ -232,7 +205,7 @@ func TestPaletteDisabledRowTakesNoHover(t *testing.T) {
 	h.settle()
 	h.tt.Frame()
 	k := tokensFor(false)
-	if got := px(h.tt.Image(), palLeft, y); near(got, k.SurfaceHover, 2) {
+	if got := px(h.tt.Image(), palLeft, y); near(got, k.ActiveFill, 2) {
 		t.Errorf("a disabled row is highlighted (%v)", got)
 	}
 }
@@ -282,8 +255,8 @@ func TestSelectPopupUsesOverlayRows(t *testing.T) {
 			x := a.X - 4
 			img := tt.Image()
 			// The popup opens with the cursor on the current value.
-			if got := px(img, x, yb); !near(got, k.SurfaceHover, 2) {
-				t.Errorf("cursor row fill %v, want SurfaceHover %v", got, k.SurfaceHover)
+			if got := px(img, x, yb); !near(got, k.ActiveFill, 2) {
+				t.Errorf("cursor row fill %v, want ActiveFill %v", got, k.ActiveFill)
 			}
 			for _, y := range []float32{ya, yg} {
 				if got := px(img, x, y); !near(got, k.Surface, 2) {
@@ -300,8 +273,8 @@ func TestSelectPopupUsesOverlayRows(t *testing.T) {
 			tt.Frame()
 			tt.Advance(time.Second) // the highlight's fade
 			img = tt.Image()
-			if got := px(img, x, yg); !near(got, k.SurfaceHover, 2) {
-				t.Errorf("after Down the Gamma row is %v, want SurfaceHover", got)
+			if got := px(img, x, yg); !near(got, k.ActiveFill, 2) {
+				t.Errorf("after Down the Gamma row is %v, want ActiveFill", got)
 			}
 			if got := px(img, x, yb); !near(got, k.Surface, 2) {
 				t.Errorf("after Down the Beta row is still %v", got)

@@ -229,7 +229,7 @@ func TestSidebarFillTravels(t *testing.T) {
 	k := tokensFor(false)
 	from, to := h.rectOf("acme-assets"), h.rectOf("acme-backups")
 	// 12 from the window's edge is inside the row (8) and left of its icon (16).
-	filled := func(r ui.Rect) bool { return near(h.tt.Image().RGBAAt(12, int(r.Y+r.H/2)), k.ActiveFill, 2) }
+	filled := func(r ui.Rect) bool { return near(h.tt.Image().RGBAAt(12, int(r.Y+r.H/2)), k.Selection, 2) }
 	if !filled(from) || filled(to) {
 		t.Fatalf("the fill is not on the open bucket: %v, %v", filled(from), filled(to))
 	}
@@ -435,7 +435,7 @@ func TestSwitchKnobSlides(t *testing.T) {
 	}
 }
 
-// Settings: the rail's fill and the ring of a palette's picture travel, the
+// Settings: the rail's fill and the ring of a theme's picture travel, the
 // choice is made in the frame of the click, and all of it comes to rest.
 func TestSettingsMarksComeToRest(t *testing.T) {
 	t.Parallel()
@@ -444,7 +444,7 @@ func TestSettingsMarksComeToRest(t *testing.T) {
 	h.settle()
 	h.rest()
 	// The ring is the leftmost accent of a row through the two pictures.
-	paper, sky := h.rectOf("Paper"), h.rectOf("Sky")
+	paper, sky := h.rectOf("Light"), h.rectOf("Dark")
 	ring := func(accent ui.Color) float32 {
 		t.Helper()
 		x, ok := leftOf(h.tt.Image(), int(paper.Y)+20, int(paper.X)-8, int(sky.X+sky.W)+8, accent, 3)
@@ -455,14 +455,14 @@ func TestSettingsMarksComeToRest(t *testing.T) {
 	}
 	from := ring(lightTokens.Accent)
 	if from > paper.X+4 {
-		t.Fatalf("the ring starts at %.0f, the picture of Paper at %.0f", from, paper.X)
+		t.Fatalf("the ring starts at %.0f, the picture of Light at %.0f", from, paper.X)
 	}
-	if err := h.tt.Click("Sky"); err != nil {
+	if err := h.tt.Click("Dark"); err != nil {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if h.a.lightColors != "sky" {
-		t.Fatalf("the palette is %q in the frame after the click", h.a.lightColors)
+	if h.a.themeMode() != "dark" {
+		t.Fatalf("the theme is %q in the frame after the click", h.a.themeMode())
 	}
 	if x := ring(lightTokens.Accent); !near32(x, from, 1) {
 		t.Errorf("in the frame of the click the ring is at %.0f, want it setting off from %.0f", x, from)
@@ -473,14 +473,14 @@ func TestSettingsMarksComeToRest(t *testing.T) {
 	h.settle()
 	h.rest()
 	h.snapMotion("light-ring-rest")
-	if got := px(h.tt.Image(), 4, 500); !near(got, skyTokens.Sidebar, 1) {
-		t.Errorf("at rest the sidebar is %v, want Sky's %v", got, skyTokens.Sidebar)
+	if got := px(h.tt.Image(), 4, 500); !near(got, darkTokens.Sidebar, 1) {
+		t.Errorf("at rest the sidebar is %v, want Graphite's %v", got, darkTokens.Sidebar)
 	}
-	if x := ring(skyTokens.Accent); !near32(x-from, sky.X-paper.X, 1) {
+	if x := ring(darkTokens.Accent); !near32(x-from, sky.X-paper.X, 1) {
 		t.Errorf("the ring rests at %.0f, want it %.0f from where it was (%.0f)", x, sky.X-paper.X, from)
 	}
 	if h.tt.FramePending() {
-		t.Error("the window asks for frames with the palette chosen and at rest")
+		t.Error("the window asks for frames with the theme chosen and at rest")
 	}
 
 	rail, ok := h.tt.Find("Sections")

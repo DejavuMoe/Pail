@@ -8,7 +8,6 @@ import (
 	"testing"
 	"time"
 
-	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/DejavuMoe/Pail/internal/s3test"
 	"github.com/egoist/mygo/ui"
@@ -593,7 +592,7 @@ func TestBucketAliasShowsInPlaceOfTheNameAndNothingElseChanges(t *testing.T) {
 		h.tt.Key(ui.Cmd, ui.KeyA)
 		h.tt.Type(q)
 		h.settle()
-		h.mustHave(locales.PaletteOpenBucket("Storefront assets"))
+		h.mustHave("Storefront assets")
 	}
 	h.a.pal.open = false
 	h.settle()

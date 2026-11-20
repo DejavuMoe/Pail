@@ -46,6 +46,8 @@ type command struct {
 	// always visible.
 	Visible func(a *app) bool
 	Run     func(a *app)
+	// Danger marks a command that destroys data: its menu row is Danger red.
+	Danger bool
 }
 
 func (cmd *command) hint() string {
@@ -75,6 +77,8 @@ func groupName(m locales.Messages, g string) string {
 		return m.CmdGroupBucket()
 	case groupTools:
 		return m.CmdGroupTools()
+	case groupBuckets:
+		return m.CmdGroupBuckets()
 	case groupApp:
 		return m.CmdGroupApp()
 	}
@@ -142,9 +146,10 @@ const (
 	groupBucket   = "bucket"
 	groupTools    = "tools"
 	groupApp      = "app"
+	groupBuckets  = "buckets" // the palette's jump to each bucket
 )
 
-var paletteGroups = []string{groupTransfer, groupObject, groupNavigate, groupView, groupBucket, groupTools, groupApp}
+var paletteGroups = []string{groupTransfer, groupObject, groupNavigate, groupView, groupBucket, groupTools, groupApp, groupBuckets}
 
 // commandGroups and commandAliases give the table's commands their palette
 // heading and search words, by id, so the table rows stay short.
@@ -179,17 +184,6 @@ var commandAliases = map[string]func(locales.Messages) string{
 	"lang.system": locales.Messages.AliasLanguage, "lang.en": locales.Messages.AliasLanguage, "lang.zh-Hans": locales.Messages.AliasLanguage,
 	"open": locales.Messages.AliasOpen, "copy": locales.Messages.AliasCopy, "paste": locales.Messages.AliasPaste, "cut": locales.Messages.AliasCut,
 	"selectall": locales.Messages.AliasSelectAll, "foldersize": locales.Messages.AliasFolderSize, "foldersizes": locales.Messages.AliasFolderSize,
-}
-
-// A command for each palette (colorsCmd in commandTable): "colors." and the
-// palette's name.
-func init() {
-	for _, dark := range []bool{false, true} {
-		for _, p := range palettesOf(dark) {
-			commandGroups["colors."+p.id] = groupView
-			commandAliases["colors."+p.id] = locales.Messages.AliasColors
-		}
-	}
 }
 
 // themeName is a theme mode's name.
@@ -228,16 +222,6 @@ func commandTable() []command {
 		return command{ID: "theme." + mode, Icon: icon, Run: func(a *app) { a.setTheme(mode) },
 			Label: func(m locales.Messages) string { return m.CmdTheme(themeName(m, mode)) }}
 	}
-	// A palette is chosen for its theme, whichever theme shows: the command
-	// says which, and has that theme's icon.
-	colorsCmd := func(dark bool, p palette) command {
-		icon, label := "sun", locales.Messages.CmdLightColors
-		if dark {
-			icon, label = "moon", locales.Messages.CmdDarkColors
-		}
-		return command{ID: "colors." + p.id, Icon: icon, Run: func(a *app) { a.setColors(dark, p.id) },
-			Label: func(m locales.Messages) string { return label(m, p.name(m)) }}
-	}
 	langCmd := func(tag string) command {
 		id := "lang." + tag
 		if tag == "" {
@@ -275,7 +259,7 @@ func commandTable() []command {
 		{ID: "rename", Label: locales.Messages.CmdRename, Icon: "square-pen", Chords: []chord{{0, ui.KeyF2, "F2"}}, Accel: "F2",
 			Enabled: canRename, Run: func(a *app) { a.startRename() }},
 		{ID: "delete", Label: locales.Messages.CmdDelete, Icon: "trash-2", Chords: []chord{{0, ui.KeyDelete, "Del"}},
-			Enabled: liveSelection, Run: func(a *app) { a.askDelete() }},
+			Enabled: liveSelection, Run: func(a *app) { a.askDelete() }, Danger: true},
 		{ID: "restore", Label: locales.Messages.CmdRestore, Icon: "undo-2", Visible: deletedOn,
 			Enabled: func(a *app) bool { return deletedOn(a) && a.selectedCount() > 0 }, Run: func(a *app) { a.restoreSelected() }},
 		{ID: "restoreall", Label: locales.Messages.CmdRestoreAll, Icon: "undo-2", Visible: deletedOn,
@@ -337,10 +321,6 @@ func commandTable() []command {
 		themeCmd("system", "monitor"),
 		themeCmd("light", "sun"),
 		themeCmd("dark", "moon"),
-		colorsCmd(false, lightPalettes[0]),
-		colorsCmd(false, lightPalettes[1]),
-		colorsCmd(true, darkPalettes[0]),
-		colorsCmd(true, darkPalettes[1]),
 		langCmd(""),
 		langCmd("en"),
 		langCmd("zh-Hans"),

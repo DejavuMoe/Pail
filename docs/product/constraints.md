@@ -20,7 +20,7 @@ Scope: the public landing site at https://pail.download (`site/`, built by `tool
 
 ## Must preserve
 
-- Colors come from the Paper and Graphite palettes, the defaults of the app, in `cmd/pail-desktop/theme.go`.
+- Colors come from the Paper and Graphite palettes of the app, in `cmd/pail-desktop/theme.go`.
 - Light and dark follow the system by default; a manual System / Light / Dark control persists the choice.
 - Selected, current and on states use at least two cues, as in `docs/dev/design.md`.
 - One solid primary button per view.
