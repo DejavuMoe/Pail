@@ -114,7 +114,7 @@ func init() {
 		{"presign", "presign s3://bucket/key [--expires 1h] [--method GET|PUT] [--version-id V]", "create a presigned URL", true, setupPresign},
 		{"url", "url s3://bucket/key [--kind cdn|public]", "print the CDN or public URL of an object", true, setupURL},
 		{"versions", "versions s3://bucket/prefix/", "list versions and delete markers", true, setupVersions},
-		{"restore", "restore s3://bucket/key --version-id V | s3://bucket/prefix/ --deleted [-r]", "restore a version or deleted objects", true, setupRestore},
+		{"restore", "restore s3://bucket/key --version-id V\nrestore s3://bucket/key --deleted\nrestore s3://bucket/prefix/ --deleted -r", "restore a version or deleted objects", true, setupRestore},
 		{"stat", "stat s3://bucket/key [--version-id V]", "show the properties of an object", true, setupStat},
 		{"cat", "cat s3://bucket/key [--version-id V]", "write an object to stdout", true, setupCat},
 		{"mkdir", "mkdir s3://bucket/prefix/", "create a folder placeholder", true, setupMkdir},
