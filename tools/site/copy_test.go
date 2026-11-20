@@ -6,6 +6,7 @@ import (
 	"os"
 	"path/filepath"
 	"regexp"
+	"slices"
 	"sort"
 	"strings"
 	"testing"
@@ -29,10 +30,12 @@ var copyRules = struct {
 }
 
 // copyFiles are the user documents and site locales the rules apply to.
-var copyFiles = []struct {
+type copyFile struct {
 	path string
 	zh   bool // Chinese text: the spacing rule applies
-}{
+}
+
+var copyFiles = []copyFile{
 	{"README.md", false}, {"README.zh-CN.md", true},
 	{"docs/cli.md", false}, {"docs/cli.zh-CN.md", true},
 	{"CHANGELOG.md", false}, {"CHANGELOG.zh-CN.md", true},
@@ -63,7 +66,14 @@ var (
 
 func TestCopyRules(t *testing.T) {
 	root := repoRoot(t)
-	for _, f := range copyFiles {
+	files := slices.Clone(copyFiles)
+	// The guide pages of the documentation site.
+	for _, p := range docPages {
+		if strings.HasPrefix(p.Sources["en"], "docs/guide/") {
+			files = append(files, copyFile{p.Sources["en"], false}, copyFile{p.Sources["zh"], true})
+		}
+	}
+	for _, f := range files {
 		data, err := os.ReadFile(filepath.Join(root, filepath.FromSlash(f.path)))
 		if err != nil {
 			t.Errorf("%s: %v", f.path, err)

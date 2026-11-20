@@ -1,0 +1,152 @@
+{{define "head" -}}
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="color-scheme" content="dark light">
+  <meta name="theme-color" content="#08090A" media="(prefers-color-scheme: dark)">
+  <meta name="theme-color" content="#FFFFFF" media="(prefers-color-scheme: light)">
+  <meta name="robots" content="max-image-preview:large">
+  <link rel="canonical" href="{{.Canonical}}">
+  <link rel="alternate" hreflang="en" href="{{.URLEn}}">
+  <link rel="alternate" hreflang="zh-Hans" href="{{.URLZh}}">
+  <link rel="alternate" hreflang="x-default" href="{{.URLEn}}">
+  <link rel="alternate" type="application/atom+xml" title="{{t "feedTitle"}}" href="{{.GitHub}}/releases.atom">
+  <link rel="icon" href="{{asset "pail-icon.svg"}}" type="image/svg+xml">
+  <link rel="apple-touch-icon" href="{{asset "apple-touch-icon.png"}}">
+  <script>
+    (function () {
+      var d = document.documentElement, pref = 'system';
+      d.classList.add('js');
+      try { pref = localStorage.getItem('pail-theme') || 'system'; } catch (e) {}
+      if (pref !== 'light' && pref !== 'dark') pref = 'system';
+      var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
+      d.setAttribute('data-theme', dark ? 'dark' : 'light');
+      d.setAttribute('data-theme-pref', pref);
+    })();
+  </script>
+  <link rel="stylesheet" href="{{asset "site.css"}}">
+{{- end}}
+
+{{define "icons" -}}
+<svg class="sprite" aria-hidden="true" focusable="false">
+  <symbol id="i-search" viewBox="0 0 24 24"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.6-3.6"/></symbol>
+  <symbol id="i-system" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="12" rx="2"/><path d="M8 20h8M12 16v4"/></symbol>
+  <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4.9 4.9l1.4 1.4M17.7 17.7l1.4 1.4M2 12h2M20 12h2M4.9 19.1l1.4-1.4M17.7 6.3l1.4-1.4"/></symbol>
+  <symbol id="i-moon" viewBox="0 0 24 24"><path d="M20 14.5A8 8 0 1 1 9.5 4a6.5 6.5 0 0 0 10.5 10.5Z"/></symbol>
+  <symbol id="i-menu" viewBox="0 0 24 24"><path d="M4 7h16M4 12h16M4 17h16"/></symbol>
+  <symbol id="i-close" viewBox="0 0 24 24"><path d="M6 6l12 12M18 6 6 18"/></symbol>
+  <symbol id="i-arrow" viewBox="0 0 24 24"><path d="M5 12h14M13 6l6 6-6 6"/></symbol>
+  <symbol id="i-up" viewBox="0 0 24 24"><path d="M12 20V8M6 13l6-6 6 6M5 4h14"/></symbol>
+  <symbol id="i-down" viewBox="0 0 24 24"><path d="M12 4v12M6 11l6 6 6-6M5 20h14"/></symbol>
+  <symbol id="i-copy" viewBox="0 0 24 24"><rect x="8" y="8" width="12" height="12" rx="2"/><path d="M16 8V6a2 2 0 0 0-2-2H6a2 2 0 0 0-2 2v8a2 2 0 0 0 2 2h2"/></symbol>
+  <symbol id="i-check" viewBox="0 0 24 24"><path d="m5 12.5 4.5 4.5L19 7.5"/></symbol>
+  <symbol id="i-page" viewBox="0 0 24 24"><path d="M7 3h7l5 5v13H7z"/><path d="M14 3v5h5"/></symbol>
+  <symbol id="i-hash" viewBox="0 0 24 24"><path d="M5 9h15M4 15h15M10 3 8 21M16 3l-2 18"/></symbol>
+  <symbol id="i-chev" viewBox="0 0 24 24"><path d="m9 6 6 6-6 6"/></symbol>
+  <symbol id="i-rules" viewBox="0 0 24 24"><path d="M4 5h16l-6 7.5V19l-4 1.5v-8z"/></symbol>
+  <symbol id="i-buckets" viewBox="0 0 24 24"><path d="M4 7h10M18 7h2M4 17h4M12 17h8"/><circle cx="16" cy="7" r="2"/><circle cx="10" cy="17" r="2"/></symbol>
+  <symbol id="i-props" viewBox="0 0 24 24"><path d="M3.5 12.5V4.5a1 1 0 0 1 1-1h8l8 8-9 9z"/><circle cx="8.5" cy="8.5" r="1.5"/></symbol>
+  <symbol id="i-archive" viewBox="0 0 24 24"><rect x="3" y="4" width="18" height="5" rx="1"/><path d="M5 9v10a1 1 0 0 0 1 1h12a1 1 0 0 0 1-1V9M10 13h4"/></symbol>
+  <symbol id="i-accounts" viewBox="0 0 24 24"><circle cx="8" cy="15" r="4"/><path d="m11 12 9-9M17 6l3 3M14.5 8.5l2 2"/></symbol>
+  <symbol id="i-cdn" viewBox="0 0 24 24"><circle cx="12" cy="12" r="9"/><path d="M3 12h18M12 3a14 14 0 0 1 0 18M12 3a14 14 0 0 0 0 18"/></symbol>
+  <symbol id="i-proxy" viewBox="0 0 24 24"><path d="M4 18a9 9 0 1 1 16 0"/><path d="m12 14 4-5"/><circle cx="12" cy="14.5" r="1"/></symbol>
+  <symbol id="i-palette" viewBox="0 0 24 24"><path d="M9 6v12M15 6v12M6 9h12M6 15h12"/><path d="M9 6a3 3 0 1 0-3 3M15 6a3 3 0 1 1 3 3M9 18a3 3 0 1 1-3-3M15 18a3 3 0 1 0 3-3"/></symbol>
+  <symbol id="i-lang" viewBox="0 0 24 24"><path d="M4 5h9M8.5 3v2M6 5c.5 3.5 3 6.5 6 8M11 5c-.5 3.5-3 6.5-6.5 8"/><path d="m12 21 4.5-10 4.5 10M13.5 17.5h6"/></symbol>
+  <symbol id="i-github" viewBox="0 0 24 24"><path d="M9 19c-4.3 1.4-4.3-2.5-6-3m12 5v-3.5c0-1 .1-1.4-.5-2 2.8-.3 5.5-1.4 5.5-6a4.6 4.6 0 0 0-1.3-3.2 4.2 4.2 0 0 0-.1-3.2s-1.1-.3-3.5 1.3a12.3 12.3 0 0 0-6.2 0C6.5 2.8 5.4 3.1 5.4 3.1a4.2 4.2 0 0 0-.1 3.2A4.6 4.6 0 0 0 4 9.5c0 4.6 2.7 5.7 5.5 6-.6.6-.6 1.2-.5 2V21"/></symbol>
+</svg>
+{{- end}}
+
+{{define "header" -}}
+<a class="skip" href="#main">{{t "skip"}}</a>
+{{template "icons"}}
+<header class="bar" id="top">
+  <div class="bar-in">
+    <a class="brand" href="{{.Links.Home}}" aria-label="{{t "homeLabel"}}">
+      <img src="{{asset "pail-icon.svg"}}" alt="" width="26" height="26"><span>Pail</span>
+    </a>
+    <nav class="bar-nav" id="site-nav" aria-label="{{t "navLabel"}}">
+      <a href="{{.Links.Home}}#features">{{t "navFeatures"}}</a>
+      <a href="{{.Links.Home}}#cli">{{t "navCli"}}</a>
+      <a href="{{.Links.Docs}}"{{if .PageKey}} aria-current="true"{{end}}>{{t "navDocs"}}</a>
+      <a href="{{.Links.Changelog}}">{{t "navChangelog"}}</a>
+      <a href="{{.GitHub}}">GitHub</a>
+    </nav>
+    <div class="bar-tools">
+      <button class="search-btn" type="button" data-palette-open aria-keyshortcuts="Control+K Meta+K" hidden>
+        <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg><span class="search-label">{{t "searchDocs"}}</span><kbd data-mod>Ctrl K</kbd>
+      </button>
+      <a class="lang" href="{{.OtherPath}}" hreflang="{{.OtherHTMLLang}}" lang="{{.OtherHTMLLang}}" data-lang-switch="{{.OtherLang}}">{{t "otherLanguage"}}</a>
+      <button class="icon-btn theme-btn" type="button" data-theme-toggle hidden
+        data-label-system="{{t "themeSystem"}}" data-label-light="{{t "themeLight"}}" data-label-dark="{{t "themeDark"}}" aria-label="{{t "themeSystem"}}">
+        <svg class="ic ic-system" aria-hidden="true"><use href="#i-system"/></svg>
+        <svg class="ic ic-light" aria-hidden="true"><use href="#i-sun"/></svg>
+        <svg class="ic ic-dark" aria-hidden="true"><use href="#i-moon"/></svg>
+      </button>
+      <a class="btn btn-primary btn-sm bar-dl" href="{{.Links.Home}}#download">{{t "navDownload"}}</a>
+      <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="site-nav" aria-label="{{t "menu"}}" hidden>
+        <svg class="ic ic-open" aria-hidden="true"><use href="#i-menu"/></svg>
+        <svg class="ic ic-close" aria-hidden="true"><use href="#i-close"/></svg>
+      </button>
+    </div>
+  </div>
+</header>
+{{- end}}
+
+
+{{define "palette" -}}
+<dialog class="palette" id="palette" aria-labelledby="palette-title" data-index="{{.SearchIndex}}">
+  <div class="palette-box">
+    <h2 class="sr" id="palette-title">{{t "searchDocs"}}</h2>
+    <div class="palette-field">
+      <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+      <input id="palette-input" type="search" autocomplete="off" spellcheck="false" placeholder="{{t "searchPlaceholder"}}"
+        aria-label="{{t "searchDocs"}}" aria-controls="palette-list">
+      <kbd>Esc</kbd>
+    </div>
+    <ul class="palette-list" id="palette-list"></ul>
+    <p class="palette-foot"><span><kbd>↑</kbd><kbd>↓</kbd> {{t "searchMove"}}</span><span><kbd>Enter</kbd> {{t "searchOpen"}}</span></p>
+  </div>
+</dialog>
+{{- end}}
+
+{{define "footer" -}}
+<footer class="foot">
+  <div class="foot-in">
+    <div class="foot-brand">
+      <a class="brand" href="{{.Links.Home}}"><img src="{{asset "pail-icon.svg"}}" alt="" width="22" height="22"><span>Pail</span></a>
+      <p>{{t "footLine"}}</p>
+    </div>
+    <nav class="foot-nav" aria-label="{{t "footNavLabel"}}">
+      <div>
+        <h2>{{t "footProduct"}}</h2>
+        <ul>
+          <li><a href="{{.Links.Home}}#download">{{t "navDownload"}}</a></li>
+          <li><a href="{{.Links.Home}}#features">{{t "navFeatures"}}</a></li>
+          <li><a href="{{.Links.Cli}}">{{t "pageCli"}}</a></li>
+          <li><a href="{{.Links.Changelog}}">{{t "pageChangelog"}}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>{{t "footDocs"}}</h2>
+        <ul>
+          <li><a href="{{.Links.Docs}}">{{t "footOverview"}}</a></li>
+          <li><a href="{{.Links.Install}}">{{t "footInstall"}}</a></li>
+          <li><a href="{{.Links.Connect}}">{{t "footConnect"}}</a></li>
+          <li><a href="{{.Links.Privacy}}">{{t "footPrivacy"}}</a></li>
+        </ul>
+      </div>
+      <div>
+        <h2>{{t "footProject"}}</h2>
+        <ul>
+          <li><a href="{{.GitHub}}">{{t "footSource"}}</a></li>
+          <li><a href="{{.GitHub}}/releases">{{t "footReleases"}}</a></li>
+          <li><a href="{{.GitHub}}/issues">{{t "footIssues"}}</a></li>
+          <li><a href="{{.Links.License}}">{{t "footLicense"}}</a></li>
+        </ul>
+      </div>
+    </nav>
+    <p class="foot-legal">{{t "trademark"}}</p>
+  </div>
+</footer>
+<script type="application/json" id="site-strings">{{.Runtime}}</script>
+<script src="{{asset "site.js"}}" defer></script>
+{{- end}}

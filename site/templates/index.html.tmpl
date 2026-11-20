@@ -1,360 +1,285 @@
 <!DOCTYPE html>
-<html lang="{{.HTMLLang}}" data-lang="{{.Lang}}" data-theme="light" data-theme-pref="system">
-<head prefix="og: https://ogp.me/ns#">
-  <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>{{t "docTitle"}}</title>
-  <meta name="description" content="{{t "docDescription"}}">
-  {{template "social" .}}
-  <meta name="robots" content="max-image-preview:large">
-  <meta name="color-scheme" content="light dark">
-  <meta name="theme-color" content="#FBFAF8" media="(prefers-color-scheme: light)">
-  <meta name="theme-color" content="#151513" media="(prefers-color-scheme: dark)">
-  <link rel="canonical" href="{{.Canonical}}">
-  <link rel="alternate" hreflang="en" href="{{.URLEn}}">
-  <link rel="alternate" hreflang="zh-Hans" href="{{.URLZh}}">
-  <link rel="alternate" hreflang="x-default" href="{{.URLEn}}">
-  <link rel="icon" href="{{asset "pail-icon.svg"}}" type="image/svg+xml">
-  <link rel="apple-touch-icon" href="{{asset "apple-touch-icon.png"}}">
-  <link rel="alternate" type="application/atom+xml" title="{{t "releasesFeed"}}" href="{{.GitHub}}/releases.atom">
-  <script type="application/ld+json">{{.StructuredData}}</script>
+<html lang="{{.HTMLLang}}" data-lang="{{.Lang}}">
+<head>
+  {{- if eq .Lang "en"}}
   <script>
     (function () {
-      var d = document.documentElement, pref = 'system', lang = null;
-      try { pref = localStorage.getItem('pail-theme') || 'system'; lang = localStorage.getItem('pail-lang'); } catch (e) {}
-      {{- if eq .Lang "en"}}
-      if (lang === 'zh' || (lang === null && /^zh\b/i.test(navigator.language || ''))) { location.replace({{.PathZh}} + location.hash); return; }
-      {{- end}}
-      if (pref !== 'light' && pref !== 'dark') pref = 'system';
-      var dark = pref === 'dark' || (pref === 'system' && window.matchMedia('(prefers-color-scheme: dark)').matches);
-      d.setAttribute('data-theme-pref', pref);
-      d.setAttribute('data-theme', dark ? 'dark' : 'light');
-      d.classList.add('js');
+      var l = navigator.languages && navigator.languages[0] || navigator.language || '', saved = null;
+      try { saved = localStorage.getItem('pail-lang'); } catch (e) {}
+      if (!saved && /^zh(-|$)/i.test(l)) location.replace('{{.PathZh}}' + location.hash);
     })();
   </script>
-  <link rel="stylesheet" href="{{asset "styles.css"}}">
+  {{- end}}
+  {{template "head" .}}
+  <title>{{t "metaTitle"}}</title>
+  <meta name="description" content="{{.Description}}">
+  {{template "social" .}}
+  <script type="application/ld+json">{{.StructuredData}}</script>
 </head>
-<body class="landing">
-  <svg class="sprite" aria-hidden="true" focusable="false">
-    <symbol id="i-monitor" viewBox="0 0 24 24"><rect width="20" height="14" x="2" y="3" rx="2"></rect><path d="M8 21h8"></path><path d="M12 17v4"></path></symbol>
-    <symbol id="i-sun" viewBox="0 0 24 24"><circle cx="12" cy="12" r="4"></circle><path d="M12 2v2"></path><path d="M12 20v2"></path><path d="m4.93 4.93 1.41 1.41"></path><path d="m17.66 17.66 1.41 1.41"></path><path d="M2 12h2"></path><path d="M20 12h2"></path><path d="m6.34 17.66-1.41 1.41"></path><path d="m19.07 4.93-1.41 1.41"></path></symbol>
-    <symbol id="i-moon" viewBox="0 0 24 24"><path d="M12 3a6 6 0 0 0 9 9 9 9 0 1 1-9-9Z"></path></symbol>
-    <symbol id="i-github" viewBox="0 0 24 24"><path d="M15 22v-4a4.8 4.8 0 0 0-1-3.5c3 0 6-2 6-5.5.08-1.25-.27-2.48-1-3.5.28-1.15.28-2.35 0-3.5 0 0-1 0-3 1.5-2.64-.5-5.36-.5-8 0C6 2 5 2 5 2c-.3 1.15-.3 2.35 0 3.5A5.4 5.4 0 0 0 4 9c0 3.5 3 5.5 6 5.5-.39.49-.68 1.05-.85 1.65-.17.6-.22 1.23-.15 1.85v4"></path><path d="M9 18c-4.51 2-5-2-7-2"></path></symbol>
-    <symbol id="i-download" viewBox="0 0 24 24"><path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"></path><path d="m7 10 5 5 5-5"></path><path d="M12 15V3"></path></symbol>
-    <symbol id="i-arrow-up" viewBox="0 0 24 24"><path d="m5 12 7-7 7 7"></path><path d="M12 19V5"></path></symbol>
-    <symbol id="i-arrow-down" viewBox="0 0 24 24"><path d="M12 5v14"></path><path d="m19 12-7 7-7-7"></path></symbol>
-    <symbol id="i-check" viewBox="0 0 24 24"><path d="M20 6 9 17l-5-5"></path></symbol>
-    <symbol id="i-file" viewBox="0 0 24 24"><path d="M15 2H6a2 2 0 0 0-2 2v16a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V7Z"></path><path d="M14 2v4a2 2 0 0 0 2 2h4"></path></symbol>
-    <symbol id="i-history" viewBox="0 0 24 24"><path d="M3 12a9 9 0 1 0 9-9 9.75 9.75 0 0 0-6.74 2.74L3 8"></path><path d="M3 3v5h5"></path><path d="M12 7v5l4 2"></path></symbol>
-    <symbol id="i-globe" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"></circle><path d="M12 2a14.5 14.5 0 0 0 0 20 14.5 14.5 0 0 0 0-20"></path><path d="M2 12h20"></path></symbol>
-    <symbol id="i-arrow-right" viewBox="0 0 24 24"><path d="M5 12h14"></path><path d="m12 5 7 7-7 7"></path></symbol>
-    <symbol id="i-user" viewBox="0 0 24 24"><circle cx="12" cy="8" r="4"></circle><path d="M4 21a8 8 0 0 1 16 0"></path></symbol>
-    <symbol id="i-folder" viewBox="0 0 24 24"><path d="M20 20a2 2 0 0 0 2-2V8a2 2 0 0 0-2-2h-7.9a2 2 0 0 1-1.69-.9L9.6 3.9A2 2 0 0 0 7.93 3H4a2 2 0 0 0-2 2v13a2 2 0 0 0 2 2Z"></path></symbol>
-    <symbol id="i-tag" viewBox="0 0 24 24"><path d="M12.59 2.59A2 2 0 0 0 11.17 2H4a2 2 0 0 0-2 2v7.17a2 2 0 0 0 .59 1.42l8.7 8.7a2.43 2.43 0 0 0 3.42 0l6.58-6.58a2.43 2.43 0 0 0 0-3.42Z"></path><circle cx="7.5" cy="7.5" r="1.5"></circle></symbol>
-    <symbol id="i-archive" viewBox="0 0 24 24"><rect width="20" height="5" x="2" y="3" rx="1"></rect><path d="M4 8v11a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2V8"></path><path d="M10 12h4"></path></symbol>
-    <symbol id="i-sliders" viewBox="0 0 24 24"><path d="M21 4h-7"></path><path d="M10 4H3"></path><path d="M21 12h-9"></path><path d="M8 12H3"></path><path d="M21 20h-5"></path><path d="M12 20H3"></path><path d="M14 2v4"></path><path d="M8 10v4"></path><path d="M16 18v4"></path></symbol>
-    <symbol id="i-sync" viewBox="0 0 24 24"><path d="M3 12a9 9 0 0 1 9-9 9.75 9.75 0 0 1 6.74 2.74L21 8"></path><path d="M21 3v5h-5"></path><path d="M21 12a9 9 0 0 1-9 9 9.75 9.75 0 0 1-6.74-2.74L3 16"></path><path d="M8 16H3v5"></path></symbol>
-    <symbol id="i-funnel" viewBox="0 0 24 24"><path d="M22 3H2l8 9.46V19l4 2v-8.54Z"></path></symbol>
-    <symbol id="i-link" viewBox="0 0 24 24"><path d="M10 13a5 5 0 0 0 7.54.54l3-3a5 5 0 0 0-7.07-7.07l-1.72 1.71"></path><path d="M14 11a5 5 0 0 0-7.54-.54l-3 3a5 5 0 0 0 7.07 7.07l1.71-1.71"></path></symbol>
-    <symbol id="i-command" viewBox="0 0 24 24"><path d="M15 6v12a3 3 0 1 0 3-3H6a3 3 0 1 0 3 3V6a3 3 0 1 0-3 3h12a3 3 0 1 0-3-3"></path></symbol>
-    <symbol id="i-key" viewBox="0 0 24 24"><path d="M2.59 17.41A2 2 0 0 0 2 18.83V21a1 1 0 0 0 1 1h3a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h1a1 1 0 0 0 1-1v-1a1 1 0 0 1 1-1h.17a2 2 0 0 0 1.42-.59l.81-.81a6.5 6.5 0 1 0-4-4Z"></path><circle cx="16.5" cy="7.5" r="1.5"></circle></symbol>
-    <symbol id="i-eye-off" viewBox="0 0 24 24"><path d="M10.73 5.08a10.74 10.74 0 0 1 11.2 6.57 1 1 0 0 1 0 .7 10.75 10.75 0 0 1-1.44 2.49"></path><path d="M14.08 14.16a3 3 0 0 1-4.24-4.24"></path><path d="M17.48 17.5a10.75 10.75 0 0 1-15.42-5.15 1 1 0 0 1 0-.7 10.75 10.75 0 0 1 4.45-5.14"></path><path d="m2 2 20 20"></path></symbol>
-    <symbol id="i-shield" viewBox="0 0 24 24"><path d="M20 13c0 5-3.5 7.5-7.66 8.95a1 1 0 0 1-.67-.01C7.5 20.5 4 18 4 13V6a1 1 0 0 1 1-1c2 0 4.5-1.2 6.24-2.72a1.17 1.17 0 0 1 1.52 0C14.51 3.81 17 5 19 5a1 1 0 0 1 1 1Z"></path><path d="m9 12 2 2 4-4"></path></symbol>
-    <symbol id="i-play" viewBox="0 0 24 24"><path d="M8 5.14v13.72a1 1 0 0 0 1.52.85l11-6.86a1 1 0 0 0 0-1.7l-11-6.86A1 1 0 0 0 8 5.14Z"></path></symbol>
-  </svg>
+<body class="home">
+{{template "header" .}}
+<main id="main">
 
-  <a class="skip-link" href="#main">{{t "skip"}}</a>
-
-  <header class="site-header">
-    <div class="wrap header-inner">
-      <a class="brand" href="#top">
-        <img src="{{asset "pail-icon.svg"}}" alt="" width="28" height="28">
-        <span>Pail</span>
-      </a>
-      <nav class="nav" aria-label="{{t "navLabel"}}">
-        <a href="#features">{{t "navFeatures"}}</a>
-        <a href="#cli">{{t "navCli"}}</a>
-        <a href="#privacy">{{t "navPrivacy"}}</a>
-        <a href="#download">{{t "navDownload"}}</a>
-        <a href="{{.Links.Docs}}">{{t "navDocs"}}</a>
-      </nav>
-      <div class="header-actions">
-        <a class="icon-btn lang-btn" href="{{.OtherPath}}" hreflang="{{.OtherHTMLLang}}" lang="{{.OtherHTMLLang}}" data-action="lang" data-lang-target="{{.OtherLang}}" aria-label="{{t "langSwitch"}}">
-          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg>
-          <span>{{t "langShort"}}</span>
-        </a>
-        <fieldset class="seg theme-seg">
-          <legend class="visually-hidden">{{t "themeLabel"}}</legend>
-          <label title="{{t "themeSystem"}}"><input type="radio" name="theme" value="system" checked><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg></span><span class="visually-hidden">{{t "themeSystem"}}</span></label>
-          <label title="{{t "themeLight"}}"><input type="radio" name="theme" value="light"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sun"></use></svg></span><span class="visually-hidden">{{t "themeLight"}}</span></label>
-          <label title="{{t "themeDark"}}"><input type="radio" name="theme" value="dark"><span class="seg-face"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-moon"></use></svg></span><span class="visually-hidden">{{t "themeDark"}}</span></label>
-        </fieldset>
-        <a class="icon-btn gh-btn" href="{{.GitHub}}" aria-label="GitHub">
-          <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
-        </a>
-        <button class="icon-btn menu-btn" type="button" aria-expanded="false" aria-controls="mobile-nav" aria-label="{{t "menu"}}">
-          <svg class="i menu-icon" viewBox="0 0 24 24" aria-hidden="true" focusable="false"><path d="M4 6h16"></path><path d="M4 12h16"></path><path d="M4 18h16"></path></svg>
-        </button>
+  <section class="hero" aria-labelledby="hero-title">
+    <div class="wrap hero-grid">
+      <div class="hero-text">
+        <a class="news" href="{{.Links.Changelog}}"><b>v{{.Version}}</b><span>{{t "heroNews"}}</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+        <h1 id="hero-title">{{t "heroTitle"}}</h1>
+        <p class="hero-lede">{{t "heroLede"}}</p>
+        <div class="hero-cta">
+          <a class="btn btn-primary" href="#download" data-hero-download><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg><span data-hero-download-label>{{t "heroDownload"}}</span></a>
+          <a class="btn btn-ghost" href="{{.Links.Docs}}">{{t "heroDocs"}}</a>
+        </div>
+      </div>
+      <div class="hero-stage">
+        <canvas class="hero-canvas" data-pail data-objects="reports/q4-report.pdf~1.8 MiB|photos/2026/IMG_0412.heic~3.1 MiB|backups/2026-11-20.tar~1.50 GiB|website/index.html~12 KiB|logs/app-2026-11-20.log.gz~840 KiB|invoices/2026-11.pdf~212 KiB|assets/hero@2x.webp~486 KiB|exports/customers.csv~96 KiB" aria-hidden="true"></canvas>
+        <ol class="drop-log" aria-hidden="true">
+          <li><span class="verb">PUT</span><span class="k">website/index.html</span><span class="s">12 KiB</span><span class="ok">200</span></li>
+          <li><span class="verb">PUT</span><span class="k">photos/2026/IMG_0412.heic</span><span class="s">3.1 MiB</span><span class="ok">200</span></li>
+          <li><span class="verb">PUT</span><span class="k">reports/q4-report.pdf</span><span class="s">1.8 MiB</span><span class="ok">200</span></li>
+        </ol>
       </div>
     </div>
-    <nav id="mobile-nav" class="mobile-nav" hidden aria-label="{{t "menu"}}">
-      <a href="#features">{{t "navFeatures"}}</a>
-      <a href="#cli">{{t "navCli"}}</a>
-      <a href="#privacy">{{t "navPrivacy"}}</a>
-      <a href="#download">{{t "navDownload"}}</a>
-      <a href="{{.Links.Docs}}">{{t "navDocs"}}</a>
-    </nav>
-  </header>
+  </section>
 
-  <main id="main">
-    <section class="hero" id="top">
-      <div class="wrap">
-        <div class="hero-copy">
-          <p class="eyebrow"><a class="eyebrow-version" href="{{.Links.Changelog}}">{{.Version}}</a><span class="eyebrow-sep" aria-hidden="true"></span><a href="{{.Links.License}}">{{t "specLicenseValue"}}</a></p>
-          <h1 class="hero-title">{{t "heroTitle"}}</h1>
-          <p class="hero-sub">{{t "heroSub"}}</p>
-          <div class="hero-cta">
-            <a class="btn btn-primary" href="#download" data-os-cta>
-              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg>
-              <span data-os-cta-label>{{t "heroDownload"}}</span>
-            </a>
-            <a class="btn btn-secondary" href="{{.GitHub}}">
-              <svg class="i" aria-hidden="true" focusable="false"><use href="#i-github"></use></svg>
-              <span>{{t "heroGithub"}}</span>
-            </a>
-          </div>
-          <p class="hero-platforms"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-monitor"></use></svg><span>{{t "specSystemsValue"}}</span></p>
+  <section class="window" id="window" aria-labelledby="window-title">
+    <div class="wrap">
+      <h2 class="lead" id="window-title">{{t "windowLead"}} <span>{{t "windowRest"}}</span></h2>
+      <figure class="shot" data-shot>
+        <div class="shot-frame">
+          <picture>
+            <source media="(prefers-color-scheme: dark)" srcset="{{asset (printf "main-dark-%s.webp" .Lang)}}" data-dark-source>
+            <img src="{{asset (printf "main-light-%s.webp" .Lang)}}" width="2684" height="1750" alt="{{t "shotAlt"}}" decoding="async">
+          </picture>
         </div>
-      </div>
-      <figure class="wrap hero-shot">
-        <picture>
-          <source srcset="{{asset (printf "main-dark-%s.webp" .Lang)}}" media="(prefers-color-scheme: dark)" type="image/webp" data-shot-dark>
-          <img src="{{asset (printf "main-light-%s.webp" .Lang)}}" width="2684" height="1750" fetchpriority="high" decoding="async" alt="{{t "shotAlt"}}">
-        </picture>
-        <script>
-          (function () {
-            var p = document.documentElement.getAttribute('data-theme-pref');
-            var s = document.querySelector('[data-shot-dark]');
-            if (s && p !== 'system') s.media = p === 'dark' ? 'all' : 'not all';
-          })();
-        </script>
+        <figcaption class="zones">
+          {{- range $i, $z := split (t "zones")}}{{$kv := split2 $z}}
+          <span class="zone-text"><b>{{index $kv 0}}</b> {{index $kv 1}}</span>
+          {{- end}}
+        </figcaption>
       </figure>
-    </section>
+    </div>
+  </section>
 
-    <section class="services" aria-labelledby="services-title">
-      <div class="wrap">
-        <h2 class="services-title" id="services-title">{{t "specServices"}}</h2>
-        <ul class="services-list">
-          <li>Amazon S3</li>
-          <li>Cloudflare R2</li>
-          <li>MinIO</li>
-          <li>Wasabi</li>
-          <li>VersityGW</li>
-        </ul>
-        <p class="services-note">{{t "providersOther"}}</p>
-      </div>
-    </section>
+  <section class="features" id="features" aria-labelledby="features-title">
+    <div class="wrap">
+      <h2 class="lead" id="features-title">{{t "featLead"}} <span>{{t "featRest"}}</span></h2>
+      <div class="tour" data-tour>
+        <div class="tour-steps">
 
-    <section class="section" id="demo" aria-labelledby="demo-title">
-      <div class="wrap">
-        <header class="section-head">
-          <h2 class="section-title" id="demo-title">{{t "demoTitle"}}</h2>
-          <p class="section-lede">{{t "demoLede"}}</p>
-        </header>
-        <figure class="demo-video">
-          <div class="demo-frame">
-          <video controls preload="none" playsinline width="1920" height="1080" poster="{{asset "pail-demo.webp"}}" aria-label="{{t "demoVideoLabel"}}">
-            <source src="{{asset "pail-demo.mp4"}}" type="video/mp4">
-            <p><a href="{{asset "pail-demo.mp4"}}">{{t "demoFallback"}}</a></p>
-          </video>
-          <button class="demo-play" type="button" hidden aria-label="{{t "demoPlay"}}">
-            <svg class="i" aria-hidden="true" focusable="false"><use href="#i-play"></use></svg>
-          </button>
-          </div>
-          <figcaption>{{t "demoNote"}}</figcaption>
-        </figure>
-      </div>
-    </section>
-
-    <section class="section" id="features" aria-labelledby="features-title">
-      <div class="wrap">
-        <header class="section-head">
-          <h2 class="section-title" id="features-title">{{t "featuresTitle"}}</h2>
-        </header>
-
-        <div class="showcases">
-          <article class="card showcase">
-            <div class="card-body">
-              <h3>{{t "fTransfersTitle"}}</h3>
-              <p>{{t "fTransfersBody"}}</p>
-            </div>
-            <div class="showcase-stage">
-              <div class="mini mini-transfers" aria-hidden="true">
-                <div class="tq-head">
-                  <span class="tq-title">{{t "miniTransfers"}}</span>
-                  <span class="tq-filter is-on"><span>{{t "miniActive"}}</span> 2</span>
-                  <span class="tq-filter"><span>{{t "miniCompleted"}}</span> 1</span>
-                </div>
-                <div class="tq-row" data-total="2306867">
-                  <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-up"></use></svg>
-                  <span class="tq-name">site/assets/hero.webp</span>
-                  <span class="tq-bar"><i></i></span>
-                  <span class="tq-bytes">{{bytesOf "1.4 MB" "2.2 MB"}}</span>
-                </div>
-                <div class="tq-row" data-total="2576980378">
-                  <svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-down"></use></svg>
-                  <span class="tq-name">backups/2026-10-19.tar.gz</span>
-                  <span class="tq-bar"><i></i></span>
-                  <span class="tq-bytes">{{bytesOf "1.6 GB" "2.4 GB"}}</span>
-                </div>
-                <div class="tq-row is-done">
-                  <svg class="i" aria-hidden="true" focusable="false"><use href="#i-check"></use></svg>
-                  <span class="tq-name">reports/q3.csv</span>
-                  <span class="tq-bar"><i></i></span>
-                  <span class="tq-bytes">18.3 KB</span>
-                </div>
-                <div class="conflict">
-                  <span class="conflict-label">{{t "miniConflictRow"}}</span>
-                  <div class="chips" data-cycle>
-                    <span class="chip is-on">{{t "conflictRename"}}</span>
-                    <span class="chip">{{t "conflictSkip"}}</span>
-                    <span class="chip">{{t "conflictOverwrite"}}</span>
-                    <span class="chip">{{t "conflictNewer"}}</span>
-                    <span class="chip">{{t "conflictSize"}}</span>
-                  </div>
-                </div>
-              </div>
+          <article class="step" data-step="0" data-title="{{t "tabTransfers"}}" aria-labelledby="f-transfers">
+            <h3 id="f-transfers">{{t "transfersTitle"}}</h3>
+            <p>{{t "transfersBody"}}</p>
+            <a class="more" href="{{.Links.Transfers}}">{{t "transfersLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+            <span class="step-time" aria-hidden="true"></span>
+            <div class="pane pane-tr" data-pane="0" aria-hidden="true">
+              <p class="pane-head"><span>{{t "trSummary"}}</span></p>
+              <ul class="tr-list">
+                <li class="tr" data-parts>
+                  <span class="tr-dir"><svg class="ic"><use href="#i-up"/></svg></span>
+                  <span class="tr-name">backups/2026-11-20.tar</span>
+                  <span class="tr-meta"><b data-parts-done>24</b>/24 {{t "transfersParts"}} · 64 MiB</span>
+                  <span class="tr-rate" data-parts-rate>1.50 GiB</span>
+                  <span class="tr-parts">{{range split "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24"}}<i class="is-done"></i>{{end}}</span>
+                  <span class="tr-btn">{{t "trPause"}}</span>
+                </li>
+                <li class="tr" data-dl>
+                  <span class="tr-dir"><svg class="ic"><use href="#i-down"/></svg></span>
+                  <span class="tr-name">reports/2026-Q3-financials.pdf</span>
+                  <span class="tr-meta"><span data-dl-run hidden>{{t "trChecking"}}</span><span data-dl-done>{{t "trChecked"}}</span></span>
+                  <span class="tr-rate">13.8 KiB</span>
+                  <span class="tr-bar"><i data-dl-bar></i></span>
+                  <span class="tr-btn tr-ok"><svg class="ic"><use href="#i-check"/></svg></span>
+                </li>
+                <li class="tr is-paused">
+                  <span class="tr-dir"><svg class="ic"><use href="#i-up"/></svg></span>
+                  <span class="tr-name">photos/2026/IMG_0412.heic</span>
+                  <span class="tr-meta">{{t "trPaused"}}</span>
+                  <span class="tr-rate">3.1 MiB</span>
+                  <span class="tr-bar"><i></i></span>
+                  <span class="tr-btn">{{t "trResume"}}</span>
+                </li>
+              </ul>
             </div>
           </article>
 
-          <article class="card showcase">
-            <div class="card-body">
-              <h3>{{t "fVersionsTitle"}}</h3>
-              <p>{{t "fVersionsBody"}}</p>
-            </div>
-            <div class="showcase-stage">
-              <div class="mini mini-versions" aria-hidden="true">
-                <div class="mv-key"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-file"></use></svg><span>reports/q3.csv</span></div>
-                <ol class="mv-list">
-                  <li class="mv-marker"><span class="mv-dot"></span><span class="mv-label">{{t "miniDeleteMarker"}}</span><span class="mv-badge">{{t "miniLatest"}}</span><span class="mv-time">2026-10-19 22:51</span></li>
-                  <li class="mv-target"><span class="mv-dot"></span><span class="mv-id">3HL4kqtJ</span><span class="mv-size">18.3 KB</span><span class="mv-restore"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-history"></use></svg><span>{{t "miniRestore"}}</span></span></li>
-                  <li><span class="mv-dot"></span><span class="mv-id">Xd3dIbrH</span><span class="mv-size">17.9 KB</span><span class="mv-time">2026-10-12 09:04</span></li>
-                </ol>
-              </div>
+          <article class="step" data-step="1" data-title="{{t "tabVersions"}}" aria-labelledby="f-versions">
+            <h3 id="f-versions">{{t "versionsTitle"}}</h3>
+            <p>{{t "versionsBody"}}</p>
+            <a class="more" href="{{.Links.Versions}}">{{t "versionsLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+            <span class="step-time" aria-hidden="true"></span>
+            <div class="pane pane-vr" data-pane="1" aria-hidden="true">
+              <p class="pane-head"><span>reports/q4-report.pdf</span></p>
+              <ol class="vr-list">
+                <li class="vr-new is-shown"><code>Q7nV2cR8sKeh</code><span class="tag tag-cur">{{t "versionsLatest"}}</span><time>11-20 09:16</time><span class="vr-size">1.8 MiB</span></li>
+                <li class="vr-marker"><code>{{t "versionsMarker"}}</code><span></span><time>11-20 09:14</time><span class="vr-size">—</span></li>
+                <li><code>3HL4kqtJ0eWd</code><span></span><time>11-18 17:02</time><span class="vr-size">1.9 MiB</span></li>
+                <li class="vr-pick"><code>Xb0Fq2Lm9TzA</code><span class="tag tag-act">{{t "versionsRestore"}}</span><time>11-12 08:41</time><span class="vr-size">1.8 MiB</span></li>
+                <li><code>p9ZcW1aEoBn7</code><span></span><time>11-03 11:26</time><span class="vr-size">1.6 MiB</span></li>
+              </ol>
             </div>
           </article>
-        </div>
 
-        <ul class="grid feature-grid">
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-user"></use></svg></span><h3>{{t "fAccountsTitle"}}</h3><p>{{t "fAccountsBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-folder"></use></svg></span><h3>{{t "fBrowseTitle"}}</h3><p>{{t "fBrowseBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-tag"></use></svg></span><h3>{{t "fPropsTitle"}}</h3><p>{{t "fPropsBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-archive"></use></svg></span><h3>{{t "fArchiveTitle"}}</h3><p>{{t "fArchiveBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sliders"></use></svg></span><h3>{{t "fSettingsTitle"}}</h3><p>{{t "fSettingsBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-sync"></use></svg></span><h3>{{t "fSyncTitle"}}</h3><p>{{t "fSyncBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-funnel"></use></svg></span><h3>{{t "fRulesTitle"}}</h3><p>{{t "fRulesBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-link"></use></svg></span><h3>{{t "fLinksTitle"}}</h3><p>{{t "fLinksBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-command"></use></svg></span><h3>{{t "fKeysTitle"}}</h3><p>{{t "fKeysBody"}}</p></li>
-        </ul>
-      </div>
-    </section>
-
-    <section class="section" id="cli" aria-labelledby="cli-title">
-      <div class="wrap">
-        <header class="section-head">
-          <h2 class="section-title" id="cli-title">{{t "cliTitle"}}</h2>
-          <p class="section-lede">{{t "cliBody"}}</p>
-          <a class="text-link section-link" href="{{.Links.Cli}}"><span>{{t "cliDocs"}}</span><svg class="i" aria-hidden="true" focusable="false"><use href="#i-arrow-right"></use></svg></a>
-        </header>
-        <div class="terminal" data-demo="terminal">
-          <div class="term-bar">
-            <div class="term-tabs" role="tablist" aria-label="{{t "cliExamples"}}">
-{{- range $i, $e := .CLI.Examples}}
-              <button type="button" role="tab" aria-selected="{{if eq $i 0}}true{{else}}false{{end}}" data-term="{{$e.ID}}" id="term-tab-{{$e.ID}}" aria-controls="term-panel">{{$e.Tab}}</button>
-{{- end}}
+          <article class="step" data-step="2" data-title="{{t "tabLink"}}" aria-labelledby="f-links">
+            <h3 id="f-links">{{t "linksTitle"}}</h3>
+            <p>{{t "linksBody"}}</p>
+            <a class="more" href="{{.Links.Links}}">{{t "linksLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+            <span class="step-time" aria-hidden="true"></span>
+            <div class="pane pane-ln" data-pane="2" aria-hidden="true">
+              <p class="pane-head"><span>reports/customers-export.csv</span></p>
+              <div class="ln-form">
+                <span class="ln-label">{{t "lnMethod"}}</span>
+                <span class="seg"><b class="is-on">GET</b><b>PUT</b></span>
+                <span class="ln-label">{{t "lnValid"}}</span>
+                <span class="seg">{{range $i, $p := split (t "lnPresets")}}<b{{if eq $i 1}} class="is-on"{{end}}>{{$p}}</b>{{end}}</span>
+              </div>
+              <p class="ln-url"><span class="ln-host">https://acme-assets.s3.us-east-1.amazonaws.com</span><span class="ln-key">/reports/customers-export.csv</span><span class="ln-q">?X-Amz-Algorithm=<b>AWS4-HMAC-SHA256</b></span><span class="ln-q">&amp;X-Amz-Date=<b>20261120T091400Z</b></span><span class="ln-q">&amp;X-Amz-Expires=<b>3600</b></span><span class="ln-q">&amp;X-Amz-SignedHeaders=<b>host</b></span><span class="ln-q">&amp;X-Amz-Signature=<b class="ln-sig" data-sig>4f1c9a07e2b85d3360ab17c4e9f2d8150c7a</b></span></p>
+              <p class="ln-foot"><span class="ln-clock">{{t "linksExpires"}} <b data-clock>60:00</b></span><span class="ln-meter"><i data-clock-bar></i></span><span class="btn-mini" data-copy><span class="c-idle">{{t "lnCopy"}}</span><span class="c-done">{{t "lnCopied"}}</span></span></p>
             </div>
+          </article>
+
+          <article class="step" data-step="3" data-title="{{t "tabSync"}}" aria-labelledby="f-sync">
+            <h3 id="f-sync">{{t "syncTitle"}}</h3>
+            <p>{{t "syncBody"}}</p>
+            <a class="more" href="{{.Links.Sync}}">{{t "syncLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+            <span class="step-time" aria-hidden="true"></span>
+            {{- $sync := example "sync"}}
+            <div class="pane pane-sy" data-pane="3" aria-hidden="true">
+              <p class="pane-head"><span>./photos → acme-media-archive/photos/</span></p>
+              <p class="sy-opts"><span>{{t "syMode"}} <b>{{t "syMirror"}}</b></span><span>{{t "syCompare"}} <b>{{t "sySizeTime"}}</b></span></p>
+              <ol class="sy-plan">
+                {{- range $i, $l := $sync.Lines}}{{if and (gt $i 0) (lt $i 4)}}{{$c := cols $l.Text}}
+                <li class="{{if eq (index $c 0) "delete"}}sy-del{{else}}sy-up{{end}} is-shown"><span class="sy-act">{{if eq (index $c 0) "delete"}}{{t "syDelete"}}{{else}}{{t "syUpload"}}{{end}}</span><span class="sy-path">{{index $c 1}}</span><span class="sy-size">{{unparen (index $c 2)}}</span><span class="sy-why">{{pick (t "syReasons") (index $c 3)}}</span></li>
+                {{- end}}{{end}}
+              </ol>
+              <p class="sy-foot"><span class="sy-sum">{{t "sySummary"}}</span><span class="btn-mini btn-mini-primary" data-run>{{t "syRun"}}</span></p>
+            </div>
+          </article>
+
+        </div>
+        <div class="tour-stage" hidden>
+          <div class="win">
+            <div class="win-bar">
+              <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+              <span class="win-title" aria-hidden="true">{{t "tabTransfers"}}</span>
+            </div>
+            <div class="win-body"></div>
           </div>
-          <pre class="term-body" id="term-panel" role="tabpanel" aria-labelledby="term-tab-{{(index .CLI.Examples 0).ID}}" tabindex="0"><code>{{range $i, $l := (index .CLI.Examples 0).Lines}}{{if $i}}
-{{end}}{{termLine $l}}{{end}}</code></pre>
         </div>
       </div>
-    </section>
+    </div>
+  </section>
 
-    <section class="section" id="privacy" aria-labelledby="privacy-title">
-      <div class="wrap">
-        <header class="section-head">
-          <h2 class="section-title" id="privacy-title">{{t "privacyTitle"}}</h2>
-          <p class="section-lede">{{t "privacyLede"}}</p>
-        </header>
-        <ul class="grid privacy-grid">
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-globe"></use></svg></span><h3>{{t "pNetTitle"}}</h3><p>{{t "pNetBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-key"></use></svg></span><h3>{{t "pKeysTitle"}}</h3><p>{{t "pKeysBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-eye-off"></use></svg></span><h3>{{t "pLogTitle"}}</h3><p>{{t "pLogBody"}}</p></li>
-          <li class="cell"><span class="cell-icon"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-shield"></use></svg></span><h3>{{t "pScopeTitle"}}</h3><p>{{t "pScopeBody"}}</p></li>
-        </ul>
+  <section class="more-sec" aria-labelledby="more-title">
+    <div class="wrap more-grid">
+      <div class="more-head">
+        <h2 class="lead" id="more-title">{{t "moreLead"}} <span>{{t "moreRest"}}</span></h2>
+        <a class="more" href="{{.Links.Docs}}">{{t "moreLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
       </div>
-    </section>
+      <div class="cmdk" data-cmdk>
+        <div class="cmdk-field" hidden>
+          <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+          <input type="search" autocomplete="off" spellcheck="false" placeholder="{{t "moreFilter"}}" aria-label="{{t "moreFilter"}}" aria-controls="cmdk-list">
+        </div>
+        <ul class="cmdk-list" id="cmdk-list">
+          {{- range split (t "more")}}{{$a := split3 .}}
+          <li><svg class="ic" aria-hidden="true"><use href="#i-{{index $a 0}}"/></svg><h3>{{index $a 1}}</h3><p>{{index $a 2}}</p></li>
+          {{- end}}
+        </ul>
+        <p class="cmdk-empty" role="status" data-none="{{t "moreNone"}}"></p>
+      </div>
+    </div>
+  </section>
 
-    <section class="section finale" id="download" aria-labelledby="download-title">
-      <div class="wrap">
-        <header class="section-head is-center">
-          <h2 class="section-title" id="download-title"><span>{{t "downloadTitle"}}</span> <span class="version">{{.Version}}</span></h2>
-          <p class="download-meta">{{if .Released}}<span>{{.Released}}</span>{{end}}<a href="{{.Links.Changelog}}">{{t "changelog"}}</a></p>
-          <p class="download-note"><span>{{t "downloadNote"}}</span> <a href="{{.Links.Docs}}#install">{{t "installNotes"}}</a></p>
-        </header>
-
-        <div class="dl" data-github-base="{{.ReleaseBase}}/"{{if .MirrorBase}} data-mirror-base="{{.MirrorBase}}"{{end}}>
-{{- if .MirrorBase}}
-          <div class="dl-source">
-            <fieldset class="source-pick">
-              <legend>{{t "sourceLabel"}}</legend>
-              <div class="seg source-seg">
-                <label><input type="radio" name="source" value="github" checked><span class="seg-face"><span data-label="GitHub">GitHub</span></span></label>
-                <label><input type="radio" name="source" value="mirror"><span class="seg-face"><span data-label="{{t "sourceMirror"}}">{{t "sourceMirror"}}</span></span></label>
-              </div>
-            </fieldset>
-            <p class="source-note"><span aria-live="polite" data-source-note>{{t "sourceGithubNote"}}</span><span class="source-note-sizer" aria-hidden="true">{{t "sourceGithubNote"}}</span><span class="source-note-sizer" aria-hidden="true">{{t "sourceMirrorNote"}}</span></p>
-            <p class="source-fallback"><span>{{t "mirrorFallback"}}</span> <a href="{{.MirrorBase}}">{{.MirrorLabel}}</a></p>
+  <section class="cli" id="cli" aria-labelledby="cli-title">
+    <div class="wrap cli-grid">
+      <div class="sec-head">
+        <h2 class="lead" id="cli-title">{{t "cliLead"}} <span>{{t "cliRest"}}</span></h2>
+        <a class="more" href="{{.Links.Cli}}">{{t "cliLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+      </div>
+      <div class="term" data-term>
+        <div class="term-bar">
+          <span class="term-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+          <div class="term-tabs" role="tablist" aria-label="{{t "cliTabs"}}" hidden>
+            {{- range $i, $e := .CLI.Examples}}
+            <button type="button" role="tab" id="tab-{{$e.ID}}" aria-controls="term-out" aria-selected="{{if eq $i 0}}true{{else}}false{{end}}" tabindex="{{if eq $i 0}}0{{else}}-1{{end}}" data-example="{{$i}}">{{$e.Tab}}</button>
+            {{- end}}
           </div>
-{{- end}}
-          <ul class="dl-list">
-            <li class="dl-row" data-os="windows">
-              <div class="dl-os"><h3>Windows</h3><span class="os-badge">{{t "yourSystem"}}</span><p>{{t "osWindowsReq"}}</p></div>
-              <div class="dl-links">
-                <a class="dl-link" data-asset="{{archive "windows-amd64.zip"}}" href="{{download "windows-amd64.zip"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
-                <a class="dl-link" data-asset="{{archive "windows-arm64.zip"}}" href="{{download "windows-arm64.zip"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
-              </div>
-            </li>
-            <li class="dl-row" data-os="macos">
-              <div class="dl-os"><h3>macOS</h3><span class="os-badge">{{t "yourSystem"}}</span><p>{{t "osMacReq"}}</p></div>
-              <div class="dl-links">
-                <a class="dl-link" data-asset="{{archive "darwin-arm64.zip"}}" href="{{download "darwin-arm64.zip"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>{{t "appleSilicon"}}</span><small>arm64</small></a>
-                <a class="dl-link" data-asset="{{archive "darwin-amd64.zip"}}" href="{{download "darwin-amd64.zip"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Intel</span><small>amd64</small></a>
-              </div>
-            </li>
-            <li class="dl-row" data-os="linux">
-              <div class="dl-os"><h3>Linux</h3><span class="os-badge">{{t "yourSystem"}}</span><p>{{t "osLinuxReq"}}</p></div>
-              <div class="dl-links">
-                <a class="dl-link" data-asset="{{archive "linux-amd64.tar.gz"}}" href="{{download "linux-amd64.tar.gz"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>x64</span><small>amd64</small></a>
-                <a class="dl-link" data-asset="{{archive "linux-arm64.tar.gz"}}" href="{{download "linux-arm64.tar.gz"}}"><svg class="i" aria-hidden="true" focusable="false"><use href="#i-download"></use></svg><span>Arm</span><small>arm64</small></a>
-              </div>
-            </li>
+        </div>
+        {{- $first := index .CLI.Examples 0}}
+        <pre class="term-out" id="term-out" role="tabpanel" aria-labelledby="tab-{{$first.ID}}" tabindex="0"><code>{{range $first.Lines}}<span class="t-line">{{termLine .}}</span>
+{{end}}</code></pre>
+      </div>
+      <p class="term-note">{{t "cliNote"}}</p>
+      <script type="application/json" id="cli-demo">{{.CLIJSON}}</script>
+    </div>
+  </section>
+
+  <section class="privacy" id="privacy" aria-labelledby="privacy-title">
+    <div class="wrap">
+      <div class="sec-head">
+        <h2 class="lead" id="privacy-title">{{t "privLead"}} <span>{{t "privRest"}}</span></h2>
+        <a class="more" href="{{.Links.Privacy}}">{{t "privLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+      </div>
+      <dl class="priv">
+        {{- range split (t "priv")}}{{$kv := split2 .}}
+        <div><dt>{{index $kv 0}}</dt><dd>{{index $kv 1}}</dd></div>
+        {{- end}}
+      </dl>
+    </div>
+  </section>
+
+  <section class="download" id="download" aria-labelledby="download-title">
+    <div class="wrap">
+      <div class="dl-head">
+        <div>
+          <h2 id="download-title">{{t "dlTitle"}} <span class="dl-ver">{{.Version}}</span></h2>
+          <p>{{t "dlBody"}}{{if .ReleasedText}} {{.ReleasedText}}{{end}}</p>
+        </div>
+        {{- if .MirrorBase}}
+        <fieldset class="source" data-source hidden>
+          <legend class="sr">{{t "sourceLabel"}}</legend>
+          <label><input type="radio" name="source" value="github" checked><span>GitHub</span></label>
+          <label><input type="radio" name="source" value="mirror"><span>{{t "sourceMirror"}}</span></label>
+        </fieldset>
+        {{- end}}
+      </div>
+      <div class="dl-table" data-downloads data-release-base="{{.ReleaseBase}}/"{{if .MirrorBase}} data-mirror-base="{{.MirrorBase}}"{{end}}>
+        {{- range split "windows|macos|linux"}}{{$os := .}}
+        <section class="dl-os" data-os="{{$os}}" aria-labelledby="dl-{{$os}}">
+          <div class="dl-sys">
+            <h3 id="dl-{{$os}}">{{t (printf "os_%s" $os)}}</h3>
+            <p class="dl-yours">{{t "dlYours"}}</p>
+            <p class="dl-note">{{t (printf "dlNote_%s" $os)}}</p>
+          </div>
+          <ul>
+            {{- range split (t (printf "dl_%s" $os))}}{{$a := split2 .}}{{$target := index $a 0}}
+            <li><a class="dl{{if eq $target "windows-amd64.zip" "darwin-arm64.zip" "linux-amd64.tar.gz"}} dl-usual{{end}}" href="{{download $target}}" data-file="{{archive $target}}"{{if eq $target "windows-amd64.zip" "darwin-arm64.zip" "linux-amd64.tar.gz"}} data-usual{{end}}>
+              <span class="dl-arch">{{index $a 1}}</span><span class="dl-file">{{archive $target}}</span><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg></a></li>
+            {{- end}}
           </ul>
-        </div>
-
-        <ul class="download-links">
-          <li><a href="{{.ReleaseBase}}/SHA256SUMS">SHA256SUMS</a></li>
-          <li><a href="{{.GitHub}}/releases">{{t "allReleases"}}</a></li>
-          <li><a href="{{.Links.Build}}">{{t "buildFromSource"}}</a></li>
-        </ul>
+        </section>
+        {{- end}}
       </div>
-    </section>
-  </main>
-
-  {{template "footer" .}}
-
-  <script type="application/json" id="pail-strings">{{.Runtime}}</script>
-  <script type="application/json" id="pail-cli-demo">{{.CLIJSON}}</script>
-  <script src="{{asset "app.js"}}"></script>
+      <output class="source-note" data-source-note>{{if .MirrorBase}}{{t "sourceGithubNote"}}{{end}}</output>
+      <div class="verify">
+        <div>
+          <h3>{{t "verifyTitle"}}</h3>
+          <p>{{t "verifyBody"}} <a href="{{.ReleaseBase}}/SHA256SUMS" data-file="SHA256SUMS">SHA256SUMS</a></p>
+          <a class="more" href="{{.Links.Install}}">{{t "installNotes"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+        </div>
+        <pre class="code" tabindex="0"><code>sha256sum Pail-v{{.Version}}-linux-amd64.tar.gz    <span class="c">{{t "verifyLinux"}}</span>
+shasum -a 256 Pail-v{{.Version}}-darwin-arm64.zip  <span class="c">{{t "verifyMac"}}</span>
+Get-FileHash Pail-v{{.Version}}-windows-amd64.zip  <span class="c">{{t "verifyWindows"}}</span></code></pre>
+      </div>
+      {{- if .MirrorBase}}
+      <p class="mirror-plain">{{t "mirrorPlain"}} <a href="{{.MirrorBase}}">{{.MirrorLabel}}</a></p>
+      {{- end}}
+    </div>
+  </section>
+</main>
+{{template "footer" .}}
+{{template "palette" .}}
+<script src="{{asset "home.js"}}" defer></script>
 </body>
 </html>

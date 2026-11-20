@@ -115,11 +115,11 @@ func TestBuildWritesBothLanguages(t *testing.T) {
 		{en, `<html lang="en" data-lang="en"`},
 		{en, `<link rel="canonical" href="https://pail.download/">`},
 		{en, `href="/zh/" hreflang="zh-Hans"`},
-		{en, "A desktop client for S3"},
+		{en, "on the desktop."},
 		{zh, `<html lang="zh-Hans" data-lang="zh"`},
 		{zh, `<link rel="canonical" href="https://pail.download/zh/">`},
 		{zh, `href="/" hreflang="en"`},
-		{zh, "S3 兼容存储的桌面客户端"},
+		{zh, "装进桌面"},
 	} {
 		if !strings.Contains(c.page, c.want) {
 			t.Errorf("page lacks %q", c.want)
@@ -165,6 +165,20 @@ func TestDownloadsMatchReleaseScript(t *testing.T) {
 	if !strings.Contains(page, "releases/download/v1.2.3/SHA256SUMS") {
 		t.Error("no SHA256SUMS link")
 	}
+	// Each system's row marks one archive as the usual one, which becomes the
+	// big button for a visitor on that system: x64 on Windows and Linux, Apple
+	// silicon on macOS.
+	for os, want := range map[string]string{"windows": "windows-amd64.zip", "macos": "darwin-arm64.zip", "linux": "linux-amd64.tar.gz"} {
+		row := regexp.MustCompile(`(?s)<section class="dl-os" data-os="` + os + `"[^>]*>(.*?)</section>`).FindStringSubmatch(page)
+		if row == nil {
+			t.Errorf("no download row for %s", os)
+			continue
+		}
+		pref := regexp.MustCompile(`<a class="dl dl-usual" href="[^"]+" data-file="Pail-v1\.2\.3-([^"]+)" data-usual>`).FindAllStringSubmatch(row[1], -1)
+		if len(pref) != 1 || pref[0][1] != want {
+			t.Errorf("%s: preferred archive %v, want %s", os, pref, want)
+		}
+	}
 }
 
 // The mirror (by default defaultMirrorURL) is offered for the version built,
@@ -183,7 +197,7 @@ func TestMirrorDownloads(t *testing.T) {
 	for _, p := range []string{"index.html", "zh/index.html"} {
 		page := read(t, filepath.Join(out, filepath.FromSlash(p)))
 		for _, want := range []string{
-			`data-github-base="https://github.com/DejavuMoe/Pail/releases/download/v1.2.3/"`,
+			`data-release-base="https://github.com/DejavuMoe/Pail/releases/download/v1.2.3/"`,
 			`data-mirror-base="https://pan.zsh.moe/Pail/v1.2.3/"`,
 			`<a href="https://pan.zsh.moe/Pail/v1.2.3/">pan.zsh.moe/Pail/v1.2.3</a>`,
 			`name="source" value="mirror"`,
@@ -192,8 +206,8 @@ func TestMirrorDownloads(t *testing.T) {
 				t.Errorf("%s lacks %s", p, want)
 			}
 		}
-		if n := len(regexp.MustCompile(`data-asset="Pail-v1\.2\.3-[a-z0-9-]+\.(zip|tar\.gz)"`).FindAllString(page, -1)); n != 6 {
-			t.Errorf("%s: %d archives carry data-asset, want 6", p, n)
+		if n := len(regexp.MustCompile(`data-file="Pail-v1\.2\.3-[a-z0-9-]+\.(zip|tar\.gz)"`).FindAllString(page, -1)); n != 6 {
+			t.Errorf("%s: %d archives carry data-file, want 6", p, n)
 		}
 	}
 }
@@ -210,13 +224,22 @@ func TestReleaseDate(t *testing.T) {
 	}
 }
 
-// app.js may only ask for strings that are embedded in the page.
+// The scripts may only ask for strings that are embedded in the page, and
+// every embedded string is used.
 func TestRuntimeKeysCoverScript(t *testing.T) {
-	js := read(t, filepath.Join(repoRoot(t), "site", "static", "app.js"))
-	for _, m := range regexp.MustCompile(`\bt\('(\w+)'|g: '(\w+)'`).FindAllStringSubmatch(js, -1) {
-		key := m[1] + m[2]
-		if !slices.Contains(runtimeKeys, key) {
-			t.Errorf("app.js uses %q, which is not in runtimeKeys", key)
+	used := map[string]bool{}
+	for _, name := range []string{"site.js", "home.js"} {
+		js := read(t, filepath.Join(repoRoot(t), "site", "static", name))
+		for _, m := range regexp.MustCompile(`\bS\.(\w+)`).FindAllStringSubmatch(js, -1) {
+			used[m[1]] = true
+			if !slices.Contains(runtimeKeys, m[1]) {
+				t.Errorf("%s uses %q, which is not in runtimeKeys", name, m[1])
+			}
+		}
+	}
+	for _, k := range runtimeKeys {
+		if !used[k] {
+			t.Errorf("runtimeKeys lists %q, which no script uses", k)
 		}
 	}
 }
@@ -227,10 +250,10 @@ func TestAssetsAreFingerprintedAndClean(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(entries) != len(assets) {
-		t.Fatalf("%d assets, want %d", len(entries), len(assets))
+	if want := len(assets) + len(languages); len(entries) != want { // and a search index per language
+		t.Fatalf("%d assets, want %d", len(entries), want)
 	}
-	hashed := regexp.MustCompile(`^[a-z-]+\.[0-9a-f]{10}\.(css|js|svg|webp|mp4|jpg|png)$`)
+	hashed := regexp.MustCompile(`^[a-z-]+\.[0-9a-f]{10}\.(css|js|svg|webp|jpg|png|json)$`)
 	for _, e := range entries {
 		if !hashed.MatchString(e.Name()) {
 			t.Errorf("asset %s is not fingerprinted", e.Name())

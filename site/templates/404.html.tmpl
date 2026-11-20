@@ -1,11 +1,11 @@
 <!DOCTYPE html>
-<html lang="en" data-lang="en" data-theme="light" data-theme-pref="system">
+<html lang="en" data-lang="en">
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>{{tl "en" "notFoundTitle"}} · Pail</title>
   <meta name="robots" content="noindex">
-  <meta name="color-scheme" content="light dark">
+  <meta name="color-scheme" content="dark light">
   <link rel="icon" href="{{asset "pail-icon.svg"}}" type="image/svg+xml">
   <script>
     (function () {
@@ -15,23 +15,22 @@
       d.setAttribute('data-theme', dark ? 'dark' : 'light');
     })();
   </script>
-  <link rel="stylesheet" href="{{asset "styles.css"}}">
+  <link rel="stylesheet" href="{{asset "site.css"}}">
 </head>
-<body>
-  <main class="not-found">
-    <div class="wrap not-found-inner">
-      <a class="brand" href="/"><img src="{{asset "pail-icon.svg"}}" alt="" width="28" height="28"><span>Pail</span></a>
-      <section>
-        <h1 class="section-title">{{tl "en" "notFoundTitle"}}</h1>
-        <p class="section-lede">{{tl "en" "notFoundBody"}}</p>
-        <a class="btn btn-primary" href="/">{{tl "en" "notFoundHome"}}</a>
-      </section>
-      <section lang="zh-Hans" data-lang="zh">
-        <h2 class="section-title">{{tl "zh" "notFoundTitle"}}</h2>
-        <p class="section-lede">{{tl "zh" "notFoundBody"}}</p>
-        <a class="btn btn-secondary" href="/zh/">{{tl "zh" "notFoundHome"}}</a>
-      </section>
-    </div>
+<body class="lost">
+  <main class="lost-in">
+    <a class="brand" href="/"><img src="{{asset "pail-icon.svg"}}" alt="" width="26" height="26"><span>Pail</span></a>
+    <p class="lost-code" aria-hidden="true"><span>GET</span> {{tl "en" "notFoundPath"}} <b>404 NoSuchKey</b></p>
+    <section>
+      <h1>{{tl "en" "notFoundTitle"}}</h1>
+      <p>{{tl "en" "notFoundBody"}}</p>
+      <a class="btn btn-primary" href="/">{{tl "en" "notFoundHome"}}</a>
+    </section>
+    <section lang="zh-Hans">
+      <h2>{{tl "zh" "notFoundTitle"}}</h2>
+      <p>{{tl "zh" "notFoundBody"}}</p>
+      <a class="btn btn-ghost" href="/zh/">{{tl "zh" "notFoundHome"}}</a>
+    </section>
   </main>
 </body>
 </html>

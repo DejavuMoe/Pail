@@ -42,10 +42,15 @@ type mdContext struct {
 
 func newMDContext(pageLang, srcDir string, labels, pageLabels map[string]string) *mdContext {
 	// Ids that the page chrome already uses.
-	ids := map[string]bool{"main": true, "mobile-nav": true, "toc-title": true, "top": true,
-		"fc-product": true, "fc-res": true, "fc-proj": true}
+	ids := map[string]bool{}
+	for _, id := range chromeIDs {
+		ids[id] = true
+	}
 	return &mdContext{pageLang: pageLang, srcDir: srcDir, labels: labels, pageLabels: pageLabels, ids: ids}
 }
+
+// chromeIDs are the ids the page chrome uses; headings never take them.
+var chromeIDs = []string{"main", "top", "site-nav", "toc", "toc-title", "docs-nav", "palette", "palette-input", "palette-list", "palette-title"}
 
 var slugRE = regexp.MustCompile(`[^a-z0-9]+`)
 
@@ -225,8 +230,51 @@ func (r *siteRenderer) renderCode(w util.BufWriter, src []byte, node ast.Node, e
 	if lang != "" {
 		class = ` class="language-` + html.EscapeString(lang) + `"`
 	}
-	fmt.Fprintf(w, "<pre tabindex=\"0\"><code%s>%s</code></pre>\n", class, escText(strings.TrimSuffix(code.String(), "\n")))
+	body := strings.TrimSuffix(code.String(), "\n")
+	if shellLangs[lang] {
+		body = dimComments(body)
+	} else {
+		body = escText(body)
+	}
+	fmt.Fprintf(w, "<pre tabindex=\"0\"><code%s>%s</code></pre>\n", class, body)
 	return ast.WalkSkipChildren, nil
+}
+
+// shellLangs are the fences whose # comments the page dims, so the commands
+// stand out in a long list.
+var shellLangs = map[string]bool{"sh": true, "bash": true, "shell": true, "powershell": true}
+
+// dimComments escapes a shell block and wraps each comment in <span class="c">.
+// A comment starts at a # outside quotes, at the start of a line or after a space.
+func dimComments(s string) string {
+	var b strings.Builder
+	for i, line := range strings.Split(s, "\n") {
+		if i > 0 {
+			b.WriteByte('\n')
+		}
+		at, quote := -1, rune(0)
+		for j, r := range line {
+			if quote != 0 {
+				if r == quote {
+					quote = 0
+				}
+			} else if r == '\'' || r == '"' {
+				quote = r
+			} else if r == '#' && (j == 0 || line[j-1] == ' ' || line[j-1] == '\t') {
+				at = j
+				break
+			}
+		}
+		if at < 0 {
+			b.WriteString(escText(line))
+			continue
+		}
+		b.WriteString(escText(line[:at]))
+		b.WriteString(`<span class="c">`)
+		b.WriteString(escText(line[at:]))
+		b.WriteString(`</span>`)
+	}
+	return b.String()
 }
 
 // renderCodeSpan wraps every run of non-space characters of an inline code span
@@ -382,7 +430,7 @@ func (r *siteRenderer) renderLink(w util.BufWriter, src []byte, node ast.Node, e
 	// reads as the page it now opens.
 	if page != nil && plainText(n, src) == strings.SplitN(href, "#", 2)[0] {
 		title, ok := r.ctx.pageLabels[page.TitleKey]
-		if !ok {
+		if page.TitleKey == "" || !ok {
 			return ast.WalkStop, fmt.Errorf("no locale string %q for the link %s", page.TitleKey, href)
 		}
 		_, _ = w.WriteString(escText(title))

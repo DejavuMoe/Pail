@@ -6,7 +6,6 @@ import (
 	"regexp"
 	"strings"
 	"testing"
-	"time"
 )
 
 var ldRE = regexp.MustCompile(`(?s)<script type="application/ld\+json">(.*?)</script>`)
@@ -36,7 +35,7 @@ func TestStructuredData(t *testing.T) {
 			t.Errorf("%s: no robots preview hint", name)
 		}
 		graph, _ := structuredData(t, page, name)["@graph"].([]any)
-		if len(graph) != 3 {
+		if len(graph) != 2 {
 			t.Fatalf("%s: graph %v", name, graph)
 		}
 		site, app := graph[0].(map[string]any), graph[1].(map[string]any)
@@ -55,12 +54,6 @@ func TestStructuredData(t *testing.T) {
 			if app[k] != want {
 				t.Errorf("%s: %s = %v, want %v", name, k, app[k], want)
 			}
-		}
-		video := graph[2].(map[string]any)
-		if video["@type"] != "VideoObject" || video["duration"] != "PT48S" || video["uploadDate"] != demoVideoDate ||
-			!strings.HasPrefix(video["contentUrl"].(string), "https://pail.download/assets/pail-demo.") ||
-			!strings.HasPrefix(video["thumbnailUrl"].(string), "https://pail.download/assets/pail-demo.") {
-			t.Errorf("%s: video %v", name, video)
 		}
 		if desc == nil || app["description"] != desc[1] {
 			t.Errorf("%s: description differs from the meta description", name)
@@ -90,14 +83,6 @@ func TestStructuredData(t *testing.T) {
 	}
 	if strings.Contains(read(t, filepath.Join(out, "404.html")), "ld+json") {
 		t.Error("404 page has structured data")
-	}
-}
-
-func TestISODuration(t *testing.T) {
-	for d, want := range map[time.Duration]string{47872 * time.Millisecond: "PT48S", 65 * time.Second: "PT1M5S", 3725 * time.Second: "PT1H2M5S", 0: "PT0S"} {
-		if got := isoDuration(d); got != want {
-			t.Errorf("%v: %s, want %s", d, got, want)
-		}
 	}
 }
 

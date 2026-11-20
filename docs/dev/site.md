@@ -13,7 +13,7 @@ Change the site directly in `site/` and `tools/site/`.
 
 ## Why one repository and a Go generator
 
-- The site's facts (version, archive names, screenshots, icon, colors) come from this repository: `tools/release`, `docs/images/`, `assets/brand/`, `cmd/pail-desktop/theme.go`. Keeping the site here lets one commit change both.
+- The site's facts (version, archive names, screenshots, icon, docs) come from this repository: `tools/release`, `docs/images/`, `assets/brand/`, `docs/guide/`. Keeping the site here lets one commit change both. The site's colours are its own and do not follow `cmd/pail-desktop/theme.go`.
 - A Go generator needs nothing beyond the toolchain the project already pins in `go.mod` (plus the Markdown library `github.com/yuin/goldmark`, pinned in `go.mod`), so the same `golang` image builds the app and the site, and `go test ./...` covers the generator. There is no `package.json`, no lockfile and no `node_modules` for Go's `./...` patterns to trip over.
 - The output is plain HTML, CSS and a small script; it can be served by any static host.
 
@@ -22,31 +22,31 @@ Change the site directly in `site/` and `tools/site/`.
 ```text
 site/
   templates/index.html.tmpl   landing page, one html/template for both languages
-  templates/docs.html.tmpl    shared template of the four docs pages, both languages
-  templates/footer.html.tmpl  footer shared by the landing page and the docs pages
+  templates/docs.html.tmpl    every docs page, both languages
+  templates/chrome.html.tmpl  head, icons, header, footer and search palette shared by all pages
   templates/social.html.tmpl  Open Graph and Twitter metadata
   templates/404.html.tmpl     bilingual not-found page
   locales/en.json             source strings; the generator computes URLs
   locales/zh-Hans.json
-  static/styles.css           landing page styles
-  static/docs.css             docs pages (navigation, prose, tables, contents list)
-  static/app.js               theme, mobile menu, download source, demos; no runtime translation
-  static/docs.js              highlights the current entry of "On this page"
+  static/site.css             tokens, header, footer, palette and the landing page
+  static/docs.css             docs pages (navigation, prose, tables, "On this page")
+  static/site.js              every page: theme, language, menu, copy buttons, "On this page", search palette
+  static/home.js              landing page: the point-cloud pail, the feature tour, the feature filter, the terminal, the download picker
 tools/site/                   generator and tests
 ```
 
-The footer has the logo, the navigation links and the trademark notice. It has no personal credit and no copyright year.
+The footer has the logo, one line on what Pail is, three columns of links and the trademark notice. It has no personal credit and no copyright year.
 
 The generator (`tools/site/main.go`):
 
-- renders `/index.html` (English) and `/zh/index.html` (Simplified Chinese) with `hreflang` alternates and a canonical URL; text is rendered on the server, and only the strings `app.js` builds at runtime (`runtimeKeys`: `heroDownloadFor`, `sourceGithubNote`, `sourceMirrorNote`, `miniBytesOf`) are embedded as JSON, and so is the recording of the terminal (`site/cli-demo.json`; the page itself shows the first example as plain HTML);
-- renders the docs pages (below) and adds them to `sitemap.xml` with their language alternates;
-- copies `docs/images/main-{light,dark}-{en,zh}.webp`, `docs/images/social.webp`, `docs/video/pail-demo.{mp4,webp}` and `assets/brand/pail-icon.svg` (XML comments removed) instead of keeping second copies;
+- renders `/index.html` (English) and `/zh/index.html` (Simplified Chinese) with `hreflang` alternates and a canonical URL; text is rendered on the server, and only the strings the scripts set at runtime (`runtimeKeys`: `heroDownloadFor`, `sourceGithubNote`, `sourceMirrorNote`, `copyCode`, `copiedCode`, `searchEmpty`, `searchPageHit`) are embedded as JSON, and so is the recording of the terminal (`site/cli-demo.json`; the page itself shows the first example as plain HTML);
+- renders the docs pages (below), adds them to `sitemap.xml` with their language alternates and writes a search index per language (`/assets/search-<lang>.<hash>.json`: page titles and `##` / `###` headings);
+- copies `docs/images/main-{light,dark}-{en,zh}.webp`, `docs/images/social.webp` and `assets/brand/pail-icon.svg` (XML comments removed) instead of keeping second copies;
 - renders Open Graph and Twitter large-image metadata in the initial HTML of both landing pages and every documentation page: localized title, description and image alt text, page canonical URL, `en_US` / `zh_CN` locales, and an absolute fingerprinted URL of `social.jpg` built from `-base-url`. The build re-encodes `docs/images/social.webp` as JPEG (quality 88), because not every platform reads WebP cards; it is 1200×630, and `TestSocialMetadata` checks the declared size. The 404 page stays `noindex` and has no social card;
-- renders schema.org JSON-LD in the initial HTML (`tools/site/seo.go`): on both landing pages a `WebSite`, a `SoftwareApplication` (free offer, platforms, version, release date from `CHANGELOG.md`, GitHub Release, changelog page, screenshot) and a `VideoObject` for the demo (duration read from the MP4's movie header, upload date `demoVideoDate`, which changes with the video), on every docs page a two-level `BreadcrumbList`;
+- renders schema.org JSON-LD in the initial HTML (`tools/site/seo.go`): on both landing pages a `WebSite`, a `SoftwareApplication` (free offer, platforms, version, release date from `CHANGELOG.md`, GitHub Release, changelog page, screenshot) on every docs page a two-level `BreadcrumbList`;
 - links an `apple-touch-icon` (`assets/brand/generated/pail-256.png`) and the GitHub releases Atom feed from every page;
 - writes the IndexNow key file `/<indexNowKey>.txt`; landing and docs pages also send `robots: max-image-preview:large`. `TestStructuredData` checks both;
-- fingerprints every file under `/assets/` (`styles.<hash>.css`) so it can be cached forever while HTML is revalidated;
+- fingerprints every file under `/assets/` (`site.<hash>.css`) so it can be cached forever while HTML is revalidated;
 - writes `404.html`, `robots.txt` and `sitemap.xml` (every entry lists its `en`, `zh-Hans` and `x-default` alternates);
 - shows the release date in the download section, read from the `## [x.y.z] - YYYY-MM-DD` heading of `CHANGELOG.md`; without such a heading (a preview of an unreleased version) the date is omitted, so the same commit and version always produce the same files;
 - fails when a locale misses a key, when the two locales' key sets differ, when a string is empty, or when `-version` is not a semantic version without the `v` prefix;
@@ -56,13 +56,15 @@ Flags: `-out`, `-version` (required); `-root` (default: found by walking up to t
 
 ### Download mirror
 
-`-mirror-url` is the https root of the download mirror; each release is uploaded to its `v<version>/` directory under the GitHub file names. The pages always get `data-mirror-base=<root>/v<version>/` on the download list for the version they are built for, a GitHub / Mirror source switch, and a plain link to the mirror directory for visitors without JavaScript. `app.js` applies the switch to every download link and stores the choice in `localStorage` under `pail-source`. The build does not check the mirror. `-mirror-url ""` builds pages that offer GitHub only and show no switch.
+`-mirror-url` is the https root of the download mirror; each release is uploaded to its `v<version>/` directory under the GitHub file names. The pages always get `data-mirror-base=<root>/v<version>/` on the download list for the version they are built for, a GitHub / Mirror source switch, and a plain link to the mirror directory for visitors without JavaScript. `home.js` applies the switch to every download link and stores the choice in `localStorage` under `pail-source`. The build does not check the mirror. `-mirror-url ""` builds pages that offer GitHub only and show no switch.
 
-The tests (`go test ./tools/site/...`) build the real site and check both languages and every page, the stable heading ids, that the Chinese docs reuse the English ids in order, that the six download links match the targets in `tools/release`, the mirror links and switch, the release date, that every internal link and fragment resolves to a built file and id and that external links stay on the allowed hosts, that `app.js` only asks for embedded strings, fingerprinting, deterministic output, that a translation with different headings or a link that leaves the repository fails the build, input validation, and the writing rules in [writing.md](writing.md) (`TestCopyRules`, in `tools/site/copy_test.go`).
+The tests (`go test ./tools/site/...`) build the real site and check both languages and every page, the stable heading ids, that the Chinese docs reuse the English ids in order, that the six download links match the targets in `tools/release` and that each system's row marks one usual archive, the mirror links and switch, the release date, that every internal link and fragment resolves to a built file and id and that external links stay on the allowed hosts, that the scripts only ask for embedded strings, fingerprinting, deterministic output, that a translation with different headings or a link that leaves the repository fails the build, input validation, and the writing rules in [writing.md](writing.md) (`TestCopyRules`, in `tools/site/copy_test.go`).
 
-Behaviour of the page scripts: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, a disclosure menu for narrow screens, and reduced-motion support that also applies when the system setting changes while the page is open. The demo video is a native `<video>` that does not autoplay and has a poster and a plain download link inside it; its captions are part of the picture, so it has no `<track>`. It keeps `preload="none"`, and Chrome's own centre play button does nothing on such a video until something has loaded, so `app.js` hides the native controls, shows the page's own play button over the poster, and restores the native controls once the video starts; without JavaScript the native controls stay. Interaction feedback (pressed buttons, the menu icon turning into a cross, the mobile menu dropping in, the terminal tab marker, a theme cross-fade where the browser has view transitions) is not an entrance animation and stops under reduced motion like everything else. On narrow screens the terminal tabs scroll sideways and the edge with more tabs behind it fades out. There is no site search or command palette. Without JavaScript every section, link and download still works; the theme control and menu button are hidden, the mobile navigation is shown as a plain list on narrow screens, and the terminal shows its first example.
+Behaviour of the page scripts: theme follows the system with a System / Light / Dark control stored in `localStorage` (applied before first paint), the language button links between `/` and `/zh/` and stores the choice, a first visit to `/` with a Chinese browser language goes to `/zh/` unless a choice is stored, a disclosure menu for narrow screens, a docs page list that folds into a sticky bar under the header on narrow screens, and reduced-motion support that also applies when the system setting changes while the page is open. The search button (and Ctrl K, ⌘K or `/`) opens a dialog that searches the docs index of the page's language. On the visitor's system the download table marks that row and its usual archive (x64 on Windows and Linux, Apple silicon on macOS), and the hero button downloads that archive. The pail in the hero is a canvas of points built from the icon's three strata and its handle; it assembles once, turns slowly, leans toward the pointer, and sample object keys fall into it, each adding a `PUT` line to the log under it. The four regions of the screenshot are named in plain text under it; the screenshot always fits the width of the page. The four features are a list beside one app window whose title and view follow the open feature; on wide screens the next feature opens every nine seconds (a thin line shows the time) until the visitor clicks one, and hover or focus holds it; the window keeps the height of its tallest view so the page does not jump. On narrow screens the list is an accordion, the window opens inside the open feature and nothing advances on its own. Each view (transfers, versions, a presigned URL, a sync plan) plays only while it is shown and on screen. The other features are a list with a filter field. The terminal keeps the height of its longest example at the current width, so switching examples never moves the page; on wide screens it sits beside the section text, and on phones it runs edge to edge, its example tabs wrap and every line wraps. Everything that moves on its own runs only while on screen and stops under reduced motion. Without JavaScript every section, link and download still works; the theme control, search, filter and menu button are hidden, the mobile navigation is a plain list, each feature shows its view in finished state under its text, and the terminal shows its first example.
 
-The site loads no webfonts. Text uses each operating system's default sans-serif and monospace stacks with CJK fallbacks (see `docs/product/constraints.md`), so the site makes no third-party requests and there are no font licences to ship.
+Navigating between pages uses cross-document view transitions where the browser has them: the header and the docs navigation stay in place and only the content fades. The header is the same element with the same width (`--wrap`, 1280px) on the landing page and the docs.
+
+The site loads no fonts. Text uses the system UI face (SF Pro and PingFang SC on Apple systems, Segoe UI Variable and Microsoft YaHei on Windows, Roboto or Noto Sans with Noto Sans CJK SC elsewhere), and code uses the system monospace face (`ui-monospace`, SF Mono, Cascadia Code, Menlo, Consolas). There are no third-party requests.
 
 ## Screenshots and social card
 
@@ -76,20 +78,20 @@ Social fields follow the [Open Graph protocol](https://ogp.me/); canonical and l
 
 The docs pages render the repository's own Markdown; they have no separately written copy. Only the page chrome (titles, navigation, labels) comes from the locale files.
 
-| Page | English URL | Chinese URL | Source (en / zh-Hans) |
-| --- | --- | --- | --- |
-| Get started | `/docs/` | `/zh/docs/` | `README.md` / `README.zh-CN.md`, the sections Install, Quick start, Command line, Data and privacy, Tested platforms and services, Build from source (ids `install`, `quick-start`, `command-line`, `data-and-privacy`, `tested`, `build-from-source`) |
-| Command line | `/docs/cli/` | `/zh/docs/cli/` | `docs/cli.md` / `docs/cli.zh-CN.md` |
-| Changelog | `/changelog/` | `/zh/changelog/` | `CHANGELOG.md` / `CHANGELOG.zh-CN.md` |
-| License | `/license/` | `/zh/license/` | `LICENSE` on both; the Chinese page shows a note and marks the text `lang="en"` |
+| Group | Pages | Source (en / zh-Hans) |
+| --- | --- | --- |
+| Get started | Overview (`/docs/`), Install, Connect storage | `docs/guide/<page>.md` / `docs/guide/<page>.zh-CN.md` |
+| Using Pail | Browse, Transfers, Objects, Versions, Buckets, Links, Sync, Shortcuts | `docs/guide/<page>.md` / `.zh-CN.md` |
+| Reference | Command line (`/docs/cli/`), Data and security, Changelog (`/changelog/`), License (`/license/`) | `docs/cli.md`, `docs/guide/privacy.md`, `CHANGELOG.md`, `LICENSE` and their Chinese versions; the license is English on both |
 
 Rules of the generator (`tools/site/docs.go`, `markdown.go`):
 
 - Markdown is converted with `github.com/yuin/goldmark` (pinned in `go.mod`) with the GFM table extension only. Raw HTML and images in a source fail the build; they are never passed through or dropped silently.
-- The README has eight `##` sections, in this order: Features, Install, Quick start, Command line, Data and privacy, Tested platforms and services, Build from source, License (Chinese: 功能, 安装, 快速开始, 命令行, 数据与隐私, 已测试的平台与服务, 从源码构建, 许可证). Sections are chosen by position and must carry these titles; a renamed or reordered section fails the build. The Get started page shows sections 2 to 7. The `# ` title and the README language-switcher line are removed; the page has its own title and language control.
-- Heading ids are ASCII slugs of the English headings (`[Unreleased]` loses its brackets); the Get started section ids are fixed. Chinese pages reuse the English ids by position, `###` subsections of the README included, and the build fails when the heading count or levels differ from the English source. Only `##` and `###` headings are allowed.
+- A guide page starts with its `# ` title and one paragraph, which becomes the page's lede and description; the rest is `##` and `###` sections.
+- Heading ids are ASCII slugs of the English headings (`[Unreleased]` loses its brackets); Chinese pages reuse the English ids by position, and the build fails when the heading count or levels differ from the English source. Only `##` and `###` headings are allowed.
 - Inline code spans are rendered with each space-separated token in `<span class="tok">`, so a span wraps only at its spaces.
-- Link rewriting: a link to a file that is a docs source (`README*.md`, `docs/cli*.md`, `CHANGELOG*.md`, `LICENSE`) opens the page in the current language (fragment kept), and link text that is that path becomes the page title; any other repository path opens `https://github.com/DejavuMoe/Pail/blob/master/<path>`; absolute `http(s)`/`mailto` links are kept; a path that leaves the repository fails the build.
+- In `sh`, `bash`, `shell` and `powershell` blocks, a `#` comment (outside quotes, at the start of a line or after a space) is wrapped in `<span class="c">` and shown dimmed.
+- Link rewriting: a link to a file that is a docs source (`docs/guide/*.md`, `docs/cli*.md`, `CHANGELOG*.md`, `LICENSE`) opens the page in the current language (fragment kept), and link text that is that path becomes the page title; any other repository path opens `https://github.com/DejavuMoe/Pail/blob/master/<path>`; absolute `http(s)`/`mailto` links are kept; a path that leaves the repository fails the build.
 - Tables are wrapped in a labelled, focusable `table-wrap`; code blocks are focusable; a contents list ("On this page") appears with three or more `##` sections.
 - Each page has a canonical URL and `hreflang` alternates (`en`, `zh-Hans`, `x-default`). Adding, renaming or moving a source file means changing `docPages` in `tools/site/docs.go`; the workflow builds on every `master` push.
 

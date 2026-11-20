@@ -49,9 +49,12 @@ var languages = []language{
 	{Code: "zh", HTMLLang: "zh-Hans", File: "zh-Hans.json", Path: "/zh/"},
 }
 
-// runtimeKeys are the strings app.js sets at runtime (download button, download
-// source note). They are embedded in the landing pages as JSON.
-var runtimeKeys = []string{"heroDownloadFor", "sourceGithubNote", "sourceMirrorNote", "miniBytesOf"}
+// runtimeKeys are the strings the page scripts set at runtime (download
+// button, download source note, code copy button, search palette). They are
+// embedded in every page as JSON.
+var columnsRE = regexp.MustCompile(` {2,}`)
+
+var runtimeKeys = []string{"heroDownloadFor", "sourceGithubNote", "sourceMirrorNote", "copyCode", "copiedCode", "searchEmpty", "searchPageHit"}
 
 // asset is a file served from /assets/ under a content-hashed name.
 type asset struct {
@@ -62,10 +65,10 @@ type asset struct {
 }
 
 var assets = []asset{
-	{name: "styles.css", src: "site/static/styles.css"},
+	{name: "site.css", src: "site/static/site.css"},
 	{name: "docs.css", src: "site/static/docs.css"},
-	{name: "app.js", src: "site/static/app.js"},
-	{name: "docs.js", src: "site/static/docs.js"},
+	{name: "site.js", src: "site/static/site.js"},
+	{name: "home.js", src: "site/static/home.js"},
 	{name: "pail-icon.svg", src: "assets/brand/pail-icon.svg", svg: true},
 	{name: "main-light-en.webp", src: "docs/images/main-light-en.webp"},
 	{name: "main-light-zh.webp", src: "docs/images/main-light-zh.webp"},
@@ -73,8 +76,6 @@ var assets = []asset{
 	{name: "main-dark-zh.webp", src: "docs/images/main-dark-zh.webp"},
 	{name: "social.jpg", src: "docs/images/social.webp", jpeg: true},
 	{name: "apple-touch-icon.png", src: "assets/brand/generated/pail-256.png"},
-	{name: "pail-demo.mp4", src: "docs/video/pail-demo.mp4"},
-	{name: "pail-demo.webp", src: "docs/video/pail-demo.webp"},
 }
 
 // outputs are the top-level entries a build writes. An existing -out
@@ -178,6 +179,20 @@ func build(c config) error {
 		return err
 	}
 
+	docs, err := buildDocSet(c.root, locales)
+	if err != nil {
+		return err
+	}
+	for _, lang := range languages {
+		idx, err := searchIndex(docs, lang, locales)
+		if err != nil {
+			return err
+		}
+		if err := writeGenerated(c, paths, "search-"+lang.Code+".json", idx); err != nil {
+			return err
+		}
+	}
+
 	release := githubURL + "/releases/download/v" + c.version
 	funcs := template.FuncMap{
 		"absoluteAsset": func(name string) (string, error) {
@@ -200,91 +215,126 @@ func build(c config) error {
 		"download": func(target string) string {
 			return release + "/Pail-v" + c.version + "-" + target
 		},
-		"tl":       func(lang, key string) (string, error) { return lookup(locales, lang, key) },
 		"termLine": termLine,
+		"tl":       func(lang, key string) (string, error) { return lookup(locales, lang, key) },
 		// t is bound to the page's language before each render.
-		"t":       func(string) (string, error) { return "", errors.New("t used outside a page") },
-		"bytesOf": func(string, string) (string, error) { return "", errors.New("bytesOf used outside a page") },
+		"t":         func(string) (string, error) { return "", errors.New("t used outside a page") },
+		"split":     func(s string) []string { return strings.Split(s, "|") },
+		"hasPrefix": strings.HasPrefix,
+		// split2 splits "name~value" into its two parts.
+		"split2": func(s string) ([]string, error) {
+			a, b, ok := strings.Cut(s, "~")
+			if !ok {
+				return nil, fmt.Errorf("%q is not name~value", s)
+			}
+			return []string{a, b}, nil
+		},
+		// cols splits a line of CLI output into its columns, which are
+		// separated by two or more spaces.
+		"cols":    func(s string) []string { return columnsRE.Split(strings.TrimSpace(s), -1) },
+		"unparen": func(s string) string { return strings.TrimSuffix(strings.TrimPrefix(s, "("), ")") },
+		// pick finds key in a "key~value|key~value" list.
+		"pick": func(list, key string) (string, error) {
+			for _, kv := range strings.Split(list, "|") {
+				if k, v, ok := strings.Cut(kv, "~"); ok && k == key {
+					return v, nil
+				}
+			}
+			return "", fmt.Errorf("%q not in %q", key, list)
+		},
+		"split3": func(s string) ([]string, error) {
+			p := strings.Split(s, "~")
+			if len(p) != 3 {
+				return nil, fmt.Errorf("%q is not id~name~value", s)
+			}
+			return p, nil
+		},
 	}
 
-	videoLen, err := mp4Duration(filepath.Join(c.root, "docs", "video", "pail-demo.mp4"))
-	if err != nil {
-		return err
-	}
 	cli, err := loadCLIDemo(c.root)
 	if err != nil {
 		return err
+	}
+	funcs["example"] = func(id string) (cliExample, error) {
+		for _, e := range cli.Examples {
+			if e.ID == id {
+				return e, nil
+			}
+		}
+		return cliExample{}, fmt.Errorf("no recorded CLI example %q", id)
 	}
 	cliJSON, err := json.Marshal(cli) // escapes <, > and & for use inside <script>
 	if err != nil {
 		return err
 	}
-	pageTmpl, err := parseTemplates(c.root, funcs, "index.html.tmpl", "social.html.tmpl", "footer.html.tmpl")
+
+	// common is the data every page of a language gets.
+	common := func(lang language) map[string]any {
+		other := languages[0]
+		if lang.Code == other.Code {
+			other = languages[1]
+		}
+		runtime := map[string]string{}
+		for _, k := range runtimeKeys {
+			runtime[k] = locales[lang.Code][k]
+		}
+		js, _ := json.Marshal(runtime) // escapes <, > and & for use inside <script>
+		return map[string]any{
+			"Lang":          lang.Code,
+			"HTMLLang":      lang.HTMLLang,
+			"OtherLang":     other.Code,
+			"OtherHTMLLang": other.HTMLLang,
+			"PathZh":        languages[1].Path,
+			"Links":         linksFor(lang),
+			"Version":       c.version,
+			"GitHub":        githubURL,
+			"Runtime":       template.JS(js),
+			"SearchIndex":   paths["search-"+lang.Code+".json"],
+		}
+	}
+
+	pageTmpl, err := parseTemplates(c.root, funcs, "index.html.tmpl", "social.html.tmpl", "chrome.html.tmpl")
 	if err != nil {
 		return err
 	}
 	for i, lang := range languages {
 		other := languages[1-i]
-		runtime := map[string]string{}
-		for _, k := range runtimeKeys {
-			runtime[k] = locales[lang.Code][k]
-		}
-		js, err := json.Marshal(runtime) // escapes <, > and & for use inside <script>
+		ld, err := appStructuredData(c.baseURL, lang, locales[lang.Code]["metaDescription"], c.version, released,
+			c.baseURL+paths["main-light-"+lang.Code+".webp"], c.baseURL+paths["social.jpg"])
 		if err != nil {
 			return err
 		}
-		ld, err := appStructuredData(c.baseURL, lang, locales[lang.Code]["docDescription"], c.version, released,
-			c.baseURL+paths["main-light-"+lang.Code+".webp"], c.baseURL+paths["social.jpg"],
-			demoVideo{
-				name: locales[lang.Code]["demoTitle"], description: locales[lang.Code]["demoLede"],
-				contentURL: c.baseURL + paths["pail-demo.mp4"], thumbnailURL: c.baseURL + paths["pail-demo.webp"], duration: videoLen,
-			})
-		if err != nil {
-			return err
-		}
-		data := map[string]any{
-			"Lang":           lang.Code,
-			"HTMLLang":       lang.HTMLLang,
-			"OtherLang":      other.Code,
-			"OtherHTMLLang":  other.HTMLLang,
+		data := common(lang)
+		for k, v := range map[string]any{
 			"OtherPath":      other.Path,
-			"PathZh":         languages[1].Path,
-			"Links":          linksFor(lang),
 			"Canonical":      c.baseURL + lang.Path,
-			"SocialTitle":    locales[lang.Code]["docTitle"],
-			"Description":    locales[lang.Code]["docDescription"],
+			"SocialTitle":    locales[lang.Code]["metaTitle"],
+			"Description":    locales[lang.Code]["metaDescription"],
 			"URLEn":          c.baseURL + languages[0].Path,
 			"URLZh":          c.baseURL + languages[1].Path,
-			"Version":        c.version,
-			"GitHub":         githubURL,
 			"ReleaseBase":    release,
-			"Released":       releasedText(locales[lang.Code]["releasedOn"], released),
+			"Released":       released,
+			"ReleasedText":   releasedText(locales[lang.Code]["releasedOn"], released),
 			"MirrorBase":     mirrorBase,
 			"MirrorLabel":    mirrorLabel,
-			"Runtime":        template.JS(js),
 			"CLI":            cli,
 			"CLIJSON":        template.JS(cliJSON),
 			"StructuredData": ld,
+		} {
+			data[k] = v
 		}
 		t, err := pageTmpl.Clone()
 		if err != nil {
 			return err
 		}
 		code := lang.Code
-		t.Funcs(template.FuncMap{
-			"t": func(key string) (string, error) { return lookup(locales, code, key) },
-			// bytesOf words progress as the app does: "1.4 MB of 2.2 MB", "1.4 MB / 2.2 MB" in Chinese.
-			"bytesOf": func(done, total string) (string, error) {
-				s, err := lookup(locales, code, "miniBytesOf")
-				return strings.NewReplacer("{done}", done, "{total}", total).Replace(s), err
-			},
-		})
+		t.Funcs(template.FuncMap{"t": func(key string) (string, error) { return lookup(locales, code, key) }})
 		if err := render(t, data, filepath.Join(c.out, filepath.FromSlash(strings.TrimPrefix(lang.Path, "/")), "index.html")); err != nil {
 			return fmt.Errorf("%s page: %w", lang.Code, err)
 		}
 	}
 
-	if err := renderDocs(c, locales, funcs); err != nil {
+	if err := renderDocs(c, docs, locales, funcs, common); err != nil {
 		return err
 	}
 
@@ -444,6 +494,19 @@ func writeAssets(c config) (map[string]string, error) {
 		paths[a.name] = "/assets/" + name
 	}
 	return paths, nil
+}
+
+// writeGenerated publishes bytes the build made (not a repository file) under
+// /assets/ with a content hash, like writeAssets.
+func writeGenerated(c config, paths map[string]string, name string, b []byte) error {
+	sum := sha256.Sum256(b)
+	ext := path.Ext(name)
+	file := strings.TrimSuffix(name, ext) + "." + hex.EncodeToString(sum[:5]) + ext
+	if err := os.WriteFile(filepath.Join(c.out, "assets", file), b, 0o644); err != nil {
+		return err
+	}
+	paths[name] = "/assets/" + file
+	return nil
 }
 
 func render(t *template.Template, data any, dst string) error {

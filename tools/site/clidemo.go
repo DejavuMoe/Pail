@@ -14,7 +14,7 @@ import (
 // site/cli-demo.json is written by TestSiteCLIDemo in cmd/pail, which runs the
 // commands against the demo S3 server and fails when their output changes. The
 // first example is rendered into the page, so it works without JavaScript; all
-// of them are embedded as JSON for app.js, which only picks the colours.
+// of them are embedded as JSON for home.js, which only picks the colours.
 
 type cliLine struct {
 	Kind string `json:"kind"` // cmd, out (stdout) or err (stderr)
@@ -76,7 +76,7 @@ var (
 	reTermTable = regexp.MustCompile(`\S {2,}\S`)
 )
 
-// termClass is the CSS classes of a line. app.js (termKind) makes the same choice
+// termClass is the CSS classes of a line. home.js (termKind) makes the same choice
 // for the examples it renders; TestTerminalClassesMatchScript keeps them equal.
 func termClass(l cliLine) string {
 	c := "t-out"
@@ -98,7 +98,7 @@ func termClass(l cliLine) string {
 	return c
 }
 
-// termLine renders one terminal line as the page and app.js both write it.
+// termLine renders one terminal line as the page and home.js both write it.
 func termLine(l cliLine) template.HTML {
 	text := html.EscapeString(l.Text)
 	if l.Kind == "cmd" {

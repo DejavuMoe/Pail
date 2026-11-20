@@ -44,8 +44,8 @@ func TestBuildWritesAllPages(t *testing.T) {
 	for _, files := range docsFiles() {
 		want = append(want, files...)
 	}
-	if len(want) != 13 {
-		t.Fatalf("expected 13 pages, test lists %d", len(want))
+	if n := 5 + 2*len(docPages); len(want) != n {
+		t.Fatalf("expected %d pages, test lists %d", n, len(want))
 	}
 	for _, name := range want {
 		if _, err := os.Stat(filepath.Join(out, filepath.FromSlash(name))); err != nil {
@@ -53,13 +53,13 @@ func TestBuildWritesAllPages(t *testing.T) {
 		}
 	}
 	sitemap := read(t, filepath.Join(out, "sitemap.xml"))
-	for _, loc := range []string{"/docs/", "/docs/cli/", "/changelog/", "/license/", "/zh/docs/", "/zh/docs/cli/", "/zh/changelog/", "/zh/license/"} {
+	for _, loc := range []string{"/docs/", "/docs/install/", "/docs/sync/", "/docs/cli/", "/changelog/", "/license/", "/zh/docs/", "/zh/docs/install/", "/zh/docs/cli/", "/zh/changelog/", "/zh/license/"} {
 		if !strings.Contains(sitemap, "<loc>https://pail.download"+loc+"</loc>") {
 			t.Errorf("sitemap lacks %s", loc)
 		}
 	}
-	if n := strings.Count(sitemap, `hreflang="zh-Hans"`); n != 10 {
-		t.Errorf("sitemap has %d zh-Hans alternates, want 10", n)
+	if n, want := strings.Count(sitemap, `hreflang="zh-Hans"`), 2*(1+len(docPages)); n != want {
+		t.Errorf("sitemap has %d zh-Hans alternates, want %d", n, want)
 	}
 }
 
@@ -73,7 +73,7 @@ func TestDocsPagesHaveStableIDs(t *testing.T) {
 				got = append(got, m[2])
 			}
 		}
-		want := []string{"install", "quick-start", "command-line", "data-and-privacy", "tested", "build-from-source"}
+		want := []string{"what-you-download", "systems", "supported-services", "the-main-window", "where-to-go-next"}
 		if !slices.Equal(got, want) {
 			t.Errorf("%s: h2 ids %v, want %v", dir, got, want)
 		}
@@ -102,15 +102,15 @@ func TestDocsPageStructure(t *testing.T) {
 	out := buildSite(t, "1.2.3")
 	get := func(name string) string { return read(t, filepath.Join(out, filepath.FromSlash(name), "index.html")) }
 
-	// The changelog now has three releases/sections and therefore a contents list.
-	for _, name := range []string{"docs", "docs/cli", "zh/docs", "zh/docs/cli", "changelog", "zh/changelog"} {
-		if !strings.Contains(get(name), `class="docs-toc"`) {
+	// A page with two or more sections has "On this page".
+	for _, name := range []string{"docs", "docs/install", "docs/cli", "zh/docs", "zh/docs/sync", "zh/docs/cli", "changelog", "zh/changelog"} {
+		if !strings.Contains(get(name), `<aside class="toc" id="toc"`) {
 			t.Errorf("%s has no table of contents", name)
 		}
 	}
 	for _, name := range []string{"license", "zh/license"} {
 		page := get(name)
-		if strings.Contains(page, `class="docs-toc"`) {
+		if strings.Contains(page, `class="toc"`) {
 			t.Errorf("%s has a table of contents", name)
 		}
 		if !strings.Contains(page, `<p class="license-copyright">Copyright (c) 2026 Dejavu Moe</p>`) {
@@ -119,14 +119,32 @@ func TestDocsPageStructure(t *testing.T) {
 	}
 	// Only the Chinese license page carries the English-only note, and it marks the text as English.
 	en, zh := get("license"), get("zh/license")
-	if strings.Contains(en, "doc-lede") || strings.Contains(en, `class="prose" lang="en"`) {
+	if strings.Contains(en, `class="doc-note"`) || strings.Contains(en, `class="prose" lang="en"`) {
 		t.Error("English license page has the English-only note")
 	}
-	if !strings.Contains(zh, `<p class="doc-lede">`) || !strings.Contains(zh, `<div class="prose" lang="en">`) {
+	if !strings.Contains(zh, `<p class="doc-note">`) || !strings.Contains(zh, `<div class="prose" lang="en">`) {
 		t.Error("Chinese license page lacks the English-only note or lang=en on the text")
 	}
 	if strings.Contains(get("zh/docs"), `class="prose" lang="en"`) {
 		t.Error("lang=en leaked onto a translated page")
+	}
+	// A guide page shows its first paragraph under the title and uses it as the description.
+	root := repoRoot(t)
+	for _, l := range languages {
+		src, err := readSource(root, docPageByKey("install").Sources[l.Code])
+		if err != nil {
+			t.Fatal(err)
+		}
+		_, rest, _ := splitTitle(src)
+		lede, _, err := splitLede(rest)
+		if err != nil {
+			t.Fatal(err)
+		}
+		page := get(strings.TrimPrefix(docURL(docPageByKey("install"), l), "/"))
+		if !strings.Contains(page, `<p class="doc-lede">`+html.EscapeString(lede)+`</p>`) ||
+			!strings.Contains(page, `<meta name="description" content="`+html.EscapeString(lede)+`">`) {
+			t.Errorf("install (%s): the first paragraph is not the lede and description", l.Code)
+		}
 	}
 	// Per page: canonical and hreflang alternates, the current doc nav entry, the language link.
 	for _, p := range docPages {
@@ -138,7 +156,7 @@ func TestDocsPageStructure(t *testing.T) {
 				`<link rel="alternate" hreflang="zh-Hans" href="https://pail.download` + docURL(p, languages[1]) + `">`,
 				`<link rel="alternate" hreflang="x-default" href="https://pail.download` + docURL(p, languages[0]) + `">`,
 				`<a href="` + docURL(p, l) + `" aria-current="page">`,
-				`class="icon-btn lang-btn" href="` + docURL(p, languages[1-indexOfLang(l)]) + `"`,
+				`<a class="lang" href="` + docURL(p, languages[1-indexOfLang(l)]) + `"`,
 				`<html lang="` + l.HTMLLang + `" data-lang="` + l.Code + `"`,
 			} {
 				if !strings.Contains(page, want) {
@@ -148,15 +166,15 @@ func TestDocsPageStructure(t *testing.T) {
 		}
 	}
 	// Tables are wrapped, labelled and use column headers.
-	if page := get("docs"); !strings.Contains(page, `<div class="table-wrap" role="group" aria-label="Table: Quick start" tabindex="0"><table>`) ||
-		!strings.Contains(page, `<th scope="col">Flag</th>`) {
-		t.Error("Quick start table is not wrapped and labelled")
+	if page := get("docs/install"); !strings.Contains(page, `<div class="table-wrap" role="group" aria-label="Table: Choose an archive" tabindex="0"><table>`) ||
+		!strings.Contains(page, `<th scope="col">System</th>`) {
+		t.Error("install table is not wrapped and labelled")
 	}
-	if !strings.Contains(get("zh/docs"), `aria-label="表格: 快速开始"`) {
-		t.Error("Chinese Quick start table label missing")
+	if !strings.Contains(get("zh/docs/install"), `aria-label="表格: `) {
+		t.Error("Chinese table label missing")
 	}
 	// Code blocks are focusable.
-	if !strings.Contains(get("docs"), `<pre tabindex="0"><code class="language-sh">`) {
+	if !strings.Contains(get("docs/install"), `<pre tabindex="0"><code class="language-sh">`) {
 		t.Error("code block markup")
 	}
 }
@@ -183,7 +201,7 @@ func TestAllLinksResolve(t *testing.T) {
 			sources.WriteString(read(t, filepath.Join(root, filepath.FromSlash(src))))
 		}
 	}
-	allowed := []string{githubURL, "https://dejavu.moe", "https://pail.download/"}
+	allowed := []string{githubURL, "https://dejavu.moe", "https://pail.download/", defaultMirrorURL}
 
 	ids := map[string]map[string]bool{} // site path of file -> ids
 	var files []string
@@ -204,8 +222,8 @@ func TestAllLinksResolve(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if len(files) != 11 {
-		t.Fatalf("%d HTML files, want 11", len(files))
+	if want := 3 + 2*len(docPages); len(files) != want {
+		t.Fatalf("%d HTML files, want %d", len(files), want)
 	}
 
 	for _, name := range files {
@@ -263,7 +281,7 @@ func TestPagesHaveNoPrototypeLeftovers(t *testing.T) {
 			return err
 		}
 		page := read(t, p)
-		for _, bad := range []string{"data-i18n", "tweaks", "i18n.js", "PAIL_I18N", "{{", "data-screen-label", "data-hero", "data-backdrop", "search-btn", "data-action=\"palette\""} {
+		for _, bad := range []string{"data-i18n", "tweaks", "i18n.js", "PAIL_I18N", "{{", "data-screen-label", "data-backdrop", "pail-stage", "styles.css", "app.js", "docs.js"} {
 			if strings.Contains(page, bad) {
 				t.Errorf("%s contains %q", p, bad)
 			}
@@ -295,9 +313,9 @@ func TestBuildIsDeterministic(t *testing.T) {
 
 func TestRuntimeStringsAreEmbedded(t *testing.T) {
 	out := buildSite(t, "1.2.3")
-	for _, name := range []string{"index.html", "zh/index.html"} {
+	for _, name := range []string{"index.html", "zh/index.html", "docs/index.html", "zh/docs/cli/index.html"} {
 		page := read(t, filepath.Join(out, filepath.FromSlash(name)))
-		m := regexp.MustCompile(`<script type="application/json" id="pail-strings">(.*?)</script>`).FindStringSubmatch(page)
+		m := regexp.MustCompile(`<script type="application/json" id="site-strings">(.*?)</script>`).FindStringSubmatch(page)
 		if m == nil {
 			t.Fatalf("%s: no embedded strings", name)
 		}
@@ -319,7 +337,10 @@ func TestMapHref(t *testing.T) {
 		{"", "en", "docs/cli.md", "/docs/cli/", "cli", false},
 		{"", "zh", "docs/cli.md", "/zh/docs/cli/", "cli", false},
 		{"", "zh", "docs/cli.zh-CN.md#exit-codes", "/zh/docs/cli/#exit-codes", "cli", false},
-		{"docs", "en", "../README.md#install", "/docs/#install", "start", false},
+		{"docs", "en", "../README.md#install", githubURL + "/blob/master/README.md#install", "", false},
+		{"docs/guide", "en", "install.md#check-the-download", "/docs/install/#check-the-download", "install", false},
+		{"docs/guide", "zh", "sync.zh-CN.md", "/zh/docs/sync/", "sync", false},
+		{"docs/guide", "en", "../cli.md#exit-codes", "/docs/cli/#exit-codes", "cli", false},
 		{"", "en", "CHANGELOG.zh-CN.md", "/changelog/", "changelog", false},
 		{"", "en", "LICENSE", "/license/", "license", false},
 		{"", "en", "docs/status.md", githubURL + "/blob/master/docs/status.md", "", false},
@@ -352,7 +373,7 @@ func TestMapHref(t *testing.T) {
 }
 
 func TestMarkdownRendering(t *testing.T) {
-	labels := map[string]string{"docAnchor": "Link", "docTable": "Table", "cliDocs": "Command line reference"}
+	labels := map[string]string{"docAnchor": "Link", "docTable": "Table", "pageCli": "Command line reference"}
 	render := func(srcDir, md string) (string, *mdContext, error) {
 		ctx := newMDContext("en", srcDir, labels, labels)
 		out, err := ctx.convert([]byte(md))
@@ -383,6 +404,13 @@ func TestMarkdownRendering(t *testing.T) {
 	if err != nil || !strings.Contains(out, "<pre tabindex=\"0\"><code class=\"language-powershell\">a &lt; b &amp;&amp; c</code></pre>") ||
 		!strings.Contains(out, "<pre tabindex=\"0\"><code>indented</code></pre>") {
 		t.Errorf("code blocks: %v\n%s", err, out)
+	}
+
+	// Shell comments are dimmed; a # inside quotes or a word is not a comment.
+	out, _, err = render("", "```sh\n# list\npail ls a#b \"x # y\"   # <all>\n```\n\n```text\na # b\n```\n")
+	if err != nil || !strings.Contains(out, `<code class="language-sh"><span class="c"># list</span>`+"\n"+`pail ls a#b "x # y"   <span class="c"># &lt;all&gt;</span></code>`) ||
+		!strings.Contains(out, `<code class="language-text">a # b</code>`) {
+		t.Errorf("shell comments: %v\n%s", err, out)
 	}
 
 	// Inline code breaks only between space-separated tokens; code blocks stay plain.
@@ -432,6 +460,7 @@ func TestMarkdownRendering(t *testing.T) {
 		"title heading": "# x\n",
 		"escaping link": "[x](../x.md)",
 		"script link":   "[x](javascript:alert(1))",
+		"untitled path": "[docs/guide/sync.md](docs/guide/sync.md)",
 	} {
 		if _, _, err := render("", md); err == nil {
 			t.Errorf("%s: no error", name)
@@ -457,22 +486,22 @@ func TestPairHeadings(t *testing.T) {
 	}
 }
 
-func TestSplitSectionsAndTitle(t *testing.T) {
-	md := "# T\n\nintro\n\n## A\n\n```\n## not a heading\n```\n\n## B\n\nb\n"
-	got := splitSections(md)
-	if len(got) != 2 || got[0].Title != "A" || got[1].Title != "B" || !strings.Contains(got[0].markdown(), "## not a heading") {
-		t.Errorf("sections %+v", got)
+func TestSplitTitleAndLede(t *testing.T) {
+	title, rest, err := splitTitle("# T\n\nEnglish | [简体中文](README.zh-CN.md)\n\nBody\n")
+	if err != nil || title != "T" || strings.TrimSpace(rest) != "Body" {
+		t.Errorf("splitTitle = %q, %q, %v", title, rest, err)
 	}
-	body, err := stripTitle("# T\n\nEnglish | [简体中文](README.zh-CN.md)\n\nBody\n")
-	if err != nil || strings.TrimSpace(body) != "Body" {
-		t.Errorf("stripTitle = %q, %v", body, err)
-	}
-	body, err = stripTitle("# T\n\n[English](A.md) | 简体中文\n\nBody\n")
-	if err != nil || strings.TrimSpace(body) != "Body" {
-		t.Errorf("stripTitle = %q, %v", body, err)
-	}
-	if _, err := stripTitle("## T\n"); err == nil {
+	if _, _, err := splitTitle("## T\n"); err == nil {
 		t.Error("source without a title accepted")
+	}
+	lede, rest, err := splitLede("\nOne\nparagraph.\n\n## A\n")
+	if err != nil || lede != "One paragraph." || !strings.HasPrefix(rest, "## A") {
+		t.Errorf("splitLede = %q, %q, %v", lede, rest, err)
+	}
+	for _, md := range []string{"## A\n", "- item\n", "Uses `code`.\n", "A [link](x.md).\n", "> quote\n", "1. step\n", ""} {
+		if _, _, err := splitLede(md); err == nil {
+			t.Errorf("lede %q accepted", md)
+		}
 	}
 }
 
@@ -480,17 +509,19 @@ func TestSplitSectionsAndTitle(t *testing.T) {
 func copyFixture(t *testing.T) string {
 	t.Helper()
 	src, dst := repoRoot(t), t.TempDir()
-	files := []string{"LICENSE", "README.md", "README.zh-CN.md", "CHANGELOG.md", "CHANGELOG.zh-CN.md", "docs/cli.md", "docs/cli.zh-CN.md",
-		"docs/images/main-light-en.webp", "docs/images/main-light-zh.webp", "docs/images/main-dark-en.webp", "docs/images/main-dark-zh.webp", "docs/images/social.webp", "docs/video/pail-demo.mp4", "docs/video/pail-demo.webp", "assets/brand/pail-icon.svg", "assets/brand/generated/pail-256.png"}
-	err := filepath.WalkDir(filepath.Join(src, "site"), func(p string, d fs.DirEntry, err error) error {
-		if err == nil && !d.IsDir() {
-			rel, _ := filepath.Rel(src, p)
-			files = append(files, filepath.ToSlash(rel))
+	files := []string{"LICENSE", "CHANGELOG.md", "CHANGELOG.zh-CN.md", "docs/cli.md", "docs/cli.zh-CN.md",
+		"docs/images/main-light-en.webp", "docs/images/main-light-zh.webp", "docs/images/main-dark-en.webp", "docs/images/main-dark-zh.webp", "docs/images/social.webp", "assets/brand/pail-icon.svg", "assets/brand/generated/pail-256.png"}
+	for _, dir := range []string{"site", "docs/guide"} {
+		err := filepath.WalkDir(filepath.Join(src, filepath.FromSlash(dir)), func(p string, d fs.DirEntry, err error) error {
+			if err == nil && !d.IsDir() {
+				rel, _ := filepath.Rel(src, p)
+				files = append(files, filepath.ToSlash(rel))
+			}
+			return err
+		})
+		if err != nil {
+			t.Fatal(err)
 		}
-		return err
-	})
-	if err != nil {
-		t.Fatal(err)
 	}
 	for _, f := range files {
 		b, err := os.ReadFile(filepath.Join(src, filepath.FromSlash(f)))
@@ -538,6 +569,9 @@ func TestBuildFailsOnBadDocs(t *testing.T) {
 		{"link escaping the repository", "docs/cli.md", "\nSee [x](../../secret.md).\n", "escapes the repository"},
 		{"image", "CHANGELOG.md", "\n![x](docs/images/main-light-en.webp)\n", "image not expected"},
 		{"deep heading", "docs/cli.md", "\n#### Too deep\n", "unexpected heading level"},
+		{"zh guide with an extra heading", "docs/guide/sync.zh-CN.md", "\n## 额外章节\n\n内容\n", "headings do not match"},
+		{"guide with a level-1 heading", "docs/guide/install.md", "\n# Second title\n", "unexpected heading level"},
+		{"guide linking a guide by its path", "docs/guide/install.md", "\nSee [sync.md](sync.md).\n", "no locale string"},
 	}
 	for _, c := range cases {
 		root := copyFixture(t)
@@ -548,14 +582,15 @@ func TestBuildFailsOnBadDocs(t *testing.T) {
 		}
 	}
 
-	// A README whose sections moved must not publish the wrong text.
+	// A guide page must open with a plain-text paragraph.
 	root := copyFixture(t)
-	p := filepath.Join(root, "README.md")
+	p := filepath.Join(root, "docs", "guide", "versions.md")
 	b, _ := os.ReadFile(p)
-	if err := os.WriteFile(p, []byte(strings.Replace(string(b), "## Quick start", "## Getting started", 1)), 0o644); err != nil {
+	title, rest, _ := strings.Cut(strings.ReplaceAll(string(b), "\r\n", "\n"), "\n\n")
+	if err := os.WriteFile(p, []byte(title+"\n\n## Straight to a section\n\n"+rest), 0o644); err != nil {
 		t.Fatal(err)
 	}
-	if err := buildRoot(t, root); err == nil || !strings.Contains(err.Error(), "section") {
-		t.Errorf("renamed README section: %v", err)
+	if err := buildRoot(t, root); err == nil || !strings.Contains(err.Error(), "plain-text paragraph") {
+		t.Errorf("guide without a lede: %v", err)
 	}
 }

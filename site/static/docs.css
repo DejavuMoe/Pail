@@ -1,333 +1,167 @@
-/* Documentation pages. Tokens come from styles.css; nothing here defines a colour. */
-:root {
-  --header-h: 64px;
-  --docs-offset: calc(var(--header-h) + 24px);
+/* pail.download documentation: a three-column shell around Markdown pages.
+   Loaded after site.css and uses its tokens. */
+
+.docs-shell {
+  display: grid; grid-template-columns: 232px minmax(0, 1fr) 208px; gap: 0 clamp(24px, 3vw, 48px);
+  max-width: var(--wrap); margin-inline: auto; padding-inline: var(--gut);
 }
+.docs-shell:not(:has(.toc)) { grid-template-columns: 232px minmax(0, 1fr); }
 
-/* ---------- Layout ---------- */
-.docs-layout {
-  display: block;
-  padding-top: 24px;
-}
+/* ---------- left: navigation ---------- */
 
-.docs-toc { display: none; }
-
-/* Doc navigation: a horizontal row below 1080px */
 .docs-nav {
-  max-width: 720px;
-  margin-bottom: 32px;
+  position: sticky; top: 61px; align-self: start; max-height: calc(100vh - 61px);
+  overflow-y: auto; padding: 28px 12px 48px 0; view-transition-name: docs-nav;
+  scrollbar-width: thin; scrollbar-color: var(--line-2) transparent; scrollbar-gutter: stable;
 }
-.docs-nav ul {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 24px;
-  border-bottom: 1px solid var(--border);
+.docs-menu {
+  display: flex; align-items: center; gap: 8px; width: 100%; min-height: 44px; padding: 0 12px;
+  border: 1px solid var(--line-2); border-radius: 10px; background: var(--panel); color: var(--text-2); font-size: 0.875rem; text-align: left; cursor: pointer;
 }
-/* The current item's 2px bar overlaps the row's hairline. */
-.docs-nav li { margin-bottom: -1px; }
-.docs-nav a {
-  display: block;
-  padding: 10px 2px;
-  border-bottom: 2px solid transparent;
-  color: var(--muted);
-  font-size: 14px;
-  font-weight: 500;
-  line-height: 1.4;
-  text-decoration: none;
-  white-space: nowrap;
-  transition: color .2s;
+.docs-menu b { flex: 1; min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; color: var(--text); font-weight: 600; }
+.docs-menu .ic { width: 14px; height: 14px; color: var(--text-3); transform: rotate(90deg); transition: transform 0.2s var(--ease); }
+.docs-menu[aria-expanded="true"] .ic { transform: rotate(-90deg); }
+@media (min-width: 861px) { .docs-menu { display: none !important; } }
+.nav-group + .nav-group { margin-top: 28px; }
+.nav-group h2 { margin: 0 0 8px 10px; color: var(--text); font-family: var(--sans); font-size: 0.8125rem; font-weight: 600; }
+.nav-group ul { display: grid; gap: 1px; }
+.nav-group a {
+  display: block; padding: 6px 10px; border-radius: 7px; color: var(--text-2); font-size: 0.875rem; line-height: 1.4;
+  transition: color 0.15s, background-color 0.15s;
 }
-.docs-nav a:hover { color: var(--text); }
-.docs-nav a:focus-visible { outline-offset: -2px; }
-.docs-nav a[aria-current="page"] {
-  border-bottom-color: var(--accent);
-  color: var(--text);
-  font-weight: 600;
-}
-/* Reserve the bold width so the item does not change size when it becomes current. */
-.docs-nav a span::after {
-  content: attr(data-label);
-  content: attr(data-label) / "";
-  display: block;
-  height: 0;
-  overflow: hidden;
-  visibility: hidden;
-  font-weight: 600;
-}
+.nav-group a:hover { color: var(--text); background: var(--panel); }
+.nav-group a[aria-current="page"] { color: var(--text); font-weight: 600; background: var(--panel-2); }
 
-.docs-main { min-width: 0; max-width: 720px; }
+/* ---------- middle: the page ---------- */
 
-@media (min-width: 1080px) {
-  .docs-layout {
-    display: grid;
-    grid-template-columns: 200px minmax(0, 720px) 200px;
-    justify-content: space-between;
-    align-items: start;
-    column-gap: clamp(48px, 4vw, 64px);
-    padding-top: 48px;
-  }
+.doc { min-width: 0; max-width: 740px; padding: 44px 0 80px; }
+.doc-crumb { display: flex; align-items: center; gap: 8px; margin-bottom: 14px; color: var(--text-3); font-size: 0.84375rem; }
+.doc-crumb a:hover { color: var(--text); }
+.doc-crumb span:last-child { color: var(--acc); font-weight: 520; }
+.doc-head h1 { font-size: clamp(2rem, 4.2vw, 2.75rem); line-height: 1.1; letter-spacing: -0.035em; font-weight: 600; }
+:lang(zh-Hans) .doc-head h1 { letter-spacing: 0; line-height: 1.25; }
+.doc-lede { margin-top: 14px; max-width: 40em; color: var(--text-2); font-size: 1.125rem; line-height: 1.6; }
+.doc-note { margin-top: 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--text-2); font-size: 0.875rem; }
 
-  .docs-nav,
-  .docs-toc {
-    position: sticky;
-    top: var(--docs-offset);
-    align-self: start;
-  }
+.prose { margin-top: 8px; color: var(--text); font-size: 1rem; line-height: 1.75; }
+:lang(zh-Hans) .prose { line-height: 1.85; }
+.prose > * + * { margin-top: 1.1em; }
+.prose p, .prose li { color: color-mix(in srgb, var(--text) 86%, var(--bg)); }
+.prose h2 { margin-top: 2.4em; padding-top: 0; font-size: 1.5rem; line-height: 1.3; letter-spacing: -0.025em; font-weight: 600; }
+.prose h3 { margin-top: 2em; font-size: 1.125rem; line-height: 1.4; letter-spacing: -0.01em; font-weight: 600; }
+:lang(zh-Hans) .prose h2, :lang(zh-Hans) .prose h3 { letter-spacing: 0; }
+.prose h2 + *, .prose h3 + * { margin-top: 0.65em; }
+.prose > h2:first-child { margin-top: 1.6em; }
+.heading-anchor { margin-left: 0.35em; color: var(--text-3); font-weight: 400; opacity: 0; transition: opacity 0.15s; }
+.prose h2:hover .heading-anchor, .prose h3:hover .heading-anchor, .heading-anchor:focus-visible { opacity: 1; }
+.heading-anchor:hover { color: var(--acc); }
+.prose :is(h2, h3, h4) { scroll-margin-top: 16px; }
 
-  .docs-nav {
-    max-width: none;
-    margin-bottom: 0;
-  }
-  .docs-nav ul { display: grid; gap: 2px; border-bottom: 0; }
-  .docs-nav li { margin-bottom: 0; }
-  .docs-nav a {
-    padding: 6px 12px;
-    border-bottom: 0;
-    border-left: 2px solid transparent;
-    white-space: normal;
-  }
-  .docs-nav a[aria-current="page"] {
-    border-bottom-color: transparent;
-    border-left-color: var(--accent);
-  }
-
-  .docs-toc {
-    display: block;
-    max-height: calc(100vh - var(--docs-offset) - 24px);
-    overflow-y: auto;
-    font-size: 13px;
-    scrollbar-width: thin;
-  }
-  .docs-toc-title {
-    margin-bottom: 10px;
-    padding-left: 12px;
-    color: var(--text);
-    font-size: 13px;
-    font-weight: 600;
-  }
-  .docs-toc ul { border-left: 1px solid var(--border); }
-  .docs-toc a {
-    display: block;
-    margin-left: -1px;
-    padding: 5px 12px;
-    border-left: 2px solid transparent;
-    color: var(--muted);
-    line-height: 1.4;
-    text-decoration: none;
-    transition: color .2s;
-  }
-  .docs-toc a:hover { color: var(--text); }
-  .docs-toc a:focus-visible { outline-offset: -2px; }
-  .docs-toc a.is-active {
-    border-left-color: var(--accent);
-    color: var(--text);
-  }
-}
-
-/* ---------- Page head ---------- */
-.doc-head {
-  padding-bottom: 32px;
-  margin-bottom: 32px;
-  border-bottom: 1px solid var(--border);
-}
-.doc-head h1 {
-  font-family: var(--font-display);
-  font-size: clamp(2rem, 4.4vw, 2.75rem);
-  font-weight: 600;
-  line-height: 1.1;
-  letter-spacing: -.022em;
-  text-wrap: balance;
-}
-:root[data-lang="zh"] .doc-head h1 { line-height: 1.2; letter-spacing: -.01em; }
-.doc-lede {
-  max-width: 60ch;
-  margin-top: 14px;
-  color: var(--muted);
-  font-size: 17px;
-  text-wrap: pretty;
-}
-
-/* ---------- Prose ---------- */
-.prose {
-  color: var(--text);
-  font-size: 16px;
-  line-height: 1.7;
-}
-.prose:lang(zh) { line-height: 1.8; }
-
-.prose > :first-child { margin-top: 0; }
-.prose > * + * { margin-top: 16px; }
-
-.prose p,
-.prose ul,
-.prose ol { max-width: 70ch; }
-.prose p { text-wrap: pretty; }
-
-.prose ul,
-.prose ol { padding-left: 1.5em; }
+.prose ul, .prose ol { padding-left: 1.3em; }
 .prose ul { list-style: disc; }
 .prose ol { list-style: decimal; }
-.prose li::marker { color: var(--subtle); }
-.prose li + li { margin-top: 8px; }
-.prose li > * + * { margin-top: 8px; }
+.prose li + li { margin-top: 0.4em; }
+.prose li::marker { color: var(--text-3); }
+.prose strong { color: var(--text); font-weight: 600; }
+.prose a { color: var(--text); text-decoration: underline; text-decoration-color: color-mix(in srgb, var(--acc) 55%, transparent); text-decoration-thickness: 1px; text-underline-offset: 3px; transition: text-decoration-color 0.15s; }
+.prose a:hover { text-decoration-color: var(--acc); }
+.prose hr { margin-block: 2.6em; border: 0; border-top: 1px solid var(--line); }
 
-.prose h2,
-.prose h3 {
-  font-family: var(--font-display);
-  /* Anchored headings stop at header + 24px: styles.css already sets html { scroll-padding-top: 88px },
-     so adding a scroll-margin here would double the offset. */
-  scroll-margin-top: 0;
-  text-wrap: balance;
-}
-.prose h2 {
-  margin-top: 56px;
-  font-size: 1.5rem;
-  font-weight: 650;
-  line-height: 1.25;
-  letter-spacing: -.015em;
-}
-.prose h3 {
-  margin-top: 32px;
-  font-size: 1.125rem;
-  font-weight: 600;
-  line-height: 1.35;
-}
-.prose h2 + *,
-.prose h3 + * { margin-top: 14px; }
-.prose > h2:first-child { margin-top: 0; }
-
-.prose strong { font-weight: 600; }
-
-.prose a {
-  color: var(--accent);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 3px;
-}
-.prose a:hover { color: var(--accent-hover); }
-
-.prose .heading-anchor {
-  margin-left: .25em;
-  color: var(--subtle);
-  font-weight: 400;
-  text-decoration: none;
-  opacity: 0;
-  transition: opacity .15s, color .15s;
-}
-.prose :is(h2, h3):hover .heading-anchor,
-.prose .heading-anchor:focus-visible { opacity: 1; }
-.prose .heading-anchor:hover { color: var(--accent); }
-
-.prose code {
-  font-family: var(--font-mono);
-  -webkit-hyphens: none;
-  hyphens: none;
-}
-/* Inline code breaks only at its spaces: the generator wraps each space-separated
-   token in .tok, so a flag such as --vault-password-stdin never splits at a hyphen. */
-.prose :not(pre) > code {
-  padding: .08em .3em;
-  border-radius: 4px;
-  background: var(--hover);
-  font-size: .88em;
-  -webkit-box-decoration-break: clone;
-  box-decoration-break: clone;
-}
-.prose code .tok { white-space: nowrap; }
-
+.prose code { padding: 0.15em 0.4em; border: 1px solid var(--line); border-radius: 5px; background: var(--panel); font-size: 0.85em; }
+.prose a code { color: inherit; }
+.tok { white-space: nowrap; }
 .prose pre {
-  padding: 16px 20px;
-  border: 1px solid var(--term-border);
-  border-radius: 12px;
-  background: var(--term-bg);
-  color: var(--term-text);
-  font-size: 13.5px;
-  line-height: 1.65;
-  overflow-x: auto;
-  scrollbar-gutter: stable;
-  scrollbar-width: thin;
-  scrollbar-color: var(--term-subtle) transparent;
-  tab-size: 4;
+  margin: 0; padding: 16px 18px; overflow-x: auto; border: 1px solid var(--code-line); border-radius: 11px;
+  background: var(--code-bg); color: var(--code-fg); font: 0.84375rem/1.75 var(--mono);
+  scrollbar-color: var(--line-2) transparent;
 }
-.prose pre:focus-visible { border-radius: 12px; }
-.prose pre code {
-  padding: 0;
-  border: 0;
-  background: none;
-  color: inherit;
-  font-size: inherit;
-  overflow-wrap: normal;
-  white-space: pre;
-}
-
-.table-wrap {
-  overflow-x: auto;
-  border: 1px solid var(--border);
-  border-radius: 12px;
-  scrollbar-width: thin;
-}
-.table-wrap:focus-visible { border-radius: 12px; }
-.prose table {
-  width: 100%;
-  border-collapse: collapse;
-  font-size: 14.5px;
-  font-variant-numeric: tabular-nums;
-  line-height: 1.5;
-}
-.prose th,
-.prose td {
-  padding: 10px 14px;
-  border-bottom: 1px solid var(--border);
-  text-align: left;
-  vertical-align: top;
-}
-.prose th {
-  background: var(--bg-sunk);
-  color: var(--muted);
-  font-size: 13px;
-  font-weight: 600;
-  white-space: nowrap; /* a header such as 退出码 never breaks into two lines */
-}
-/* The first column is a short name: keep it on one line so the second column gets the room. */
-.prose td:first-child { white-space: nowrap; font-weight: 500; }
-.prose td:first-child code { font-weight: 400; }
-.prose tbody tr:hover td { background: color-mix(in srgb, var(--bg-sunk) 55%, transparent); }
-.prose tbody tr:last-child td { border-bottom: 0; }
-
-.prose hr {
-  margin: 40px 0;
-  border: 0;
-  border-top: 1px solid var(--border);
-}
+.prose pre code { padding: 0; border: 0; background: none; color: inherit; font-size: inherit; }
+.prose pre .c { color: var(--code-dim); }
+.prose .copy-wrap + *, .prose * + .copy-wrap { margin-top: 1.1em; }
 
 .prose blockquote {
-  margin-left: 0;
-  padding-left: 16px;
-  border-left: 2px solid var(--border-strong);
-  color: var(--muted);
+  margin-inline: 0; padding: 14px 18px; border: 1px solid color-mix(in srgb, var(--acc) 28%, var(--line)); border-radius: 10px;
+  background: color-mix(in srgb, var(--acc) 6%, var(--bg));
 }
+.prose blockquote > * + * { margin-top: 0.6em; }
+.prose blockquote p { color: var(--text-2); }
 
-/* ---------- License text ---------- */
-/* Same words as LICENSE, reflowed into paragraphs so it reads well at any width. */
+.table-wrap { overflow-x: auto; border: 1px solid var(--line); border-radius: 10px; }
+.prose table { width: 100%; border-collapse: collapse; font-size: 0.90625rem; line-height: 1.55; }
+.prose th, .prose td { padding: 10px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+.prose th { background: var(--panel); color: var(--text); font-weight: 560; white-space: nowrap; }
+.prose tr:last-child td { border-bottom: 0; }
+.prose td code { white-space: nowrap; }
 .license-copyright { font-weight: 600; }
 
-/* ---------- Narrow screens ---------- */
-@media (max-width: 480px) {
-  .prose pre { padding: 14px 16px; }
-  /* A two-column reference table fits a 360px screen: the name column is one
-     unbreakable token, so the cells give up padding and type size instead. */
-  .prose table { font-size: 13.5px; }
-  .prose th, .prose td { padding: 8px 10px; }
+/* ---------- foot of the page ---------- */
+
+.doc-foot { display: grid; gap: 24px; margin-top: 64px; }
+.pager { display: grid; grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 12px; }
+.pager a { display: grid; gap: 4px; padding: 16px 18px; border: 1px solid var(--line); border-radius: 11px; transition: border-color 0.15s, background-color 0.15s; }
+.pager a:hover { border-color: var(--line-2); background: var(--panel); }
+.pager span { color: var(--text-3); font-size: 0.8125rem; }
+.pager b { font-size: 0.96875rem; font-weight: 560; }
+.pager-next { grid-column: 2; text-align: right; }
+.doc-source { padding-top: 20px; border-top: 1px solid var(--line); font-size: 0.84375rem; }
+.doc-source a { color: var(--text-3); }
+.doc-source a:hover { color: var(--text); }
+
+/* ---------- right: on this page ---------- */
+
+.toc {
+  position: sticky; top: 61px; align-self: start;
+  max-height: calc(100vh - 61px); overflow-y: auto; padding: 48px 0 40px; scrollbar-width: none;
 }
-/* Below the 360px the site is designed for, a long file name may break
-   anywhere rather than push the page sideways. */
-@media (max-width: 359px) {
-  .prose code .tok { white-space: normal; overflow-wrap: anywhere; }
+.toc h2 { margin-bottom: 12px; font-family: var(--sans); font-size: 0.8125rem; font-weight: 600; }
+.toc ol { display: grid; gap: 1px; }
+.toc a { display: block; padding: 4px 0; color: var(--text-3); font-size: 0.84375rem; line-height: 1.45; transition: color 0.15s; }
+.toc a:hover { color: var(--text-2); }
+.toc a.is-current { color: var(--text); font-weight: 600; }
+
+/* ---------- narrow screens ---------- */
+
+@media (max-width: 1180px) {
+  .docs-shell, .docs-shell:not(:has(.toc)) { grid-template-columns: 220px minmax(0, 1fr); }
+  .toc { display: none; }
+}
+@media (max-width: 860px) {
+  .docs-shell, .docs-shell:not(:has(.toc)) { grid-template-columns: minmax(0, 1fr); }
+  .docs-nav { position: static; max-height: none; overflow: visible; padding: 16px 0 0; view-transition-name: none; scrollbar-gutter: auto; }
+  .docs-groups { display: grid; gap: 20px; padding: 16px 0 8px; }
+  .nav-group + .nav-group { margin-top: 0; }
+  .nav-group ul { grid-template-columns: repeat(auto-fill, minmax(150px, 1fr)); }
+  /* With script the list folds into a bar that stays under the header. */
+  .js .docs-nav {
+    position: sticky; top: var(--bar); z-index: 30; margin-inline: calc(-1 * var(--gut)); padding: 10px var(--gut);
+  }
+  /* The blur sits on a layer of its own so the open list stays opaque. */
+  .js .docs-nav::before {
+    content: ""; position: absolute; inset: 0; z-index: -1;
+    background: color-mix(in srgb, var(--bg) 88%, transparent); -webkit-backdrop-filter: saturate(1.6) blur(14px); backdrop-filter: saturate(1.6) blur(14px);
+  }
+  .js .docs-groups {
+    position: absolute; top: calc(100% - 4px); left: var(--gut); right: var(--gut); max-height: calc(100dvh - var(--bar) - 80px); overflow-y: auto; overscroll-behavior: contain;
+    padding: 16px 10px; border: 1px solid var(--line-2); border-radius: 12px; background: var(--bg); box-shadow: var(--shadow);
+  }
+  .js .docs-groups:not(.is-open) { display: none; }
+  .js .doc-crumb { display: none; }
+  .js .prose :is(h2, h3, h4) { scroll-margin-top: 80px; }
+  .doc { padding-top: 32px; }
+  @media (prefers-reduced-motion: no-preference) {
+    .docs-groups.is-open { animation: menu-in 0.2s var(--ease) both; }
+  }
+}
+@media (max-width: 520px) {
+  .pager { grid-template-columns: minmax(0, 1fr); }
+  .pager-next { grid-column: 1; }
 }
 
-/* ---------- Forced colours ---------- */
 @media (forced-colors: active) {
-  .docs-nav a[aria-current="page"],
-  .docs-toc a.is-active { outline: 2px solid Highlight; outline-offset: -2px; }
-  .prose pre, .table-wrap { border: 1px solid CanvasText; }
+  .nav-group a[aria-current="page"] { outline: 1px solid CanvasText; }
+  .prose blockquote { border: 1px solid CanvasText; }
+}
+@media print {
+  .docs-nav, .toc, .doc-foot { display: none !important; }
+  .docs-shell { display: block; }
 }
