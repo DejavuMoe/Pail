@@ -2,9 +2,11 @@ package main
 
 import (
 	"context"
+	"errors"
 	"fmt"
 	"math"
 	"net/http"
+	"net/url"
 	"os"
 	"path/filepath"
 	"slices"
@@ -16,6 +18,7 @@ import (
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/DejavuMoe/Pail/internal/cloud"
+	"github.com/DejavuMoe/Pail/internal/s3test"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -739,7 +742,7 @@ func TestInvalidateOnlyForAWSAccounts(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if contains(h.menu(), "Invalidate…") {
+	if slices.Contains(h.menu(), "Invalidate…") {
 		t.Fatalf("Invalidate offered for a non-AWS account: %q", h.menu())
 	}
 	h.closeMenu()
@@ -749,7 +752,7 @@ func TestInvalidateOnlyForAWSAccounts(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if !contains(h.menu(), "Invalidate…") {
+	if !slices.Contains(h.menu(), "Invalidate…") {
 		t.Fatalf("Invalidate missing for an AWS account: %q", h.menu())
 	}
 	h.closeMenu()
@@ -920,5 +923,478 @@ func TestCloudFrontDisableAsksFirst(t *testing.T) {
 	defer fake.mu.Unlock()
 	if len(fake.toggled) != 1 || fake.toggled[0] != "E1ABC=false" {
 		t.Fatalf("%v", fake.toggled)
+	}
+}
+
+// Every tool's list header is the same strip: the create action is a labelled
+// ghost button, the rest are 28px icon buttons.
+func TestToolListHeadersShareOneShape(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	if _, err := h.a.svc.SaveSyncJob(core.SyncJob{Name: "J", LocalDir: t.TempDir(), Remote: Scope{AccountID: h.env.Account.ID, Bucket: "acme-website"}, Direction: "upload"}); err != nil {
+		t.Fatal(err)
+	}
+	h.openToolView("sync")
+	create := h.rectOf(locales.SyncNew())
+	del := h.rectOf(locales.CommonDelete())
+	h.snap("sync-header-light")
+	if create.W <= 28 {
+		t.Errorf("the sync create button is %.1f wide: it has no visible label", create.W)
+	}
+	if math.Abs(float64(del.W-28)) > 0.5 || math.Abs(float64(del.H-28)) > 0.5 {
+		t.Errorf("sync delete is %.1fx%.1f, want 28x28", del.W, del.H)
+	}
+	if math.Abs(float64(create.H-28)) > 0.5 {
+		t.Errorf("sync create is %.1f high, want 28", create.H)
+	}
+
+	h.a.closeTool()
+	h.openToolView("rules")
+	h.a.rulesAdd()
+	h.settle()
+	rcreate := h.rectOf(locales.RulesAddRule())
+	rdel := h.rectOf(locales.RulesDeleteRule())
+	h.snap("rules-header-light")
+	if rcreate.W <= 28 {
+		t.Errorf("the rules create button is %.1f wide: it has no visible label", rcreate.W)
+	}
+	if math.Abs(float64(rdel.W-28)) > 0.5 || math.Abs(float64(rdel.H-28)) > 0.5 {
+		t.Errorf("rules delete is %.1fx%.1f, want 28x28", rdel.W, rdel.H)
+	}
+	if math.Abs(float64(rcreate.H-create.H)) > 0.5 || math.Abs(float64(rcreate.Y-create.Y)) > 0.5 {
+		t.Errorf("rules create at y=%.1f h=%.1f, sync create at y=%.1f h=%.1f: the headers differ", rcreate.Y, rcreate.H, create.Y, create.H)
+	}
+}
+
+// ---- stale and slow results -----------------------------------------------------------------
+
+type controlledCF struct {
+	fakeCF
+	fail   bool
+	invErr error
+}
+
+func (f *controlledCF) Distributions(_ context.Context, acct string) ([]cloud.Distribution, error) {
+	return []cloud.Distribution{{ID: "dist-" + acct}}, nil
+}
+
+func (f *controlledCF) Invalidations(_ context.Context, acct, dist string) ([]cloud.Invalidation, error) {
+	if f.invErr != nil {
+		return nil, f.invErr
+	}
+	return []cloud.Invalidation{{ID: "inv-" + acct, DistributionID: dist, Status: "Completed"}}, nil
+}
+
+func (f *controlledCF) Invalidate(ctx context.Context, acct, dist string, paths []string) (cloud.Invalidation, error) {
+	if f.fail {
+		return cloud.Invalidation{}, errors.New("submit denied")
+	}
+	return f.fakeCF.Invalidate(ctx, acct, dist, paths)
+}
+
+// The background poll of the invalidations showed the spinner and disabled
+// Refresh every time it ran; only a refresh the user asks for shows loading.
+func TestF13SilentPollShowsNoLoading(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.a.tool = "cloudfront"
+	cf := &h.a.tl.cf
+	*cf = cfState{api: &controlledCF{}, acct: "A", invFor: "dist-A", invs: []cloud.Invalidation{{ID: "inv-A", Status: "InProgress"}}}
+	h.a.cfTick()
+	if cf.invLoad {
+		t.Fatal("a background poll shows loading and disables Refresh")
+	}
+	poll := nextCompletion(t, h.a)
+	gen := cf.invGen
+	// Still one poll at a time.
+	h.a.cfTick()
+	if cf.invGen != gen {
+		t.Fatal("a second poll started while one was in flight")
+	}
+	// Refresh pressed meanwhile: the request in flight is now the user's, so
+	// loading shows until it lands, without a second request.
+	h.a.cfLoadInvs(false)
+	if !cf.invLoad || cf.invGen != gen {
+		t.Fatalf("user refresh during a poll: invLoad=%v gen=%d want %d", cf.invLoad, cf.invGen, gen)
+	}
+	poll()
+	if cf.invLoad || cf.invs[0].Status != "Completed" {
+		t.Fatalf("poll did not finish: invLoad=%v invs=%+v", cf.invLoad, cf.invs)
+	}
+	// A refresh the user asks for shows loading on its own as well.
+	h.a.cfLoadInvs(false)
+	if !cf.invLoad {
+		t.Fatal("a user refresh shows no loading")
+	}
+	nextCompletion(t, h.a)()
+	if cf.invLoad {
+		t.Fatal("loading stayed after the refresh")
+	}
+}
+
+// A failed background poll stays silent, but one the user joined reports.
+func TestF13SilentPollErrorReportsOnlyWhenAsked(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.a.tool = "cloudfront"
+	cf := &h.a.tl.cf
+	*cf = cfState{api: &controlledCF{invErr: errors.New("poll denied")}, acct: "A", invFor: "dist-A", invs: []cloud.Invalidation{{ID: "inv-A", Status: "InProgress"}}}
+	h.a.cfTick()
+	nextCompletion(t, h.a)()
+	if cf.invErr != "" || cf.invLoad {
+		t.Fatalf("silent poll failure shown: err=%q load=%v", cf.invErr, cf.invLoad)
+	}
+	h.a.cfTick()
+	poll := nextCompletion(t, h.a)
+	h.a.cfLoadInvs(false)
+	poll()
+	if cf.invErr == "" || cf.invLoad {
+		t.Fatalf("refresh the user asked for hid its failure: err=%q load=%v", cf.invErr, cf.invLoad)
+	}
+}
+
+func TestMultipartReentryRejectsOldResult(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	startMultipart(t, h, "old.bin")
+	h.a.mpEnter()
+	old := nextCompletion(t, h.a)
+	h.a.scope.Bucket = "acme-backups"
+	h.a.mpEnter()
+	nextCompletion(t, h.a)()
+	old()
+	if m := h.a.tl.mp; m.loc.Bucket != "acme-backups" || len(m.items) != 0 || m.loading {
+		t.Fatalf("old multipart result crossed scope: loc=%+v items=%+v loading=%v", m.loc, m.items, m.loading)
+	}
+}
+
+func TestCloudFrontReentryRejectsOldResults(t *testing.T) {
+	t.Parallel()
+	for _, request := range []string{"distributions", "invalidations"} {
+		t.Run(request, func(t *testing.T) {
+			h := newHarness(t, "light")
+			h.a.accounts = []Account{{ID: "A", Provider: core.ProviderAWS}, {ID: "B", Provider: core.ProviderAWS}}
+			h.a.accountID = "A"
+			h.a.tl.cf.api = &controlledCF{}
+			h.a.cfEnter()
+			t.Cleanup(h.a.cfLeave)
+			old := nextCompletion(t, h.a)
+			if request == "invalidations" {
+				old()
+				old = nextCompletion(t, h.a)
+			}
+			h.a.cfLeave()
+			h.a.accountID = "B"
+			h.a.cfEnter()
+			nextCompletion(t, h.a)()
+			nextCompletion(t, h.a)()
+			old()
+			cf := &h.a.tl.cf
+			if len(cf.dists) != 1 || cf.dists[0].ID != "dist-B" || cf.invFor != "dist-B" || len(cf.invs) != 1 || cf.invs[0].ID != "inv-B" {
+				t.Fatalf("old CF %s crossed account: dists=%+v for=%q invs=%+v", request, cf.dists, cf.invFor, cf.invs)
+			}
+		})
+	}
+}
+
+func TestCloudFrontCompletionPreservesReopenedDialog(t *testing.T) {
+	t.Parallel()
+	for _, fail := range []bool{false, true} {
+		t.Run(map[bool]string{false: "success", true: "failure"}[fail], func(t *testing.T) {
+			h := newHarness(t, "light")
+			api := &controlledCF{fail: fail}
+			h.a.scope.Bucket = ""
+			h.a.tl.cf = cfState{api: api, acct: "A", dists: []cloud.Distribution{{ID: "dist-A"}}, cursor: 0}
+			h.a.cfOpenDialog("/old")
+			h.a.cfSubmit()
+			old := nextCompletion(t, h.a)
+			h.a.tl.cf.dlg.open = false
+			h.a.cfOpenDialog("/later-unsent")
+			old()
+			d := h.a.tl.cf.dlg
+			if !d.open || d.paths != "/later-unsent" || d.busy || d.err != "" || d.result != nil {
+				t.Fatalf("old invalidation changed new dialog: %+v", d)
+			}
+			if !fail && (len(api.paths) != 1 || api.paths[0][0] != "/old") {
+				t.Fatalf("submitted paths=%v", api.paths)
+			}
+			if len(h.a.toasts) == 0 {
+				t.Error("stale operation outcome was not reported")
+			}
+		})
+	}
+}
+
+func TestMIMESavePreservesLaterEdits(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.a.mimeEnter()
+	h.a.tl.mime.rows = []mimeRow{{".audit", "text/plain"}}
+	h.a.mimeSave()
+	old := nextCompletion(t, h.a)
+	h.a.tl.mime.rows[0].typ = "application/json"
+	old()
+	if m := &h.a.tl.mime; m.rows[0].typ != "application/json" || !m.dirty() || m.saving || m.saved[".audit"] != "text/plain" || h.a.svc.MIMETypes()[".audit"] != "text/plain" {
+		t.Fatalf("MIME saved snapshot erased later draft: %+v", m)
+	}
+	h.a.mimeSave()
+	nextCompletion(t, h.a)()
+	if h.a.tl.mime.dirty() || h.a.svc.MIMETypes()[".audit"] != "application/json" {
+		t.Fatal("later MIME edit could not be saved")
+	}
+}
+
+func TestDraftSaveFailuresPreserveCurrentInput(t *testing.T) {
+	t.Parallel()
+	t.Run("mime", func(t *testing.T) {
+		h := newHarness(t, "light")
+		h.a.mimeEnter()
+		m := &h.a.tl.mime
+		m.rows = []mimeRow{{".audit", "invalid"}}
+		h.a.mimeSave()
+		old := nextCompletion(t, h.a)
+		m.rows[0].typ = "application/json"
+		old()
+		if m.rows[0].typ != "application/json" || !m.dirty() || m.saving || m.err == "" || len(h.a.svc.MIMETypes()) != 0 {
+			t.Fatalf("MIME failure lost draft/error: rows=%v dirty=%v saving=%v err=%q", m.rows, m.dirty(), m.saving, m.err)
+		}
+		h.a.mimeSave()
+		nextCompletion(t, h.a)()
+		if m.dirty() || m.err != "" {
+			t.Fatal("corrected MIME save did not succeed")
+		}
+	})
+	t.Run("sync", func(t *testing.T) {
+		h := newHarness(t, "light")
+		h.a.syncEnter()
+		h.a.syncNew()
+		s := &h.a.tl.sync
+		s.f.name = "missing-folder"
+		h.a.syncSave()
+		old := nextCompletion(t, h.a)
+		s.f.name, s.f.dir = "corrected", t.TempDir()
+		old()
+		if s.f.name != "corrected" || !s.dirty() || s.saving || s.err == "" || len(h.a.svc.SyncJobs()) != 0 {
+			t.Fatalf("sync failure lost draft/error: f=%+v dirty=%v saving=%v err=%q", s.f, s.dirty(), s.saving, s.err)
+		}
+		h.a.syncSave()
+		nextCompletion(t, h.a)()
+		if s.dirty() || s.err != "" {
+			t.Fatal("corrected sync save did not succeed")
+		}
+	})
+}
+
+func TestMultipartAbortPartialUsesActualResults(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	startMultipart(t, h, "abort-ok.bin")
+	startMultipart(t, h, "abort-denied.bin")
+	loc := h.a.scope
+	ups, err := h.a.svc.MultipartUploads(context.Background(), loc)
+	if err != nil || len(ups) != 2 {
+		t.Fatalf("uploads=%v err=%v", ups, err)
+	}
+	h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
+		if r.Method == http.MethodDelete && strings.HasSuffix(r.URL.Path, "/abort-denied.bin") {
+			return &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "denied abort"}
+		}
+		return nil
+	})
+	id, err := h.a.svc.AbortMultipartUploads(loc, ups)
+	if err != nil {
+		t.Fatal(err)
+	}
+	h.waitTask("Abort 2 multipart upload(s)", core.StatusPartiallyFailed)
+	h.settle()
+	h.a.tl.mp = mpState{abortTask: id, abortN: 2, bucket: loc.Bucket, loc: loc}
+	h.a.toasts = nil
+	h.a.mpCheckAbort()
+	if len(h.a.toasts) != 1 {
+		t.Fatalf("completion toast count=%d", len(h.a.toasts))
+	}
+	msg := h.a.toasts[0].msg
+	if !strings.HasPrefix(msg, "Aborted 1 upload · Could not abort:") || !strings.Contains(msg, "AccessDenied") {
+		t.Fatalf("partial abort message=%q", msg)
+	}
+	remaining, err := h.a.svc.MultipartUploads(context.Background(), loc)
+	if err != nil || len(remaining) != 1 || remaining[0].Key != "abort-denied.bin" {
+		t.Fatalf("server outcome=%v err=%v", remaining, err)
+	}
+	h.settle()
+	if len(h.a.tl.mp.items) != 1 || h.a.tl.mp.items[0].Key != "abort-denied.bin" {
+		t.Fatalf("list was not refreshed from actual abort results: %v", h.a.tl.mp.items)
+	}
+}
+
+func TestSyncSavePreservesLaterEdits(t *testing.T) {
+	t.Parallel()
+	for _, existing := range []bool{false, true} {
+		t.Run(map[bool]string{false: "new", true: "existing"}[existing], func(t *testing.T) {
+			h := newHarness(t, "light")
+			h.a.syncEnter()
+			h.a.syncNew()
+			h.a.tl.sync.f.name, h.a.tl.sync.f.dir = "first-name", t.TempDir()
+			if existing {
+				h.a.syncSave()
+				nextCompletion(t, h.a)()
+				h.a.tl.sync.f.name = "submitted-name"
+			}
+			submitted := h.a.tl.sync.f.name
+			left := false
+			h.a.syncSave(func() { left = true })
+			old := nextCompletion(t, h.a)
+			h.a.tl.sync.f.name = "later-unsaved-name"
+			old()
+			s := &h.a.tl.sync
+			if s.f.name != "later-unsaved-name" || !s.dirty() || s.saving || left || s.jobID() == "" || h.a.svc.SyncJobs()[0].Name != submitted {
+				t.Fatalf("sync save erased later draft or left editor: f=%+v dirty=%v left=%v id=%q", s.f, s.dirty(), left, s.jobID())
+			}
+			h.a.syncSave(func() { left = true })
+			nextCompletion(t, h.a)()
+			if !left || s.dirty() || len(h.a.svc.SyncJobs()) != 1 || h.a.svc.SyncJobs()[0].Name != "later-unsaved-name" {
+				t.Fatal("second save did not update the same job and continue")
+			}
+		})
+	}
+}
+
+func TestMultipartAbortReportsTerminalOutcome(t *testing.T) {
+	t.Parallel()
+	for _, status := range []core.Status{core.StatusSucceeded, core.StatusFailed, core.StatusPartiallyFailed, core.StatusCanceled} {
+		t.Run(status.String(), func(t *testing.T) {
+			h := newHarness(t, "light")
+			h.a.tasks = []Task{{ID: "abort", Status: status, Items: 2, ItemsDone: 2, ItemsFailed: 2, Err: "denied"}}
+			if status == core.StatusSucceeded {
+				h.a.tasks[0].ItemsFailed, h.a.tasks[0].Err = 0, ""
+			}
+			if status == core.StatusPartiallyFailed {
+				h.a.tasks[0].ItemsFailed = 1
+			}
+			h.a.tl.mp = mpState{abortTask: "abort", abortN: 2}
+			h.a.toasts = nil
+			h.a.mpCheckAbort()
+			if len(h.a.toasts) != 1 {
+				t.Fatalf("completion toast count=%d", len(h.a.toasts))
+			}
+			msg := h.a.toasts[0].msg
+			if status == core.StatusSucceeded {
+				if msg != "Aborted 2 uploads" {
+					t.Fatalf("success message=%q", msg)
+				}
+			} else if status == core.StatusCanceled {
+				if !strings.Contains(strings.ToLower(msg), "cancel") {
+					t.Fatalf("cancellation reported as success: %q", msg)
+				}
+			} else if status == core.StatusPartiallyFailed && msg != "Aborted 1 upload · Could not abort: denied" {
+				t.Fatalf("partial failure count/message=%q", msg)
+			} else if !strings.Contains(msg, "denied") || msg == "Aborted 2 uploads" {
+				t.Fatalf("failure reported as success: %q", msg)
+			}
+			if h.a.tl.mp.abortTask != "" {
+				t.Fatal("finished abort still followed")
+			}
+		})
+	}
+}
+
+func TestCloudFrontSlowPollDoesNotStarve(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.a.tool = "cloudfront"
+	h.a.tl.cf = cfState{api: &controlledCF{}, acct: "A", invFor: "dist-A", invs: []cloud.Invalidation{{ID: "inv-A", Status: "InProgress"}}}
+	h.a.cfTick()
+	old := nextCompletion(t, h.a)
+	gen := h.a.tl.cf.invGen
+	for i := 0; i < 3; i++ {
+		h.a.cfTick()
+	}
+	if h.a.tl.cf.invGen != gen {
+		t.Errorf("slow poll superseded by another tick: gen=%d want=%d", h.a.tl.cf.invGen, gen)
+	}
+	old()
+	if cf := &h.a.tl.cf; cf.invLoad || cf.invs[0].Status != "Completed" {
+		t.Fatalf("slow poll could not converge: invLoad=%v invs=%+v", cf.invLoad, cf.invs)
+	}
+}
+
+func TestCloudFrontPollRecoversAndSelectionInvalidates(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	api := &controlledCF{invErr: errors.New("poll denied")}
+	h.a.tool = "cloudfront"
+	cf := &h.a.tl.cf
+	*cf = cfState{api: api, acct: "A", invFor: "dist-A", dists: []cloud.Distribution{{ID: "dist-A"}, {ID: "dist-B"}}, invs: []cloud.Invalidation{{ID: "inv-A", Status: "InProgress"}}}
+	h.a.cfTick()
+	nextCompletion(t, h.a)()
+	if cf.invLoad || cf.invErr != "" || cf.invs[0].Status != "InProgress" {
+		t.Fatal("silent failure wedged poll or erased current status")
+	}
+	api.invErr = nil
+	h.a.cfTick()
+	old := nextCompletion(t, h.a)
+	cf.cursor = 1
+	h.a.cfSyncSelection()
+	old()
+	if !cf.invLoad || cf.invFor != "dist-B" {
+		t.Fatal("old poll completed the new selection's request")
+	}
+	nextCompletion(t, h.a)()
+	if cf.invLoad || len(cf.invs) != 1 || cf.invs[0].DistributionID != "dist-B" || cf.invs[0].Status != "Completed" {
+		t.Fatalf("new selection did not load: %v", cf.invs)
+	}
+}
+
+// Keys with %, ?, #, or * became wrong invalidation paths or were refused.
+func TestInvalidationPathsNameTheKeys(t *testing.T) {
+	keys := []string{"50%25 off.png", "a?b.txt", "a#b.txt", "x*.txt", "100%.png", "dir/a%b/", "plain.txt"}
+	got, err := cloud.NormalizeInvalidationPaths(strings.Split(invalidationPaths(keys), "\n"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	want := map[string]bool{}
+	for _, k := range keys {
+		want["/"+k] = true
+	}
+	for _, p := range got {
+		folder := strings.HasSuffix(p, "*")
+		raw, err := url.PathUnescape(strings.TrimSuffix(p, "*"))
+		if err != nil || !want[raw] || folder != strings.HasSuffix(raw, "/") {
+			t.Errorf("path %q names %q (%v)", p, raw, err)
+		}
+		delete(want, raw)
+	}
+	if len(want) > 0 {
+		t.Errorf("no path for %v", want)
+	}
+}
+
+// A new sync job being written was lost when the user left the tool by the
+// sidebar and came back.
+func TestSyncDraftSurvivesLeavingTheTool(t *testing.T) {
+	h := newHarness(t, "light")
+	h.openToolView("sync")
+	h.a.syncNew()
+	h.a.tl.sync.f.name = "my unsaved job"
+	h.settle()
+	h.mustClick("acme-backups")
+	h.settle()
+	h.openToolView("sync")
+	if s := &h.a.tl.sync; s.f.name != "my unsaved job" || !s.edited() {
+		t.Errorf("the draft is gone: name %q", s.f.name)
+	}
+}
+
+// An upload rule being written was lost the same way.
+func TestRulesDraftSurvivesLeavingTheTool(t *testing.T) {
+	h := newHarness(t, "light")
+	h.openToolView("rules")
+	h.a.rulesAdd()
+	h.settle()
+	h.mustClick("acme-backups")
+	h.settle()
+	h.openToolView("rules")
+	if rs := &h.a.tl.rules; !rs.dirty() || len(rs.draft) == 0 {
+		t.Errorf("the draft is gone: %d rules, dirty %v", len(rs.draft), rs.dirty())
 	}
 }

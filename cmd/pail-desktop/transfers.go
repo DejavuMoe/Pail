@@ -209,7 +209,7 @@ func (a *app) transfersPanel(c *ui.Context) {
 			})
 			return
 		}
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		paneScroll(c, func() {
 			for _, t := range shown {
 				a.taskRow(c.Key(t.ID), t)
 			}

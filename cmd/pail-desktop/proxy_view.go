@@ -96,11 +96,9 @@ func (a *app) applyProxy() {
 		pw = &v
 	}
 	f.busy = true
-	a.busyOps.Add(1)
-	go func() {
+	a.bg(func() func() {
 		err := a.svc.SaveProxy(p, pw)
-		a.post(func() {
-			a.busyOps.Add(-1)
+		return func() {
 			f := &a.sf.proxy
 			f.busy = false
 			if err != nil {
@@ -112,8 +110,8 @@ func (a *app) applyProxy() {
 				a.sf.saved = map[string]time.Time{}
 			}
 			a.sf.saved["proxy"] = time.Now()
-		})
-	}()
+		}
+	})
 }
 
 // networkSection is the Network section: protocol, host and port, and the

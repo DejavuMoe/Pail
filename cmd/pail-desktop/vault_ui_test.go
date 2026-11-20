@@ -540,7 +540,7 @@ func TestVaultScreensAtBothSizes(t *testing.T) {
 				h.resize(sz.w, sz.h)
 				c.setup(h)
 				h.tt.Frame()
-				h.expectOnScreen(sz, c.footer...)
+				h.expectOnScreen("en", sz, c.footer...)
 				h.snapAudit(sz, c.name)
 			})
 		}

@@ -123,10 +123,7 @@ func (a *app) versionsTab(c *ui.Context) {
 	k := tk(c)
 	switch f.state {
 	case loadNone, loadBusy:
-		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Spinner(c).Size(14, 14)
-			mutedText(c, locales.VersionsLoading())
-		})
+		loadingLine(c, locales.VersionsLoading())
 		return
 	case loadFailed:
 		errorLine(c, f.err)
@@ -555,7 +552,20 @@ func (a *app) submitRestore(sel core.Selection, loc Scope) {
 }
 
 // ghostToggle is a ghost button with a label that rests on ActiveFill while on.
+// A disabled toggle's tip says why it is off; mygo shows no tip for a disabled
+// element, so a wrapper around it carries the tip instead.
 func ghostToggle(c *ui.Context, icon *ui.SVG, label, tip string, on, disabled, iconOnly bool) ui.Element {
+	if disabled {
+		var b ui.Element
+		ui.Row(c.Key("toggle-tip:" + label)).Tooltip(tip).Children(func() {
+			b = ghostToggleButton(c, icon, label, tip, on, true, iconOnly)
+		})
+		return b
+	}
+	return ghostToggleButton(c, icon, label, tip, on, false, iconOnly)
+}
+
+func ghostToggleButton(c *ui.Context, icon *ui.SVG, label, tip string, on, disabled, iconOnly bool) ui.Element {
 	k := tk(c)
 	b := ui.ButtonBase(c.Key("toggle:"+label)).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Gap(6).Padding(0, 8).Center().Disabled(disabled)
 	if iconOnly {

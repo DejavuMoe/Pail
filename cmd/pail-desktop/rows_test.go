@@ -1,10 +1,13 @@
 package main
 
 import (
+	"fmt"
+	"math/rand/v2"
 	"reflect"
 	"slices"
 	"strings"
 	"testing"
+	"time"
 
 	"github.com/egoist/mygo/ui"
 )
@@ -63,4 +66,71 @@ func TestRebuildRowsPreservesNamesAndStableTies(t *testing.T) {
 	a.raw = []Entry{{Key: "new", Name: "ALPHA"}}
 	raw = slices.Clone(a.raw)
 	check("new")
+}
+
+func TestRowsDueThrottlesOnlyWhileLoading(t *testing.T) {
+	t.Parallel()
+	a := &app{post: func(func()) {}} // the wake-up timer finds nobody to wake
+	a.rowsDirty = true
+
+	if !a.rowsDue() { // never rebuilt: the first page shows at once
+		t.Fatal("the first rows wait")
+	}
+	a.rebuildRows()
+	if a.rowsDue() {
+		t.Fatal("clean rows are due")
+	}
+
+	a.loading, a.rowsDirty = true, true
+	if a.rowsDue() {
+		t.Fatal("a page that arrived right after a rebuild rebuilds again")
+	}
+	if !a.rebuildWake {
+		t.Fatal("no wake-up is set for the skipped rebuild")
+	}
+	a.rebuiltAt = time.Now().Add(-2 * rebuildEvery)
+	if !a.rowsDue() {
+		t.Fatal("rows are still held back after the interval")
+	}
+
+	a.rebuildRows()
+	a.rowsDirty = true
+	a.loading = false // the listing ended
+	if !a.rowsDue() {
+		t.Fatal("rows of a finished listing wait")
+	}
+}
+
+func TestRowsDueSortChangeIsImmediate(t *testing.T) {
+	t.Parallel()
+	a := &app{post: func(func()) {}, loading: true}
+	a.rebuildRows()
+	a.sort = ui.SortOrder{Column: "size"}
+	if !a.rowsDue() {
+		t.Fatal("a sort change waits for the interval while loading")
+	}
+}
+
+func BenchmarkRebuildRows(b *testing.B) {
+	for _, lowercase := range []bool{false, true} {
+		for _, n := range []int{1000, 10000} {
+			b.Run(fmt.Sprintf("%d/lowercase=%t", n, lowercase), func(b *testing.B) {
+				a := &app{sort: ui.SortOrder{Column: "name"}}
+				rng := rand.New(rand.NewPCG(7, 42))
+				for i := 0; i < n; i++ {
+					name := fmt.Sprintf("Report-%08d-%08d.json", rng.Uint32(), i)
+					if lowercase {
+						name = strings.ToLower(name)
+					}
+					a.raw = append(a.raw, Entry{Key: name, Name: name})
+				}
+				b.ReportAllocs()
+				b.ResetTimer()
+				for b.Loop() {
+					a.sort.Descending = !a.sort.Descending
+					a.rebuildRows()
+				}
+			})
+		}
+	}
 }

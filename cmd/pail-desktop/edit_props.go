@@ -464,10 +464,7 @@ func (a *app) multiHeaders(c *ui.Context) {
 func (a *app) propsBody(c *ui.Context) {
 	p := &a.mg.props
 	if !p.ready {
-		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Spinner(c).Size(14, 14)
-			mutedText(c, locales.EditPropsLoading())
-		})
+		loadingLine(c, locales.EditPropsLoading())
 		return
 	}
 	editable := p.readOnly == ""

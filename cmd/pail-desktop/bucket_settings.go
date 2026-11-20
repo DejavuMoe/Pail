@@ -521,10 +521,7 @@ func (a *app) settingsPane(c *ui.Context) {
 		body := func() {
 			switch s.state {
 			case loadNone, loadBusy:
-				ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-					ui.Spinner(c).Size(14, 14)
-					mutedText(c, locales.CommonLoading())
-				})
+				loadingLine(c, locales.CommonLoading())
 			case loadFailed:
 				if s.unsupp {
 					emptyBlock(c, "circle-alert", locales.BucketSettingsUnsupported(), "", 200)
@@ -541,7 +538,7 @@ func (a *app) settingsPane(c *ui.Context) {
 			ui.Column(c).Grow(1).MinHeight(0).Padding(0, 20, 20, 20).Gap(16).Children(body)
 			return
 		}
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		paneScroll(c, func() {
 			ui.Column(c).Padding(0, 20, 20, 20).Gap(16).Children(body)
 		})
 	})

@@ -1,9 +1,11 @@
 package main
 
 import (
+	"context"
 	"net"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 
@@ -138,7 +140,7 @@ func TestAccountSwitcherMenuListsAccounts(t *testing.T) {
 	h.mustClick(demoAccountName)
 	menu := h.menu()
 	for _, want := range []string{demoAccountName, "Add account…", "Edit account…", "Remove account…"} {
-		if !contains(menu, want) {
+		if !slices.Contains(menu, want) {
 			t.Errorf("account menu %q missing %q", menu, want)
 		}
 	}
@@ -349,4 +351,160 @@ func TestSettingsSaveFailureIsShownInline(t *testing.T) {
 	if h.a.sf.part != "16" {
 		t.Errorf("the field kept %q after the save failed", h.a.sf.part)
 	}
+}
+
+// ---- settings saved in order -----------------------------------------------------------------------------
+
+func refuseConfigWrite(t *testing.T, h *harness, name string) {
+	t.Helper()
+	p := filepath.Join(h.env.Dir, name)
+	if err := os.Remove(p); err != nil && !os.IsNotExist(err) {
+		t.Fatal(err)
+	}
+	if err := os.Mkdir(p, 0o700); err != nil {
+		t.Fatal(err)
+	}
+}
+
+func TestSettingsLatestIntentSurvivesPendingSave(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.a.loadSettingsForm()
+	initial := h.a.svc.Settings()
+	h.a.settingsMu.Lock()
+	h.a.sf.conflict = string(core.ConflictOverwrite)
+	h.a.commitConflict()
+	h.a.sf.conflict = string(initial.Conflict)
+	h.a.commitConflict()
+	h.a.sf.part = "32"
+	h.a.commitNumber(numSettings[4])
+	h.a.sf.part = "16"
+	h.a.commitNumber(numSettings[4])
+	h.a.sf.dir = t.TempDir()
+	h.a.commitDir()
+	h.a.sf.dir = initial.DefaultDownloadDir
+	h.a.commitDir()
+	h.a.setKeepRecentOps(true)
+	h.a.settingsMu.Unlock()
+	h.settle()
+	got := h.a.svc.Settings()
+	if got.Conflict != initial.Conflict || got.PartSizeMiB != initial.PartSizeMiB || got.DefaultDownloadDir != initial.DefaultDownloadDir || !got.KeepRecentOps {
+		t.Fatalf("latest settings intent lost: initial=%+v saved=%+v", initial, got)
+	}
+	reopened, err := core.New(core.Options{ConfigDir: h.env.Dir, Keyring: core.NewMemoryKeyring()})
+	if err != nil {
+		t.Fatal(err)
+	}
+	defer reopened.Shutdown(context.Background())
+	if st := reopened.Settings(); st.Conflict != got.Conflict || st.PartSizeMiB != got.PartSizeMiB || st.DefaultDownloadDir != got.DefaultDownloadDir || !st.KeepRecentOps {
+		t.Fatalf("disk differs from saved settings: %+v", st)
+	}
+}
+
+func TestSettingsStaleFailureDoesNotRevertLaterIntent(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.a.loadSettingsForm()
+	refuseConfigWrite(t, h, "settings.json")
+	h.a.sf.conflict = string(core.ConflictOverwrite)
+	h.a.commitConflict()
+	old := nextCompletion(t, h.a)
+	if err := os.Remove(filepath.Join(h.env.Dir, "settings.json")); err != nil {
+		t.Fatal(err)
+	}
+	h.a.sf.conflict = string(core.ConflictSkip)
+	h.a.commitConflict()
+	nextCompletion(t, h.a)()
+	old()
+	if h.a.sf.conflict != string(core.ConflictSkip) || h.a.sf.errs["conflict"] != "" || h.a.svc.Settings().Conflict != core.ConflictSkip {
+		t.Fatalf("stale failure reverted a later save: form=%q err=%q saved=%q", h.a.sf.conflict, h.a.sf.errs["conflict"], h.a.svc.Settings().Conflict)
+	}
+}
+
+func TestSettingsImmediateChoicesKeepLatestIntent(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.a.loadSettingsForm()
+	h.a.settingsMu.Lock()
+	for _, on := range []bool{true, false, true, false} {
+		h.a.setTheme(map[bool]string{true: "dark", false: "light"}[on])
+		h.a.setLogToFile(on)
+		h.a.setKeepRecentOps(on)
+		h.a.setTrayShown(on)
+		h.a.setQuitWhenIdle(on)
+		h.a.setCollapseTools(on)
+	}
+	h.a.setAutoLock(30)
+	h.a.setAutoLock(0)
+	h.a.settingsMu.Unlock()
+	h.settle()
+	st := h.a.svc.Settings()
+	if st.Theme != "light" || st.LogToFile || st.KeepRecentOps || !st.HideTrayIcon || st.QuitWhenIdle || st.CollapseTools || st.VaultAutoLockMinutes != 0 {
+		t.Fatalf("quick choices were saved out of order: %+v", st)
+	}
+}
+
+// ---- account dialog results ------------------------------------------------------------------------------
+
+func TestAccountCompletionPreservesReopenedDialog(t *testing.T) {
+	t.Parallel()
+	for _, fail := range []bool{false, true} {
+		t.Run(map[bool]string{false: "success", true: "failure"}[fail], func(t *testing.T) {
+			h := newHarness(t, "light")
+			h.a.openAccountForm(false)
+			h.a.af.name, h.a.af.creds = "first-account", core.CredAnonymous
+			h.a.af.provider, h.a.af.endpoint = 1, h.env.Srv.URL
+			if fail {
+				refuseConfigWrite(t, h, "accounts.json")
+			}
+			h.a.saveAccount()
+			old := nextCompletion(t, h.a)
+			h.a.af.open = false
+			h.a.openAccountForm(false)
+			h.a.af.name = "later-unsent-account"
+			old()
+			if f := h.a.af; !f.open || f.name != "later-unsent-account" || f.saving || f.saveErr != "" || h.a.accountID != h.env.Account.ID {
+				t.Fatalf("old account save changed new dialog/selection: open=%v name=%q saving=%v err=%q account=%q", f.open, f.name, f.saving, f.saveErr, h.a.accountID)
+			}
+			added := slices.ContainsFunc(h.a.accounts, func(a Account) bool { return a.Name == "first-account" })
+			if added == fail {
+				t.Fatalf("saved account missing/wrong: added=%v fail=%v", added, fail)
+			}
+		})
+	}
+}
+
+// An account that lost its secret kept showing its bucket list beside the
+// "enter the secret" message.
+func TestMissingSecretClearsTheBucketList(t *testing.T) {
+	h := newHarness(t, "light")
+	if len(h.a.buckets) == 0 {
+		t.Fatal("no buckets to begin with")
+	}
+	for i := range h.a.accounts {
+		if h.a.accounts[i].ID == h.a.accountID {
+			h.a.accounts[i].SecretMissing = true
+		}
+	}
+	h.a.loadBuckets(false)
+	h.settle()
+	if h.a.bucketsFix != fixSecret || len(h.a.buckets) != 0 {
+		t.Errorf("fix %d, %d buckets still listed", h.a.bucketsFix, len(h.a.buckets))
+	}
+}
+
+// After a failed save, Test connection's progress and result never showed,
+// and a result stayed on screen after the fields it tested were changed.
+func TestAccountTestResultFollowsTheForm(t *testing.T) {
+	h := newHarness(t, "light")
+	h.a.openAccountForm(true)
+	h.settle()
+	h.a.af.saveErr = "the keychain refused" // as a failed save leaves it
+	h.a.testAccount()
+	h.waitFor("test done", func() bool { return h.a.af.test == testOK })
+	h.settle()
+	h.mustHave("Connected")
+	h.a.af.endpoint = "http://elsewhere.invalid:9000"
+	h.settle()
+	h.mustNotHave("Connected")
 }

@@ -5536,6 +5536,16 @@ func (msgs Messages) InspectorObjects() string {
 	return Catalog.Format(msgs.locale, "inspectorObjects", nil)
 }
 
+// InspectorObjectsSize says "Size of objects"
+// in the language the app shows.
+func InspectorObjectsSize() string { return In(i18n.Locale()).InspectorObjectsSize() }
+
+// InspectorObjectsSize says "Size of objects"
+// in the language of msgs.
+func (msgs Messages) InspectorObjectsSize() string {
+	return Catalog.Format(msgs.locale, "inspectorObjectsSize", nil)
+}
+
 // InspectorOpenCdnUrl says "Open CDN URL"
 // in the language the app shows.
 func InspectorOpenCdnUrl() string { return In(i18n.Locale()).InspectorOpenCdnUrl() }
@@ -10352,13 +10362,13 @@ func (msgs Messages) StatusbarRecentHint() string {
 	return Catalog.Format(msgs.locale, "statusbarRecentHint", nil)
 }
 
-// StatusbarSelected says "{n} selected, {size}"
+// StatusbarSelected says "{n} selected · {size}"
 // in the language the app shows.
 func StatusbarSelected(n string, size string) string {
 	return In(i18n.Locale()).StatusbarSelected(n, size)
 }
 
-// StatusbarSelected says "{n} selected, {size}"
+// StatusbarSelected says "{n} selected · {size}"
 // in the language of msgs.
 func (msgs Messages) StatusbarSelected(n string, size string) string {
 	return Catalog.Format(msgs.locale, "statusbarSelected", map[string]any{"n": n, "size": size})

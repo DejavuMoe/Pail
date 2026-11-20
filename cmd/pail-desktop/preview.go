@@ -197,10 +197,10 @@ func (a *app) ensurePreview() {
 	tsv := isTSV(key, ct)
 	ctx, cancel := a.timeout(60 * time.Second)
 	a.prev.cancel = cancel
-	go func() {
+	a.bg(func() func() {
 		defer cancel()
 		data, truncated, err := a.svc.Preview(ctx, loc, key, "", limit)
-		a.post(func() {
+		return func() {
 			if gen != a.prev.gen || a.prev.key != key {
 				return
 			}
@@ -230,8 +230,8 @@ func (a *app) ensurePreview() {
 				a.prev.ed = newPreviewEditor(b.text, lang, locales.PreviewLabelOf(baseName(key)))
 			}
 			a.prev.state = previewReady
-		})
-	}()
+		}
+	})
 }
 
 // previewBody is a fetched object ready to show.
@@ -416,10 +416,7 @@ func (a *app) previewTab(c *ui.Context, e Entry) {
 	p := &a.prev
 	switch p.state {
 	case previewLoading, previewIdle:
-		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Spinner(c).Size(14, 14)
-			mutedText(c, locales.PreviewLoading())
-		})
+		loadingLine(c, locales.PreviewLoading())
 	case previewReady:
 		switch p.kind {
 		case "image":

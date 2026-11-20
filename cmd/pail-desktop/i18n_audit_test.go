@@ -2,7 +2,6 @@ package main
 
 import (
 	"fmt"
-	"image/png"
 	"os"
 	"path/filepath"
 	"regexp"
@@ -10,7 +9,6 @@ import (
 	"strings"
 	"sync"
 	"testing"
-	"time"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	core "github.com/DejavuMoe/Pail/internal/app"
@@ -36,10 +34,10 @@ var (
 // last: a case may set a button's text itself.
 func footerCandidates(t *testing.T, loc, en string) []string {
 	t.Helper()
-	catalogOnce.Do(func() { catalogEn = readCatalog(t, "en") })
 	if loc == "en" {
 		return []string{en}
 	}
+	catalogOnce.Do(func() { catalogEn = readCatalog(t, "en") })
 	return append(localizeText(loc, en, 0), en)
 }
 
@@ -88,30 +86,6 @@ func localizeText(loc, en string, depth int) []string {
 
 var placeholderRe = regexp.MustCompile(`\{(\w+)\}`)
 
-// expectOnScreenIn is expectOnScreen for the footers of an English case under
-// locale loc.
-func (h *harness) expectOnScreenIn(loc string, sz auditSize, enTexts ...string) {
-	h.t.Helper()
-	for _, en := range enTexts {
-		cands := footerCandidates(h.t, loc, en)
-		found := false
-		for _, s := range cands {
-			r, ok := h.tt.Find(s)
-			if !ok {
-				continue
-			}
-			found = true
-			if r.X < 0 || r.Y < 0 || r.X+r.W > float32(sz.w) || r.Y+r.H > float32(sz.h) || r.W <= 0 || r.H <= 0 {
-				h.t.Errorf("%s %dx%d: %q (%q) at %+v is outside the window", loc, sz.w, sz.h, s, en, r)
-			}
-			break
-		}
-		if !found {
-			h.t.Errorf("%s %dx%d: none of %q is on screen for %q; have %q", loc, sz.w, sz.h, cands, en, h.tt.Texts())
-		}
-	}
-}
-
 func TestDialogFootersReachableAtMinSizeInOtherLanguages(t *testing.T) {
 	sz := auditSizes[1]
 	for _, loc := range []string{"zh-Hans", "en-XA"} {
@@ -122,86 +96,13 @@ func TestDialogFootersReachableAtMinSizeInOtherLanguages(t *testing.T) {
 				c.setup(h)
 				h.setLocale(loc)
 				h.tt.Frame()
-				h.expectOnScreenIn(loc, sz, c.footer...)
+				h.expectOnScreen(loc, sz, c.footer...)
 			})
 		}
 	}
 }
 
-// ---- help icons --------------------------------------------------------------
-
-// helpIcons lists the help texts of the "?" icons on screen: a help icon is a
-// button of exactly helpHitSize square whose accessible label is its text.
-func (h *harness) helpIcons() []string {
-	h.t.Helper()
-	h.tt.Frame()
-	var out []string
-	seen := map[string]bool{}
-	for _, s := range h.tt.Texts() {
-		if seen[s] || len(s) < 20 {
-			continue
-		}
-		seen[s] = true
-		if r, ok := h.tt.Find(s); ok && r.W == helpHitSize && r.H == helpHitSize {
-			out = append(out, s)
-		}
-	}
-	return out
-}
-
-// hover rests the pointer on the element with text and lets the tooltip delay
-// pass, so its tip is drawn.
-func (h *harness) hover(text string) {
-	h.t.Helper()
-	h.tt.Frame()
-	r, ok := h.tt.Find(text)
-	if !ok {
-		h.t.Fatalf("no element with text %q; have %q", text, h.tt.Texts())
-	}
-	h.tt.Move(r.X+r.W/2, r.Y+r.H/2)
-	h.tt.Frame()
-	h.tt.Advance(800 * time.Millisecond)
-	h.tt.Frame()
-}
-
-// tipShown reports whether text is drawn twice: once as the icon's accessible
-// label and once in the open tooltip.
-func (h *harness) tipShown(text string) bool {
-	n := 0
-	for _, s := range h.tt.Texts() {
-		if s == text {
-			n++
-		}
-	}
-	return n >= 2
-}
-
 // ---- snapshots ---------------------------------------------------------------
-
-// snapLocale writes name under base/<locale>/<size>/<theme>/ for both themes.
-func (h *harness) snapLocale(base, loc string, sz auditSize, name string) {
-	h.t.Helper()
-	was := h.a.opts.theme
-	defer func() { h.a.opts.theme = was; h.tt.Frame() }()
-	for _, th := range []string{"light", "dark"} {
-		h.a.opts.theme = th
-		h.tt.Frame()
-		h.tt.Frame()
-		dir := filepath.Join(base, loc, sz.name, th)
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			h.t.Fatal(err)
-		}
-		f, err := os.Create(filepath.Join(dir, name+".png"))
-		if err != nil {
-			h.t.Fatal(err)
-		}
-		if err := png.Encode(f, h.tt.Image()); err != nil {
-			f.Close()
-			h.t.Fatal(err)
-		}
-		f.Close()
-	}
-}
 
 // i18nScenarios are the views reviewed in each language. They work in any
 // language: they click file names and call the app, not English labels.
@@ -295,7 +196,7 @@ func TestI18NSnapshots(t *testing.T) {
 					h.setLocale(loc)
 					s.setup(h)
 					h.tt.Frame()
-					h.snapLocale(base, loc, sz, s.name)
+					h.writePNGThemes(filepath.Join(base, loc, sz.name), s.name)
 				})
 			}
 		}

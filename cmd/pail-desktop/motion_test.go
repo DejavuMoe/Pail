@@ -2,7 +2,6 @@ package main
 
 import (
 	"image/color"
-	"image/png"
 	"math"
 	"os"
 	"path/filepath"
@@ -20,7 +19,7 @@ import (
 // looks. The behaviour tests run with the animations off (options.still); these
 // run with them on. The rule they hold: a change of state is in place in the
 // frame it happens; the mark of the current item travels to it and a switch's
-// knob slides (marks_test.go), colours cross-fade (palette_test.go), overlays
+// knob slides (marks_test.go), colours cross-fade (theme_palette_test.go), overlays
 // fade in where they rest and go at once, a progress bar's fill eases, and
 // nothing else animates.
 
@@ -53,25 +52,12 @@ func (h *harness) rest() {
 	h.tt.Frame()
 }
 
-// snapMotion writes the tester's last frame as <dir>/<name>.png, when
+// snapMotion writes the tester's last frame as motion/<name>.png, when
 // PAIL_UI_SNAPSHOT_DIR is set: for looking at the frames of an animation.
 func (h *harness) snapMotion(name string) {
 	h.t.Helper()
-	dir := os.Getenv("PAIL_UI_SNAPSHOT_DIR")
-	if dir == "" {
-		return
-	}
-	dir = filepath.Join(dir, "motion")
-	if err := os.MkdirAll(dir, 0o755); err != nil {
-		h.t.Fatal(err)
-	}
-	f, err := os.Create(filepath.Join(dir, name+".png"))
-	if err != nil {
-		h.t.Fatal(err)
-	}
-	defer f.Close()
-	if err := png.Encode(f, h.tt.Image()); err != nil {
-		h.t.Fatal(err)
+	if dir, ok := snapDir("motion"); ok {
+		h.writePNG(dir, name)
 	}
 }
 

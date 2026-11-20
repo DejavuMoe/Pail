@@ -374,3 +374,27 @@ func TestCloseQuitsWhenIdleOnlyIfAsked(t *testing.T) {
 		t.Fatal("without the icon closing quits")
 	}
 }
+
+func TestTrayUploadAvailabilityFollowsNavigation(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.a.openTool("settings")
+	h.settle()
+	calls, enabled := 0, false
+	h.a.tray.refresh = func(string) { calls++; enabled = h.a.enabled(h.a.cmd("upload.files")) }
+	h.a.syncTray()
+	h.a.openBucket(bkt)
+	h.settle()
+	if calls != 2 || !enabled {
+		t.Fatalf("tray stayed disabled after navigation: refreshes=%d enabled=%v", calls, enabled)
+	}
+	h.a.syncTray()
+	if calls != 2 {
+		t.Error("unchanged menu was needlessly refreshed")
+	}
+	h.a.openTool("settings")
+	h.settle()
+	if calls != 3 || enabled {
+		t.Fatalf("tray stayed enabled outside browser: refreshes=%d enabled=%v", calls, enabled)
+	}
+}

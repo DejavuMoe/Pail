@@ -181,15 +181,12 @@ func (a *app) mpView(c *ui.Context) {
 	a.mpCheckAbort()
 	ui.Column(c).Grow(1).MinHeight(0).Children(func() {
 		ui.Row(c).Height(48).Padding(0, 16).Gap(8).AlignItems(ui.Center).Shrink(0).Children(func() {
-			var names []choice
-			for _, b := range a.buckets {
-				names = append(names, choice{b.Name, b.Name})
+			names := make([]string, len(a.buckets))
+			for i, b := range a.buckets {
+				names[i] = b.Name
 			}
-			if m.bucket != "" && !slices.ContainsFunc(names, func(o choice) bool { return o.Value == m.bucket }) {
-				names = append(names, choice{m.bucket, m.bucket})
-			}
-			if len(names) > 0 {
-				if selectBox(c, locales.CommonBucket(), &m.bucket, names, 220) {
+			if opts := plainChoices(names, m.bucket); len(opts) > 0 {
+				if selectBox(c, locales.CommonBucket(), &m.bucket, opts, 220) {
 					m.loaded, m.items = false, nil
 					m.sel.Clear()
 					a.mpLoad()

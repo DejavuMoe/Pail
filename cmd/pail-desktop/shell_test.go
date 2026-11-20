@@ -5,6 +5,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -163,16 +164,34 @@ func (h *harness) has(key string) bool {
 	return ok
 }
 
-func (h *harness) snap(name string) {
-	h.t.Helper()
-	dir := os.Getenv("PAIL_UI_SNAPSHOT_DIR")
-	if dir == "" {
-		return
+// count is how many of texts are exactly s.
+func count(texts []string, s string) int {
+	n := 0
+	for _, t := range texts {
+		if t == s {
+			n++
+		}
 	}
+	return n
+}
+
+// snapDir is the directory under PAIL_UI_SNAPSHOT_DIR that snapshots go to,
+// joined with sub; ok is false when the variable is not set and no snapshot is
+// wanted.
+func snapDir(sub ...string) (dir string, ok bool) {
+	base := os.Getenv("PAIL_UI_SNAPSHOT_DIR")
+	if base == "" {
+		return "", false
+	}
+	return filepath.Join(append([]string{base}, sub...)...), true
+}
+
+// writePNG writes the tester's last frame as dir/name.png.
+func (h *harness) writePNG(dir, name string) {
+	h.t.Helper()
 	if err := os.MkdirAll(dir, 0o755); err != nil {
 		h.t.Fatal(err)
 	}
-	h.tt.Frame()
 	f, err := os.Create(filepath.Join(dir, name+".png"))
 	if err != nil {
 		h.t.Fatal(err)
@@ -183,13 +202,27 @@ func (h *harness) snap(name string) {
 	}
 }
 
-func contains(list []string, s string) bool {
-	for _, x := range list {
-		if strings.TrimSpace(x) == s {
-			return true
-		}
+// writePNGThemes draws the window in both themes and writes each frame as
+// dir/<theme>/name.png.
+func (h *harness) writePNGThemes(dir, name string) {
+	h.t.Helper()
+	was := h.a.opts.theme
+	defer func() { h.a.opts.theme = was; h.tt.Frame() }()
+	for _, th := range []string{"light", "dark"} {
+		h.a.opts.theme = th
+		h.tt.Frame()
+		h.tt.Frame()
+		h.writePNG(filepath.Join(dir, th), name)
 	}
-	return false
+}
+
+// snap draws a frame and writes it as name.png when PAIL_UI_SNAPSHOT_DIR is set.
+func (h *harness) snap(name string) {
+	h.t.Helper()
+	if dir, ok := snapDir(); ok {
+		h.tt.Frame()
+		h.writePNG(dir, name)
+	}
 }
 
 // ---- browsing -------------------------------------------------------------------------------
@@ -242,16 +275,23 @@ func TestBackspaceGoesUp(t *testing.T) {
 	}
 }
 
+// One chosen file is named in the status bar; two or more have the selection
+// bar, and the status bar does not say it again.
 func TestMultiSelectUpdatesStatusBar(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick("README.txt")
+	h.settle()
+	one := h.a.rows[h.a.byKey["README.txt"]].Size
+	h.mustHave("1 selected · " + humanBytes(one))
 	h.tt.ClickWith(ui.Shift, "manifest.json")
 	h.settle()
 	if n := h.a.sel.Len(); n != 2 {
 		t.Fatalf("selection = %d, want 2", n)
 	}
-	total := h.a.rows[h.a.byKey["README.txt"]].Size + h.a.rows[h.a.byKey["manifest.json"]].Size
-	h.mustHave("2 selected, "+humanBytes(total), "2 items · "+humanBytes(total))
+	total := one + h.a.rows[h.a.byKey["manifest.json"]].Size
+	h.mustHave("2 items selected", humanBytes(total), "2 items · "+humanBytes(total))
+	h.mustNotHave("2 selected · " + humanBytes(total))
+	h.mustNotHave("1 selected · " + humanBytes(one))
 }
 
 func TestBigFolderPagesToTheEnd(t *testing.T) {
@@ -280,7 +320,7 @@ func TestBigFolderPagesToTheEnd(t *testing.T) {
 	if h.a.sel.Len() != 5000 {
 		t.Errorf("select all = %d", h.a.sel.Len())
 	}
-	h.mustHave("5000 selected")
+	h.mustHave("5,000 items selected") // the selection bar
 }
 
 func TestStaleListingIsDiscarded(t *testing.T) {
@@ -376,12 +416,12 @@ func TestContextMenuFromCommandTable(t *testing.T) {
 	// none of the folder's own commands and nothing greyed out.
 	menu := h.menuAll()
 	for _, want := range []string{"Download", "Copy link > Copy key", "Copy link > Copy URI", "Copy link > Copy URL", "Copy link > Copy signed URL…", "Delete"} {
-		if !contains(menu, want) {
+		if !slices.Contains(menu, want) {
 			t.Errorf("context menu %q missing %q", menu, want)
 		}
 	}
 	for _, not := range []string{"Open", "Paste", "Refresh", "Select all", "Upload files…"} {
-		if contains(menu, not) {
+		if slices.Contains(menu, not) {
 			t.Errorf("a file's context menu %q lists %q", menu, not)
 		}
 	}
@@ -406,11 +446,11 @@ func TestContextMenuFromCommandTable(t *testing.T) {
 		blank = append(blank, it.label)
 	}
 	for _, want := range []string{"Upload files…", "New folder", "Refresh", "Select all"} {
-		if !contains(blank, want) {
+		if !slices.Contains(blank, want) {
 			t.Errorf("the blank-space menu %q misses %q", blank, want)
 		}
 	}
-	if contains(blank, "Delete") || contains(blank, "Download") {
+	if slices.Contains(blank, "Delete") || slices.Contains(blank, "Download") {
 		t.Errorf("the blank-space menu %q offers commands for rows", blank)
 	}
 }
@@ -456,4 +496,24 @@ func (a *app) idle() bool {
 // busyNow reports whether a vault dialog waits on the service (idle).
 func (v *vaultUI) busyNow() bool {
 	return v.create.busy || v.unlock.busy || v.change.busy || v.toKeychain.busy || v.reset.busy
+}
+
+// Take a real UI completion out of the queue so the test chooses its order.
+func nextCompletion(t *testing.T, a *app) func() {
+	t.Helper()
+	select {
+	case f := <-a.pending:
+		return f
+	case <-time.After(10 * time.Second):
+		t.Fatal("missing UI completion")
+		return nil
+	}
+}
+
+// hasExactText reports whether an element shows exactly s; HasText also matches
+// inside longer texts, such as a toast that names the bucket.
+func (h *harness) hasExactText(s string) bool {
+	h.t.Helper()
+	h.tt.Frame()
+	return slices.Contains(h.tt.Texts(), s)
 }

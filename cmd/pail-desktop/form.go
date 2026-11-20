@@ -1,6 +1,8 @@
 package main
 
 import (
+	"slices"
+
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/egoist/mygo/ui"
 )
@@ -192,6 +194,19 @@ func segmentedAction(c *ui.Context, cur int, label string, labels ...string) (in
 
 // choice is one option of selectBox.
 type choice struct{ Value, Label string }
+
+// plainChoices offers names as they are; keep, when set and not among them (a
+// value saved earlier), is added at the end so the box can still show it.
+func plainChoices(names []string, keep string) []choice {
+	opts := make([]choice, 0, len(names)+1)
+	for _, n := range names {
+		opts = append(opts, choice{n, n})
+	}
+	if keep != "" && !slices.Contains(names, keep) {
+		opts = append(opts, choice{keep, keep})
+	}
+	return opts
+}
 
 // selectBox is a drop-down styled like an input. It returns true on a new
 // choice.

@@ -9,7 +9,9 @@ import (
 	"github.com/egoist/mygo/ui"
 )
 
-var toolIDs = []string{"sync", "cloudfront", "rules", "mime", "multipart", "settings"}
+// toolIDs are the rows of the TOOLS group. Settings is not a tool: its row
+// sits under the group and stays when the group is folded.
+var toolIDs = []string{"sync", "cloudfront", "rules", "mime", "multipart"}
 
 // sidebar is the account switcher, the bucket list and the tool list.
 func (a *app) sidebar(c *ui.Context) {
@@ -200,7 +202,7 @@ func (a *app) bucketList(c *ui.Context) {
 				})
 			})
 		}
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		paneScroll(c, func() {
 			ui.Column(c).Gap(0).Children(func() {
 				filter := strings.ToLower(strings.TrimSpace(a.bucketFilter))
 				shown := 0
@@ -275,20 +277,26 @@ func rowRegion(bucket, account string) string {
 	return bucket
 }
 
-// toolList is the TOOLS group at the foot of the sidebar. Its header folds the
-// group (collapseTools in settings.json); folded, only the row of the tool
-// that is open stays, so that the sidebar still says where the user is.
+// toolList is the TOOLS group at the foot of the sidebar, then Settings. The
+// header folds the group (collapseTools in settings.json); folded, only the
+// row of the tool that is open stays, so that the sidebar still says where the
+// user is. Settings shows either way.
 func (a *app) toolList(c *ui.Context) {
 	a.toolSync()
+	row := func(id string) {
+		cmd := a.cmd("tool." + id)
+		a.sidebarItem(c, "t:"+id, icons.Get(cmd.Icon), cmd.text(), "", !a.enabled(cmd))
+	}
 	ui.Column(c).Padding(0, 0, 8, 0).Children(func() {
 		a.toolsHeader(c)
 		for _, id := range toolIDs {
 			if a.collapseTools && id != a.tool {
 				continue
 			}
-			cmd := a.cmd("tool." + id)
-			a.sidebarItem(c, "t:"+id, icons.Get(cmd.Icon), cmd.text(), "", !a.enabled(cmd))
+			row(id)
 		}
+		ui.Box(c).Height(8).Shrink(0)
+		row("settings")
 	})
 }
 

@@ -152,10 +152,7 @@ func (a *app) permissionsTab(c *ui.Context) {
 	k := tk(c)
 	switch f.state {
 	case loadNone, loadBusy:
-		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Spinner(c).Size(14, 14)
-			mutedText(c, locales.EditAclLoading())
-		})
+		loadingLine(c, locales.EditAclLoading())
 		return
 	case loadFailed:
 		if f.unsupp {

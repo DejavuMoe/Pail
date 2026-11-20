@@ -103,12 +103,17 @@ func (a *app) countScope(e *estState, sel core.Selection, known *core.Estimate) 
 
 // countRow draws the summary line with its spinner while counting.
 func countRow(c *ui.Context, e *estState) {
+	countLine(c, e.state == delCounting, e.summary())
+}
+
+// countLine is a count summary in 13px / 500, after a 12px Spinner while counting.
+func countLine(c *ui.Context, counting bool, summary string) {
 	k := tk(c)
 	ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-		if e.state == delCounting {
+		if counting {
 			ui.Spinner(c).Size(12, 12)
 		}
-		ui.Text(c, e.summary()).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
+		ui.Text(c, summary).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
 	})
 }
 

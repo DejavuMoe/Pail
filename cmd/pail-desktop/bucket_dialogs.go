@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"regexp"
+	"slices"
 	"strings"
 	"time"
 
@@ -153,13 +154,9 @@ func (a *app) newBucketDialog(c *ui.Context) {
 		})
 		formFieldHelp(c, locales.CommonRegion(), locales.BucketDialogsRegionHelp(), "", func() {
 			if a.account().Provider == core.ProviderAWS {
-				opts := make([]choice, 0, len(commonRegions)+1)
-				found := false
-				for _, r := range commonRegions {
-					opts = append(opts, choice{r, r})
-					found = found || r == f.region
-				}
-				if !found && f.region != "" {
+				// A region outside the list stays, at the top.
+				opts := plainChoices(commonRegions, "")
+				if f.region != "" && !slices.Contains(commonRegions, f.region) {
 					opts = append([]choice{{f.region, f.region}}, opts...)
 				}
 				selectBox(c, locales.CommonRegion(), &f.region, opts, 0)
@@ -172,14 +169,7 @@ func (a *app) newBucketDialog(c *ui.Context) {
 		if f.err != "" {
 			errorLine(c, f.err)
 		}
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				f.open = false
-			}
-			if primaryButton(c, locales.CommonCreate(), bucketNameError(strings.TrimSpace(f.name)) != "" || f.busy).Clicked() {
-				a.createBucket()
-			}
-		})
+		confirmButtons(c, primaryButton, locales.CommonCreate(), bucketNameError(strings.TrimSpace(f.name)) != "" || f.busy, func() { f.open = false }, a.createBucket)
 	})
 }
 
@@ -273,14 +263,7 @@ func (a *app) deleteBucketDialog(c *ui.Context) {
 		}
 		mutedText(c, locales.BucketDialogsDeleteWarning(f.bucket))
 	}, func() {
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				f.open = false
-			}
-			if dangerButton(c, locales.BucketDialogsDeleteButton(), f.typed != f.bucket || f.busy).Clicked() {
-				a.deleteBucket()
-			}
-		})
+		confirmButtons(c, dangerButton, locales.BucketDialogsDeleteButton(), f.typed != f.bucket || f.busy, func() { f.open = false }, a.deleteBucket)
 	})
 }
 
@@ -382,7 +365,6 @@ func (a *app) emptyBucket() {
 
 func (a *app) emptyBucketDialog(c *ui.Context) {
 	f := &a.mg.eb
-	k := tk(c)
 	was := f.open
 	dialogW(c, &f.open, locales.BucketDialogsEmptyTitle(), 440, func() {
 		ui.Column(c).Gap(8).Children(func() {
@@ -390,12 +372,7 @@ func (a *app) emptyBucketDialog(c *ui.Context) {
 			fieldRow(c, locales.CommonBucket(), f.bucket, true)
 		})
 		ui.Column(c).Gap(2).Children(func() {
-			ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-				if f.state == delCounting {
-					ui.Spinner(c).Size(12, 12)
-				}
-				ui.Text(c, f.summary()).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
-			})
+			countLine(c, f.state == delCounting, f.summary())
 			mutedText(c, locales.BucketDialogsEmptyWarning())
 		})
 		if a.versioned(a.accountID, f.bucket) {
@@ -405,14 +382,7 @@ func (a *app) emptyBucketDialog(c *ui.Context) {
 		if f.err != "" {
 			errorLine(c, f.err)
 		}
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				f.open = false
-			}
-			if dangerButton(c, locales.BucketDialogsEmptyAction(), f.state == delCounting || f.busy).Clicked() {
-				a.emptyBucket()
-			}
-		})
+		confirmButtons(c, dangerButton, locales.BucketDialogsEmptyAction(), f.state == delCounting || f.busy, func() { f.open = false }, a.emptyBucket)
 	})
 	if was && !f.open && f.cancel != nil {
 		f.cancel()

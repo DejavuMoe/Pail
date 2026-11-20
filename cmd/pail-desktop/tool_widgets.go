@@ -156,6 +156,33 @@ func toolListRow(c *ui.Context, key string, on bool) ui.Element {
 	return r
 }
 
+// paneScroll is the scrolling body of a pane: it takes the height left and
+// keeps its bar 2px in from the right edge.
+func paneScroll(c *ui.Context, children func()) {
+	ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(children)
+}
+
+// toolListScroll is the scrolling list of a tool's left pane: rows 2px apart,
+// 8px of room under the last one.
+func toolListScroll(c *ui.Context, rows func()) {
+	paneScroll(c, func() {
+		ui.Column(c).Gap(2).Padding(0, 0, 8, 0).Children(rows)
+	})
+}
+
+// testStrip is the 48px strip at the foot of a tool where a draft is tried
+// out: a hairline above, a 12px / 600 title with its "?", then body.
+func testStrip(c *ui.Context, title, help string, body func()) {
+	k := tk(c)
+	ui.Row(c).Height(48).Padding(0, 16).Gap(12).AlignItems(ui.Center).Shrink(0).
+		BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Children(func() {
+		labelHelp(c, help, func() ui.Element {
+			return ui.Text(c, title).FontSize(sizeSecondary).FontWeight(600).TextColor(k.Text)
+		})
+		body()
+	})
+}
+
 // toolPane is a fixed-width left pane with a hairline on its right.
 func toolPane(c *ui.Context, key string, w float32, children func()) {
 	k := tk(c)

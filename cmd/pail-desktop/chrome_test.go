@@ -2,6 +2,7 @@ package main
 
 import (
 	"runtime"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -111,7 +112,7 @@ func TestMoreMenuHasTheAppCommands(t *testing.T) {
 	h.tt.Frame()
 	menu := h.menu()
 	for _, want := range []string{"Command palette", "Settings", "Theme", "Keyboard shortcuts", "Documentation", "About Pail", "Quit"} {
-		if !contains(menu, want) {
+		if !slices.Contains(menu, want) {
 			t.Errorf("more menu %q is missing %q", menu, want)
 		}
 	}

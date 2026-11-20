@@ -444,35 +444,33 @@ func (a *app) rulesList(c *ui.Context) {
 				a.rulesMove(1)
 			}
 		})
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
-			ui.Column(c).Gap(2).Padding(0, 0, 8, 0).Children(func() {
-				for i := range rs.draft {
-					r := rs.draft[i]
-					row := toolListRow(c, "rule:"+strconv.Itoa(i), i == rs.sel)
-					row.Children(func() {
-						ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
-							name := r.Name
-							if strings.TrimSpace(name) == "" {
-								name = locales.RulesUntitled()
-							}
-							col := k.Text
-							if r.Disabled {
-								col = k.TextMuted
-							}
-							ui.Text(c, name).FontSize(sizeBody).FontWeight(500).TextColor(col).SingleLine()
-							mono(ui.Text(c, maskText(r)).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine())
-							ui.Text(c, ruleSummary(r)).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine()
-						})
-						on := !r.Disabled
-						if switchControl(c, &on, locales.RulesEnableRule(r.Name)).Changed() {
-							rs.draft[i].Disabled = !on
+		toolListScroll(c, func() {
+			for i := range rs.draft {
+				r := rs.draft[i]
+				row := toolListRow(c, "rule:"+strconv.Itoa(i), i == rs.sel)
+				row.Children(func() {
+					ui.Column(c).Grow(1).MinWidth(0).Gap(2).Children(func() {
+						name := r.Name
+						if strings.TrimSpace(name) == "" {
+							name = locales.RulesUntitled()
 						}
+						col := k.Text
+						if r.Disabled {
+							col = k.TextMuted
+						}
+						ui.Text(c, name).FontSize(sizeBody).FontWeight(500).TextColor(col).SingleLine()
+						mono(ui.Text(c, maskText(r)).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine())
+						ui.Text(c, ruleSummary(r)).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine()
 					})
-					if row.Clicked() && i != rs.sel {
-						a.rulesSelect(i)
+					on := !r.Disabled
+					if switchControl(c, &on, locales.RulesEnableRule(r.Name)).Changed() {
+						rs.draft[i].Disabled = !on
 					}
+				})
+				if row.Clicked() && i != rs.sel {
+					a.rulesSelect(i)
 				}
-			})
+			}
 		})
 	})
 }
@@ -486,7 +484,7 @@ func (a *app) ruleEditor(c *ui.Context) {
 			a.rulesFooter(c, false)
 			return
 		}
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		paneScroll(c, func() {
 			ui.Column(c).MaxWidth(640).AlignSelf(ui.Start).Padding(20, 24, 24, 24).Gap(16).Children(func() {
 				a.ruleFields(c, f)
 			})
@@ -555,22 +553,9 @@ func (a *app) ruleFields(c *ui.Context, f *ruleForm) {
 	})
 
 	ruleSection(c, locales.RulesSectionHeaders(), locales.RulesHeadersHelp())
-	del := -1
-	for i := range f.headers {
-		h := &f.headers[i]
-		ui.Row(c.Key("hrow:" + strconv.Itoa(i))).Gap(8).AlignItems(ui.Center).Children(func() {
-			selectBox(c, locales.RulesHeaderName(strconv.Itoa(i+1)), &h.k, headerChoices, 200)
-			ui.Box(c).Grow(1).MinWidth(0).Children(func() {
-				inputBox(c, &h.v, locales.RulesHeaderValue(strconv.Itoa(i+1)), locales.CommonValue(), inputOpts{mono: true})
-			})
-			if iconButton(c, icons.Get("x"), locales.RulesRemoveHeader()).Clicked() {
-				del = i
-			}
-		})
-	}
-	if del >= 0 {
-		f.headers = slices.Delete(f.headers, del, del+1)
-	}
+	ruleKVRows(c, &f.headers, "hrow:", locales.RulesHeaderValue, locales.RulesRemoveHeader(), func(n string, h *ruleKV) {
+		selectBox(c, locales.RulesHeaderName(n), &h.k, headerChoices, 200)
+	})
 	ui.Row(c.Key("hadd")).Children(func() {
 		if ghostButton(c, icons.Get("plus"), locales.RulesAddHeader(), locales.RulesAddHeaderTip(), len(f.headers) >= len(headerNames)).Clicked() {
 			f.headers = append(f.headers, ruleKV{k: nextHeader(f.headers)})
@@ -578,24 +563,11 @@ func (a *app) ruleFields(c *ui.Context, f *ruleForm) {
 	})
 
 	ruleSection(c, locales.RulesSectionMetadata(), locales.RulesMetadataHelp())
-	del = -1
-	for i := range f.meta {
-		m := &f.meta[i]
-		ui.Row(c.Key("mrow:" + strconv.Itoa(i))).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Box(c).Width(200).Shrink(0).Children(func() {
-				inputBox(c, &m.k, locales.RulesMetadataKey(strconv.Itoa(i+1)), locales.CommonKey(), inputOpts{mono: true})
-			})
-			ui.Box(c).Grow(1).MinWidth(0).Children(func() {
-				inputBox(c, &m.v, locales.RulesMetadataValue(strconv.Itoa(i+1)), locales.CommonValue(), inputOpts{mono: true})
-			})
-			if iconButton(c, icons.Get("x"), locales.RulesRemoveMetadata()).Clicked() {
-				del = i
-			}
+	ruleKVRows(c, &f.meta, "mrow:", locales.RulesMetadataValue, locales.RulesRemoveMetadata(), func(n string, m *ruleKV) {
+		ui.Box(c).Width(200).Shrink(0).Children(func() {
+			inputBox(c, &m.k, locales.RulesMetadataKey(n), locales.CommonKey(), inputOpts{mono: true})
 		})
-	}
-	if del >= 0 {
-		f.meta = slices.Delete(f.meta, del, del+1)
-	}
+	})
 	ui.Row(c.Key("madd")).Children(func() {
 		if ghostButton(c, icons.Get("plus"), locales.RulesAddMetadata(), locales.RulesAddMetadataTip(), false).Clicked() {
 			f.meta = append(f.meta, ruleKV{})
@@ -659,6 +631,29 @@ func (a *app) ruleFields(c *ui.Context, f *ruleForm) {
 	})
 }
 
+// ruleKVRows draws the header or metadata rows of the rule editor and removes
+// the one whose x was clicked. Each row is keyed prefix+index: name draws the
+// name control for the row numbered n (from 1), then comes a value box that
+// takes the rest (valueLabel(n) names it) and the remove button.
+func ruleKVRows(c *ui.Context, rows *[]ruleKV, prefix string, valueLabel func(string) string, removeLabel string, name func(n string, r *ruleKV)) {
+	del := -1
+	for i := range *rows {
+		r, n := &(*rows)[i], strconv.Itoa(i+1)
+		ui.Row(c.Key(prefix + strconv.Itoa(i))).Gap(8).AlignItems(ui.Center).Children(func() {
+			name(n, r)
+			ui.Box(c).Grow(1).MinWidth(0).Children(func() {
+				inputBox(c, &r.v, valueLabel(n), locales.CommonValue(), inputOpts{mono: true})
+			})
+			if iconButton(c, icons.Get("x"), removeLabel).Clicked() {
+				del = i
+			}
+		})
+	}
+	if del >= 0 {
+		*rows = slices.Delete(*rows, del, del+1)
+	}
+}
+
 // nextHeader is the first standard header that has no row yet.
 func nextHeader(rows []ruleKV) string {
 	for _, n := range headerNames {
@@ -672,11 +667,7 @@ func nextHeader(rows []ruleKV) string {
 func (a *app) rulesTestStrip(c *ui.Context) {
 	k := tk(c)
 	rs := &a.tl.rules
-	ui.Row(c).Height(48).Padding(0, 16).Gap(12).AlignItems(ui.Center).Shrink(0).
-		BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Children(func() {
-		labelHelp(c, locales.RulesTestHelp(), func() ui.Element {
-			return ui.Text(c, locales.RulesTest()).FontSize(sizeSecondary).FontWeight(600).TextColor(k.Text)
-		})
+	testStrip(c, locales.RulesTest(), locales.RulesTestHelp(), func() {
 		inputBox(c, &rs.testBucket, locales.RulesTestBucket(), locales.CommonBucket(), inputOpts{width: 180, mono: true})
 		// The key takes what the bucket and the result leave, so that the strip
 		// ends at the content padding.

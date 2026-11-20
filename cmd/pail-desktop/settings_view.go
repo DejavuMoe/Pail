@@ -364,15 +364,19 @@ func (a *app) settingsView(c *ui.Context) {
 		}
 		page := ui.Scroll(c).TrackScroll(&n.scroll).Grow(1).MinWidth(0).MinHeight(0).ScrollbarInsets(0, 2, 0, 0)
 		n.viewY = page.Bounds().Y
+		// A page wider than the column keeps it in the middle, so the free
+		// space falls on both sides instead of all at the right.
 		page.Children(func() {
-			ui.Column(c).MaxWidth(settingsColW+left+settingsPad).Padding(settingsPad-settingsGroupGap, settingsPad, settingsPad+8, left).Children(func() {
-				a.appearanceSection(c)
-				a.transfersSection(c)
-				a.downloadsSection(c)
-				a.networkSection(c)
-				a.securitySection(c)
-				a.diagnosticsSection(c)
-				a.aboutSection(c)
+			ui.Row(c).Justify(ui.Center).Children(func() {
+				ui.Column(c).Grow(1).MaxWidth(settingsColW+left+settingsPad).Padding(settingsPad-settingsGroupGap, settingsPad, settingsPad+8, left).Children(func() {
+					a.appearanceSection(c)
+					a.transfersSection(c)
+					a.downloadsSection(c)
+					a.networkSection(c)
+					a.securitySection(c)
+					a.diagnosticsSection(c)
+					a.aboutSection(c)
+				})
 			})
 		})
 		n.lasY = n.scroll.Y

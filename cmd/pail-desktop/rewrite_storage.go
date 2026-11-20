@@ -249,14 +249,7 @@ func (a *app) rewriteDialog(c *ui.Context) {
 		if f.err != "" {
 			errorLine(c, f.err)
 		}
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				f.open = false
-			}
-			if primaryButton(c, action, f.busy || !a.rewriteValid()).Clicked() {
-				a.submitRewrite()
-			}
-		})
+		confirmButtons(c, primaryButton, action, f.busy || !a.rewriteValid(), func() { f.open = false }, a.submitRewrite)
 	})
 	if was && !f.open {
 		a.closeRewrite()
@@ -311,11 +304,7 @@ func (a *app) encryptionControls(c *ui.Context) {
 				mutedText(c, locales.RewriteNoSecrets())
 				return
 			}
-			opts := make([]choice, len(refs))
-			for i, r := range refs {
-				opts[i] = choice{r, r}
-			}
-			if selectBox(c, locales.RewriteSecretRef(), &f.keyRef, opts, 0) {
+			if selectBox(c, locales.RewriteSecretRef(), &f.keyRef, plainChoices(refs, ""), 0) {
 				f.err = ""
 			}
 		})

@@ -4,6 +4,7 @@ import (
 	"context"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -178,9 +179,19 @@ func TestVersionsMultiSelectDeleteAndDownload(t *testing.T) {
 	h.mustHave("2 versions selected")
 
 	h.mustClick("Download chosen versions")
+	// Wait for the tasks, not for names on disk: a file can be there while
+	// its download is still being written.
 	h.waitFor("both versions on disk", func() bool {
 		m, _ := filepath.Glob(filepath.Join(dest, "notes*"))
-		return len(m) == 2
+		if len(m) != 2 {
+			return false
+		}
+		for _, tk := range h.env.Svc.Tasks() {
+			if tk.Kind == core.KindDownload && !tk.Status.Finished() {
+				return false
+			}
+		}
+		return true
 	})
 	m, _ := filepath.Glob(filepath.Join(dest, "notes*"))
 	for _, f := range m {
@@ -263,7 +274,7 @@ func TestShowDeletedAndRestore(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if menu := h.menu(); !contains(menu, "Restore") || !contains(menu, "Restore all in this folder") {
+	if menu := h.menu(); !slices.Contains(menu, "Restore") || !slices.Contains(menu, "Restore all in this folder") {
 		t.Fatalf("context menu %q has no restore entries", menu)
 	}
 	if err := h.chooseMenu("Restore"); err != nil {
@@ -574,5 +585,64 @@ func TestRenameFolderMovesEverythingBelow(t *testing.T) {
 	}
 	if !h.a.sel.Has("reports-2026/") {
 		t.Error("the renamed folder is not selected")
+	}
+}
+
+// ---- tabs that follow the object --------------------------------------------------------------
+
+// The Permissions tab kept the ACL of the object it last showed when an object
+// of the same name was chosen in another bucket.
+func TestPermissionsTabFollowsTheBucket(t *testing.T) {
+	h := newHarness(t, "light")
+	h.env.Srv.PutObject("acme-backups", "README.txt", []byte("public"), "text/plain", nil)
+	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
+	defer cancel()
+	loc := core.Location{AccountID: h.env.Account.ID, Bucket: "acme-backups"}
+	acl, err := h.env.Svc.ACL(ctx, loc, core.ObjectRef{Key: "README.txt"})
+	if err != nil {
+		t.Fatal(err)
+	}
+	acl.Grants = append(acl.Grants, core.Grant{Type: "Group", Grantee: groupAllUsers, Permission: "READ"})
+	if err := h.env.Svc.SetACL(ctx, loc, core.ObjectRef{Key: "README.txt"}, acl); err != nil {
+		t.Fatal(err)
+	}
+	h.mustClick("README.txt")
+	h.a.inspTab = 3
+	h.waitFor("acl of acme-assets", func() bool { return h.a.mg.acl.state == loadReady })
+	if h.a.mg.acl.canned != "private" {
+		t.Fatalf("acme-assets README.txt is %q", h.a.mg.acl.canned)
+	}
+	h.a.openBucket("acme-backups")
+	h.settle()
+	h.mustClick("README.txt")
+	h.waitFor("acl of acme-backups", func() bool { return h.a.mg.acl.state == loadReady && h.a.mg.acl.canned == "public-read" })
+}
+
+// The Versions tab did not show the version a save of the headers had made.
+func TestVersionsTabFollowsANewVersion(t *testing.T) {
+	h := newRawHarness(t, "light", true)
+	h.openVersioned()
+	h.mustClick("notes.txt")
+	h.a.inspTab = 4
+	h.waitFor("versions", func() bool { return h.a.mg.vers.state == loadReady })
+	n := len(h.a.mg.vers.rows)
+	h.env.Srv.PutObject(demoVersioned, "notes.txt", []byte("v-next"), "text/plain", nil)
+	h.a.headKey = "" // what a save of the headers does
+	h.waitFor("one more version", func() bool { return h.a.mg.vers.state == loadReady && len(h.a.mg.vers.rows) == n+1 })
+}
+
+// "Show deleted" stayed on after a switch of accounts, for a bucket of the same
+// name on the other account.
+func TestShowDeletedEndsWithTheAccount(t *testing.T) {
+	h := newHarness(t, "light")
+	id := h.a.accountID
+	h.a.openBucket("acme-analytics")
+	h.settle()
+	h.a.mg.del = deletedMode{on: true, bucket: "acme-analytics", keys: map[string]bool{}}
+	h.a.selectAccount("")
+	h.a.selectAccount(id)
+	h.waitFor("first bucket", func() bool { return h.a.scope.Bucket == "acme-analytics" })
+	if h.a.mg.del.on {
+		t.Error("the other account's bucket opened showing deleted items")
 	}
 }

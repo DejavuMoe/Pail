@@ -1,6 +1,9 @@
 package main
 
-import "strings"
+import (
+	"cmp"
+	"strings"
+)
 
 // compareNames preserves Compare(ToLower(a), ToLower(b)) without allocating
 // lowercase copies for every ASCII sort comparison. Unicode keeps that rule.
@@ -23,5 +26,5 @@ func compareNames(a, b string) int {
 			return 1
 		}
 	}
-	return cmpInt(int64(len(a)), int64(len(b)))
+	return cmp.Compare(len(a), len(b))
 }

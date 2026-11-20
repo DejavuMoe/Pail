@@ -2,6 +2,10 @@ package main
 
 import (
 	"math"
+	"os"
+	"path/filepath"
+	"regexp"
+	"strings"
 	"testing"
 
 	"github.com/egoist/mygo/ui"
@@ -84,6 +88,31 @@ func TestTokenContrastFloors(t *testing.T) {
 		for _, ch := range checks {
 			if got := contrast(ch.fg, ch.bg); got < ch.min {
 				t.Errorf("%s: %s = %.2f:1, want >= %.2f:1", name, ch.what, got, ch.min)
+			}
+		}
+	}
+}
+
+// Views name radii through the constants of theme.go: a numeric literal in a
+// .Radius( call outside theme.go is a bare radius (design.md principle 5).
+func TestNoBareRadiusOutsideTheme(t *testing.T) {
+	t.Parallel()
+	bare := regexp.MustCompile(`\.Radius\(\s*[0-9]`)
+	files, err := filepath.Glob("*.go")
+	if err != nil {
+		t.Fatal(err)
+	}
+	for _, f := range files {
+		if f == "theme.go" || strings.HasSuffix(f, "_test.go") {
+			continue
+		}
+		src, err := os.ReadFile(f)
+		if err != nil {
+			t.Fatal(err)
+		}
+		for i, line := range strings.Split(string(src), "\n") {
+			if bare.MatchString(line) {
+				t.Errorf("%s:%d: bare radius: %s", f, i+1, strings.TrimSpace(line))
 			}
 		}
 	}

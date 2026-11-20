@@ -2,9 +2,7 @@ package main
 
 import (
 	"fmt"
-	"image/png"
 	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -40,49 +38,36 @@ func (h *harness) resize(w, ht int) {
 	h.settle()
 }
 
-// snapAudit writes name for both themes under dir/<size>/<theme>/.
+// snapAudit writes name for both themes under <size>/<theme>/, when
+// PAIL_UI_SNAPSHOT_DIR is set.
 func (h *harness) snapAudit(sz auditSize, name string) {
 	h.t.Helper()
-	base := os.Getenv("PAIL_UI_SNAPSHOT_DIR")
-	if base == "" {
-		return
-	}
-	was := h.a.opts.theme
-	defer func() { h.a.opts.theme = was; h.tt.Frame() }()
-	for _, th := range []string{"light", "dark"} {
-		h.a.opts.theme = th
-		h.tt.Frame()
-		h.tt.Frame()
-		dir := filepath.Join(base, sz.name, th)
-		if err := os.MkdirAll(dir, 0o755); err != nil {
-			h.t.Fatal(err)
-		}
-		f, err := os.Create(filepath.Join(dir, name+".png"))
-		if err != nil {
-			h.t.Fatal(err)
-		}
-		if err := png.Encode(f, h.tt.Image()); err != nil {
-			f.Close()
-			h.t.Fatal(err)
-		}
-		f.Close()
+	if dir, ok := snapDir(sz.name); ok {
+		h.writePNGThemes(dir, name)
 	}
 }
 
-// expectOnScreen fails unless every text is shown inside the window.
-func (h *harness) expectOnScreen(sz auditSize, texts ...string) {
+// expectOnScreen fails unless every text is shown inside the window. The texts
+// are English; under another locale loc each is looked up by the localized
+// texts of the same message (footerCandidates).
+func (h *harness) expectOnScreen(loc string, sz auditSize, texts ...string) {
 	h.t.Helper()
-	for _, s := range texts {
-		r, ok := h.tt.Find(s)
-		if !ok {
-			h.t.Errorf("%dx%d: %q is not on screen; have %q", sz.w, sz.h, s, h.tt.Texts())
-			continue
+	for _, en := range texts {
+		cands := footerCandidates(h.t, loc, en)
+		found := false
+		for _, s := range cands {
+			r, ok := h.tt.Find(s)
+			if !ok {
+				continue
+			}
+			found = true
+			if r.X < 0 || r.Y < 0 || r.X+r.W > float32(sz.w) || r.Y+r.H > float32(sz.h) || r.W <= 0 || r.H <= 0 {
+				h.t.Errorf("%s %dx%d: %q (%q) at %+v is outside the window", loc, sz.w, sz.h, s, en, r)
+			}
+			break
 		}
-		if r.X < 0 || r.Y < 0 || r.X+r.W > float32(sz.w) || r.Y+r.H > float32(sz.h) {
-			h.t.Errorf("%dx%d: %q at %+v is outside the window", sz.w, sz.h, s, r)
-		}
-		if r.W <= 0 || r.H <= 0 {
-			h.t.Errorf("%dx%d: %q has an empty rect %+v", sz.w, sz.h, s, r)
+		if !found {
+			h.t.Errorf("%s %dx%d: none of %q is on screen for %q; have %q", loc, sz.w, sz.h, cands, en, h.tt.Texts())
 		}
 	}
 }
@@ -236,7 +221,7 @@ func TestDialogFootersReachableAtMinSize(t *testing.T) {
 			h.resize(sz.w, sz.h)
 			c.setup(h)
 			h.tt.Frame()
-			h.expectOnScreen(sz, c.footer...)
+			h.expectOnScreen("en", sz, c.footer...)
 		})
 	}
 }
@@ -260,7 +245,7 @@ func TestUXAudit(t *testing.T) {
 					h.settle()
 					c.setup(h)
 					h.tt.Frame()
-					h.expectOnScreen(sz, c.footer...)
+					h.expectOnScreen("en", sz, c.footer...)
 					h.snapAudit(sz, c.name)
 				})
 			}

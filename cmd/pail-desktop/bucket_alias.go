@@ -117,13 +117,6 @@ func (a *app) aliasDialog(c *ui.Context) {
 		})
 		mutedText(c, locales.BucketAliasHelp())
 	}, func() {
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				d.open = false
-			}
-			if primaryButton(c, locales.CommonSave(), a.aliasError(d.text) != "" || d.busy).Clicked() {
-				a.saveAlias()
-			}
-		})
+		confirmButtons(c, primaryButton, locales.CommonSave(), a.aliasError(d.text) != "" || d.busy, func() { d.open = false }, a.saveAlias)
 	})
 }

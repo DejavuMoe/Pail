@@ -126,9 +126,15 @@ func (a *app) statusBrowse(part func(string), count func(key, s string), dot fun
 	// While the folder loads, its count grows with every page: it changes at
 	// once, and rolls again for the changes that follow (a filter, a refresh).
 	count("items", items)
-	if n := a.sel.Len(); n > 0 {
-		_, _, bytes := a.selectedInfo()
+	// Two or more chosen rows have the selection bar above, which says the
+	// same; the status bar names a single choice only. A folder has no size
+	// to give.
+	switch folders, files, bytes := a.selectedInfo(); {
+	case files == 1 && folders == 0:
 		dot()
-		count("selected", locales.StatusbarSelected(fmt.Sprint(n), humanBytes(bytes)))
+		count("selected", locales.StatusbarSelected("1", humanBytes(bytes)))
+	case folders == 1 && files == 0:
+		dot()
+		count("selected", locales.SelbarSelected(1))
 	}
 }

@@ -1,11 +1,11 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"encoding/json"
 	"path/filepath"
 	"runtime"
-	"slices"
 	"strconv"
 	"strings"
 	"time"
@@ -181,7 +181,7 @@ func (a *app) syncGuard(then func()) {
 	if name == "" && s.sel >= 0 && s.sel < len(s.jobs) {
 		name = s.jobs[s.sel].Name
 	}
-	s.dsc.open, s.dsc.name, s.dsc.then = true, firstNonEmpty(name, locales.SyncNewJob()), then
+	s.dsc.open, s.dsc.name, s.dsc.then = true, cmp.Or(name, locales.SyncNewJob()), then
 }
 
 func (s *syncState) dirty() bool {
@@ -535,34 +535,25 @@ func (a *app) syncList(c *ui.Context) {
 				a.syncAskDelete()
 			}
 		})
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
-			ui.Column(c).Gap(2).Padding(0, 0, 8, 0).Children(func() {
-				for i := range s.jobs {
-					j := s.jobs[i]
-					if i == s.sel {
-						j = s.draftJob() // the list follows the edits
-						j.Name = firstNonEmpty(j.Name, s.jobs[i].Name)
+		toolListScroll(c, func() {
+			for i := range s.jobs {
+				j := s.jobs[i]
+				if i == s.sel {
+					j = s.draftJob() // the list follows the edits
+					j.Name = cmp.Or(j.Name, s.jobs[i].Name)
+				}
+				a.syncRow(c, "job:"+strconv.Itoa(i), i == s.sel, j, func() {
+					if i != s.sel {
+						a.syncGuard(func() { a.syncSelect(i) })
 					}
-					a.syncRow(c, "job:"+strconv.Itoa(i), i == s.sel, j, func() {
-						if i != s.sel {
-							a.syncGuard(func() { a.syncSelect(i) })
-						}
-					})
-				}
-				if s.hasDraft {
-					j := s.draftJob()
-					a.syncRow(c, "job:new", true, j, func() {})
-				}
-			})
+				})
+			}
+			if s.hasDraft {
+				j := s.draftJob()
+				a.syncRow(c, "job:new", true, j, func() {})
+			}
 		})
 	})
-}
-
-func firstNonEmpty(a, b string) string {
-	if a != "" {
-		return a
-	}
-	return b
 }
 
 func (a *app) syncRow(c *ui.Context, key string, on bool, j core.SyncJob, click func()) {
@@ -599,7 +590,7 @@ func (a *app) syncEditor(c *ui.Context) {
 			emptyBlock(c, "refresh-ccw", locales.SyncNoneSelected(), "", 0)
 			return
 		}
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		paneScroll(c, func() {
 			ui.Column(c).MaxWidth(880).Padding(20, 24, 24, 24).Gap(16).Children(func() {
 				a.syncFields(c)
 				a.syncActions(c)
@@ -654,14 +645,7 @@ func (a *app) syncFields(c *ui.Context) {
 					inputBox(c, &f.bucket, locales.SyncBucketLabel(), locales.SyncBucketName(), inputOpts{mono: true})
 					return
 				}
-				if f.bucket != "" && !slices.Contains(names, f.bucket) {
-					names = append(slices.Clone(names), f.bucket)
-				}
-				var opts []choice
-				for _, n := range names {
-					opts = append(opts, choice{n, n})
-				}
-				selectBox(c, locales.SyncBucketLabel(), &f.bucket, opts, 0)
+				selectBox(c, locales.SyncBucketLabel(), &f.bucket, plainChoices(names, f.bucket), 0)
 			})
 		})
 		cell(c, "sp", func() {

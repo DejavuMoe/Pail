@@ -136,14 +136,7 @@ func (a *app) archiveDialog(c *ui.Context) {
 		if f.err != "" {
 			errorLine(c, f.err)
 		}
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				f.open = false
-			}
-			if primaryButton(c, locales.ArchiveSubmit(), f.busy || !daysOK).Clicked() {
-				a.submitArchiveRestore()
-			}
-		})
+		confirmButtons(c, primaryButton, locales.ArchiveSubmit(), f.busy || !daysOK, func() { f.open = false }, a.submitArchiveRestore)
 	})
 	if was && !f.open {
 		a.closeArchiveRestore()

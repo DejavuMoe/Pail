@@ -283,10 +283,10 @@ func (a *app) testAccount() {
 	f.test, f.testMsg, f.testSig = testRunning, "", f.sig()
 	f.saveErr, f.noKeychain = "", false // the line under the form is the test's now
 	ctx, cancel := a.timeout(20 * time.Second)
-	go func() {
+	a.bg(func() func() {
 		defer cancel()
 		err := a.svc.TestAccount(ctx, ac, sec)
-		a.post(func() {
+		return func() {
 			if gen != a.af.testGen || !a.af.open {
 				return
 			}
@@ -302,8 +302,8 @@ func (a *app) testAccount() {
 				return
 			}
 			a.af.test, a.af.testMsg = testOK, ""
-		})
-	}()
+		}
+	})
 }
 
 // saveAccount stores the form's account.
@@ -324,9 +324,9 @@ func (a *app) saveAccount() {
 	if f.test == testRunning {
 		f.test = testIdle
 	}
-	go func() {
+	a.bg(func() func() {
 		saved, err := a.svc.SaveAccount(ac, sec)
-		a.post(func() {
+		return func() {
 			current := a.af.open && a.af.testGen == gen
 			if current {
 				a.af.saving = false
@@ -366,8 +366,8 @@ func (a *app) saveAccount() {
 			id := a.accountID
 			a.accountID = ""
 			a.selectAccount(id)
-		})
-	}()
+		}
+	})
 }
 
 // askRemoveAccount opens the confirmation for the current account.
@@ -534,10 +534,7 @@ func (a *app) accountFooter(c *ui.Context) {
 	case f.saveErr != "":
 		resultLine(c, "circle-alert", k.Danger, f.saveErr)
 	case f.test == testRunning:
-		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Spinner(c).Size(14, 14)
-			mutedText(c, locales.AcctTesting())
-		})
+		loadingLine(c, locales.AcctTesting())
 	case f.test == testOK:
 		resultLine(c, "check", k.Success, locales.AcctConnected())
 	case f.test == testFailed:

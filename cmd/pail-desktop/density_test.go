@@ -16,16 +16,6 @@ import (
 // Information density: what the status bar, the sidebar, the transfers strip
 // and the toolbar leave out when they have nothing to say (docs/dev/design.md).
 
-func count(texts []string, s string) int {
-	n := 0
-	for _, t := range texts {
-		if t == s {
-			n++
-		}
-	}
-	return n
-}
-
 // ---- status bar ------------------------------------------------------------------------------
 
 // The left of the status bar is the item count, then the selection; the account
@@ -48,7 +38,7 @@ func TestStatusBarLeftIsTheListingOnly(t *testing.T) {
 	h.snap("statusbar-plain-light")
 
 	h.mustClick("manifest.json")
-	if sel := h.rectOf("1 selected, 303 B"); sel.X <= items.X+items.W {
+	if sel := h.rectOf("1 selected · 303 B"); sel.X <= items.X+items.W {
 		t.Errorf("the selection (%.1f) is not after the count (ends %.1f)", sel.X, items.X+items.W)
 	}
 	if got := count(h.tt.Texts(), "·"); got != 1 {
@@ -56,7 +46,7 @@ func TestStatusBarLeftIsTheListingOnly(t *testing.T) {
 	}
 
 	h.openToolView("settings")
-	if h.tt.HasText("8 items") || h.tt.HasText("1 selected, 303 B") || count(h.tt.Texts(), "·") != 0 {
+	if h.tt.HasText("8 items") || h.tt.HasText("1 selected · 303 B") || count(h.tt.Texts(), "·") != 0 {
 		t.Errorf("the status bar of a tool view has a left side: %q", h.tt.Texts())
 	}
 }
@@ -104,12 +94,13 @@ func TestBucketRowsShowARegionOnlyWhenItDiffers(t *testing.T) {
 	h.mustNotHave("us-west-2", "eu-west-1", "ap-southeast-2")
 }
 
-// TOOLS folds to its header; the open tool's row stays under it; the choice is
-// kept in settings.json, and a settings file without it unfolds the group.
+// TOOLS folds to its header; the open tool's row stays under it; Settings,
+// which is not a tool, stays either way. The choice is kept in settings.json,
+// and a settings file without it unfolds the group.
 func TestToolsGroupFoldsAndKeepsTheOpenTool(t *testing.T) {
 	h := newHarness(t, "light")
-	rows := []string{"Sync jobs", "CloudFront", "Upload rules", "MIME types", "Multipart uploads", "Settings"}
-	h.mustHave(append(rows, "TOOLS")...)
+	rows := []string{"Sync jobs", "CloudFront", "Upload rules", "MIME types", "Multipart uploads"}
+	h.mustHave(append(rows, "TOOLS", "Settings")...)
 	if h.a.collapseTools || h.env.Svc.Settings().CollapseTools {
 		t.Fatal("the group starts folded")
 	}
@@ -120,7 +111,7 @@ func TestToolsGroupFoldsAndKeepsTheOpenTool(t *testing.T) {
 	if !h.a.collapseTools {
 		t.Fatal("the header did not fold the group")
 	}
-	h.mustHave("TOOLS")
+	h.mustHave("TOOLS", "Settings")
 	h.mustNotHave(rows...)
 	h.waitFor("the choice is saved", func() bool { return h.env.Svc.Settings().CollapseTools })
 	h.snap("sidebar-tools-folded-light")

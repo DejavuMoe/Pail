@@ -410,7 +410,7 @@ func TestMenuClosesOnResizeAndBlur(t *testing.T) {
 		t.Fatal(err)
 	}
 	h.tt.Frame()
-	if m := h.menu(); !contains(m, "Download") {
+	if m := h.menu(); !slices.Contains(m, "Download") {
 		t.Errorf("the object menu did not open: %q", m)
 	}
 }
@@ -636,7 +636,7 @@ func TestNativeMenusOnMacOS(t *testing.T) {
 	h.tt.Frame()
 	menu := h.tt.Menu()
 	for _, want := range []string{"Download", "Copy link", "Delete"} {
-		if !contains(menu, want) {
+		if !slices.Contains(menu, want) {
 			t.Errorf("native context menu %q lacks %q", menu, want)
 		}
 	}

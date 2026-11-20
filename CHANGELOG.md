@@ -4,6 +4,19 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- With two or more items selected, the selection bar alone shows how many are selected and their size; the status bar no longer repeats it. A single selected folder shows no size in the status bar.
+- When folders are among the selected items, or in the current folder, the inspector labels the sum "Size of objects": it counts only the objects, because S3 stores no size for a folder.
+- **Settings** has its own row at the foot of the sidebar, below the tools, and stays there when the tools group is folded.
+- The Settings page keeps its column in the middle of a wide window.
+
+### Fixed
+
+- Pointing at **Show deleted** or **Flat** while it is unavailable now shows why, for example that the bucket has no versions.
+
 ## [0.6.3] - 2026-11-19
 
 ### Added

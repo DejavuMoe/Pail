@@ -2,7 +2,7 @@ package main
 
 import (
 	"maps"
-	"sort"
+	"slices"
 	"strings"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
@@ -26,15 +26,16 @@ type tagsForm struct {
 }
 
 func (t *tagsForm) load(key string, gen int, tags map[string]string) {
-	*t = tagsForm{key: key, gen: gen, ready: true, base: maps.Clone(tags)}
-	names := make([]string, 0, len(tags))
-	for k := range tags {
-		names = append(names, k)
+	*t = tagsForm{key: key, gen: gen, ready: true, base: maps.Clone(tags), items: tagItems(tags)}
+}
+
+// tagItems is tags as unedited rows, sorted by key.
+func tagItems(tags map[string]string) []kvItem {
+	items := make([]kvItem, 0, len(tags))
+	for _, k := range slices.Sorted(maps.Keys(tags)) {
+		items = append(items, kvItem{key: k, val: tags[k], baseVal: tags[k]})
 	}
-	sort.Strings(names)
-	for _, k := range names {
-		t.items = append(t.items, kvItem{key: k, val: tags[k], baseVal: tags[k]})
-	}
+	return items
 }
 
 func (t *tagsForm) dirty() bool {
@@ -169,4 +170,13 @@ func (a *app) saveTags() {
 			a.toast(locales.CommonSaved())
 		}
 	})
+}
+
+// rebaseTags takes tags, read afresh, as the base of the Tags form and keeps
+// its edits on top (propsForm.rebase).
+func rebaseTags(t *tagsForm, tags map[string]string) {
+	var moved []int
+	t.items, moved = rebaseItems(t.items, tagItems(tags), strings.TrimSpace)
+	remapEdit(&t.edit, "t", moved)
+	t.base = maps.Clone(tags)
 }

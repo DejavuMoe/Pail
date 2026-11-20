@@ -327,7 +327,7 @@ func TestPanelsAreNotNarrowedAtTheMinimumWindow(t *testing.T) {
 		t.Errorf("panel widths %v / %v after shrinking to 960, want 248 / 320", h.a.sidebarW, h.a.inspW)
 	}
 	// Every command stays reachable: icon only, but on screen.
-	h.expectOnScreen(auditSizes[1], "Refresh", "More")
+	h.expectOnScreen("en", auditSizes[1], "Refresh", "More")
 }
 
 // The path bar of a frame is as wide as the metrics say it is, in the frame

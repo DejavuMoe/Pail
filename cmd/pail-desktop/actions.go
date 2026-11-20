@@ -13,8 +13,14 @@ import (
 )
 
 // bg runs work on a goroutine and applies the function it returns on the UI
-// thread. It is how every Service call that can touch the network, the disk or
-// the keyring is made; busyOps lets tests wait for the result.
+// thread. It is how every one-shot Service call that can touch the network, the
+// disk or the keyring is made; busyOps lets tests wait for the result.
+//
+// Work that is not one call and one answer counts busyOps itself or stays
+// outside it: a folder listing posts a page at a time (loading says when it is
+// done), CloudFront polls until the view closes, folder sizes and settings
+// saves count themselves, and native pickers, notifications and the file
+// manager are the system's, not the Service's.
 func (a *app) bg(work func() func()) {
 	a.busyOps.Add(1)
 	go func() {
@@ -313,10 +319,10 @@ func (a *app) askDelete() {
 	d.cancel = cancel
 	gen := d.gen
 	sel := core.Selection{Location: d.loc, Keys: keys}
-	go func() {
+	a.bg(func() func() {
 		defer cancel()
 		est, err := a.svc.Estimate(ctx, sel)
-		a.post(func() {
+		return func() {
 			if gen != a.del.gen || !a.del.open {
 				return
 			}
@@ -325,8 +331,8 @@ func (a *app) askDelete() {
 				return
 			}
 			a.del.est, a.del.state = est, delReady
-		})
-	}()
+		}
+	})
 }
 
 // closeDelete closes the dialog and drops any answer still on its way.
@@ -400,12 +406,12 @@ func (a *app) confirmNewFolder() {
 	loc := a.scope
 	gen := a.folderDlg.gen
 	a.folderDlg.busy, a.folderDlg.err = true, ""
-	go func() {
+	a.bg(func() func() {
 		ctx, cancel := a.timeout(30 * time.Second)
 		defer cancel()
 		err := a.svc.CreateFolder(ctx, loc, name)
-		a.post(func() { a.folderCreated(gen, loc, name, err) })
-	}()
+		return func() { a.folderCreated(gen, loc, name, err) }
+	})
 }
 
 // folderCreated applies the answer of CreateFolder to the dialog that asked

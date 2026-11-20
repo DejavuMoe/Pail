@@ -154,27 +154,14 @@ func (a *app) deleteDialog(c *ui.Context) {
 			}
 		})
 		ui.Column(c).Gap(2).Children(func() {
-			row := ui.Row(c).Gap(8).AlignItems(ui.Center)
-			row.Children(func() {
-				if d.state == delCounting {
-					ui.Spinner(c).Size(12, 12)
-				}
-				ui.Text(c, d.summary()).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
-			})
+			countLine(c, d.state == delCounting, d.summary())
 			if d.state == delFailed {
 				mutedText(c, d.err)
 			}
 			mutedText(c, locales.CommonUndoneWarning())
 		})
 	}, func() {
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				a.closeDelete()
-			}
-			if dangerButton(c, locales.DialogsDeleteButton(locales.CommonItems(len(d.keys))), d.state == delCounting).Clicked() {
-				a.confirmDelete()
-			}
-		})
+		confirmButtons(c, dangerButton, locales.DialogsDeleteButton(locales.CommonItems(len(d.keys))), d.state == delCounting, a.closeDelete, a.confirmDelete)
 	})
 	if was && !d.open { // closed by Escape or a click outside
 		a.closeDelete()
@@ -207,14 +194,7 @@ func (a *app) folderDialog(c *ui.Context) {
 		})
 	}, func() {
 		name := strings.TrimSpace(a.folderDlg.name)
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				a.closeNewFolder()
-			}
-			if primaryButton(c, locales.CommonCreate(), a.folderError(name) != "" || a.folderDlg.busy).Clicked() {
-				a.confirmNewFolder()
-			}
-		})
+		confirmButtons(c, primaryButton, locales.CommonCreate(), a.folderError(name) != "" || a.folderDlg.busy, a.closeNewFolder, a.confirmNewFolder)
 	})
 	if was && !a.newFolder { // closed by Escape or a click outside
 		a.closeNewFolder()
@@ -238,22 +218,15 @@ func (a *app) confirmDialog(c *ui.Context) {
 			ui.Text(c, cf.message).FontSize(sizeSecondary).TextColor(k.TextMuted)
 		}
 	}, func() {
-		buttonRow(c, func() {
-			if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
-				cf.open = false
-			}
-			var b ui.Element
-			if cf.danger {
-				b = dangerButton(c, cf.action, false)
-			} else {
-				b = primaryButton(c, cf.action, false)
-			}
-			if b.Clicked() {
-				run := cf.run
-				cf.open = false
-				if run != nil {
-					run()
-				}
+		solid := primaryButton
+		if cf.danger {
+			solid = dangerButton
+		}
+		confirmButtons(c, solid, cf.action, false, func() { cf.open = false }, func() {
+			run := cf.run
+			cf.open = false
+			if run != nil {
+				run()
 			}
 		})
 	})

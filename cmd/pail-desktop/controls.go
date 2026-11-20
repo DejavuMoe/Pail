@@ -1,6 +1,7 @@
 package main
 
 import (
+	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -109,4 +110,18 @@ func checkboxControl(c *ui.Context, checked *bool, label string) ui.Element {
 // buttonRow is the right-aligned row of dialog buttons.
 func buttonRow(c *ui.Context, children func()) ui.Element {
 	return ui.Row(c).Gap(8).Justify(ui.End).AlignItems(ui.Center).Children(children)
+}
+
+// confirmButtons is the usual dialog footer: Cancel, then one solid button,
+// primaryButton or dangerButton, labelled action and disabled while off.
+// Cancel runs cancel; the solid button runs submit.
+func confirmButtons(c *ui.Context, solid func(*ui.Context, string, bool) ui.Element, action string, off bool, cancel, submit func()) {
+	buttonRow(c, func() {
+		if secondaryButton(c, locales.CommonCancel(), false).Clicked() {
+			cancel()
+		}
+		if solid(c, action, off).Clicked() {
+			submit()
+		}
+	})
 }

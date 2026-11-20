@@ -3,6 +3,7 @@ package main
 import (
 	"os"
 	"regexp"
+	"slices"
 	"strings"
 	"sync/atomic"
 	"testing"
@@ -75,4 +76,88 @@ func plural(n int, one, many string) string {
 		return "1 " + one
 	}
 	return groupInt(n) + " " + many
+}
+
+// plainSet is the set of texts untranslated lists now. Taken before a screen
+// opens, it holds what the screens around it leave plain.
+func (h *harness) plainSet() map[string]bool {
+	h.t.Helper()
+	set := map[string]bool{}
+	for _, s := range h.untranslated() {
+		set[s] = true
+	}
+	return set
+}
+
+// newPlainTexts lists the texts that a screen opened by open shows in the
+// pseudo locale without being bracketed (that is, not taken from the catalog)
+// and that the screen before it did not show.
+func (h *harness) newPlainTexts(open func()) []string {
+	h.t.Helper()
+	h.setLocale("en-XA")
+	before := h.plainSet()
+	open()
+	h.settle()
+	var out []string
+	for _, s := range h.untranslated() {
+		if !before[s] {
+			out = append(out, s)
+		}
+	}
+	h.setLocale("en")
+	return out
+}
+
+// plainOK reports whether a text may stay plain English under en-XA because it
+// is not catalog text: user data, S3 and HTTP values, product names, or the
+// text of another screen.
+type plainOK func(s string) bool
+
+// plainBase allows what stays plain on every screen: product names, the demo
+// account, region ids and S3 addresses.
+var plainBase = []plainOK{
+	plainIn(map[string]bool{"Pail": true, "AWS": true, "S3": true, "MinIO": true, "CloudFront": true}),
+	plainSub(demoAccountName),
+	plainPrefix("s3://"),
+	plainMatch(regexp.MustCompile(`^[a-z]{2}-[a-z]+-\d$`)),
+}
+
+// plainIn allows the texts of set.
+func plainIn(set map[string]bool) plainOK { return func(s string) bool { return set[s] } }
+
+// plainSub allows a text that contains one of subs.
+func plainSub(subs ...string) plainOK {
+	return func(s string) bool {
+		return slices.ContainsFunc(subs, func(sub string) bool { return strings.Contains(s, sub) })
+	}
+}
+
+// plainPrefix allows a text that starts with one of pres.
+func plainPrefix(pres ...string) plainOK {
+	return func(s string) bool {
+		return slices.ContainsFunc(pres, func(pre string) bool { return strings.HasPrefix(s, pre) })
+	}
+}
+
+// plainMatch allows a text that one of res matches.
+func plainMatch(res ...*regexp.Regexp) plainOK {
+	return func(s string) bool {
+		return slices.ContainsFunc(res, func(re *regexp.Regexp) bool { return re.MatchString(s) })
+	}
+}
+
+// expectTranslated fails on every text of the screen that stays plain English
+// under en-XA (switch to it first) and that neither plainBase nor ok allows.
+func (h *harness) expectTranslated(where string, ok ...plainOK) {
+	h.t.Helper()
+	allow := slices.Concat(plainBase, ok)
+	var left []string
+	for _, s := range h.untranslated() {
+		if !slices.ContainsFunc(allow, func(f plainOK) bool { return f(s) }) {
+			left = append(left, s)
+		}
+	}
+	if len(left) > 0 {
+		h.t.Errorf("%s: texts that stay plain English under en-XA: %q", where, left)
+	}
 }

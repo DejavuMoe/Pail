@@ -222,9 +222,9 @@ func (a *app) submitUnlock() {
 	}
 	pw := d.pw
 	d.busy, d.err = true, ""
-	go func() {
+	a.bg(func() func() {
 		err := a.svc.UnlockVault(pw) // Argon2id: a few tenths of a second
-		a.post(func() {
+		return func() {
 			d.busy = false
 			if err != nil {
 				d.setErr(err)
@@ -234,8 +234,8 @@ func (a *app) submitUnlock() {
 			a.refreshVault()
 			a.toast(locales.VaultUnlocked())
 			a.runRetries()
-		})
-	}()
+		}
+	})
 }
 
 // setErr files a service error under the password field (wrong password) or in
@@ -320,30 +320,11 @@ func (a *app) submitCreate() {
 	if p, q := d.createProblems(); p != "" || q != "" {
 		return
 	}
-	pw := d.pw
-	d.busy = true
-	ctx, cancel := a.timeout(2 * time.Minute)
-	go func() {
-		defer cancel()
-		err := a.svc.SetSecretBackend(ctx, core.SecretBackendVault, pw)
-		a.post(func() {
-			d.busy = false
-			a.noteKeyring(err)
-			a.refreshVault()
-			// A cleanup failure after the switch still leaves the vault in use.
-			if err != nil && !a.vaultMode() {
-				d.setErr(err)
-				return
-			}
-			a.vu.create = pwDialog{}
-			if err != nil {
-				a.toast(humanError(err))
-				return
-			}
+	a.moveSecrets(d, core.SecretBackendVault, locales.VaultNowInVault, func(clean bool) {
+		if clean {
 			a.vu.keyringDown = false
-			a.toast(locales.VaultNowInVault())
-		})
-	}()
+		}
+	})
 }
 
 func (a *app) submitToKeychain() {
@@ -356,29 +337,40 @@ func (a *app) submitToKeychain() {
 		d.err = locales.VaultEnterMaster()
 		return
 	}
+	a.moveSecrets(d, core.SecretBackendKeyring, func() string { return locales.VaultMovedTo(keychainName()) }, func(bool) {
+		a.vu.retries, a.vu.order = nil, nil
+	})
+}
+
+// moveSecrets moves the secrets to backend with the password in d, which the
+// caller has checked. When the move does not happen the dialog shows why. Once
+// it has, the dialog closes and moved runs; clean is false when a cleanup step
+// after the move failed, which the toast then reports instead of ok().
+func (a *app) moveSecrets(d *pwDialog, backend string, ok func() string, moved func(clean bool)) {
 	pw := d.pw
 	d.busy = true
 	ctx, cancel := a.timeout(2 * time.Minute)
-	go func() {
+	a.bg(func() func() {
 		defer cancel()
-		err := a.svc.SetSecretBackend(ctx, core.SecretBackendKeyring, pw)
-		a.post(func() {
+		err := a.svc.SetSecretBackend(ctx, backend, pw)
+		return func() {
 			d.busy = false
 			a.noteKeyring(err)
 			a.refreshVault()
-			if err != nil && a.vaultMode() {
+			// A cleanup failure after the switch still leaves the new backend in use.
+			if err != nil && a.vaultMode() != (backend == core.SecretBackendVault) {
 				d.setErr(err)
 				return
 			}
-			a.vu.toKeychain = pwDialog{}
-			a.vu.retries, a.vu.order = nil, nil
+			*d = pwDialog{}
+			moved(err == nil)
 			if err != nil {
 				a.toast(humanError(err))
 				return
 			}
-			a.toast(locales.VaultMovedTo(keychainName()))
-		})
-	}()
+			a.toast(ok())
+		}
+	})
 }
 
 func (a *app) submitChange() {
@@ -393,9 +385,9 @@ func (a *app) submitChange() {
 	}
 	old, pw := d.old, d.pw
 	d.busy = true
-	go func() {
+	a.bg(func() func() {
 		err := a.svc.ChangeVaultPassword(old, pw)
-		a.post(func() {
+		return func() {
 			d.busy = false
 			if err != nil {
 				d.setErr(err)
@@ -404,8 +396,8 @@ func (a *app) submitChange() {
 			a.vu.change = pwDialog{}
 			a.refreshVault()
 			a.toast(locales.VaultPasswordChanged())
-		})
-	}()
+		}
+	})
 }
 
 func (a *app) setAutoLock(minutes int) {
@@ -647,10 +639,7 @@ func pwFooter(c *ui.Context, d *pwDialog, busyText, action string, cancel, submi
 		resultLine(c, "circle-alert", k.Danger, d.fail)
 	}
 	if d.busy {
-		ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-			ui.Spinner(c).Size(14, 14)
-			mutedText(c, busyText)
-		})
+		loadingLine(c, busyText)
 	}
 	buttonRow(c, func() {
 		if secondaryButton(c, locales.CommonCancel(), d.busy).Clicked() {

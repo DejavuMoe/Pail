@@ -8,6 +8,7 @@ import (
 	"testing"
 	"time"
 
+	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/DejavuMoe/Pail/internal/s3test"
 	"github.com/egoist/mygo/ui"
@@ -115,7 +116,7 @@ func TestDeleteBucketNeedsTheNameTyped(t *testing.T) {
 	h.tt.Frame()
 	menu := h.menu()
 	for _, want := range []string{"Open", "Bucket settings…", "Empty bucket…", "Delete bucket…", "Copy name"} {
-		if !contains(menu, want) {
+		if !slices.Contains(menu, want) {
 			t.Errorf("bucket menu %q lacks %q", menu, want)
 		}
 	}
@@ -435,5 +436,312 @@ func TestNewAccountStartsWithPathStyle(t *testing.T) {
 	ac, _ := h.a.af.build()
 	if ac.Provider != core.ProviderS3 || !ac.PathStyle {
 		t.Fatalf("built account %+v", ac)
+	}
+}
+
+// ---- late completions and moves --------------------------------------------------------------
+
+func TestNewBucketCompletionPreservesReopenedDialog(t *testing.T) {
+	t.Parallel()
+	for _, fail := range []bool{false, true} {
+		t.Run(map[bool]string{false: "success", true: "failure"}[fail], func(t *testing.T) {
+			h := newHarness(t, "light")
+			if fail {
+				h.env.Srv.Inject(func(r *http.Request) *s3test.Fault {
+					if r.Method == http.MethodPut && r.URL.Path == "/first-created-bucket" {
+						return &s3test.Fault{Status: 403, Code: "AccessDenied", Message: "denied"}
+					}
+					return nil
+				})
+			}
+			h.a.openNewBucket()
+			h.a.mg.nb.name = "first-created-bucket"
+			h.a.createBucket()
+			old := nextCompletion(t, h.a)
+			h.tt.Frame()
+			h.tt.Key(0, ui.KeyEscape)
+			if h.a.mg.nb.open {
+				t.Fatal("Escape did not close pending dialog")
+			}
+			h.a.openNewBucket()
+			h.a.mg.nb.name = "second-unsent-bucket"
+			old()
+			f := h.a.mg.nb
+			if !f.open || f.name != "second-unsent-bucket" || f.busy || f.err != "" || h.a.scope.Bucket != bkt {
+				t.Errorf("old create changed new dialog/navigation: form=%+v scope=%+v", f, h.a.scope)
+			}
+			bs, err := h.a.svc.Buckets(context.Background(), h.a.accountID)
+			if err != nil {
+				t.Fatal(err)
+			}
+			created := slices.ContainsFunc(bs, func(b core.Bucket) bool { return b.Name == "first-created-bucket" })
+			if created == fail {
+				t.Fatalf("server operation outcome: created=%v fail=%v", created, fail)
+			}
+			if len(h.a.toasts) == 0 {
+				t.Error("stale operation outcome was not reported")
+			}
+		})
+	}
+}
+
+// Moving a bucket's contents in a language other than English said "Copied".
+func TestBucketMoveReportsAMoveInChinese(t *testing.T) {
+	h := newRawHarness(t, "light", true)
+	h.setLocale("zh-Hans")
+	n := h.countObjects("acme-website")
+	h.a.openBucketCopy("acme-website", true)
+	h.a.objOps.bc.dest = "acme-logs"
+	h.a.objOps.bc.prefix = "site/"
+	h.a.submitBucketCopy()
+	h.waitFor("move done", func() bool {
+		tk, ok := h.task("Move everything in acme-website")
+		return ok && tk.Status == core.StatusSucceeded
+	})
+	want := "已移动 " + strings.TrimSpace(groupInt(n)) + " 项"
+	h.waitToast(want)
+}
+
+// ---- bucket aliases --------------------------------------------------------------------------
+
+// openAliasFromMenu opens the Set alias dialog the way a user does.
+func (h *harness) openAliasFromMenu(bucket string) {
+	h.t.Helper()
+	if err := h.tt.RightClick(bucket); err != nil {
+		h.t.Fatal(err)
+	}
+	h.tt.Frame()
+	if menu := h.menu(); !slices.Contains(menu, "Set alias…") {
+		h.t.Fatalf("bucket menu %q lacks Set alias…", menu)
+	}
+	if err := h.chooseMenu("Set alias…"); err != nil {
+		h.t.Fatal(err)
+	}
+	h.settle()
+	if !h.a.alias.open || h.a.alias.bucket != bucket {
+		h.t.Fatalf("the dialog did not open for %s: %+v", bucket, h.a.alias)
+	}
+}
+
+func TestBucketAliasShowsInPlaceOfTheNameAndNothingElseChanges(t *testing.T) {
+	h := newHarness(t, "light")
+	h.openAliasFromMenu("acme-assets")
+	h.mustHave("Bucket alias", "Bucket", "acme-assets", "Alias", "Save", "Cancel",
+		"Shown instead of the bucket name in the sidebar, the path bar and the command palette. The bucket itself is not renamed.")
+	h.snapBoth("bucket-alias-dialog")
+
+	h.tt.Type("Storefront assets")
+	h.settle()
+	h.mustClick("Save")
+	h.waitFor("dialog closed", func() bool { return !h.a.alias.open })
+	h.waitToast("Saved the alias of acme-assets")
+	if got := h.env.Svc.BucketAlias(h.a.accountID, "acme-assets"); got != "Storefront assets" {
+		t.Fatalf("saved alias = %q", got)
+	}
+
+	// The sidebar and the path bar show the alias; the real name is in the tooltip.
+	h.mustHave("Storefront assets")
+	if got := h.a.bucketLabel("acme-assets"); got != "Storefront assets" {
+		t.Fatalf("bucketLabel = %q", got)
+	}
+	if got := h.a.bucketTip("acme-assets"); got != "Storefront assets · acme-assets" {
+		t.Fatalf("bucketTip = %q", got)
+	}
+	if got := h.a.bucketLabel("acme-logs"); got != "acme-logs" || h.a.bucketTip("acme-logs") != "acme-logs" {
+		t.Fatalf("a bucket without an alias is labelled %q", got)
+	}
+	if h.hasExactText("acme-assets") {
+		t.Error("the real name is still shown as a label")
+	}
+	h.snapBoth("bucket-alias-shown")
+
+	// Both names find the bucket in the sidebar filter.
+	for _, q := range []string{"storefront", "acme-assets"} {
+		h.a.bucketFilter = q
+		h.tt.Frame()
+		h.mustHave("Storefront assets")
+		h.mustNotHave("acme-logs")
+	}
+	h.a.bucketFilter = ""
+
+	// It is still the same bucket: browsing, the object URI and the real name in
+	// the dialogs that act on it.
+	h.settle()
+	if h.a.scope.Bucket != "acme-assets" || !h.has("manifest.json") {
+		t.Fatalf("browsing changed: bucket %q", h.a.scope.Bucket)
+	}
+	if got := h.a.objectURI("manifest.json"); got != "s3://acme-assets/manifest.json" {
+		t.Fatalf("object URI = %q", got)
+	}
+	h.a.openDeleteBucket("acme-assets")
+	h.settle()
+	h.mustHave("Delete bucket?", "acme-assets")
+	h.a.mg.db.open = false
+	h.settle()
+
+	// Another bucket keeps its own name in the path bar, then this one shows the alias again.
+	h.a.openBucket("acme-logs")
+	h.settle()
+	h.mustHave("acme-logs")
+	h.a.openBucket("acme-assets")
+	h.settle()
+	h.mustHave("Storefront assets")
+
+	// The command palette finds it by the alias and by the real name.
+	h.openPaletteWith(ui.Cmd, ui.KeyK)
+	for _, q := range []string{"Storefront", "acme-assets"} {
+		h.tt.Key(ui.Cmd, ui.KeyA)
+		h.tt.Type(q)
+		h.settle()
+		h.mustHave(locales.PaletteOpenBucket("Storefront assets"))
+	}
+	h.a.pal.open = false
+	h.settle()
+
+	// It survives a restart, and is Chinese-ready.
+	if got := h.env.Svc.Accounts()[0].BucketAliases["acme-assets"]; got != "Storefront assets" {
+		t.Fatalf("Accounts() lost the alias: %v", h.env.Svc.Accounts()[0].BucketAliases)
+	}
+	h.zhDialog(func() { h.a.openAliasDialog("acme-assets") }, "存储桶别名", "存储桶", "别名", "保存", "取消",
+		"在侧边栏、路径栏和命令面板里显示，代替存储桶名称。存储桶本身不会被重命名。")
+	h.a.alias.open = false
+	h.settle()
+}
+
+func TestBucketAliasCanBeChangedAndRemoved(t *testing.T) {
+	h := newHarness(t, "light")
+	acct := h.a.accountID
+
+	h.a.openAliasDialog("acme-assets")
+	h.a.alias.text = "  Shop  "
+	h.settle()
+	h.a.saveAlias()
+	h.waitFor("saved", func() bool { return !h.a.alias.open })
+	if got := h.env.Svc.BucketAlias(acct, "acme-assets"); got != "Shop" {
+		t.Fatalf("alias = %q, want it trimmed", got)
+	}
+
+	// The dialog starts from the saved alias; another name replaces it.
+	h.a.openAliasDialog("acme-assets")
+	if h.a.alias.text != "Shop" {
+		t.Fatalf("the dialog starts with %q", h.a.alias.text)
+	}
+	h.a.alias.text = "Shop (live)"
+	h.a.saveAlias()
+	h.waitFor("renamed", func() bool { return !h.a.alias.open })
+	h.settle()
+	h.mustHave("Shop (live)")
+	if h.hasExactText("Shop") {
+		t.Error("the old alias is still shown")
+	}
+
+	// Emptying it removes the alias.
+	h.a.openAliasDialog("acme-assets")
+	h.a.alias.text = ""
+	h.settle()
+	h.mustClick("Save")
+	h.waitFor("removed", func() bool { return !h.a.alias.open })
+	h.waitToast("Removed the alias of acme-assets")
+	if got := h.env.Svc.BucketAlias(acct, "acme-assets"); got != "" {
+		t.Fatalf("alias after removing = %q", got)
+	}
+	if !h.hasExactText("acme-assets") || h.hasExactText("Shop (live)") {
+		t.Error("the bucket does not show its own name again")
+	}
+
+	// Cancel changes nothing.
+	h.a.openAliasDialog("acme-assets")
+	h.a.alias.text = "Never saved"
+	h.settle()
+	h.mustClick("Cancel")
+	if h.env.Svc.BucketAlias(acct, "acme-assets") != "" || h.a.alias.open {
+		t.Fatal("Cancel saved or kept the dialog")
+	}
+}
+
+func TestBucketAliasErrorsStayInTheDialog(t *testing.T) {
+	h := newHarness(t, "light")
+	if err := h.env.Svc.SetBucketAlias(h.a.accountID, "acme-assets", "Shop"); err != nil {
+		t.Fatal(err)
+	}
+	h.a.refreshAccounts()
+	h.settle()
+
+	// Another bucket cannot take the same alias; the Save button is off.
+	h.a.openAliasDialog("acme-logs")
+	h.a.alias.text = "Shop"
+	h.settle()
+	h.mustHave("Already used by acme-assets")
+	h.mustClick("Save")
+	if !h.a.alias.open || h.env.Svc.BucketAlias(h.a.accountID, "acme-logs") != "" {
+		t.Fatal("a duplicate alias was saved")
+	}
+	// A name this bucket already has is fine.
+	h.a.alias.text = "Shop 2"
+	h.settle()
+	h.mustNotHave("Already used by acme-assets")
+
+	h.a.alias.text = strings.Repeat("长", core.MaxAliasRunes+1)
+	h.settle()
+	h.mustHave("Use at most 64 characters")
+	h.mustClick("Save")
+	if !h.a.alias.open {
+		t.Fatal("a too long alias closed the dialog")
+	}
+	h.a.alias.text = strings.Repeat("长", core.MaxAliasRunes)
+	h.settle()
+	h.mustNotHave("Use at most 64 characters")
+
+	// A failure of the service is reported in the dialog, which stays open.
+	h.a.alias.text = "Logs"
+	h.a.accountID = "gone"
+	h.a.saveAlias()
+	h.waitFor("failure shown", func() bool { return h.a.alias.err != "" })
+	h.mustHave(h.a.alias.err)
+	if !strings.HasPrefix(h.a.alias.err, "Could not save the alias: ") || !h.a.alias.open {
+		t.Fatalf("failure: %q, open %v", h.a.alias.err, h.a.alias.open)
+	}
+}
+
+func TestAliasDialogAndStatusBarAreTranslated(t *testing.T) {
+	h := newHarness(t, "light")
+	if err := h.env.Svc.SetBucketAlias(h.a.accountID, "acme-logs", "Taken"); err != nil {
+		t.Fatal(err)
+	}
+	h.a.refreshAccounts()
+	h.settle()
+
+	open := func() {
+		h.a.openAliasDialog("acme-assets")
+		h.a.alias.text = "Taken" // shows the "already used" line
+	}
+	if left := h.newPlainTexts(open); len(left) > 0 {
+		t.Errorf("the alias dialog has texts that are not translated: %q", left)
+	}
+	h.a.alias.open = false
+	h.settle()
+	open = func() {
+		h.a.openAliasDialog("acme-assets")
+		h.a.alias.text = strings.Repeat("x", core.MaxAliasRunes+1)
+	}
+	if left := h.newPlainTexts(open); len(left) > 0 {
+		t.Errorf("the alias dialog (too long) has texts that are not translated: %q", left)
+	}
+	h.a.alias.open = false
+	h.settle()
+
+	for _, what := range []string{tookBuckets, tookList, tookUpload, tookDownload, tookDelete} {
+		w := what
+		if left := h.newPlainTexts(func() { h.a.took = opTime{what: w, d: 4200 * time.Millisecond} }); len(left) > 0 {
+			t.Errorf("the status bar after %s has texts that are not translated: %q", w, left)
+		}
+	}
+	// Each kind says its own thing in Chinese.
+	for what, want := range map[string]string{tookBuckets: "加载存储桶用时 4.2 s", tookList: "加载列表用时 4.2 s",
+		tookUpload: "上传用时 4.2 s", tookDownload: "下载用时 4.2 s", tookDelete: "删除用时 4.2 s"} {
+		h.a.took = opTime{what: what, d: 4200 * time.Millisecond}
+		h.setLocale("zh-Hans")
+		h.mustHave(want)
+		h.setLocale("en")
 	}
 }

@@ -223,11 +223,7 @@ func (a *app) mimeView(c *ui.Context) {
 				m.rows = slices.Delete(slices.Clone(m.rows), del, del+1)
 			}
 		}
-		ui.Row(c).Height(48).Padding(0, 16).Gap(12).AlignItems(ui.Center).Shrink(0).
-			BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Children(func() {
-			labelHelp(c, locales.MimeTestHelp(), func() ui.Element {
-				return ui.Text(c, locales.MimeTest()).FontSize(sizeSecondary).FontWeight(600).TextColor(k.Text)
-			})
+		testStrip(c, locales.MimeTest(), locales.MimeTestHelp(), func() {
 			inputBox(c, &m.testName, locales.MimeFileName(), locales.MimeFileName(), inputOpts{width: 260, mono: true})
 			if strings.TrimSpace(m.testName) != "" {
 				ui.Text(c, locales.MimeDraftResult()).FontSize(sizeSecondary).TextColor(k.TextMuted).Shrink(0)

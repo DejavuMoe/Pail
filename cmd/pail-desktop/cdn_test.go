@@ -2,6 +2,7 @@ package main
 
 import (
 	"fmt"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -144,7 +145,7 @@ func TestCDNContextMenuAndBucketFilter(t *testing.T) {
 		h.settle()
 		return m
 	}
-	if m := menuOf(); contains(m, "Copy link > Copy CDN URL") || contains(m, "Open CDN URL") {
+	if m := menuOf(); slices.Contains(m, "Copy link > Copy CDN URL") || slices.Contains(m, "Open CDN URL") {
 		t.Errorf("CDN items without a CDN: %q", m)
 	}
 
@@ -156,7 +157,7 @@ func TestCDNContextMenuAndBucketFilter(t *testing.T) {
 
 	// Limited to another bucket: nothing for this one.
 	h.setCDN(testCDN, "other-bucket")
-	if m := menuOf(); contains(m, "Copy link > Copy CDN URL") || contains(m, "Open CDN URL") {
+	if m := menuOf(); slices.Contains(m, "Copy link > Copy CDN URL") || slices.Contains(m, "Open CDN URL") {
 		t.Errorf("CDN items for a filtered-out bucket: %q", m)
 	}
 	h.mustClick("manifest.json")

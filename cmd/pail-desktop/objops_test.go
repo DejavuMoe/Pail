@@ -8,6 +8,7 @@ import (
 	"net/http"
 	"os"
 	"path/filepath"
+	"slices"
 	"strings"
 	"testing"
 	"time"
@@ -81,7 +82,7 @@ func (h *harness) classOf(bucket, key string) string {
 func menuHas(menu []string, want ...string) []string {
 	var missing []string
 	for _, w := range want {
-		if !contains(menu, w) {
+		if !slices.Contains(menu, w) {
 			missing = append(missing, w)
 		}
 	}
@@ -188,7 +189,7 @@ func TestChangeStorageClassOfAWholeBucketFromTheBucketMenu(t *testing.T) {
 		"Change storage class…", "Change encryption…", "Empty bucket…", "Delete bucket…", "Copy name"); len(m) > 0 {
 		t.Fatalf("bucket menu %q lacks %q", menu, m)
 	}
-	if contains(menu, "Invalidate CloudFront…") {
+	if slices.Contains(menu, "Invalidate CloudFront…") {
 		t.Error("CloudFront belongs to AWS accounts only")
 	}
 	if err := h.chooseMenu("Change storage class…"); err != nil {
@@ -1039,4 +1040,80 @@ func TestOpenLogFolderFailureIsReported(t *testing.T) {
 	h.showSetting("Open log folder")
 	h.mustClick("Open log folder")
 	h.waitToast("Could not open the log folder: no file manager")
+}
+
+// ---- rename and signed URL ---------------------------------------------------------------------
+
+// A name with a space at an end was renamed without the trimmed space when
+// the field was left untouched.
+func TestUntouchedRenameKeepsSpaces(t *testing.T) {
+	h := newHarness(t, "light")
+	h.env.Srv.PutObject(bkt, "pad ", []byte("x"), "text/plain", nil)
+	h.a.reload()
+	h.settle()
+	h.a.setSingle("pad ")
+	h.a.startRename()
+	h.settle()
+	h.a.commitRename(true)
+	h.settle()
+	h.waitFor("idle", func() bool { return h.a.idle() })
+	if !h.hasObject(bkt, "pad ") || h.hasObject(bkt, "pad") {
+		t.Error(`an untouched rename of "pad " renamed it`)
+	}
+}
+
+// A signed URL that arrived after its dialog was closed and opened again for
+// another object showed in the new dialog.
+func TestLateSignedURLStaysOutOfANewDialog(t *testing.T) {
+	h := newHarness(t, "light")
+	h.a.openSigned([]string{"README.txt"}, "")
+	h.a.generateSigned()
+	h.a.objOps.sg.open = false
+	h.a.openSigned([]string{"manifest.json"}, "")
+	h.waitFor("idle", func() bool { return h.a.idle() })
+	h.settle()
+	f := &h.a.objOps.sg
+	if len(f.res) > 0 || f.busy {
+		t.Errorf("the manifest.json dialog shows %+v (busy %v)", f.res, f.busy)
+	}
+}
+
+// A rename that ended while another object was chosen took the selection to
+// the renamed object, and the other object's draft with it.
+func TestN1RenameKeepsOtherSelectionAndDraft(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	started, release := holdRequests(t, h, isCopy)
+	h.chooseForHeaders("manifest.json")
+	h.a.mg.ren = renameState{key: "manifest.json", name: "manifest-2.json"}
+	h.a.commitRename(true)
+	waitStarted(t, started)
+	p := h.chooseForHeaders("README.txt")
+	p.hdrSet[hdrCacheControl], p.hdrVal[hdrCacheControl] = true, "no-store"
+	release()
+	h.waitToast("Renamed to manifest-2.json")
+	h.waitFollows()
+	if !h.hasObject(bkt, "manifest-2.json") {
+		t.Fatal("rename did not happen")
+	}
+	if k, one := h.a.soleSelected(); !one || k != "README.txt" {
+		t.Errorf("selection moved to %q", k)
+	}
+	if h.a.headKey != "README.txt" || !p.hdrSet[hdrCacheControl] || !p.dirty() {
+		t.Fatalf("README.txt's draft lost: headKey=%q set=%v", h.a.headKey, p.hdrSet)
+	}
+}
+
+// The renamed object is still chosen, under its new name, when nothing else
+// was chosen meanwhile.
+func TestN1RenameSelectsTheNewName(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.chooseForHeaders("manifest.json")
+	h.a.mg.ren = renameState{key: "manifest.json", name: "manifest-2.json"}
+	h.a.commitRename(true)
+	h.waitToast("Renamed to manifest-2.json")
+	h.waitFollows()
+	h.waitFor("new name chosen", func() bool { k, one := h.a.soleSelected(); return one && k == "manifest-2.json" })
+	h.waitFor("its details", func() bool { return h.a.headKey == "manifest-2.json" && h.a.headState == loadReady })
 }

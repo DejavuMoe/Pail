@@ -57,7 +57,7 @@ func (a *app) inspector(c *ui.Context) {
 	root.Children(func() {
 		a.inspectorTabBar(c)
 		hairline(c)
-		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, 2, 0, 0).Children(func() {
+		paneScroll(c, func() {
 			ui.Column(c).Padding(16).Gap(16).Children(func() {
 				a.inspectorBody(c)
 			})
@@ -99,7 +99,7 @@ func (a *app) header(c *ui.Context, icon, title, sub string) {
 func (a *app) multiSummary(c *ui.Context) {
 	folders, files, bytes := a.selectedInfo()
 	a.header(c, "layers", locales.CommonItems(a.sel.Len())+" · "+humanBytes(bytes), locales.InspectorMultiple())
-	rows := []KV{{locales.InspectorFolders(), groupInt(folders)}, {locales.InspectorObjects(), groupInt(files)}, {locales.InspectorTotalSize(), humanBytes(bytes)}}
+	rows := []KV{{locales.InspectorFolders(), groupInt(folders)}, {locales.InspectorObjects(), groupInt(files)}, {sumLabel(folders), humanBytes(bytes)}}
 	kvTable(c, rows, false)
 }
 
@@ -114,7 +114,7 @@ func (a *app) currentFolderSummary(c *ui.Context) {
 		{locales.InspectorItems(), groupInt(folders + files)},
 		{locales.InspectorFolders(), groupInt(folders)},
 		{locales.InspectorObjects(), groupInt(files)},
-		{locales.InspectorTotalSize(), humanBytes(bytes)},
+		{sumLabel(folders), humanBytes(bytes)},
 	}
 	if b, ok := a.bucket(); ok {
 		if b.Region != "" {
@@ -167,10 +167,7 @@ func (a *app) objectTabs(c *ui.Context) {
 		switch a.headState {
 		case loadBusy:
 			a.header(c, icons.NameFor(e.Key, false), e.Name, humanBytes(e.Size))
-			ui.Row(c).Gap(8).AlignItems(ui.Center).Children(func() {
-				ui.Spinner(c).Size(14, 14)
-				mutedText(c, locales.InspectorLoadingDetails())
-			})
+			loadingLine(c, locales.InspectorLoadingDetails())
 			return
 		case loadFailed:
 			a.header(c, icons.NameFor(e.Key, false), e.Name, humanBytes(e.Size))
@@ -354,4 +351,13 @@ func kvTable(c *ui.Context, rows []KV, monospaceValues bool, copies ...kvCopy) {
 			})
 		}
 	})
+}
+
+// sumLabel names a sum of sizes. S3 keeps no size for a folder, so with
+// folders among the items the sum covers the objects alone, and says so.
+func sumLabel(folders int) string {
+	if folders > 0 {
+		return locales.InspectorObjectsSize()
+	}
+	return locales.InspectorTotalSize()
 }
