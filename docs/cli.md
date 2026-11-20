@@ -53,7 +53,8 @@ pail presign s3://bucket/key [--expires 1h] [--method GET|PUT] [--version-id V]
 pail url s3://bucket/key [--kind cdn|public]        # CDN or public address, no request
 pail versions s3://bucket/prefix/                   # versions and delete markers
 pail restore s3://bucket/key --version-id V         # make an old version current
-pail restore s3://bucket/prefix/ --deleted [-r]     # undelete keys
+pail restore s3://bucket/key --deleted              # undelete one key
+pail restore s3://bucket/prefix/ --deleted -r       # undelete every key under a prefix
 pail stat s3://bucket/key [--version-id V]          # properties of an object
 pail cat s3://bucket/key [--version-id V]           # write an object to stdout
 pail mkdir s3://bucket/prefix/                      # create a folder
@@ -87,7 +88,7 @@ pail version
 - `presign` creates a URL valid for `--expires` (default `1h`) for `--method` `GET` (default) or `PUT`.
 - `url` prints the CDN link when the account has a CDN URL for that bucket (see CDN URLs), otherwise the public S3 address. `--kind cdn` exits 1 when none is configured; `--kind public` always prints the S3 address. A prefix instead of a key is a usage error (exit 2). With `--json` it prints one object (shape below), then the summary.
 - `versions` lists one folder level and includes delete markers.
-- `restore --version-id` makes an old version the current one. `restore --deleted` undeletes the keys under a prefix whose latest entry is a delete marker (add `-r` to include subfolders). Version history is kept.
+- `restore --version-id` makes an old version the current one. `restore --deleted` undeletes a key whose latest entry is a delete marker; on a prefix it needs `-r` and undeletes every such key below it. Version history is kept.
 - `sync` copies in one direction. `--mode` is `new`, `new_changed` (default) or `mirror`; `mirror` also deletes. `--compare` is `size_time` (default), `size` or `checksum`. `--exclude GLOB` skips files whose relative path matches the glob and can be repeated. `--no-rules` does not apply upload rules. `--dry-run` prints the plan and exits without changing anything.
 - `sync --job NAME` runs a saved sync job, using that job's account unless `--account` is given. `sync job ls`, `sync job add` and `sync job rm` manage the saved jobs, see Administration.
 

@@ -53,7 +53,8 @@ pail presign s3://bucket/key [--expires 1h] [--method GET|PUT] [--version-id V]
 pail url s3://bucket/key [--kind cdn|public]        # CDN 或公开地址，不发请求
 pail versions s3://bucket/prefix/                   # 版本和删除标记
 pail restore s3://bucket/key --version-id V         # 把旧版本恢复为当前版本
-pail restore s3://bucket/prefix/ --deleted [-r]     # 恢复已删除的对象键
+pail restore s3://bucket/key --deleted              # 恢复一个已删除的对象键
+pail restore s3://bucket/prefix/ --deleted -r       # 恢复前缀下所有已删除的对象键
 pail stat s3://bucket/key [--version-id V]          # 对象的属性
 pail cat s3://bucket/key [--version-id V]           # 把对象写到 stdout
 pail mkdir s3://bucket/prefix/                      # 创建文件夹
@@ -87,7 +88,7 @@ pail version
 - `presign` 生成有效期为 `--expires`（默认 `1h`）的 URL，`--method` 为 `GET`（默认）或 `PUT`。
 - 账户为该存储桶设置了 CDN URL 时（见"CDN URL"），`url` 输出 CDN 链接，否则输出公开的 S3 地址。`--kind cdn` 在未配置时以 1 退出；`--kind public` 始终输出 S3 地址。给出前缀而不是对象键属于用法错误（退出码 2）。使用 `--json` 时输出一个对象（结构见下），随后是汇总。
 - `versions` 列出一层文件夹，包含删除标记。
-- `restore --version-id` 把旧版本恢复为当前版本。`restore --deleted` 恢复前缀下最新记录为删除标记的对象键（加 `-r` 包含子文件夹）。版本历史会保留。
+- `restore --version-id` 把旧版本恢复为当前版本。`restore --deleted` 恢复最新记录为删除标记的对象键；对前缀必须加 `-r`，会恢复其下所有这样的对象键。版本历史会保留。
 - `sync` 做单向同步。`--mode` 为 `new`、`new_changed`（默认）或 `mirror`，`mirror` 还会删除。`--compare` 为 `size_time`（默认）、`size` 或 `checksum`。`--exclude GLOB` 跳过相对路径匹配该通配符的文件，可重复使用。`--no-rules` 不应用上传规则。`--dry-run` 输出计划后退出，不做任何修改。
 - `sync --job NAME` 运行已保存的同步任务，除非给出 `--account`，否则使用该任务的账户。`sync job ls`、`sync job add` 和 `sync job rm` 管理已保存的任务，见"管理"。
 
