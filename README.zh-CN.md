@@ -43,13 +43,20 @@
 
 从 [最新版本](https://github.com/DejavuMoe/Pail/releases/latest) 下载对应系统的压缩包。镜像 [pan.zsh.moe/Pail](https://pan.zsh.moe/Pail/) 上有相同的文件。
 
-- **Windows**：`Pail-v<version>-windows-amd64.zip`（x64）或 `Pail-v<version>-windows-arm64.zip`（Arm）
-- **macOS 11 及以上**：`Pail-v<version>-darwin-arm64.zip`（Apple 芯片）或 `Pail-v<version>-darwin-amd64.zip`（Intel）
-- **Linux**：`Pail-v<version>-linux-amd64.tar.gz`（x64）或 `Pail-v<version>-linux-arm64.tar.gz`（Arm）
+| 系统 | 压缩包 |
+| --- | --- |
+| Windows x64 | `Pail-v<version>-windows-amd64.zip` |
+| Windows Arm | `Pail-v<version>-windows-arm64.zip` |
+| macOS，Apple 芯片 | `Pail-v<version>-darwin-arm64.zip` |
+| macOS，Intel | `Pail-v<version>-darwin-amd64.zip` |
+| Linux x64 | `Pail-v<version>-linux-amd64.tar.gz` |
+| Linux Arm | `Pail-v<version>-linux-arm64.tar.gz` |
 
-每个压缩包都含桌面应用和命令行工具 `pail`。macOS 是 `Pail.app`；Linux 还带 `.desktop` 文件和图标。不提供 32 位版本。
+需要 macOS 11 或更高版本。不提供 32 位版本。
 
-可执行文件名带版本号和平台。本文把它们叫作 `pail-desktop` 和 `pail`，请重命名文件或创建别名。
+每个压缩包里都有桌面应用和命令行工具 `pail`。macOS 上的桌面应用是 `Pail.app`；Linux 的压缩包里还有 `.desktop` 文件和图标。
+
+可执行文件的名字带版本号和平台。本文把它们写作 `pail-desktop` 和 `pail`：先给文件改名，或者创建别名。
 
 ### 校验下载
 
@@ -117,11 +124,10 @@ pail cat s3://my-bucket/notes.txt
 - **日志**默认关闭。开启后，`logs/pail.log` 不含 URL 查询参数、Authorization 标头、签名和已知的机密值。手动输入的密码只能按标签识别，分享日志前请先检查。
 - **网络**：Pail 只连接你账户的端点，经由**设置 › 网络**里的代理、账户自己的代理，或 `HTTP_PROXY`、`HTTPS_PROXY`。没有遥测，也不检查更新。
 
-## 已测试的平台与服务
+## 支持的平台与服务
 
 - 桌面应用：Windows、Linux 和 macOS（Apple 芯片与 Intel）。
-- 服务：Amazon S3、Cloudflare R2、Wasabi、MinIO 和 VersityGW。
-- AssumeRole 凭据和 CloudFront 还没有在真实 AWS 账户上试过。
+- 服务：Amazon S3、Cloudflare R2、Wasabi、MinIO、VersityGW，以及其他提供 S3 API 的服务。
 
 已知限制见 [更新日志](CHANGELOG.zh-CN.md)。
 

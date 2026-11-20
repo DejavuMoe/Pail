@@ -35,7 +35,7 @@ Global flags can be placed before or after the command name.
 
 Usage:
 
-```text
+```sh
 pail accounts                                       # list accounts
 pail account ls|show|add|edit|test|rm ...           # manage accounts, see Accounts
 pail vault status|init|unlock|lock|passwd|backend|reset
@@ -241,7 +241,7 @@ These commands act on one object. `stat`, `cat`, `tags` and `acl` take `--versio
 - `bucket alias s3://bucket NAME` sets the name the desktop app shows for a bucket. An empty `NAME`, or `--clear`, removes it. Without `NAME` the command prints the current alias. The alias exists only in Pail's configuration; nothing changes on the storage service, and commands keep using the real bucket name.
 - `multipart ls s3://bucket[/prefix/]` lists unfinished multipart uploads with their start time, storage class, upload ID and key. `multipart abort` with the same path aborts them after confirmation and discards the parts already uploaded. `--older-than D` limits it to uploads started longer ago than `D`, for example `36h` or `7d`.
 - `sync job ls` lists the saved sync jobs. `sync job add NAME LOCAL s3://bucket/prefix/` saves an upload job and `sync job add NAME s3://bucket/prefix/ LOCAL` a download job, with the same `--mode`, `--compare`, `--exclude` and `--no-rules` flags as `sync`. The local folder must exist. `sync job rm NAME` removes a saved job after confirmation; local files and objects stay. Run a job with `sync --job NAME`.
-- `cloudfront ls` lists the account's CloudFront distributions; `--bucket B` keeps those with an origin in that bucket. `cloudfront invalidate DISTRIBUTION PATH...` prints the distribution and the paths and asks for confirmation before it creates the invalidation. It works with AWS accounts only. CloudFront has not been tested on a real AWS account.
+- `cloudfront ls` lists the account's CloudFront distributions; `--bucket B` keeps those with an origin in that bucket. `cloudfront invalidate DISTRIBUTION PATH...` prints the distribution and the paths and asks for confirmation before it creates the invalidation. It works with AWS accounts only.
 - `settings get` prints every setting as `KEY VALUE`; `settings get KEY` prints only the value. `settings set KEY VALUE` changes one. They are the settings of the desktop app.
 
 | Setting | Values |

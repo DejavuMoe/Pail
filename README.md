@@ -43,13 +43,20 @@
 
 Download the archive for your system from the [latest release](https://github.com/DejavuMoe/Pail/releases/latest). The same files are mirrored at [pan.zsh.moe/Pail](https://pan.zsh.moe/Pail/).
 
-- **Windows:** `Pail-v<version>-windows-amd64.zip` (x64) or `Pail-v<version>-windows-arm64.zip` (Arm)
-- **macOS 11 or later:** `Pail-v<version>-darwin-arm64.zip` (Apple silicon) or `Pail-v<version>-darwin-amd64.zip` (Intel)
-- **Linux:** `Pail-v<version>-linux-amd64.tar.gz` (x64) or `Pail-v<version>-linux-arm64.tar.gz` (Arm)
+| System | Archive |
+| --- | --- |
+| Windows x64 | `Pail-v<version>-windows-amd64.zip` |
+| Windows Arm | `Pail-v<version>-windows-arm64.zip` |
+| macOS, Apple silicon | `Pail-v<version>-darwin-arm64.zip` |
+| macOS, Intel | `Pail-v<version>-darwin-amd64.zip` |
+| Linux x64 | `Pail-v<version>-linux-amd64.tar.gz` |
+| Linux Arm | `Pail-v<version>-linux-arm64.tar.gz` |
 
-Each archive holds the desktop app and the `pail` command-line tool. macOS has `Pail.app`; Linux also has a `.desktop` entry and an icon. There are no 32-bit builds.
+macOS 11 or later is needed. There are no 32-bit builds.
 
-Executables are named with the version and platform. This document calls them `pail-desktop` and `pail`; rename the files or create aliases.
+Each archive holds the desktop app and the `pail` command-line tool. On macOS the desktop app is `Pail.app`; the Linux archive also has a `.desktop` entry and an icon.
+
+The executables are named with the version and platform. This document calls them `pail-desktop` and `pail`: rename the files, or create aliases.
 
 ### Check the download
 
@@ -117,11 +124,10 @@ Every command, its flags, JSON output and exit codes are in the [command-line re
 - **Logs** are off by default. When on, `logs/pail.log` leaves out URL query strings, Authorization headers, signatures and known secrets. Passwords typed by hand are recognised only by their label, so read a log before you share it.
 - **Network:** Pail connects only to the endpoints of your accounts, through the proxy from **Settings › Network**, an account's own proxy, or `HTTP_PROXY` and `HTTPS_PROXY`. It has no telemetry and does not check for updates.
 
-## Tested platforms and services
+## Supported platforms and services
 
 - Desktop app: Windows, Linux and macOS (Apple silicon and Intel).
-- Services: Amazon S3, Cloudflare R2, Wasabi, MinIO and VersityGW.
-- AssumeRole credentials and CloudFront have not been tried on a real AWS account.
+- Services: Amazon S3, Cloudflare R2, Wasabi, MinIO, VersityGW and other services that offer the S3 API.
 
 Known limitations are listed in the [changelog](CHANGELOG.md).
 
