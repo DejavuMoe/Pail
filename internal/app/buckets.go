@@ -129,81 +129,33 @@ func (s *Service) EmptyBucket(accountID, name string, allVersions bool) (string,
 				bmRemaining(r, err.Error())
 				return classify(op, err)
 			}
-			flush := func(ids []storage.ObjectID) {
-				if len(ids) == 0 {
-					return
-				}
-				for _, d := range c.DeleteObjects(ctx, name, ids) {
-					it := ItemResult{Key: d.Key, VersionID: d.VersionID, Status: string(d.Status)}
-					if d.Status != storage.DeleteSucceeded {
-						it.Err = strings.TrimSpace(d.Code + " " + d.Message)
-					}
-					r.Item(it)
-				}
+			list, what := bkListObjects(c, name), "objects"
+			if allVersions {
+				list, what = bkListVersions(c, name), "versions"
 			}
-			fail := func(err error) error {
-				if ctx.Err() != nil {
-					bmRemaining(r, "canceled before all objects were listed and deleted")
-					return ctx.Err()
+			// Each page is deleted before the next is listed: deleting while
+			// listing the current objects is what lets the listing end.
+			err = list(ctx, bkScan{}, func(page []bkObj, _ string) error {
+				if len(page) > 0 {
+					ids := make([]storage.ObjectID, len(page))
+					for i, o := range page {
+						ids[i] = storage.ObjectID{Key: o.Key, VersionID: o.VersionID}
+					}
+					for _, d := range c.DeleteObjects(ctx, name, ids) {
+						r.Item(deleteItem(d))
+					}
 				}
+				return ctx.Err()
+			})
+			switch {
+			case err == nil:
+				return nil
+			case ctx.Err() != nil:
+				bmRemaining(r, "canceled before all "+what+" were deleted")
+				return ctx.Err()
+			default:
 				bmRemaining(r, err.Error())
 				return classify(op, err)
-			}
-			if allVersions {
-				var km, vm *string
-				for {
-					out, err := c.S3().ListObjectVersions(ctx, &s3.ListObjectVersionsInput{Bucket: aws.String(name),
-						KeyMarker: km, VersionIdMarker: vm, EncodingType: types.EncodingTypeUrl})
-					if err != nil {
-						return fail(err)
-					}
-					dec := bkDecoder(out.EncodingType)
-					var ids []storage.ObjectID
-					for _, v := range out.Versions {
-						ids = append(ids, storage.ObjectID{Key: dec(aws.ToString(v.Key)), VersionID: aws.ToString(v.VersionId)})
-					}
-					for _, m := range out.DeleteMarkers {
-						ids = append(ids, storage.ObjectID{Key: dec(aws.ToString(m.Key)), VersionID: aws.ToString(m.VersionId)})
-					}
-					flush(ids)
-					if ctx.Err() != nil {
-						bmRemaining(r, "canceled before all versions were deleted")
-						return ctx.Err()
-					}
-					if !aws.ToBool(out.IsTruncated) {
-						return nil
-					}
-					if aws.ToString(out.NextKeyMarker) == "" {
-						return fail(opErr("ListVersions", ErrOther, "the service reported a truncated listing without a key marker"))
-					}
-					// The response was URL-encoded; request markers must be raw.
-					km, vm = aws.String(dec(aws.ToString(out.NextKeyMarker))), out.NextVersionIdMarker
-				}
-			}
-			var token *string
-			for {
-				out, err := c.S3().ListObjectsV2(ctx, &s3.ListObjectsV2Input{Bucket: aws.String(name),
-					ContinuationToken: token, EncodingType: types.EncodingTypeUrl})
-				if err != nil {
-					return fail(err)
-				}
-				dec := bkDecoder(out.EncodingType)
-				ids := make([]storage.ObjectID, 0, len(out.Contents))
-				for _, o := range out.Contents {
-					ids = append(ids, storage.ObjectID{Key: dec(aws.ToString(o.Key))})
-				}
-				flush(ids)
-				if ctx.Err() != nil {
-					bmRemaining(r, "canceled before all objects were deleted")
-					return ctx.Err()
-				}
-				if !aws.ToBool(out.IsTruncated) {
-					return nil
-				}
-				if aws.ToString(out.NextContinuationToken) == "" {
-					return fail(opErr("List", ErrOther, "the service reported a truncated listing without a continuation token"))
-				}
-				token = out.NextContinuationToken
 			}
 		},
 		Retry: func([]ItemResult) (taskSpec, bool) { return spec, true },

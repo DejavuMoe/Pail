@@ -217,7 +217,7 @@ func TestFxCreateMultipartNotImplementedDoesNotMarkAccount(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusPartiallyFailed {
 		t.Fatalf("status %v items %+v", tk.Status, e.s.TaskItems(id))
 	}

@@ -62,39 +62,20 @@ func (s *Service) bkSubmitRewrite(loc Location, scope bkScope, rw *bkRewrite) st
 }
 
 func (s *Service) bkRewriteSpec(loc Location, scope bkScope, rw *bkRewrite) taskSpec {
-	st := &bkState{}
-	return taskSpec{
-		Kind:   KindOther,
-		Title:  rw.title,
-		Detail: bkURL(loc),
-		Work: func(ctx context.Context, r *run) error {
-			c, err := s.bucketClient(ctx, rw.op, loc)
-			if err != nil {
-				return err
+	return s.bkTask(rw.title, bkURL(loc), scope, func(ctx context.Context, r *run) (*bkPipe, error) {
+		c, err := s.bucketClient(ctx, rw.op, loc)
+		if err != nil {
+			return nil, err
+		}
+		if rw.prep != nil {
+			if err := rw.prep(ctx); err != nil {
+				return nil, err
 			}
-			if rw.prep != nil {
-				if err := rw.prep(ctx); err != nil {
-					return err
-				}
-			}
-			pipe := &bkPipe{
-				workers: s.bkWorkers(), batch: 1, lister: bkListObjects(c, loc.Bucket),
-				process: func(ctx context.Context, b []bkObj) []ItemResult {
-					return []ItemResult{s.bkRewriteOne(ctx, r, c, loc, b[0], rw)}
-				},
-			}
-			rem, err := pipe.run(ctx, r, scope)
-			st.set(rem)
-			return err
-		},
-		Retry: func(failed []ItemResult) (taskSpec, bool) {
-			sc, ok := st.retryScope(failed)
-			if !ok {
-				return taskSpec{}, false
-			}
-			return s.bkRewriteSpec(loc, sc, rw), true
-		},
-	}
+		}
+		return bkEach(bkListObjects(c, loc.Bucket), func(ctx context.Context, o bkObj) ItemResult {
+			return s.bkRewriteOne(ctx, r, c, loc, o, rw)
+		}), nil
+	}, func(sc bkScope) taskSpec { return s.bkRewriteSpec(loc, sc, rw) })
 }
 
 // bkRestoreDone reports whether an x-amz-restore value says that the restore

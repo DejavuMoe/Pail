@@ -284,6 +284,46 @@ func bkListObjects(c *storage.Client, bucket string) bkLister {
 	}
 }
 
+// bkListVersions streams every version and delete marker below scan.Prefix,
+// one emit per listing page. Only Key and VersionID are set: it feeds deletes.
+func bkListVersions(c *storage.Client, bucket string) bkLister {
+	return func(ctx context.Context, scan bkScan, emit func([]bkObj, string) error) error {
+		in := &s3.ListObjectVersionsInput{
+			Bucket: aws.String(bucket), MaxKeys: aws.Int32(bkPageSize), EncodingType: types.EncodingTypeUrl,
+		}
+		if scan.Prefix != "" {
+			in.Prefix = aws.String(scan.Prefix)
+		}
+		for {
+			out, err := c.S3().ListObjectVersions(ctx, in)
+			if err != nil {
+				return classify("ListVersions", err)
+			}
+			dec := bkDecoder(out.EncodingType)
+			page := make([]bkObj, 0, len(out.Versions)+len(out.DeleteMarkers))
+			for _, v := range out.Versions {
+				page = append(page, bkObj{Key: dec(aws.ToString(v.Key)), VersionID: aws.ToString(v.VersionId)})
+			}
+			for _, m := range out.DeleteMarkers {
+				page = append(page, bkObj{Key: dec(aws.ToString(m.Key)), VersionID: aws.ToString(m.VersionId)})
+			}
+			// Versions of the last key may continue on the next page, so a
+			// listing of versions has no key to resume after.
+			if err := emit(page, ""); err != nil {
+				return err
+			}
+			if !aws.ToBool(out.IsTruncated) {
+				return nil
+			}
+			if aws.ToString(out.NextKeyMarker) == "" {
+				return opErr("ListVersions", ErrOther, "the service reported a truncated listing without a key marker")
+			}
+			// The response was URL-encoded; request markers must be raw.
+			in.KeyMarker, in.VersionIdMarker = aws.String(dec(aws.ToString(out.NextKeyMarker))), out.NextVersionIdMarker
+		}
+	}
+}
+
 // bkListDeleted streams the keys below scan.Prefix whose latest entry is a
 // delete marker and which still have a non-marker version. Each emitted
 // object carries the VersionID, ETag and size of the newest such version.
@@ -544,6 +584,60 @@ func (p *bkPipe) run(ctx context.Context, r *run, scope bkScope) ([]bkScan, erro
 		return rem, ctx.Err()
 	}
 	return rem, nil
+}
+
+// bkTask is the task every bulk operation submits: setup opens the clients
+// and returns the pipe for one run, which feeds scope through the worker pool;
+// Retry rebuilds the task with again over the failed items and the part of the
+// listing that was never reached.
+func (s *Service) bkTask(title, detail string, scope bkScope,
+	setup func(ctx context.Context, r *run) (*bkPipe, error), again func(bkScope) taskSpec) taskSpec {
+	st := &bkState{}
+	return taskSpec{
+		Kind:   KindOther,
+		Title:  title,
+		Detail: detail,
+		Work: func(ctx context.Context, r *run) error {
+			pipe, err := setup(ctx, r)
+			if err != nil {
+				return err
+			}
+			pipe.workers = s.bkWorkers()
+			rem, err := pipe.run(ctx, r, scope)
+			st.set(rem)
+			return err
+		},
+		Retry: func(failed []ItemResult) (taskSpec, bool) {
+			sc, ok := st.retryScope(failed)
+			if !ok {
+				return taskSpec{}, false
+			}
+			return again(sc), true
+		},
+	}
+}
+
+// bkEach is a pipe that handles the objects one at a time.
+func bkEach(lister bkLister, one func(ctx context.Context, o bkObj) ItemResult) *bkPipe {
+	return &bkPipe{batch: 1, lister: lister, process: func(ctx context.Context, b []bkObj) []ItemResult {
+		return []ItemResult{one(ctx, b[0])}
+	}}
+}
+
+// deleteItem turns one DeleteObjects result into the item a task reports.
+func deleteItem(d storage.DeleteResult) ItemResult {
+	it := ItemResult{Key: d.Key, VersionID: d.VersionID, Status: string(d.Status)}
+	if d.Status != storage.DeleteSucceeded {
+		switch {
+		case d.Code == "":
+			it.Err = d.Message
+		case d.Message == "":
+			it.Err = d.Code
+		default:
+			it.Err = d.Code + ": " + d.Message
+		}
+	}
+	return it
 }
 
 func (p *bkPipe) safeProcess(ctx context.Context, b []bkObj) (res []ItemResult) {

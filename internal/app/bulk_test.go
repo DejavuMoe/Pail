@@ -11,6 +11,7 @@ import (
 	"time"
 
 	"github.com/DejavuMoe/Pail/internal/s3test"
+	"github.com/DejavuMoe/Pail/internal/storage"
 )
 
 // ---- helpers (bk prefix) -------------------------------------------------------------------------
@@ -22,16 +23,6 @@ func bkSeed(e *s3Env, bucket string, versioned bool, keys ...string) {
 	for _, k := range keys {
 		e.srv.PutObject(bucket, k, []byte("data:"+k), "text/plain", nil)
 	}
-}
-
-// bkWait waits for a task to finish and returns its final snapshot.
-func bkWait(t *testing.T, e *s3Env, id string) Task {
-	t.Helper()
-	tk, err := e.s.waitTask(testCtx(t), id)
-	if err != nil {
-		t.Fatalf("wait %s: %v", id, err)
-	}
-	return tk
 }
 
 // bkItems indexes the reported items of a task by "key" or "key@version".
@@ -87,7 +78,7 @@ func bkWantData(t *testing.T, e *s3Env, bucket, key, want string) {
 
 func bkOK(t *testing.T, e *s3Env, id string) Task {
 	t.Helper()
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusSucceeded {
 		t.Fatalf("task %q: status %v err %q items %+v", tk.Title, tk.Status, tk.Err, e.s.TaskItems(id))
 	}
@@ -402,7 +393,7 @@ func TestMoveNeverDeletesSourceWhenCopyFails(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusPartiallyFailed {
 		t.Fatalf("status %v items %+v", tk.Status, e.s.TaskItems(id))
 	}
@@ -422,7 +413,7 @@ func TestMoveNeverDeletesSourceWhenCopyFails(t *testing.T) {
 		return nil
 	})
 	id, _ = e.s.Copy(Selection{Location: e.loc("bkt", ""), Keys: []string{"src/a.txt"}}, e.loc("bkt", "dst/"), CopyOptions{Move: true, Conflict: ConflictSkip})
-	if tk := bkWait(t, e, id); tk.Status != StatusPartiallyFailed {
+	if tk := wait(t, e.s, id); tk.Status != StatusPartiallyFailed {
 		t.Fatalf("multipart status %v", tk.Status)
 	}
 	e.srv.Inject(nil)
@@ -449,7 +440,7 @@ func TestMoveSourceDeleteFailureIsReported(t *testing.T) {
 		return nil
 	})
 	id, _ := e.s.Copy(Selection{Location: e.loc("bkt", ""), Keys: []string{"a.txt"}}, e.loc("bkt", "d/"), CopyOptions{Move: true})
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	it := bkItems(e, id)["a.txt"]
 	if tk.Status != StatusPartiallyFailed || it.Status != ItemFailed || !strings.Contains(it.Err, "copied, source not deleted") {
 		t.Fatalf("task %v item %+v", tk.Status, it)
@@ -525,7 +516,7 @@ func TestMoveKeepsSourceChangedAfterCopy(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			tk := bkWait(t, e, id)
+			tk := wait(t, e.s, id)
 			it := bkItems(e, id)["m.txt"]
 			if tk.Status != StatusPartiallyFailed || it.Status != ItemFailed || !strings.Contains(it.Err, "copied, but source changed since; source kept") {
 				t.Fatalf("task %v item %+v", tk.Status, it)
@@ -594,7 +585,7 @@ func TestRename(t *testing.T) {
 
 	// onto an existing name: fails, nothing overwritten
 	id, _ = e.s.Rename(testCtx(t), loc, "docs/other", "new.txt")
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusPartiallyFailed {
 		t.Fatalf("status %v", tk.Status)
 	}
@@ -692,7 +683,7 @@ func TestDeleteUnknownOutcomeIsNotRetried(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	items := bkItems(e, id)
 	if tk.Status != StatusPartiallyFailed || items["ok.txt"].Status != ItemSucceeded || items["drop.txt"].Status != ItemUnknown {
 		t.Fatalf("task %v items %+v", tk.Status, items)
@@ -726,7 +717,7 @@ func TestDeleteWholeRequestRefusalIsFailedAndRetryable(t *testing.T) {
 				return nil
 			})
 			id, _ := e.s.Delete(Selection{Location: e.loc("bkt", ""), Keys: []string{"a", "b"}})
-			tk := bkWait(t, e, id)
+			tk := wait(t, e.s, id)
 			items := bkItems(e, id)
 			if tk.Status != StatusPartiallyFailed || items["a"].Status != ItemFailed || items["b"].Status != ItemFailed {
 				t.Fatalf("task %v items %+v", tk.Status, items)
@@ -788,7 +779,7 @@ func TestBulkCancelThenRetryProcessesOnlyUnprocessed(t *testing.T) {
 		t.Fatal(err)
 	}
 	id.Store(tid)
-	tk := bkWait(t, e, tid)
+	tk := wait(t, e.s, tid)
 	e.srv.Inject(nil)
 	if tk.Status != StatusCanceled {
 		t.Fatalf("status = %v, err %q", tk.Status, tk.Err)
@@ -863,7 +854,7 @@ func TestBulkListingFailureLeavesRemainderForRetry(t *testing.T) {
 		return nil
 	})
 	id, _ := e.s.Delete(Selection{Location: e.loc("bkt", ""), All: true})
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusPartiallyFailed {
 		t.Fatalf("status %v err %q", tk.Status, tk.Err)
 	}
@@ -905,7 +896,7 @@ func TestMoveFailsWhenSourceTagsAreUnreadable(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	it := bkItems(e, id)["src/a.txt"]
 	if tk.Status != StatusPartiallyFailed || it.Status != ItemFailed || !strings.Contains(it.Err, "cannot read source tags") || !strings.Contains(it.Err, "AccessDenied") {
 		t.Fatalf("task %v item %+v", tk.Status, it)
@@ -918,6 +909,24 @@ func TestMoveFailsWhenSourceTagsAreUnreadable(t *testing.T) {
 	for _, r := range e.srv.Requests() {
 		if r.Method == http.MethodPost && strings.Contains(r.RawQuery, "uploads") {
 			t.Fatalf("a multipart upload was created before the tags were read: %+v", r)
+		}
+	}
+}
+
+// Every delete path (Delete, EmptyBucket, sync) reports a failed key the same
+// way, and a result without a code does not start with a separator.
+func TestDeleteItemErrorText(t *testing.T) {
+	for _, c := range []struct {
+		d    storage.DeleteResult
+		want string
+	}{
+		{storage.DeleteResult{Key: "a", Status: storage.DeleteSucceeded, Code: "x"}, ""},
+		{storage.DeleteResult{Key: "a", Status: storage.DeleteFailed, Code: "AccessDenied", Message: "Access Denied"}, "AccessDenied: Access Denied"},
+		{storage.DeleteResult{Key: "a", Status: storage.DeleteUnprocessed, Message: "request not sent"}, "request not sent"},
+		{storage.DeleteResult{Key: "a", Status: storage.DeleteFailed, Code: "InternalError"}, "InternalError"},
+	} {
+		if got := deleteItem(c.d).Err; got != c.want {
+			t.Errorf("%+v: got %q, want %q", c.d, got, c.want)
 		}
 	}
 }

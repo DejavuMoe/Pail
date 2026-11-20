@@ -45,7 +45,7 @@ func TestMoveIdenticalBodyKeepsDifferentAttributes(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			bkWait(t, e, id)
+			wait(t, e.s, id)
 			if it := bkItems(e, id)["a.txt"]; it.Status != ItemSkipped {
 				t.Errorf("different attributes must conflict, got %+v", it)
 			}
@@ -79,7 +79,7 @@ func TestMoveKeepsSourceWhenAttributesChangeAfterCopy(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			bkWait(t, e, id)
+			wait(t, e.s, id)
 			if it := bkItems(e, id)["a.txt"]; it.Status != ItemFailed {
 				t.Errorf("attribute change must keep source, got %+v", it)
 			}
@@ -101,7 +101,7 @@ func TestMoveRetryKeepsSourceWhenAttributesChanged(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tk := bkWait(t, e, id); tk.Status != StatusPartiallyFailed {
+	if tk := wait(t, e.s, id); tk.Status != StatusPartiallyFailed {
 		t.Fatalf("first run: %+v", tk)
 	}
 	e.srv.Inject(nil)
@@ -110,7 +110,7 @@ func TestMoveRetryKeepsSourceWhenAttributesChanged(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bkWait(t, e, rid)
+	wait(t, e.s, rid)
 	if it := bkItems(e, rid)["a.txt"]; it.Status == ItemSucceeded {
 		t.Errorf("retry deleted an uncopied attribute: %+v", it)
 	}
@@ -146,7 +146,7 @@ func TestMoveIdenticalAttributesAndRetryPreserveObject(t *testing.T) {
 				t.Fatal(err)
 			}
 			if retry {
-				if tk := bkWait(t, e, id); tk.Status != StatusPartiallyFailed {
+				if tk := wait(t, e.s, id); tk.Status != StatusPartiallyFailed {
 					t.Fatalf("fixture must fail source deletion: %+v", tk)
 				}
 				e.srv.Inject(nil)
@@ -179,7 +179,7 @@ func TestMoveIdenticalObjectRequiresReadableTags(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tk := bkWait(t, e, id); tk.Status != StatusPartiallyFailed {
+	if tk := wait(t, e.s, id); tk.Status != StatusPartiallyFailed {
 		t.Fatalf("unverifiable tags must not authorize deletion: %+v", tk)
 	}
 	bkWantData(t, e, "bkt", "a.txt", "data:a.txt")

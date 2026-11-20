@@ -32,7 +32,7 @@ func TestMoveRetryAfterSourceDeleteFailureFinishesTheMove(t *testing.T) {
 			if err != nil {
 				t.Fatal(err)
 			}
-			if tk := bkWait(t, e, id); tk.Status != StatusPartiallyFailed {
+			if tk := wait(t, e.s, id); tk.Status != StatusPartiallyFailed {
 				t.Fatalf("first run: %v %+v", tk.Status, e.s.TaskItems(id))
 			}
 			on.Store(false)
@@ -67,7 +67,7 @@ func TestRenameRetryAfterSourceDeleteFailureFinishesTheRename(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tk := bkWait(t, e, id); tk.Status != StatusPartiallyFailed {
+	if tk := wait(t, e.s, id); tk.Status != StatusPartiallyFailed {
 		t.Fatalf("first run: %v", tk.Status)
 	}
 	on.Store(false)
@@ -103,7 +103,7 @@ func TestMoveOntoADifferentObjectStillConflicts(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bkWait(t, e, id)
+	wait(t, e.s, id)
 	if it := bkItems(e, id)["a.txt"]; it.Status != ItemSkipped {
 		t.Fatalf("item %+v", it)
 	}
@@ -113,7 +113,7 @@ func TestMoveOntoADifferentObjectStillConflicts(t *testing.T) {
 	// Same size, different content: also a conflict.
 	e.srv.PutObject("bkt", "d/a.txt", []byte("data:a.txx"), "text/plain", nil)
 	id, _ = e.s.Copy(Selection{Location: e.loc("bkt", ""), Keys: []string{"a.txt"}}, e.loc("bkt", "d/"), CopyOptions{Move: true, Conflict: ConflictSkip})
-	bkWait(t, e, id)
+	wait(t, e.s, id)
 	if it := bkItems(e, id)["a.txt"]; it.Status != ItemSkipped {
 		t.Fatalf("same size item %+v", it)
 	}
@@ -144,7 +144,7 @@ func TestMoveKeepsSourceWhenDestinationETagDiffersAfterCopy(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	it := bkItems(e, id)["m.txt"]
 	if tk.Status != StatusPartiallyFailed || it.Status != ItemFailed || !strings.Contains(it.Err, "does not match the source") {
 		t.Fatalf("task %v item %+v", tk.Status, it)

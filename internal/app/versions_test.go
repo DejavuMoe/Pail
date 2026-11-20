@@ -180,7 +180,7 @@ func TestRestoreDeletedSkipsLiveKeys(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	items := bkItems(e, id)
 	if tk.Status != StatusPartiallyFailed || items["d/a"].Status != ItemSucceeded {
 		t.Fatalf("task %v items %+v", tk.Status, items)
@@ -234,7 +234,7 @@ func TestRestoreDeletedLosesToConcurrentUpload(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	e.srv.Inject(nil)
 	it := bkItems(e, id)["k"]
 	if tk.Status != StatusSucceeded || it.Status != ItemSkipped || !strings.Contains(it.Err, "uploaded meanwhile") {
@@ -338,7 +338,7 @@ func TestFxRestoreDeletedHistoryEncodedMarkerAcrossPages(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if it := bkItems(e, id)[key]; tk.Status != StatusSucceeded || it.Status != ItemSucceeded {
 		t.Fatalf("task %v item %+v (all %+v)", tk.Status, it, e.s.TaskItems(id))
 	}

@@ -83,34 +83,15 @@ func (s *Service) RestoreArchived(sel Selection, opt ArchiveRestoreOptions) (str
 }
 
 func (s *Service) bkArchiveSpec(loc Location, scope bkScope, opt ArchiveRestoreOptions, title string) taskSpec {
-	st := &bkState{}
-	return taskSpec{
-		Kind:   KindOther,
-		Title:  title,
-		Detail: bkURL(loc),
-		Work: func(ctx context.Context, r *run) error {
-			c, err := s.bucketClient(ctx, "RestoreArchived", loc)
-			if err != nil {
-				return err
-			}
-			pipe := &bkPipe{
-				workers: s.bkWorkers(), batch: 1, lister: bkListObjects(c, loc.Bucket),
-				process: func(ctx context.Context, b []bkObj) []ItemResult {
-					return []ItemResult{bkArchiveOne(ctx, c, loc, opt, b[0])}
-				},
-			}
-			rem, err := pipe.run(ctx, r, scope)
-			st.set(rem)
-			return err
-		},
-		Retry: func(failed []ItemResult) (taskSpec, bool) {
-			sc, ok := st.retryScope(failed)
-			if !ok {
-				return taskSpec{}, false
-			}
-			return s.bkArchiveSpec(loc, sc, opt, title), true
-		},
-	}
+	return s.bkTask(title, bkURL(loc), scope, func(ctx context.Context, _ *run) (*bkPipe, error) {
+		c, err := s.bucketClient(ctx, "RestoreArchived", loc)
+		if err != nil {
+			return nil, err
+		}
+		return bkEach(bkListObjects(c, loc.Bucket), func(ctx context.Context, o bkObj) ItemResult {
+			return bkArchiveOne(ctx, c, loc, opt, o)
+		}), nil
+	}, func(sc bkScope) taskSpec { return s.bkArchiveSpec(loc, sc, opt, title) })
 }
 
 func bkArchiveOne(ctx context.Context, c *storage.Client, loc Location, opt ArchiveRestoreOptions, o bkObj) ItemResult {

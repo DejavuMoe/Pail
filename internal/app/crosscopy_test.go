@@ -91,7 +91,7 @@ func TestCopyBetweenAccountsFailsWithoutPartialObject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	if tk := bkWait(t, e, id); tk.Status == StatusSucceeded {
+	if tk := wait(t, e.s, id); tk.Status == StatusSucceeded {
 		t.Fatal("a short body was accepted")
 	}
 	if _, ok := srv2.Object("dst", "f.txt"); ok {

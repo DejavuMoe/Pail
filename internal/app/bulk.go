@@ -262,40 +262,22 @@ func (s *Service) bkSubmitCopy(plan *bkCopyPlan, scope bkScope) string {
 }
 
 func (s *Service) bkCopySpec(plan *bkCopyPlan, scope bkScope) taskSpec {
-	st := &bkState{}
-	return taskSpec{
-		Kind:   KindOther,
-		Title:  plan.title,
-		Detail: bkURL(plan.src) + " -> " + bkURL(plan.dest),
-		Work: func(ctx context.Context, r *run) error {
-			c, err := s.bucketClient(ctx, plan.op, plan.src)
-			if err != nil {
-				return err
+	detail := bkURL(plan.src) + " -> " + bkURL(plan.dest)
+	return s.bkTask(plan.title, detail, scope, func(ctx context.Context, r *run) (*bkPipe, error) {
+		c, err := s.bucketClient(ctx, plan.op, plan.src)
+		if err != nil {
+			return nil, err
+		}
+		dst := c
+		if plan.crossAccount() {
+			if dst, err = s.bucketClient(ctx, plan.op, plan.dest); err != nil {
+				return nil, err
 			}
-			dst := c
-			if plan.crossAccount() {
-				if dst, err = s.bucketClient(ctx, plan.op, plan.dest); err != nil {
-					return err
-				}
-			}
-			pipe := &bkPipe{
-				workers: s.bkWorkers(), batch: 1, lister: bkListObjects(c, plan.src.Bucket),
-				process: func(ctx context.Context, b []bkObj) []ItemResult {
-					return []ItemResult{s.bkCopyOne(ctx, r, c, dst, plan, b[0])}
-				},
-			}
-			rem, err := pipe.run(ctx, r, scope)
-			st.set(rem)
-			return err
-		},
-		Retry: func(failed []ItemResult) (taskSpec, bool) {
-			sc, ok := st.retryScope(failed)
-			if !ok {
-				return taskSpec{}, false
-			}
-			return s.bkCopySpec(plan, sc), true
-		},
-	}
+		}
+		return bkEach(bkListObjects(c, plan.src.Bucket), func(ctx context.Context, o bkObj) ItemResult {
+			return s.bkCopyOne(ctx, r, c, dst, plan, o)
+		}), nil
+	}, func(sc bkScope) taskSpec { return s.bkCopySpec(plan, sc) })
 }
 
 // bkCopyClass is the storage class to request for a copy of an object of
@@ -523,46 +505,26 @@ func (s *Service) Delete(sel Selection) (string, error) {
 }
 
 func (s *Service) bkDeleteSpec(loc Location, scope bkScope, title string) taskSpec {
-	st := &bkState{}
-	return taskSpec{
-		Kind:   KindOther,
-		Title:  title,
-		Detail: bkURL(loc),
-		Work: func(ctx context.Context, r *run) error {
-			c, err := s.bucketClient(ctx, "Delete", loc)
-			if err != nil {
-				return err
-			}
-			pipe := &bkPipe{
-				workers: s.bkWorkers(), batch: 1000, lister: bkListObjects(c, loc.Bucket),
-				process: func(ctx context.Context, b []bkObj) []ItemResult {
-					ids := make([]storage.ObjectID, len(b))
-					for i, o := range b {
-						ids[i] = storage.ObjectID{Key: o.Key, VersionID: o.VersionID}
+	return s.bkTask(title, bkURL(loc), scope, func(ctx context.Context, r *run) (*bkPipe, error) {
+		c, err := s.bucketClient(ctx, "Delete", loc)
+		if err != nil {
+			return nil, err
+		}
+		return &bkPipe{batch: 1000, lister: bkListObjects(c, loc.Bucket),
+			process: func(ctx context.Context, b []bkObj) []ItemResult {
+				ids := make([]storage.ObjectID, len(b))
+				for i, o := range b {
+					ids[i] = storage.ObjectID{Key: o.Key, VersionID: o.VersionID}
+				}
+				out := make([]ItemResult, len(b))
+				for i, d := range c.DeleteObjects(ctx, loc.Bucket, ids) {
+					out[i] = deleteItem(d)
+					if d.Status == storage.DeleteSucceeded && b[i].Size > 0 {
+						r.AddBytes(b[i].Size)
 					}
-					out := make([]ItemResult, len(b))
-					for i, d := range c.DeleteObjects(ctx, loc.Bucket, ids) {
-						it := ItemResult{Key: d.Key, VersionID: d.VersionID, Status: string(d.Status)}
-						if d.Status != storage.DeleteSucceeded {
-							it.Err = strings.TrimSpace(d.Code + ": " + d.Message)
-						} else if b[i].Size > 0 {
-							r.AddBytes(b[i].Size)
-						}
-						out[i] = it
-					}
-					return out
-				},
-			}
-			rem, err := pipe.run(ctx, r, scope)
-			st.set(rem)
-			return err
-		},
-		Retry: func(failed []ItemResult) (taskSpec, bool) {
-			sc, ok := st.retryScope(failed)
-			if !ok {
-				return taskSpec{}, false
-			}
-			return s.bkDeleteSpec(loc, sc, title), true
-		},
-	}
+				}
+				return out
+			},
+		}, nil
+	}, func(sc bkScope) taskSpec { return s.bkDeleteSpec(loc, sc, title) })
 }

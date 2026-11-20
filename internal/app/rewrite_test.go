@@ -234,7 +234,7 @@ func TestPropertiesMetadataLimitIsCheckedPerObject(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	items := bkItems(e, id)
 	if tk.Status != StatusPartiallyFailed || items["full"].Status != ItemFailed || !strings.Contains(items["full"].Err, "limit") || items["empty"].Status != ItemSucceeded {
 		t.Fatalf("task %v items %+v", tk.Status, items)
@@ -342,7 +342,7 @@ func TestRewriteRefusals(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	items := bkItems(e, id)
 	if tk.Status != StatusPartiallyFailed || items["fine"].Status != ItemSucceeded {
 		t.Fatalf("task %v items %+v", tk.Status, items)
@@ -423,7 +423,7 @@ func TestRewriteCancelReportsUnprocessed(t *testing.T) {
 		t.Fatal(err)
 	}
 	holder.Store(tid)
-	tk := bkWait(t, e, tid)
+	tk := wait(t, e.s, tid)
 	e.srv.Inject(nil)
 	if tk.Status != StatusCanceled {
 		t.Fatalf("status %v", tk.Status)
@@ -456,7 +456,7 @@ func TestFxRewriteFailsWhenACLReadDenied(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bkWait(t, e, id)
+	tk := wait(t, e.s, id)
 	it := bkItems(e, id)["k"]
 	if tk.Status != StatusPartiallyFailed || it.Status != ItemFailed || !strings.Contains(it.Err, "cannot read ACL") {
 		t.Fatalf("task %v item %+v", tk.Status, it)
@@ -523,7 +523,7 @@ func TestRewriteIgnoredByServerFails(t *testing.T) {
 		if err != nil {
 			t.Fatal(name, err)
 		}
-		bkWait(t, e, id)
+		wait(t, e.s, id)
 		it := bkItems(e, id)["a.txt"]
 		if it.Status != ItemFailed || !strings.Contains(it.Err, "did not apply") {
 			t.Errorf("%s: item %+v, want failed with %q", name, it, bkNotApplied)

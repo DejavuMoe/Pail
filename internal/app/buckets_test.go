@@ -104,15 +104,6 @@ func TestBucketDeleteNonEmptyIsConflict(t *testing.T) {
 	}
 }
 
-func bmWait(t *testing.T, e *s3Env, id string) Task {
-	t.Helper()
-	tk, err := e.s.waitTask(testCtx(t), id)
-	if err != nil {
-		t.Fatal(err)
-	}
-	return tk
-}
-
 func TestBucketEmptyCurrentOnly(t *testing.T) {
 	e := newS3Env(t)
 	e.srv.CreateBucket("ver", true)
@@ -124,7 +115,7 @@ func TestBucketEmptyCurrentOnly(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bmWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusSucceeded || tk.Items != 5 || tk.ItemsDone != 5 || tk.Kind != KindOther {
 		t.Fatalf("%+v", tk)
 	}
@@ -156,7 +147,7 @@ func TestBucketEmptyAllVersions(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bmWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusSucceeded {
 		t.Fatalf("%+v %+v", tk, e.s.TaskItems(id))
 	}
@@ -180,7 +171,7 @@ func TestBucketEmptyManyObjectsAcrossChunks(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bmWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusSucceeded || tk.ItemsDone != 1105 {
 		t.Fatalf("%+v", tk)
 	}
@@ -224,7 +215,7 @@ func TestBucketEmptyCancelLeavesUnprocessed(t *testing.T) {
 	if err := e.s.Cancel(id); err != nil {
 		t.Fatal(err)
 	}
-	tk := bmWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusCanceled {
 		t.Fatalf("%+v", tk)
 	}
@@ -248,7 +239,7 @@ func TestBucketEmptyCancelLeavesUnprocessed(t *testing.T) {
 	if err != nil {
 		t.Fatalf("retry: %v", err)
 	}
-	if tk := bmWait(t, e, rid); tk.Status != StatusSucceeded {
+	if tk := wait(t, e.s, rid); tk.Status != StatusSucceeded {
 		t.Fatalf("%+v", tk)
 	}
 	if _, ok := e.srv.Object("slow", "k0"); ok {
@@ -279,7 +270,7 @@ func TestFxEmptyBucketAllVersionsEncodedMarkersAcrossPages(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bmWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusSucceeded || tk.ItemsDone != n {
 		t.Fatalf("%+v", tk)
 	}

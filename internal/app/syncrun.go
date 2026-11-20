@@ -184,10 +184,9 @@ func (s *Service) syncDeleteRemoteSpec(group string, loc Location, acts []SyncAc
 			}
 			if len(ids) > 0 {
 				for k, d := range c.DeleteObjects(ctx, loc.Bucket, ids) {
-					it := ItemResult{Key: d.Key, Status: string(d.Status)}
-					if d.Status != storage.DeleteSucceeded {
-						it.Err = strings.TrimSpace(d.Code + ": " + d.Message)
-					} else {
+					it := deleteItem(d)
+					it.VersionID = ""
+					if d.Status == storage.DeleteSucceeded {
 						r.AddBytes(acts[idx[k]].Size)
 					}
 					report(idx[k], it)

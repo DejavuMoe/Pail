@@ -183,34 +183,15 @@ func (s *Service) RestoreDeleted(sel Selection) (string, error) {
 }
 
 func (s *Service) bkRestoreSpec(loc Location, scope bkScope, title string) taskSpec {
-	st := &bkState{}
-	return taskSpec{
-		Kind:   KindOther,
-		Title:  title,
-		Detail: bkURL(loc),
-		Work: func(ctx context.Context, r *run) error {
-			c, err := s.bucketClient(ctx, "RestoreDeleted", loc)
-			if err != nil {
-				return err
-			}
-			pipe := &bkPipe{
-				workers: s.bkWorkers(), batch: 1, lister: bkListDeleted(c, loc.Bucket),
-				process: func(ctx context.Context, b []bkObj) []ItemResult {
-					return []ItemResult{s.bkRestoreOne(ctx, r, c, loc, b[0])}
-				},
-			}
-			rem, err := pipe.run(ctx, r, scope)
-			st.set(rem)
-			return err
-		},
-		Retry: func(failed []ItemResult) (taskSpec, bool) {
-			sc, ok := st.retryScope(failed)
-			if !ok {
-				return taskSpec{}, false
-			}
-			return s.bkRestoreSpec(loc, sc, title), true
-		},
-	}
+	return s.bkTask(title, bkURL(loc), scope, func(ctx context.Context, r *run) (*bkPipe, error) {
+		c, err := s.bucketClient(ctx, "RestoreDeleted", loc)
+		if err != nil {
+			return nil, err
+		}
+		return bkEach(bkListDeleted(c, loc.Bucket), func(ctx context.Context, o bkObj) ItemResult {
+			return s.bkRestoreOne(ctx, r, c, loc, o)
+		}), nil
+	}, func(sc bkScope) taskSpec { return s.bkRestoreSpec(loc, sc, title) })
 }
 
 func (s *Service) bkRestoreOne(ctx context.Context, r *run, c *storage.Client, loc Location, o bkObj) ItemResult {

@@ -51,7 +51,7 @@ func TestMultipartListAndAbort(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	tk := bmWait(t, e, id)
+	tk := wait(t, e.s, id)
 	if tk.Status != StatusSucceeded || tk.Items != 3 || tk.ItemsDone != 3 || tk.Kind != KindOther {
 		t.Fatalf("%+v", tk)
 	}

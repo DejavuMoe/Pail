@@ -23,7 +23,7 @@ func TestRestoreArchived(t *testing.T) {
 	if err != nil {
 		t.Fatal(err)
 	}
-	bkWait(t, e, id)
+	wait(t, e.s, id)
 	got := map[string]string{}
 	for _, it := range e.s.TaskItems(id) {
 		got[it.Key] = it.Status
