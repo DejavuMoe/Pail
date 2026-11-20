@@ -8,8 +8,6 @@ import (
 	"encoding/json"
 	"io"
 	"net/http"
-	"os"
-	"path/filepath"
 	"strings"
 	"testing"
 	"time"
@@ -18,7 +16,6 @@ import (
 	"github.com/aws/aws-sdk-go-v2/service/s3"
 
 	"github.com/DejavuMoe/Pail/internal/app"
-	"github.com/DejavuMoe/Pail/internal/rules"
 )
 
 // TestExtPresign: presigned GET (current object, unicode key) fetched with net/http, and a
@@ -94,130 +91,14 @@ func TestExtPresign(t *testing.T) {
 // SDK, lists them through the app and aborts them through the app.
 func TestExtMultipartListAndAbort(t *testing.T) {
 	x := newExt(t, "")
-	ids := map[string]string{}
-	for _, k := range []string{"mp/a.bin", "mp/sub/b.bin", "other/c.bin"} {
-		out, err := x.sdk.S3().CreateMultipartUpload(x.ctx, &s3.CreateMultipartUploadInput{Bucket: &x.bucket, Key: aws.String(x.k(k))})
-		if err != nil {
-			t.Fatal(err)
-		}
-		ids[x.k(k)] = aws.ToString(out.UploadId)
-	}
-	all, err := x.svc.MultipartUploads(x.ctx, x.at(""))
-	if err != nil || len(all) != 3 {
-		t.Fatalf("MultipartUploads(test prefix) = %+v, %v", all, err)
-	}
-	for _, u := range all {
-		if ids[u.Key] != u.UploadID || u.Initiated.IsZero() {
-			t.Errorf("unexpected upload entry %+v", u)
-		}
-	}
-	mp, err := x.svc.MultipartUploads(x.ctx, x.at("mp/"))
-	if err != nil || len(mp) != 2 {
-		t.Fatalf("expected two uploads below mp/, got %+v (%v)", mp, err)
-	}
-	id, err := x.svc.AbortMultipartUploads(x.at("mp/"), mp)
-	if err != nil {
-		t.Fatal(err)
-	}
-	items := x.taskOK(t, id)
-	if countStatus(items, app.ItemSucceeded) != 2 {
-		t.Fatalf("abort items:%s", describeTasks(nil, items))
-	}
-	rest, _ := x.svc.MultipartUploads(x.ctx, x.at(""))
-	if len(rest) != 1 || rest[0].Key != x.k("other/c.bin") {
-		t.Fatalf("after abort: %+v", rest)
-	}
+	multipartListAndAbort(t, x.target)
 }
 
 // TestExtCompressionRules: GZIP / ZIP / AES-ZIP upload rules scoped to this test's prefix,
 // then raw and auto-decoded downloads.
 func TestExtCompressionRules(t *testing.T) {
 	x := newExt(t, "")
-	if err := x.svc.SetSecret("zip-pass", "correct horse battery staple"); err != nil {
-		t.Fatal(err)
-	}
-	err := x.svc.SaveUploadRules([]rules.UploadRule{
-		{Name: "gz", BucketPattern: x.bucket, KeyPattern: x.k("gz/*"), Compression: &rules.Compression{Method: "gzip", Level: 6}},
-		{Name: "zip", BucketPattern: x.bucket, KeyPattern: x.k("zip/*"), Compression: &rules.Compression{Method: "zip", Level: 6}},
-		{Name: "aes", BucketPattern: x.bucket, KeyPattern: x.k("aes/*"), Compression: &rules.Compression{Method: "zip", Level: 6, PasswordRef: "zip-pass"}},
-	})
-	if err != nil {
-		t.Fatal(err)
-	}
-	body := []byte(strings.Repeat("Pail compressible line of text 0123456789\n", 40000)) // ~1.7 MB
-	src := t.TempDir()
-	writeLocal(t, filepath.Join(src, "doc.txt"), body)
-	for _, c := range []struct{ prefix, key, enc, marker string }{
-		{"gz/", "gz/doc.txt", "gzip", "gzip"},
-		{"zip/", "zip/doc.txt.zip", "", "zip"},
-		{"aes/", "aes/doc.txt.zip", "", "aes-zip"},
-	} {
-		t.Run(strings.TrimSuffix(c.prefix, "/"), func(t *testing.T) {
-			x.spend(t, 3*int64(len(body))/10)
-			g, err := x.svc.Upload(app.UploadRequest{Dest: x.at(c.prefix), Paths: []string{filepath.Join(src, "doc.txt")}})
-			if err != nil {
-				t.Fatal(err)
-			}
-			x.groupOK(t, g)
-			h := x.head(t, x.bucket, x.k(c.key))
-			raw := x.get(t, x.bucket, x.k(c.key), "")
-			if c.enc == "gzip" && aws.ToString(h.ContentEncoding) == "" && sum(raw) == sum(body) && aws.ToInt64(h.ContentLength) < int64(len(body)) {
-				// HEAD says "N compressed bytes, no Content-Encoding" while GET delivers the 1.7 MB original:
-				// the proxy in front of the gateway decompresses gzip objects for clients that send
-				// Accept-Encoding: identity and strips the header. The app must refuse safely.
-				dir := t.TempDir()
-				g, err = x.svc.Download(app.DownloadRequest{Source: x.at(c.prefix), Keys: []string{x.k(c.key)}, DestDir: dir, Decode: app.DecodeAuto})
-				if err != nil {
-					t.Fatal(err)
-				}
-				ts, items := x.waitGroup(t, g)
-				failed := false
-				for _, tk := range ts {
-					if tk.Status == app.StatusFailed && tk.Err != "" {
-						failed = true
-					}
-				}
-				t.Logf("PROXY DECOMPRESSES GZIP OBJECTS: stored %d bytes (HEAD) vs %d bytes (GET); app download outcome:%s", aws.ToInt64(h.ContentLength), len(raw), describeTasks(ts, items))
-				if !failed && len(localFiles(t, dir)) != 0 {
-					if _, ok := hasFileWithSHA(localFiles(t, dir), sum(body)); !ok {
-						t.Errorf("a wrong file was published: %v", localFiles(t, dir))
-					}
-				} else if len(localFiles(t, dir)) != 0 {
-					t.Errorf("failed download published files: %v", localFiles(t, dir))
-				}
-				t.Skip("server-side limitation: the proxy decompresses Content-Encoding: gzip objects, so the gzip round trip cannot be verified end to end here")
-			}
-			if aws.ToString(h.ContentEncoding) != c.enc {
-				t.Errorf("%s: Content-Encoding %q, want %q", c.key, aws.ToString(h.ContentEncoding), c.enc)
-			}
-			if h.Metadata["pail-compression"] != c.marker && !anyMetaValue(h.Metadata, c.marker) {
-				t.Errorf("%s: compression marker %q not found in metadata %v", c.key, c.marker, h.Metadata)
-			}
-			if aws.ToInt64(h.ContentLength) >= int64(len(body)) {
-				t.Errorf("%s: stored %d bytes, not smaller than the %d byte original", c.key, aws.ToInt64(h.ContentLength), len(body))
-			}
-			if sum(raw) == sum(body) {
-				t.Errorf("%s: stored bytes equal the original; nothing was compressed", c.key)
-			}
-			dir := t.TempDir()
-			g, err = x.svc.Download(app.DownloadRequest{Source: x.at(c.prefix), Keys: []string{x.k(c.key)}, DestDir: dir, Decode: app.DecodeAuto, PasswordRef: "zip-pass"})
-			if err != nil {
-				t.Fatal(err)
-			}
-			x.groupOK(t, g)
-			if p, ok := hasFileWithSHA(localFiles(t, dir), sum(body)); !ok {
-				t.Errorf("%s: auto-decoded download does not match the original; files %v", c.key, localFiles(t, dir))
-			} else {
-				t.Logf("%s: stored %d bytes (original %d), decoded to %q", c.key, aws.ToInt64(h.ContentLength), len(body), p)
-			}
-			dir = t.TempDir()
-			g, _ = x.svc.Download(app.DownloadRequest{Source: x.at(c.prefix), Keys: []string{x.k(c.key)}, DestDir: dir})
-			x.groupOK(t, g)
-			if _, ok := hasFileWithSHA(localFiles(t, dir), sum(raw)); !ok {
-				t.Errorf("%s: raw download differs from the stored object", c.key)
-			}
-		})
-	}
+	compressionRules(t, x.target)
 }
 
 // TestExtGzipEncodingBehaviour records how the gateway/proxy treats an object stored with
@@ -256,166 +137,19 @@ func TestExtGzipEncodingBehaviour(t *testing.T) {
 
 // ---- sync ---------------------------------------------------------------------------
 
-func (x *extEnv) syncJob(dir, rel, direction, mode, compare string) app.SyncJob {
-	return syncJob(x.appEnv, dir, x.bucket, x.prefix+rel, direction, mode, compare)
-}
-
 func TestExtSyncUploadAndMirror(t *testing.T) {
 	x := newExt(t, "")
-	dir := t.TempDir()
-	writeLocal(t, filepath.Join(dir, "a.txt"), []byte("alpha"))
-	writeLocal(t, filepath.Join(dir, "sub", "b.bin"), payload(31, 200*1024))
-	writeLocal(t, filepath.Join(dir, "sub", "deep", "c.txt"), []byte("gamma"))
-
-	job := x.syncJob(dir, "mirror/", "upload", "new_changed", "size_time")
-	p := x.preview(t, job)
-	if p.Uploads != 3 || p.Deletes != 0 || p.Downloads != 0 {
-		t.Fatalf("first preview: %s", previewSummary(p))
-	}
-	x.runSync(t, p)
-	for rel, want := range localFiles(t, dir) {
-		if sum(x.get(t, x.bucket, x.k("mirror/"+rel), "")) != want {
-			t.Errorf("%s not uploaded correctly", rel)
-		}
-	}
-	if p2 := x.preview(t, job); p2.Uploads != 0 || p2.Deletes != 0 || p2.Downloads != 0 {
-		t.Fatalf("second preview must converge: %s", previewSummary(p2))
-	}
-	writeLocal(t, filepath.Join(dir, "a.txt"), []byte("alpha changed"))
-	p = x.preview(t, job)
-	if p.Uploads != 1 {
-		t.Fatalf("changed-file preview: %s", previewSummary(p))
-	}
-	x.runSync(t, p)
-	if string(x.get(t, x.bucket, x.k("mirror/a.txt"), "")) != "alpha changed" {
-		t.Fatal("changed file not synchronised")
-	}
-	job.Excludes = []string{"*.bin"}
-	writeLocal(t, filepath.Join(dir, "sub", "skipped.bin"), []byte("x"))
-	if p = x.preview(t, job); p.Uploads != 0 {
-		t.Errorf("excluded file planned: %s", previewSummary(p))
-	}
-	job.Excludes = nil
-	_ = os.Remove(filepath.Join(dir, "sub", "skipped.bin"))
-
-	// Mirror: remote objects without a local file are deleted (inside the sync prefix only).
-	x.putk(t, "outside.txt", []byte("outside"))
-	x.putk(t, "mirror/extra.txt", []byte("extra"))
-	mirror := job
-	mirror.Mode = "mirror"
-	p = x.preview(t, mirror)
-	if p.Deletes != 1 || p.Uploads != 0 {
-		t.Fatalf("mirror preview: %s", previewSummary(p))
-	}
-	if pn := x.preview(t, job); pn.Deletes != 0 {
-		t.Errorf("new_changed planned deletes: %s", previewSummary(pn))
-	}
-	x.runSync(t, p)
-	if x.exists(x.bucket, x.k("mirror/extra.txt")) || !x.exists(x.bucket, x.k("outside.txt")) || !x.exists(x.bucket, x.k("mirror/a.txt")) {
-		t.Fatalf("mirror result wrong: %v", x.relKeys(t, ""))
-	}
-	if pf := x.preview(t, mirror); pf.Uploads+pf.Deletes+pf.Downloads != 0 {
-		t.Fatalf("mirror did not converge: %s", previewSummary(pf))
-	}
+	syncUploadAndMirror(t, x.target)
 }
 
 func TestExtSyncDownload(t *testing.T) {
 	x := newExt(t, "")
-	files := map[string][]byte{"r/one.txt": []byte("one"), "r/dir/two.bin": payload(41, 150*1024), "r/dir/x/three.txt": []byte("three")}
-	for k, v := range files {
-		x.putk(t, k, v)
-	}
-	dir := t.TempDir()
-	job := x.syncJob(dir, "r/", "download", "new_changed", "size_time")
-	p := x.preview(t, job)
-	if p.Downloads != 3 {
-		t.Fatalf("download preview: %s", previewSummary(p))
-	}
-	x.runSync(t, p)
-	got := localFiles(t, dir)
-	for k, v := range files {
-		if got[strings.TrimPrefix(k, "r/")] != sum(v) {
-			t.Errorf("%s not downloaded correctly: %v", k, got)
-		}
-	}
-	if p2 := x.preview(t, job); p2.Uploads+p2.Downloads+p2.Deletes != 0 {
-		t.Fatalf("second download preview must converge: %s", previewSummary(p2))
-	}
-	x.putk(t, "r/one.txt", []byte("one, but longer"))
-	p = x.preview(t, job)
-	if p.Downloads != 1 {
-		t.Fatalf("remote-change preview: %s", previewSummary(p))
-	}
-	x.runSync(t, p)
-	if string(readLocal(t, filepath.Join(dir, "one.txt"))) != "one, but longer" {
-		t.Fatal("remote change not downloaded")
-	}
-	// Mirror download plans the local delete; executing it would use the real OS trash,
-	// so only the plan is verified (the execution is covered by internal/app unit tests).
-	writeLocal(t, filepath.Join(dir, "local-only.txt"), []byte("not on the server"))
-	mirror := job
-	mirror.Mode = "mirror"
-	p = x.preview(t, mirror)
-	if p.Deletes != 1 || p.Downloads != 0 {
-		t.Fatalf("mirror download preview: %s", previewSummary(p))
-	}
-	for _, ac := range p.Actions {
-		if ac.Op == "delete" && ac.Path != "local-only.txt" {
-			t.Errorf("unexpected delete %q", ac.Path)
-		}
-	}
-	t.Log("SKIPPED (by design): execution of the local mirror delete (real OS trash)")
+	syncDownload(t, x.target)
 }
 
 func TestExtSyncChecksumMode(t *testing.T) {
 	x := newExt(t, "")
-	dir := t.TempDir()
-	file := filepath.Join(dir, "same-size.bin")
-	orig := payload(51, 64*1024)
-	writeLocal(t, file, orig)
-	st, err := os.Stat(file)
-	if err != nil {
-		t.Fatal(err)
-	}
-	mtime := st.ModTime()
-	job := x.syncJob(dir, "ck/", "upload", "new_changed", "checksum")
-	p := x.preview(t, job)
-	if p.Uploads != 1 {
-		t.Fatalf("checksum preview: %s", previewSummary(p))
-	}
-	x.runSync(t, p)
-	if p2 := x.preview(t, job); p2.Uploads+p2.Downloads+p2.Deletes != 0 {
-		t.Fatalf("checksum round trip does not converge: %s", previewSummary(p2))
-	}
-	if sha := x.head(t, x.bucket, x.k("ck/same-size.bin")).Metadata["pail-sha256"]; sha != sum(orig) {
-		t.Errorf("remote pail-sha256 = %q, want %s", sha, sum(orig))
-	}
-	changed := payload(52, 64*1024)
-	writeLocal(t, file, changed)
-	if err := os.Chtimes(file, mtime, mtime); err != nil {
-		t.Fatal(err)
-	}
-	if pc := x.preview(t, job); pc.Uploads != 1 {
-		t.Fatalf("checksum mode missed a same-size same-mtime change: %s", previewSummary(pc))
-	}
-	x.runSync(t, x.preview(t, job))
-	if sum(x.get(t, x.bucket, x.k("ck/same-size.bin"), "")) != sum(changed) {
-		t.Fatal("changed content was not uploaded")
-	}
-	if p3 := x.preview(t, job); p3.Uploads != 0 {
-		t.Fatalf("no convergence after checksum upload: %s", previewSummary(p3))
-	}
-	ddir := t.TempDir()
-	dj := x.syncJob(ddir, "ck/", "download", "new_changed", "checksum")
-	dp := x.preview(t, dj)
-	t.Logf("checksum download preview: %s", previewSummary(dp))
-	x.runSync(t, dp)
-	if got := localFiles(t, ddir)["same-size.bin"]; got != sum(changed) {
-		t.Fatalf("checksum download mismatch")
-	}
-	if dp2 := x.preview(t, dj); dp2.Uploads+dp2.Downloads+dp2.Deletes != 0 {
-		t.Fatalf("checksum download does not converge: %s", previewSummary(dp2))
-	}
+	syncChecksumMode(t, x.target)
 }
 
 // ---- CDN -----------------------------------------------------------------------------

@@ -157,11 +157,11 @@ func extServerIdentity(c extConfig) string {
 
 // ---- environment -------------------------------------------------------------
 
+// extEnv is the external endpoint as a scenario target; its prefix is
+// "<run prefix><test name>/" and every key of the test lives below it.
 type extEnv struct {
-	*appEnv
-	ecfg   extConfig
-	bucket string
-	prefix string // "<run prefix><test name>/", every key of the test lives below it
+	*target
+	ecfg extConfig
 }
 
 func extSanitize(name string) string {
@@ -187,7 +187,7 @@ func newExt(t *testing.T, checksumMode string) *extEnv {
 	if err != nil {
 		t.Fatal(err)
 	}
-	x := &extEnv{ecfg: c, bucket: c.Bucket, prefix: extRunID() + extSanitize(t.Name()) + "/"}
+	x := &extEnv{ecfg: c, target: &target{bucket: c.Bucket, prefix: extRunID() + extSanitize(t.Name()) + "/", external: true}}
 	extGuardPrefix(x.prefix)
 	// Registered first, so it runs last (after the service has shut down).
 	t.Cleanup(func() { x.sweep(t) })
@@ -217,49 +217,6 @@ func newExt(t *testing.T, checksumMode string) *extEnv {
 	t.Logf("server identity: %s", extServerIdentity(c))
 	t.Logf("run prefix: %s (bucket %s, region %s)", x.prefix, c.Bucket, c.Region)
 	return x
-}
-
-// k is the full key for a path relative to the test prefix.
-func (x *extEnv) k(rel string) string { return x.prefix + rel }
-
-// at is the Location of a folder relative to the test prefix ("" = the test root).
-func (x *extEnv) at(rel string) app.Location { return x.loc(x.bucket, x.prefix+rel) }
-
-// pick is a Selection of keys relative to the test prefix, rooted at folder rel.
-func (x *extEnv) pick(rel string, keys ...string) app.Selection {
-	full := make([]string, len(keys))
-	for i, k := range keys {
-		full[i] = x.prefix + k
-	}
-	return app.Selection{Location: x.at(rel), Keys: full}
-}
-
-// putk uploads through the independent SDK client below the test prefix.
-func (x *extEnv) putk(t *testing.T, rel string, data []byte) string {
-	t.Helper()
-	x.spend(t, int64(len(data)))
-	return x.put(t, x.bucket, x.k(rel), data)
-}
-
-// spend accounts data volume against the per-run budget.
-func (x *extEnv) spend(t *testing.T, n int64) {
-	t.Helper()
-	if n > extMaxObject {
-		t.Fatalf("object of %d bytes exceeds the %d byte per-object limit", n, extMaxObject)
-	}
-	if total := extSpent.Add(n); total > extBudgetBytes {
-		t.Fatalf("data budget exceeded: %d bytes spent of %d", total, extBudgetBytes)
-	}
-}
-
-// relKeys lists the keys below prefix+rel, relative to the test prefix.
-func (x *extEnv) relKeys(t *testing.T, rel string) []string {
-	t.Helper()
-	var out []string
-	for _, k := range x.keys(t, x.bucket, x.prefix+rel) {
-		out = append(out, strings.TrimPrefix(k, x.prefix))
-	}
-	return out
 }
 
 // ---- cleanup -----------------------------------------------------------------------
