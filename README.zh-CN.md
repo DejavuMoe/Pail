@@ -61,9 +61,9 @@
 计算压缩包的 SHA-256，与同一版本 `SHA256SUMS` 中对应的那一行比较：
 
 ```sh
-sha256sum Pail-v0.6.4-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.6.4-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.6.4-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.7.0-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.7.0-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.7.0-windows-amd64.zip         # Windows PowerShell
 ```
 
 ### 在 macOS 上首次打开

@@ -3,7 +3,7 @@
 // fingerprinted static files, a 404 page, robots.txt and sitemap.xml.
 // See docs/dev/site.md.
 //
-//	go run ./tools/site -out build/site -version 0.6.4 [-mirror-url ""]
+//	go run ./tools/site -out build/site -version 0.7.0 [-mirror-url ""]
 package main
 
 import (
@@ -101,7 +101,7 @@ type config struct {
 func main() {
 	var c config
 	flag.StringVar(&c.out, "out", "", "output directory (created; a previous build there is replaced)")
-	flag.StringVar(&c.version, "version", "", "release version the download links point to, e.g. 0.6.4")
+	flag.StringVar(&c.version, "version", "", "release version the download links point to, e.g. 0.7.0")
 	flag.StringVar(&c.root, "root", "", "repository root (default: found from the working directory)")
 	flag.StringVar(&c.baseURL, "base-url", "https://pail.download", "public origin for canonical links and the sitemap")
 	flag.StringVar(&c.mirrorURL, "mirror-url", defaultMirrorURL, "download mirror directory holding the files of the release; empty links to GitHub only")
