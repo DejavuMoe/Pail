@@ -117,6 +117,30 @@ func ghostButton(c *ui.Context, icon *ui.SVG, label, tip string, disabled bool) 
 	})
 }
 
+// linkButton is a ghostButton that opens a page: a Lucide icon for what the
+// page is, then the text. The icon sits 1px lower than a toolbar icon would:
+// its box centres on the text's line box (a 2px top margin moves it 1px),
+// and the line box's descender room puts the glyphs' middle a pixel lower.
+// quiet draws a secondary link: 12px muted text and a 12px icon.
+func linkButton(c *ui.Context, icon *ui.SVG, label, tip string, quiet bool) ui.Element {
+	k := tk(c)
+	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Radius(RadiusControl).Height(28).Padding(0, 8).Gap(6).Center()
+	switch {
+	case b.Pressed():
+		b.Background(k.SurfacePressed)
+	case b.Hovered():
+		b.Background(k.SurfaceHover)
+	}
+	return b.Children(func() {
+		iconSize, textSize, col := float32(14), float32(sizeBody), k.Text
+		if quiet {
+			iconSize, textSize, col = 12, sizeSecondary, k.TextMuted
+		}
+		ui.Icon(c, icon).FontSize(iconSize).TextColor(k.TextMuted).Shrink(0).Margin(2, 0, 0, 0)
+		ui.Text(c, label).FontSize(textSize).TextColor(col).SingleLine()
+	})
+}
+
 // toggleIconButton is an icon-only panel toggle: ActiveFill and a Text icon
 // while on, a muted icon otherwise.
 func toggleIconButton(c *ui.Context, icon *ui.SVG, label, tip string, on bool) ui.Element {

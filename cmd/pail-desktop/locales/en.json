@@ -1274,5 +1274,8 @@
   "versionsSignedFor": "Signed URL for this version",
   "versionsVersion": "Version",
   "versionsVersionLabel": "Version {id}",
-  "versionsVersions": "Versions"
+  "versionsVersions": "Versions",
+  "aboutOpenLicense": "Open the license text",
+  "aboutOpenNotice": "Open {name} on GitHub",
+  "aboutOpenRelease": "Open the release notes of this version"
 }

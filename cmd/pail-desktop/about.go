@@ -30,7 +30,9 @@ func appIconBitmap() *ui.Bitmap {
 }
 
 // aboutDialog shows the icon, the version, the license and the third-party
-// notices of what ships inside the app.
+// notices of what ships inside the app. The header is two lines beside the
+// icon: the name and the version, which opens its release notes (and from
+// there the repository), then the author and license links.
 func (a *app) aboutDialog(c *ui.Context) {
 	k := tk(c)
 	dialog(c, &a.about.open, locales.AboutTitle(), func() {
@@ -41,26 +43,35 @@ func (a *app) aboutDialog(c *ui.Context) {
 				ui.Icon(c, icons.Get("database")).FontSize(32).TextColor(k.TextMuted)
 			}
 			ui.Column(c).Gap(2).Grow(1).MinWidth(0).Children(func() {
-				ui.Text(c, "Pail").FontSize(sizeTitle).FontWeight(600).TextColor(k.Text)
-				mutedText(c, locales.AboutVersion(version))
-				mutedText(c, locales.AboutLicense())
-				a.authorLink(c, locales.AboutAuthorLink(authorName)).Margin(0, 0, 0, -8).AlignSelf(ui.Start)
+				// The version link's text starts 8px inside its hover fill, the
+				// gap between it and the name.
+				ui.Row(c).AlignItems(ui.Baseline).Children(func() {
+					ui.Text(c, "Pail").FontSize(sizeTitle).FontWeight(600).TextColor(k.Text).SingleLine()
+					a.versionLink(c, locales.AboutVersion(version), true)
+				})
+				// A link's text starts 8px inside its hover fill: -8 puts the
+				// first icon on the name's left edge.
+				ui.Row(c).Margin(0, 0, 0, -8).AlignItems(ui.Center).Children(func() {
+					a.authorLink(c, locales.AboutAuthorLink(authorName))
+					a.licenseLink(c)
+				})
 			})
 		})
 		hairline(c)
-		ui.Column(c).Gap(8).Children(func() {
+		ui.Column(c).Gap(4).Children(func() {
 			sectionLabel(c, strings.ToUpper(locales.AboutThirdParty()))
-			notice := func(name, license string) {
-				ui.Row(c).Gap(12).AlignItems(ui.Center).Children(func() {
-					ui.Text(c, name).FontSize(sizeBody).TextColor(k.Text).Grow(1).MinWidth(0)
+			notice := func(name, license, url string) {
+				ui.Row(c.Key("notice:" + url)).Height(28).Gap(12).AlignItems(ui.Center).Children(func() {
+					a.link(c, "github", name, locales.AboutOpenNotice(name), url).Margin(0, 0, 0, -8).Shrink(1).MinWidth(0)
+					ui.Spacer(c)
 					ui.Text(c, license).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().Shrink(0)
 				})
 			}
-			notice(locales.AboutLucide(), locales.AboutLicenseIsc())
-			notice(locales.AboutInter(), locales.AboutLicenseOfl())
+			ui.Column(c).Children(func() {
+				notice(locales.AboutLucide(), locales.AboutLicenseIsc(), lucideURL)
+				notice(locales.AboutInter(), locales.AboutLicenseOfl(), interURL)
+			})
 		})
-		ghostButton(c, icons.Get("external-link"), strings.TrimPrefix(repoURL, "https://"), locales.AboutOpenProject(), false).
-			Label(locales.AboutProjectPage()).Margin(0, 0, 0, -8).AlignSelf(ui.Start).OnClick(func() { a.openExternal(repoURL) })
 	}, func() {
 		buttonRow(c, func() {
 			if secondaryButton(c, locales.CommonClose(), false).Clicked() {
@@ -70,31 +81,71 @@ func (a *app) aboutDialog(c *ui.Context) {
 	})
 }
 
+// Where the About links go. The third-party projects link to their
+// repositories, where their licenses are.
+const (
+	licenseURL = repoURL + "/blob/master/LICENSE"
+	lucideURL  = "https://github.com/lucide-icons/lucide"
+	interURL   = "https://github.com/rsms/inter"
+)
+
+// releaseURL is the release page of the running version; a build without a
+// version stamp ("dev") has none and gets the list of releases.
+func releaseURL() string {
+	if version == "" || version == "dev" {
+		return repoURL + "/releases"
+	}
+	return repoURL + "/releases/tag/v" + strings.TrimPrefix(version, "v")
+}
+
+// link is a text button that opens url in the browser. The Lucide icon says
+// what is behind it (a website, a repository, a release, a license) rather
+// than repeating that it opens externally; the tooltip says where it goes.
+func (a *app) link(c *ui.Context, icon, text, tip, url string) ui.Element {
+	return linkButton(c, icons.Get(icon), text, tip, false).OnClick(func() { a.openExternal(url) })
+}
+
+// versionLink is the button that opens the release notes of this version;
+// quiet draws it as secondary text, beside the name in the About dialog.
+func (a *app) versionLink(c *ui.Context, text string, quiet bool) ui.Element {
+	return linkButton(c, icons.Get("tag"), text, locales.AboutOpenRelease(), quiet).OnClick(func() { a.openExternal(releaseURL()) })
+}
+
 // authorLink is the button that opens the author's website; text is what it shows.
 func (a *app) authorLink(c *ui.Context, text string) ui.Element {
-	return ghostButton(c, icons.Get("external-link"), text, locales.AboutOpenAuthor(), false).
-		Label(authorName).OnClick(func() { a.openExternal(authorURL) })
+	return a.link(c, "globe", text, locales.AboutOpenAuthor(), authorURL).Label(authorName)
+}
+
+// repoLink is the button that opens the repository.
+func (a *app) repoLink(c *ui.Context) ui.Element {
+	return a.link(c, "github", strings.TrimPrefix(repoURL, "https://"), locales.AboutOpenProject(), repoURL).
+		Label(locales.AboutProjectPage())
+}
+
+// licenseLink is the button that opens the license text.
+func (a *app) licenseLink(c *ui.Context) ui.Element {
+	return a.link(c, "scale", locales.AboutLicense(), locales.AboutOpenLicense(), licenseURL)
 }
 
 // aboutSection is the "About" block at the end of Settings: version, author,
-// repository and license, with the links of the About dialog.
+// repository and license, each a link: the release of this version, the
+// author's website, the repository and the license text.
 func (a *app) aboutSection(c *ui.Context) {
 	// A ghost button's text starts and ends 8px inside its hover fill: the
 	// negative margin puts it on the edge the other rows' values end on.
 	a.settingsGroup(c, "about", func() {
 		a.settingsCard(c, func() {
 			a.settingsRow(c, locales.AboutVersionLabel(), "", func() {
-				ui.Text(c, version).FontSize(sizeBody).TextColor(tk(c).TextMuted).SingleLine()
+				a.versionLink(c, version, false).Margin(0, -8, 0, 0)
 			})
 			a.settingsRow(c, locales.AboutAuthor(), "", func() {
 				a.authorLink(c, authorName).Margin(0, -8, 0, 0)
 			})
 			a.settingsRow(c, locales.AboutRepository(), "", func() {
-				ghostButton(c, icons.Get("external-link"), strings.TrimPrefix(repoURL, "https://"), locales.AboutOpenProject(), false).
-					Label(locales.AboutProjectPage()).Margin(0, -8, 0, 0).OnClick(func() { a.openExternal(repoURL) })
+				a.repoLink(c).Margin(0, -8, 0, 0)
 			})
 			a.settingsRow(c, locales.AboutLicenseLabel(), "", func() {
-				ui.Text(c, locales.AboutLicense()).FontSize(sizeBody).TextColor(tk(c).TextMuted).SingleLine()
+				a.licenseLink(c).Margin(0, -8, 0, 0)
 			})
 		})
 	})

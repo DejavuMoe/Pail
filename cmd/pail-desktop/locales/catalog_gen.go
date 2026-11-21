@@ -12917,3 +12917,33 @@ func VersionsVersions() string { return In(i18n.Locale()).VersionsVersions() }
 func (msgs Messages) VersionsVersions() string {
 	return Catalog.Format(msgs.locale, "versionsVersions", nil)
 }
+
+// AboutOpenLicense says "Open the license text"
+// in the language the app shows.
+func AboutOpenLicense() string { return In(i18n.Locale()).AboutOpenLicense() }
+
+// AboutOpenLicense says "Open the license text"
+// in the language of msgs.
+func (msgs Messages) AboutOpenLicense() string {
+	return Catalog.Format(msgs.locale, "aboutOpenLicense", nil)
+}
+
+// AboutOpenNotice says "Open {name} on GitHub"
+// in the language the app shows.
+func AboutOpenNotice(name string) string { return In(i18n.Locale()).AboutOpenNotice(name) }
+
+// AboutOpenNotice says "Open {name} on GitHub"
+// in the language of msgs.
+func (msgs Messages) AboutOpenNotice(name string) string {
+	return Catalog.Format(msgs.locale, "aboutOpenNotice", map[string]any{"name": name})
+}
+
+// AboutOpenRelease says "Open the release notes of this version"
+// in the language the app shows.
+func AboutOpenRelease() string { return In(i18n.Locale()).AboutOpenRelease() }
+
+// AboutOpenRelease says "Open the release notes of this version"
+// in the language of msgs.
+func (msgs Messages) AboutOpenRelease() string {
+	return Catalog.Format(msgs.locale, "aboutOpenRelease", nil)
+}

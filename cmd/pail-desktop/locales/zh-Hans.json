@@ -1274,5 +1274,8 @@
   "versionsSignedFor": "为此版本生成预签名 URL",
   "versionsVersion": "版本",
   "versionsVersionLabel": "版本 {id}",
-  "versionsVersions": "版本"
+  "versionsVersions": "版本",
+  "aboutOpenLicense": "查看许可证全文",
+  "aboutOpenNotice": "在 GitHub 打开 {name}",
+  "aboutOpenRelease": "查看此版本的发布说明"
 }

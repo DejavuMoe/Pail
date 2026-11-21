@@ -9,6 +9,7 @@ All notable changes to this project are documented in this file. The format foll
 ### Changed
 
 - The command palette lists only the commands that can run at the moment, so a command stays in its own group whatever is selected. A search also finds the others, dimmed, for example **Download** with nothing selected. The **Unavailable here** group is gone.
+- In **Settings → About**, the version opens its release notes, the license opens the license text, and each link has an icon for what it opens. **About Pail** is more compact: the version sits beside the name and opens its release notes, the author and license links share one line, and the third-party notices link to the projects on GitHub.
 
 ## [0.6.4] - 2026-11-21
 

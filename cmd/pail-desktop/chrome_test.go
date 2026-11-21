@@ -462,14 +462,26 @@ func TestAboutDialog(t *testing.T) {
 	h.snap("about-light")
 	urls := make(chan string, 1)
 	h.a.openURL = func(u string) error { urls <- u; return nil }
-	h.mustClick("Project page")
-	select {
-	case u := <-urls:
-		if u != repoURL {
-			t.Errorf("the link opened %q", u)
+	// The version opens its release (the list of releases for a dev build),
+	// the license its text, each notice the project's repository.
+	for _, l := range []struct{ label, url string }{
+		{"Version " + version, releaseURL()},
+		{"MIT License", licenseURL},
+		{"Lucide icons", lucideURL},
+		{"Inter font (Linux builds)", interURL},
+	} {
+		h.mustClick(l.label)
+		select {
+		case u := <-urls:
+			if u != l.url {
+				t.Errorf("%s opened %q, want %q", l.label, u, l.url)
+			}
+		case <-time.After(5 * time.Second):
+			t.Fatalf("%s opened nothing", l.label)
 		}
-	case <-time.After(5 * time.Second):
-		t.Fatal("the project link opened nothing")
+	}
+	if strings.HasSuffix(releaseURL(), "/releases") != (version == "dev") {
+		t.Errorf("version %q links to %q", version, releaseURL())
 	}
 	h.mustHave("by Dejavu Moe")
 	h.mustClick("Dejavu Moe")
