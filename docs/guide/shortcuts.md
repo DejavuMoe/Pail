@@ -23,7 +23,7 @@ Commands are grouped in this order:
 | **App** | **Keyboard shortcuts**, **Documentation**, **About Pail**, **Quit**, and locking or unlocking the encrypted vault. |
 | **Go to bucket** | Every bucket of the current account, by name or alias. The open bucket is checked. |
 
-Commands that cannot run at the moment, for example **Download** with nothing selected, stay in the list, dimmed, under **Unavailable here**.
+The list shows only the commands that can run at the moment. A search also finds the others, dimmed, for example **Download** with nothing selected.
 
 ### Theme and language
 

@@ -216,10 +216,10 @@ func TestPaletteGroupHeadingsAreSectionLabelsWhileBrowsing(t *testing.T) {
 	t.Parallel()
 	h := newHarness(t, "light")
 	h.openPaletteWith(ui.Cmd, ui.KeyK)
-	h.mustHave("TRANSFER", "NAVIGATE", "UNAVAILABLE HERE")
+	h.mustHave("TRANSFER", "NAVIGATE")
 	h.tt.Type("upload")
 	h.settle()
-	h.mustNotHave("TRANSFER", "UNAVAILABLE HERE")
+	h.mustNotHave("TRANSFER")
 	h.mustHave("Transfer") // the group, now beside "Upload files"
 }
 

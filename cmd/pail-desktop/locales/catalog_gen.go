@@ -7108,16 +7108,6 @@ func (msgs Messages) PaletteSearch() string {
 	return Catalog.Format(msgs.locale, "paletteSearch", nil)
 }
 
-// PaletteUnavailable says "Unavailable here"
-// in the language the app shows.
-func PaletteUnavailable() string { return In(i18n.Locale()).PaletteUnavailable() }
-
-// PaletteUnavailable says "Unavailable here"
-// in the language of msgs.
-func (msgs Messages) PaletteUnavailable() string {
-	return Catalog.Format(msgs.locale, "paletteUnavailable", nil)
-}
-
 // PaletteBack says "Back to all commands"
 // in the language the app shows.
 func PaletteBack() string { return In(i18n.Locale()).PaletteBack() }

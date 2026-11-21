@@ -699,7 +699,6 @@
   "paletteNoMatch": "没有匹配的命令",
   "paletteOpenBucket": "打开存储桶 {name}",
   "paletteSearch": "搜索命令、存储桶和工具",
-  "paletteUnavailable": "当前不可用",
   "paletteBack": "返回全部命令",
   "pathbarFilterFolder": "筛选文件夹",
   "pathbarFilterThisFolder": "筛选此文件夹",

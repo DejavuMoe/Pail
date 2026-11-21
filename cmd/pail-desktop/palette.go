@@ -110,7 +110,8 @@ func (a *app) openPaletteScope(scope string) {
 // paletteEntries lists what the palette can run now: the commands of the
 // table that apply (a command with a Visible test that fails is left out) and
 // a jump to each bucket of the account, in the order of the group headings.
-// Commands that cannot run on the current screen are listed but disabled.
+// Commands that cannot run on the current screen are kept, disabled: a
+// search finds them dimmed (filterPalette leaves them out while browsing).
 func (a *app) paletteEntries() []palEntry {
 	m, en := locales.In(i18n.Locale()), locales.In("en")
 	var out []palEntry
@@ -204,8 +205,11 @@ func searchText(parts ...string) string { return strings.ToLower(strings.Join(pa
 // rest; among equal ones, what can run now before what cannot. The label of a
 // choice ("Theme: Dark") starts with its value as well: "dark" finds the
 // theme before the commands that only begin with the word. With no query
-// the list keeps its group order, enabled commands first and the disabled
-// ones after, dimmed.
+// the list keeps its group order and leaves out what cannot run here, as the
+// context menu does: a command keeps its place in its group whatever is
+// selected, and the list is not padded with dimmed rows. A search still finds
+// a command that cannot run, dimmed, so it can be told apart from one that
+// does not exist.
 func filterPalette(all []palEntry, query string) []palEntry {
 	words := strings.Fields(strings.ToLower(query))
 	type scored struct {
@@ -215,6 +219,9 @@ func filterPalette(all []palEntry, query string) []palEntry {
 	var hits []scored
 	whole := strings.Join(words, " ")
 	for _, e := range all {
+		if len(words) == 0 && !e.enabled {
+			continue
+		}
 		s := 0
 		if len(words) > 0 {
 			ok := true
@@ -420,23 +427,17 @@ func (a *app) paletteDialog(c *ui.Context) {
 			ui.Column(c).Padding(4, scrollGutter, 4, 8).Children(func() {
 				browse := strings.TrimSpace(p.query) == ""
 				for i, e := range entries {
-					// Browsing: a section label heads each group of what can run, and
-					// the commands that cannot run here follow after one more label.
-					// Searching ranks across groups, so the group is shown beside the
-					// command instead.
+					// Browsing: a section label heads each group (only what can run
+					// is listed). Searching ranks across groups, so the group is
+					// shown beside the command instead.
 					// A choice's own scope has no headings: it is one group.
-					unavailable := browse && !e.enabled && (i == 0 || entries[i-1].enabled)
-					switch {
-					case p.scope != "":
-					case unavailable:
-						paletteLabel(c, locales.PaletteUnavailable(), i == 0)
-					case browse && e.enabled && (i == 0 || entries[i-1].group != e.group):
+					if p.scope == "" && browse && (i == 0 || entries[i-1].group != e.group) {
 						paletteLabel(c, e.heading, i == 0)
 					}
 					// Beside the label: the value a picker has now, or the group
 					// where the list does not show it.
 					secondary := e.detail
-					if (!browse || !e.enabled) && p.scope == "" {
+					if !browse && p.scope == "" {
 						secondary = e.heading
 					}
 					a.paletteRow(c, e, i, secondary, moved)

@@ -4,6 +4,12 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Changed
+
+- The command palette lists only the commands that can run at the moment, so a command stays in its own group whatever is selected. A search also finds the others, dimmed, for example **Download** with nothing selected. The **Unavailable here** group is gone.
+
 ## [0.6.4] - 2026-11-21
 
 ### Changed

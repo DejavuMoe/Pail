@@ -439,8 +439,12 @@ func TestPaletteDoesNotOpenBehindADialogAndShowsVaultCommandsWhenApplicable(t *t
 	h.toVault()
 	h.settle()
 	h.openPaletteWith(ui.Cmd, ui.KeyK)
-	h.mustHave("Lock Vault", "Unlock Vault")
+	// Unlocked: browsing lists Lock Vault only; a search finds Unlock Vault too.
+	h.mustHave("Lock Vault")
+	h.mustNotHave("Unlock Vault")
 	h.tt.Type("lock")
+	h.settle()
+	h.mustHave("Lock Vault", "Unlock Vault")
 	h.settle()
 	h.tt.Key(0, ui.KeyEnter)
 	h.settle()

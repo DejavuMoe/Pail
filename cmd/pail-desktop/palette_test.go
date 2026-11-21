@@ -54,17 +54,22 @@ func TestFilterPaletteRanksAChoiceByItsValue(t *testing.T) {
 	}
 }
 
-func TestFilterPaletteEmptyQueryListsEnabledFirst(t *testing.T) {
+// Browsing lists only what can run, in group order; a search still finds what
+// cannot, after what can.
+func TestFilterPaletteBrowsingLeavesOutDisabled(t *testing.T) {
 	all := []palEntry{
 		pe("A off", "A off", groupTransfer, false),
 		pe("B on", "B on", groupObject, true),
 		pe("C off", "C off", groupObject, false),
 		pe("D on", "D on", groupApp, true),
 	}
-	got := labelsOf(filterPalette(all, ""))
-	want := []string{"B on", "D on", "A off", "C off"}
-	if strings.Join(got, "|") != strings.Join(want, "|") {
-		t.Fatalf("order = %q, want %q", got, want)
+	for query, want := range map[string][]string{
+		"":  {"B on", "D on"},
+		"o": {"B on", "D on", "A off", "C off"},
+	} {
+		if got := labelsOf(filterPalette(all, query)); strings.Join(got, "|") != strings.Join(want, "|") {
+			t.Errorf("%q: order = %q, want %q", query, got, want)
+		}
 	}
 }
 
@@ -96,19 +101,26 @@ func TestPaletteGroupsAreTaskBased(t *testing.T) {
 	}
 }
 
-func TestPaletteDisabledCommandsComeAfterEnabled(t *testing.T) {
+// A command keeps its group whatever is selected: without a selection Download
+// is not listed at all, and a search for it finds it dimmed.
+func TestPaletteBrowsingHidesWhatCannotRun(t *testing.T) {
 	h := newHarness(t, "light")
-	es := filterPalette(h.a.paletteEntries(), "")
-	seenOff := false
-	for _, e := range es {
+	for _, e := range filterPalette(h.a.paletteEntries(), "") {
 		if !e.enabled {
-			seenOff = true
-		} else if seenOff {
-			t.Fatalf("enabled %q after a disabled command", e.label)
+			t.Errorf("browsing lists %q, which cannot run", e.label)
 		}
 	}
-	if !seenOff {
-		t.Fatal("expected some disabled commands without a selection")
+	found := false
+	for _, e := range filterPalette(h.a.paletteEntries(), "download") {
+		if e.label == "Download" {
+			found = true
+			if e.enabled {
+				t.Error("Download runs without a selection")
+			}
+		}
+	}
+	if !found {
+		t.Error("a search does not find Download without a selection")
 	}
 }
 
