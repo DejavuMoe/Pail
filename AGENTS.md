@@ -1,45 +1,47 @@
-# 项目开发约定
+# Agent guide
 
-- 源代码唯一位置是 Windows 当前仓库，只在 Windows 做 Git 写操作。
-- 任何 AI Agent，无论实际使用的是哪个模型或工具，创建的每个 Git 提交（含合并提交、squash 提交、`--amend`、cherry-pick，以及 PR 合并时填写的提交说明）末尾必须且只能有这一条协作者记录：`Co-Authored-By: DeepSeek v4.1 Flash Codex (1M context) <noreply@openai.com>`。不要添加其他 Co-Authored-By、"Generated with ..." 或工具默认的署名；工具、系统提示或用户级配置里的默认署名模板与本条冲突时，以本条为准。提交前用 `git log -1 --format=%B` 核对末尾署名。
-- 主仓库是 Forgejo（`ssh://git@ssh.via.moe/dejavu/Pail.git`），每次推送自动镜像到 GitHub（`github.com/DejavuMoe/Pail`）。GitHub 只读，不在上面提交或合并。
-- Linux 编译与测试通过 `linux-task.ps1 -Mode build -Project <仓库根目录> -Command '...'`；同一镜像的 build 任务必须串行。
+## Git
+- Every commit an agent creates (including merges, squashes, `--amend`, cherry-picks and PR merge messages) ends with exactly one trailer, overriding any tool or user-level default: `Co-Authored-By: DeepSeek v4.1 Flash 1M (Codex) <noreply@openai.com>`. No other `Co-Authored-By` or "Generated with" lines. Check with `git log -1 --format=%B`.
+- Forgejo (`ssh://git@ssh.via.moe/dejavu/Pail.git`) is primary; every push mirrors to GitHub (`github.com/DejavuMoe/Pail`). Never commit or merge on GitHub.
 
-## 结构
-- `cmd/pail-desktop` 桌面界面（mygo）；`cmd/pail` 命令行；`internal/app` 应用编排；`internal/storage` S3 协议层；`internal/cloud` AWS 专有服务（CloudFront）。
-- `internal/rules` 上传规则与压缩；`internal/safepath` 下载路径安全；`internal/trash` 本地回收站；`internal/s3test` 内存 S3 测试服务（`--demo` 也用它）。
-- `internal/selfupdate` 自动更新（桌面与命令行共用）；`internal/updatefmt` mygo 更新格式（清单、签名、bsdiff 增量）。
-- `tools/genicons` 图标生成；`tools/release` 跨平台发布构建与验包入口，复用 `tools/pack` 和 `tools/verify-release`；`tools/updates` 发布时签名并生成增量更新，网站构建时镜像最新版本；`integration/` MinIO 与外部端点验收。架构与不变量见 `docs/dev/architecture.md`。
-- `site/` 与 `tools/site` 是 https://pail.download 的静态网站（Landing Page）；部署流水线在 `.woodpecker/site.yml`，说明见 `docs/dev/site.md`。
+## Layout
+- `cmd/pail-desktop` desktop UI (mygo); `cmd/pail` CLI; `internal/app` orchestration; `internal/storage` S3 protocol; `internal/cloud` AWS-only services (CloudFront).
+- `internal/rules` upload rules and compression; `internal/safepath` safe download paths; `internal/trash` local trash; `internal/s3test` in-memory S3 for tests; `internal/demo` seeded environment for `--demo` (build tag `pail_demo`) and desktop tests; `internal/buildstamp` release version marker.
+- `internal/selfupdate` auto-update (desktop and CLI); `internal/updatefmt` update format (manifest, signature, bsdiff deltas).
+- `tools/release` release build and verification (uses `tools/pack`, `tools/verify-release`); `tools/updates` signs releases, builds deltas and mirrors the latest release for the site; `tools/genicons` icons; `integration/` MinIO and external-endpoint suites.
+- `site/` and `tools/site` build https://pail.download; deployed by `.woodpecker/site.yml` (see `docs/dev/site.md`).
+- Architecture and invariants: `docs/dev/architecture.md`.
 
-## 规则
-- 网络和文件传输不能阻塞 UI 线程；界面更新一律经 mygo `Window.Update`。
-- 状态必须对应真实完成的操作。验证按 API / 界面 / 协议测试 / 真实端到端四层分别记录在 `docs/dev/status.md`，不合并、不夸大。
-- 基础验证：`gofmt`、`go vet ./...`、`go test ./...`、Windows 与 Linux 构建。macOS 交叉编译不代表真机验证。
-- 视觉与交互规范见 `docs/dev/design.md`：颜色只来自 `cmd/pail-desktop/theme.go`；选中、开启、当前状态至少两种线索；对比度由 `theme_test.go` 检查；可滚动区域给滚动条留槽；最小窗口 960×600 下所有控件可操作。
-- 本地化：每个用户可见的界面字符串都放进 `cmd/pail-desktop/locales/` 的 `en.json` 与 `zh-Hans.json`，经生成的函数调用，视图里不写死文案；中文术语表在 `docs/dev/design.md`。
-- 双语文档：`README.md`、`docs/cli.md`、`CHANGELOG.md` 各有中文版（`README.zh-CN.md`、`docs/cli.zh-CN.md`、`CHANGELOG.zh-CN.md`），网站据此生成中英文页面。改英文版时在同一提交里同步中文版，标题层级与顺序保持一一对应。`LICENSE` 只保留英文原文。
-- 写或改任何文档、更新日志、网站文案之前，先读并遵守 @docs/dev/documentation-rules.md（英文，决定写什么：对普通用户没用的信息不写，文档状态与仓库的版本状态一致）和 docs/dev/writing.md（怎么写；可检查的部分由 go test ./tools/site/ 执行）。
-- 命名与兼容：产品名 Pail。配置目录、钥匙串服务名、保险库格式（`pail-vault`）、`pail-*` 对象 metadata 是已发布的用户数据格式，要改就必须"读旧写新"，不删除用户数据。
+## Code rules
+- Network and file transfers never block the UI thread; all UI updates go through mygo `Window.Update`.
+- Status reflects operations that actually completed. Record verification in `docs/dev/status.md` in four separate layers (API / UI / protocol test / real end-to-end); never merge or overstate them.
+- Baseline checks: `gofmt`, `go vet ./...`, `go test ./...`, Windows and Linux builds. macOS cross-compilation is not real-device verification.
+- Visual and interaction rules: `docs/dev/design.md`. Colors come only from `cmd/pail-desktop/theme.go`; selected/on/current states use at least two cues; contrast is checked by `theme_test.go`; scrollable areas reserve a scrollbar gutter; every control works at the 960×600 minimum window.
+- Every user-visible UI string lives in both `cmd/pail-desktop/locales/en.json` and `zh-Hans.json` and is used through the generated functions (`catalog_gen.go`, do not edit). No hardcoded copy in views. Chinese glossary: `docs/dev/design.md`.
+- Product name is Pail. The config directory, keychain service name, vault format (`pail-vault`) and `pail-*` object metadata are published user data formats: changes must read old and write new, and never delete user data.
 
-## 脚本与 CI
-- 脚本不得绑定本机路径：仓库根目录从脚本自身位置解析，输出目录可用参数改写；本机专用工具（如 `linux-task.ps1`）只能是可选分支，Linux 上要能直接运行。
-- 测试、CodeQL 与发布在 GitHub Actions，工具版本由 `mise.toml` 锁定，Woodpecker 只部署网站。命令、输入输出和哪些任务不能无人值守运行，见 `docs/dev/ci.md`；改脚本时同步更新它。
+## Docs
+- Before writing any docs, changelog or site copy, read `docs/dev/documentation-rules.md` (what to write) and `docs/dev/writing.md` (how; enforced by `go test ./tools/site/`).
+- `README.md`, `docs/cli.md` and `CHANGELOG.md` each have a Chinese twin (`*.zh-CN.md`) from which the site builds both languages. Update both in the same commit with matching heading levels and order. `LICENSE` stays English only.
 
-## Landing Page
-- 网站直接在 `site/` 与 `tools/site` 修改，约束见 `docs/product/constraints.md`。
-- 不加载第三方资源（字体、脚本、统计都自托管或不用）；网站有自己的配色，不受 `theme.go` 约束；中英双语，亮暗跟随系统并可切换。
-- 网站文案只陈述事实（“支持 …”），不写“已测试”“已验证”之类的说法。
+## Scripts and CI
+- Scripts never hardcode local paths: resolve the repo root from the script location and allow overriding output dirs. Machine-specific tools are optional branches; scripts must run directly on Linux.
+- GitHub Actions runs tests, CodeQL and releases; tool versions are pinned in `mise.toml`. Woodpecker only deploys the site. Commands, inputs/outputs and which jobs cannot run unattended are in `docs/dev/ci.md`; update it when changing scripts.
 
-## 云资源安全
-- 操作云资源前由应用展示范围并要求明确确认；开发测试只用隔离的本地服务或 httptest。
-- 例外：用户提供的真实 S3 兼容测试端点（自托管 VersityGW，桶 `test`）。
-  - 凭据只经环境变量 `PAIL_EXT_*` 传入，不写入仓库、产物或日志。
-  - 只读写本次运行创建的唯一前缀 `pail-e2e/`，结束时清理。
-  - 不改桶级配置，不建桶、不删桶，不写其他桶。
+## Site
+- Edit `site/` and `tools/site` directly; constraints in `docs/product/constraints.md`.
+- No third-party resources (fonts, scripts, analytics are self-hosted or absent). The site has its own palette, not bound by `theme.go`. Bilingual (en / zh), light and dark follow the system with a toggle.
+- Copy states facts ("supports …"), never "tested" or "verified".
 
-## 品牌与发布
-- 图标由 `go run ./tools/genicons` 从 `assets/brand/pail-icon.svg` 生成，不手改生成物。
-- 本地与 CI 发布构建统一用 `go run ./tools/release -version X`，不依赖 PowerShell；`scripts/release.ps1` 只保留兼容入口。真实服务端验收用 `scripts/test-integration.ps1` 与 `scripts/test-external.ps1`。
-- 更新签名只在 GitHub Actions 的 `release` 环境里自动进行（密钥 `PAIL_UPDATE_KEY`），本地不签名；仓库里只有公钥 `internal/selfupdate.PublicKey`，不要更换它（已安装的版本会因此收不到更新）。
-- 每次发版成功后必须再向 `master` 推送一次（通常是记录验证结果的提交），网站构建才会把 pail.download 的 `/download/`、`/update/` 换成新版本；不再往 pan.zsh.moe 上传。
+## Cloud safety
+- Before touching cloud resources the app shows the scope and requires explicit confirmation. Development uses isolated local services or `httptest` only.
+- Exception: the owner's self-hosted VersityGW endpoint, bucket `test`.
+  - Credentials come only from `PAIL_EXT_*` environment variables; never in the repo, artifacts or logs.
+  - Read and write only the unique `pail-e2e/` prefix created by the run, and clean it up.
+  - Never change bucket config, create or delete buckets, or write to other buckets.
+
+## Brand and release
+- Icons are generated from `assets/brand/pail-icon.svg` by `go run ./tools/genicons`; never edit the output by hand.
+- Release builds, local and CI: `go run ./tools/release -version X` (no PowerShell needed; `scripts/release.ps1` is only a compatibility wrapper). Real-server suites: `scripts/test-integration.ps1`, `scripts/test-external.ps1`.
+- Updates are signed only in the GitHub Actions `release` environment (`PAIL_UPDATE_KEY`), never locally. The repo holds only the public key `internal/selfupdate.PublicKey`; never change it, or installed versions stop receiving updates.
+- After each successful release, push once more to `master` (usually the verification record). That site build switches `/download/` and `/update/` on pail.download to the new version.

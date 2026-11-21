@@ -2,7 +2,7 @@
 
 ## Repository ownership
 
-Forgejo (`ssh://git@ssh.via.moe/dejavu/Pail.git`) is the primary repository. Push commits and tags there from Windows. Forgejo mirrors them to [GitHub](https://github.com/DejavuMoe/Pail), where Actions tests the code and publishes release assets. Do not commit or merge source changes on GitHub. The default branch is `master` on both hosts.
+Forgejo (`ssh://git@ssh.via.moe/dejavu/Pail.git`) is the primary repository. Push commits and tags there. Forgejo mirrors them to [GitHub](https://github.com/DejavuMoe/Pail), where Actions tests the code and publishes release assets. Do not commit or merge source changes on GitHub. The default branch is `master` on both hosts.
 
 Woodpecker deploys only the static website. Its live acceptance is separate from the application release gates; see [site.md](site.md). GitHub Actions never deploys the website.
 
@@ -16,7 +16,7 @@ Native tests, native shards and race shards use separate cache scopes (`native`,
 
 Release packaging runs without a Go cache. A cache saved by a tag run is visible only to that tag, and `master` never builds the release cross-compilation mode, so a packaging cache would be uploaded on every release and never restored.
 
-Windows owns all source edits and Git writes. For Linux validation use `linux-task.ps1 -Mode build -Project <repo> -Command '...'`; build mirrors are disposable and contain no `.git`. Linux CI runs the same commands directly. Pass workflow paths explicitly to actionlint, which otherwise relies on Git discovery.
+Linux CI runs the same commands as local builds. Pass workflow paths explicitly to actionlint, which otherwise relies on Git discovery.
 
 ## Shared local and CI commands
 
