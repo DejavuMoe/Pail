@@ -235,8 +235,17 @@ func WriteArchive(w io.Writer, dir string, entries []string) error {
 
 // ExtractArchive unpacks an archive of WriteArchive into dir. It refuses
 // entries outside dir, links pointing out of it and anything but files,
-// directories and symbolic links.
+// directories and symbolic links. Paths are checked after resolving the links
+// already unpacked, so a chain of links that each point inside dir cannot
+// lead an entry out of it, and no entry replaces a link.
 func ExtractArchive(r io.Reader, dir string) error {
+	if err := os.MkdirAll(dir, 0o755); err != nil {
+		return err
+	}
+	root, err := filepath.EvalSymlinks(dir)
+	if err != nil {
+		return err
+	}
 	gz, err := gzip.NewReader(r)
 	if err != nil {
 		return err
@@ -252,10 +261,26 @@ func ExtractArchive(r io.Reader, dir string) error {
 			return err
 		}
 		name := path.Clean(hdr.Name)
-		if !fs.ValidPath(name) || name == "." {
+		if !fs.ValidPath(name) || name == "." || strings.Contains(hdr.Name, "..") {
 			return fmt.Errorf("invalid path in update archive: %q", hdr.Name)
 		}
-		target := filepath.Join(dir, filepath.FromSlash(name))
+		// The parent directory, with the links in it resolved, must be in
+		// root; the entry itself must not exist as a link.
+		parent := filepath.Join(root, filepath.FromSlash(path.Dir(name)))
+		if err := os.MkdirAll(parent, 0o755); err != nil {
+			return err
+		}
+		realParent, err := filepath.EvalSymlinks(parent)
+		if err != nil {
+			return err
+		}
+		if !within(root, realParent) {
+			return fmt.Errorf("update archive entry %q is outside the app", hdr.Name)
+		}
+		target := filepath.Join(realParent, path.Base(name))
+		if fi, err := os.Lstat(target); err == nil && fi.Mode()&fs.ModeSymlink != 0 {
+			return fmt.Errorf("update archive entry %q replaces a link", hdr.Name)
+		}
 		mode := fs.FileMode(hdr.Mode).Perm()
 		switch hdr.Typeflag {
 		case tar.TypeDir:
@@ -263,9 +288,6 @@ func ExtractArchive(r io.Reader, dir string) error {
 				return err
 			}
 		case tar.TypeReg:
-			if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-				return err
-			}
 			f, err := os.OpenFile(target, os.O_CREATE|os.O_WRONLY|os.O_TRUNC, mode|0o200)
 			if err != nil {
 				return err
@@ -281,12 +303,11 @@ func ExtractArchive(r io.Reader, dir string) error {
 				return err
 			}
 		case tar.TypeSymlink:
+			// Checked both in the archive and from where the link really is.
 			resolved := path.Join(path.Dir(name), hdr.Linkname)
-			if path.IsAbs(hdr.Linkname) || !fs.ValidPath(resolved) {
+			if path.IsAbs(hdr.Linkname) || filepath.IsAbs(hdr.Linkname) || !fs.ValidPath(resolved) ||
+				!within(root, filepath.Join(realParent, filepath.FromSlash(hdr.Linkname))) {
 				return fmt.Errorf("update archive link %q points outside the app", hdr.Name)
-			}
-			if err := os.MkdirAll(filepath.Dir(target), 0o755); err != nil {
-				return err
 			}
 			if err := os.Symlink(hdr.Linkname, target); err != nil {
 				return err
@@ -295,6 +316,13 @@ func ExtractArchive(r io.Reader, dir string) error {
 			return fmt.Errorf("unsupported entry in update archive: %q", hdr.Name)
 		}
 	}
+}
+
+// within reports whether p is root or inside it; both are clean absolute
+// paths with their links resolved.
+func within(root, p string) bool {
+	rel, err := filepath.Rel(root, p)
+	return err == nil && (rel == "." || filepath.IsLocal(rel))
 }
 
 // ReleaseNotes returns the section of a Markdown changelog under the

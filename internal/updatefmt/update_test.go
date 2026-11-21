@@ -5,7 +5,9 @@
 package updatefmt
 
 import (
+	"archive/tar"
 	"bytes"
+	"compress/gzip"
 	"crypto/ed25519"
 	"crypto/sha256"
 	"encoding/base64"
@@ -103,6 +105,63 @@ func TestArchive(t *testing.T) {
 		if link, err := os.Readlink(filepath.Join(dst, "App.app/Contents/Resources/link")); err != nil || link != "data/a.txt" {
 			t.Errorf("link = %q, %v", link, err)
 		}
+	}
+}
+
+// TestExtractStaysInside feeds archives that try to leave the directory: a
+// path with "..", and links that each point inside but together lead out.
+func TestExtractStaysInside(t *testing.T) {
+	type entry struct{ name, link, body string }
+	archive := func(entries ...entry) []byte {
+		var buf bytes.Buffer
+		gz := gzip.NewWriter(&buf)
+		tw := tar.NewWriter(gz)
+		for _, e := range entries {
+			hdr := &tar.Header{Name: e.name, Mode: 0o644, Typeflag: tar.TypeReg, Size: int64(len(e.body))}
+			if e.link != "" {
+				hdr = &tar.Header{Name: e.name, Mode: 0o777, Typeflag: tar.TypeSymlink, Linkname: e.link}
+			}
+			if err := tw.WriteHeader(hdr); err != nil {
+				t.Fatal(err)
+			}
+			if _, err := tw.Write([]byte(e.body)); err != nil {
+				t.Fatal(err)
+			}
+		}
+		tw.Close()
+		gz.Close()
+		return buf.Bytes()
+	}
+	cases := map[string][]entry{
+		"dot-dot":       {{name: "a/../../evil", body: "x"}},
+		"absolute link": {{name: "l", link: "/etc"}},
+		"link chain": {
+			{name: "x", link: "."},
+			{name: "x/x/x/y", link: "../../.."},
+			{name: "x/x/x/y/evil", body: "x"},
+		},
+		"write through a replaced link": {
+			{name: "l", link: "a"},
+			{name: "l", body: "x"},
+		},
+	}
+	for name, entries := range cases {
+		if runtime.GOOS == "windows" && entries[0].link != "" {
+			continue // creating links needs a privilege on Windows
+		}
+		t.Run(name, func(t *testing.T) {
+			parent := t.TempDir()
+			dst := filepath.Join(parent, "app")
+			if err := os.Mkdir(dst, 0o755); err != nil {
+				t.Fatal(err)
+			}
+			if err := ExtractArchive(bytes.NewReader(archive(entries...)), dst); err == nil {
+				t.Fatal("extracted an archive that leaves the directory")
+			}
+			if _, err := os.Stat(filepath.Join(parent, "evil")); err == nil {
+				t.Fatal("wrote outside the directory")
+			}
+		})
 	}
 }
 
