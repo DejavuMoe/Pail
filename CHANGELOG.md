@@ -6,8 +6,17 @@ All notable changes to this project are documented in this file. The format foll
 
 ## [Unreleased]
 
+### Added
+
+- Pail can update itself. In **Settings → Updates**, **Check now** looks for a new version, and Pail can also check the first time it starts each day or week; it is off by default. **Download and install** downloads the update, a much smaller delta update when there is one for your version, and **Restart** starts it when no transfer is running. Updates come from GitHub or pail.download, whichever you choose, with the other as the fallback, and are installed only when signed with the Pail release key. An update replaces the desktop app and the command line together.
+- `pail update` installs a newer version from the command line, and `pail update --check` only reports it. `pail settings` has `update-check` and `update-source`.
+
 ### Changed
 
+- Each archive unpacks into a folder named `Pail`, and the executables are named `pail-desktop` and `pail` (with `.exe` on Windows), without the version and platform.
+- On macOS, the `pail` command-line tool is inside `Pail.app`, at `Pail.app/Contents/MacOS/pail`.
+- The Linux archive has `install.sh`. It installs Pail to `~/.local/share/pail`, links `pail-desktop` and `pail` into `~/.local/bin` and adds Pail to your applications.
+- The files of the latest release are also on pail.download; pan.zsh.moe no longer gets new releases.
 - The command palette lists only the commands that can run at the moment, so a command stays in its own group whatever is selected. A search also finds the others, dimmed, for example **Download** with nothing selected. The **Unavailable here** group is gone.
 - In **Settings → About**, the version opens its release notes, the license opens the license text, and each link has an icon for what it opens. **About Pail** is more compact: the version sits beside the name and opens its release notes, the author and license links share one line, and the third-party notices, which now include MyGo, link to the projects and their licenses on GitHub.
 

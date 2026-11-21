@@ -1,10 +1,10 @@
 # Install
 
-Pail comes as one archive per system that holds the desktop app and the pail command-line tool; there is no installer. This page covers choosing and checking the archive, the first launch on each system, and building from source.
+Pail comes as one archive per system that holds the desktop app and the pail command-line tool. This page covers choosing and checking the archive, the first launch on each system, updates, and building from source.
 
 ## Choose an archive
 
-Download the archive for your system from the [latest release](https://github.com/DejavuMoe/Pail/releases/latest). The same files are mirrored at [pan.zsh.moe/Pail](https://pan.zsh.moe/Pail/).
+Download the archive for your system from the [latest release](https://github.com/DejavuMoe/Pail/releases/latest). The files of the latest release are also on [pail.download](https://pail.download/download/).
 
 | System | Archive |
 | --- | --- |
@@ -19,18 +19,20 @@ macOS 11 or later is needed. There are no 32-bit builds.
 
 ### What the archive holds
 
-Each archive unpacks into a folder of the same name. For version 0.6.4 on Linux x64:
+Each archive unpacks into a folder named `Pail`. On Linux:
 
 ```text
-Pail-v0.6.4-linux-amd64/
-  pail-desktop-v0.6.4-linux-amd64    desktop app
-  pail-v0.6.4-linux-amd64            command-line tool
-  pail.desktop                       launcher entry
-  pail.png                           icon
+Pail/
+  pail-desktop    desktop app
+  pail            command-line tool
+  install.sh      installs Pail for your user
+  pail.desktop    launcher entry
+  pail.png        icon
+  .mygo-files     list of the files, used by updates
   LICENSE
 ```
 
-The Windows archives hold `pail-desktop-v0.6.4-windows-amd64.exe`, `pail-v0.6.4-windows-amd64.exe` and the license. The macOS archives hold `Pail.app`, the command-line tool `pail-v0.6.4-darwin-arm64` (or `-darwin-amd64`) and the license.
+The Windows archives hold `pail-desktop.exe`, `pail.exe`, `.mygo-files` and the license. The macOS archives hold `Pail.app` and the license; the command-line tool is `Pail.app/Contents/MacOS/pail`.
 
 ## Check the download
 
@@ -50,22 +52,6 @@ sha256sum --check --ignore-missing SHA256SUMS
 
 `Get-FileHash` prints the hash in capital letters; the comparison does not depend on case.
 
-## Executable names
-
-The executables are named with the version and the platform, for example `pail-v0.6.4-windows-amd64.exe`. This guide calls them `pail-desktop` and `pail`. Rename them, create aliases, or run the full file names.
-
-```sh
-mv pail-desktop-v0.6.4-linux-amd64 pail-desktop
-mv pail-v0.6.4-linux-amd64 pail
-```
-
-```powershell
-Rename-Item pail-desktop-v0.6.4-windows-amd64.exe pail-desktop.exe
-Rename-Item pail-v0.6.4-windows-amd64.exe pail.exe
-```
-
-To use `pail` from any terminal, put it in a folder that is on your `PATH`.
-
 ## First launch
 
 ### macOS
@@ -80,20 +66,34 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 
 The executables are not signed. If SmartScreen says "Windows protected your PC", choose **More info**, then **Run anyway**.
 
+Keep `pail-desktop.exe` and `pail.exe` together in a folder you can write to, such as one under your user folder, so that Pail can update itself.
+
 ### Linux
 
-Unpack the archive and start `pail-desktop-v0.6.4-linux-amd64`. The tray icon needs `libayatana-appindicator3`; without it, closing the window quits Pail.
-
-The `pail.desktop` entry starts `pail-desktop-v0.6.4-linux-amd64` by name, without a folder, and uses the icon name `pail`. To list Pail among your applications, copy the executables to a folder on your `PATH`, and the entry and the icon (256 × 256 pixels) to the usual places in your home folder:
+Unpack the archive and run `install.sh` in the `Pail` folder:
 
 ```sh
-mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/256x256/apps
-cp pail-desktop-v0.6.4-linux-amd64 pail-v0.6.4-linux-amd64 ~/.local/bin/
-cp pail.desktop ~/.local/share/applications/
-cp pail.png ~/.local/share/icons/hicolor/256x256/apps/
+./install.sh
 ```
 
-If you rename the desktop executable, change the `Exec=` line of `pail.desktop` to the new name.
+It copies Pail to `~/.local/share/pail`, links `pail-desktop` and `pail` into `~/.local/bin`, and adds Pail to your applications. Running it again from a newer archive replaces the installed copy. You can also start `./pail-desktop` from the unpacked folder without installing.
+
+The tray icon needs `libayatana-appindicator3`; without it, closing the window quits Pail.
+
+## Use pail from a terminal
+
+On Linux, `install.sh` puts `pail` in `~/.local/bin`; if that folder is not on your `PATH`, the script says what to add.
+
+On macOS, link the tool inside the app:
+
+```sh
+sudo mkdir -p /usr/local/bin
+sudo ln -sf /Applications/Pail.app/Contents/MacOS/pail /usr/local/bin/pail
+```
+
+On Windows, add the folder that holds `pail.exe` to your `PATH`, or run it by its full path.
+
+The link and the `PATH` entry point to the installed copy, so they keep working after an update.
 
 ## Desktop app flags
 
@@ -117,7 +117,15 @@ pail-desktop --config-dir ~/pail-test --size 1280x800 --tool settings
 
 ## Update to a new version
 
-Pail does not check for updates. Read the [changelog](../../CHANGELOG.md), download the new archive and replace the old executables. Accounts, settings and sync jobs live in the configuration folder, not next to the programs, so they stay; see [Data and security](privacy.md). Transfers that were unfinished when Pail quit come back paused.
+Open **Settings › Updates** and click **Check now**. When a new version is available, **Download and install** downloads it, and **Restart** starts it. Pail does not restart while a transfer is running. An update replaces both the desktop app and the `pail` command-line tool; `pail update` does the same from a terminal.
+
+**Check for updates** is **Manually** by default. **Daily** or **Weekly** checks the first time Pail starts on a new day or week, and only tells you when a new version is available; nothing is downloaded until you click.
+
+**Download from** chooses GitHub or pail.download; if one cannot be reached, Pail uses the other. Pail installs only files signed with the Pail release key. When there is a delta update for your version, Pail downloads it instead of the whole release.
+
+Pail cannot update itself when it runs from a folder it cannot write to, as an AppImage, or on macOS outside `Pail.app`. Then read the [changelog](../../CHANGELOG.md), download the new archive and replace the old files.
+
+Accounts, settings and sync jobs live in the configuration folder, not next to the programs, so they stay; see [Data and security](privacy.md). Transfers that were unfinished when Pail quit come back paused.
 
 ## Build from source
 
@@ -127,4 +135,4 @@ You need Go 1.27.4. No C compiler is required.
 go build -o build/ ./cmd/pail-desktop ./cmd/pail
 ```
 
-Tests, release packaging and the project layout are described in [CONTRIBUTING.md](https://github.com/DejavuMoe/Pail/blob/master/CONTRIBUTING.md).
+A build from source does not update itself. Tests, release packaging and the project layout are described in [CONTRIBUTING.md](https://github.com/DejavuMoe/Pail/blob/master/CONTRIBUTING.md).

@@ -1,6 +1,10 @@
 package app
 
-import "time"
+import (
+	"time"
+
+	"github.com/DejavuMoe/Pail/internal/selfupdate"
+)
 
 // This file holds every exported data type of the app layer (docs/rewrite/APP_API.md
 // sections 1-10) so that the packages that build on it (UI, CLI) and the files
@@ -79,6 +83,21 @@ type Settings struct {
 	// its header (the row of an open tool stays). The zero value shows the
 	// group, so settings saved before it existed show it too.
 	CollapseTools bool `json:"collapseTools,omitempty"`
+	// Updates is when the desktop app looks for a newer Pail by itself and
+	// where updates come from. The zero value never looks by itself and uses
+	// GitHub. Its LastCheck changes only with SetUpdateCheck; SaveSettings keeps
+	// the current value.
+	Updates UpdateSettings `json:"updates,omitzero"`
+}
+
+// UpdateSettings are the update settings (internal/selfupdate).
+type UpdateSettings struct {
+	// Policy is selfupdate.PolicyManual ("" too), PolicyDaily or PolicyWeekly.
+	Policy selfupdate.Policy `json:"policy,omitempty"`
+	// Source is selfupdate.SourceGitHub ("" too) or SourceMirror.
+	Source selfupdate.Source `json:"source,omitempty"`
+	// LastCheck is when the desktop app last checked by itself.
+	LastCheck time.Time `json:"lastCheck,omitzero"`
 }
 
 // SecretBackend values.

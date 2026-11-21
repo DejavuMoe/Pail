@@ -345,11 +345,22 @@ func (a *app) settingsView(c *ui.Context) {
 					a.networkSection(c)
 					a.securitySection(c)
 					a.diagnosticsSection(c)
+					a.updatesSection(c)
 					a.aboutSection(c)
 				})
 			})
 		})
 		n.lasY = n.scroll.Y
+		// A section asked for before the page was laid out: its place is known
+		// from this frame on.
+		if n.want != "" {
+			if _, ok := n.tops[n.want]; ok {
+				n.goTo(n.want)
+				n.want = ""
+			} else {
+				c.After(time.Millisecond)
+			}
+		}
 	})
 }
 

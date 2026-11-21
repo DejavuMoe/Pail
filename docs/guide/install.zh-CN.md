@@ -1,10 +1,10 @@
 # 安装
 
-Pail 为每个系统提供一个压缩包，里面有桌面应用和命令行工具 pail，没有安装程序。本页介绍如何选择和校验压缩包、各系统上的首次启动，以及从源码构建。
+Pail 为每个系统提供一个压缩包，里面有桌面应用和命令行工具 pail。本页介绍如何选择和校验压缩包、各系统上的首次启动、更新，以及从源码构建。
 
 ## 选择压缩包
 
-从 [最新版本](https://github.com/DejavuMoe/Pail/releases/latest) 下载对应系统的压缩包。镜像 [pan.zsh.moe/Pail](https://pan.zsh.moe/Pail/) 上有相同的文件。
+从 [最新版本](https://github.com/DejavuMoe/Pail/releases/latest) 下载对应系统的压缩包。最新版本的文件在 [pail.download](https://pail.download/download/) 上也有。
 
 | 系统 | 压缩包 |
 | --- | --- |
@@ -19,18 +19,20 @@ Pail 为每个系统提供一个压缩包，里面有桌面应用和命令行工
 
 ### 压缩包里有什么
 
-每个压缩包解压后是一个同名文件夹。以 0.6.4 版的 Linux x64 为例：
+每个压缩包解压后是一个名为 `Pail` 的文件夹。以 Linux 为例：
 
 ```text
-Pail-v0.6.4-linux-amd64/
-  pail-desktop-v0.6.4-linux-amd64    桌面应用
-  pail-v0.6.4-linux-amd64            命令行工具
-  pail.desktop                       启动器条目
-  pail.png                           图标
+Pail/
+  pail-desktop    桌面应用
+  pail            命令行工具
+  install.sh      为当前用户安装 Pail
+  pail.desktop    启动器条目
+  pail.png        图标
+  .mygo-files     文件清单，更新时使用
   LICENSE
 ```
 
-Windows 的压缩包里是 `pail-desktop-v0.6.4-windows-amd64.exe`、`pail-v0.6.4-windows-amd64.exe` 和许可证。macOS 的压缩包里是 `Pail.app`、命令行工具 `pail-v0.6.4-darwin-arm64`（或 `-darwin-amd64`）和许可证。
+Windows 的压缩包里是 `pail-desktop.exe`、`pail.exe`、`.mygo-files` 和许可证。macOS 的压缩包里是 `Pail.app` 和许可证，命令行工具是 `Pail.app/Contents/MacOS/pail`。
 
 ## 校验下载
 
@@ -50,22 +52,6 @@ sha256sum --check --ignore-missing SHA256SUMS
 
 `Get-FileHash` 输出的是大写字母，比较时不区分大小写。
 
-## 可执行文件的名字
-
-可执行文件的名字带版本号和平台，例如 `pail-v0.6.4-windows-amd64.exe`。本指南把它们写作 `pail-desktop` 和 `pail`。可以给文件改名、创建别名，或者直接使用完整文件名。
-
-```sh
-mv pail-desktop-v0.6.4-linux-amd64 pail-desktop
-mv pail-v0.6.4-linux-amd64 pail
-```
-
-```powershell
-Rename-Item pail-desktop-v0.6.4-windows-amd64.exe pail-desktop.exe
-Rename-Item pail-v0.6.4-windows-amd64.exe pail.exe
-```
-
-想在任意终端里使用 `pail`，就把它放进 `PATH` 中的某个文件夹。
-
 ## 首次启动
 
 ### macOS
@@ -80,20 +66,34 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 
 可执行文件没有签名。如果 SmartScreen 提示“Windows 已保护你的电脑”，点击**更多信息**，再点击**仍要运行**。
 
+把 `pail-desktop.exe` 和 `pail.exe` 放在同一个你有写入权限的文件夹里，例如用户文件夹下的某个文件夹，Pail 才能自动更新。
+
 ### Linux
 
-解压后启动 `pail-desktop-v0.6.4-linux-amd64`。托盘图标需要 `libayatana-appindicator3`；没有它时，关闭窗口就会退出 Pail。
-
-`pail.desktop` 按名字启动 `pail-desktop-v0.6.4-linux-amd64`，不带文件夹路径，图标名是 `pail`。要让 Pail 出现在应用列表里，把可执行文件复制到 `PATH` 中的文件夹，再把条目和图标（256 × 256 像素）复制到主目录下的常用位置：
+解压后在 `Pail` 文件夹里运行 `install.sh`：
 
 ```sh
-mkdir -p ~/.local/bin ~/.local/share/applications ~/.local/share/icons/hicolor/256x256/apps
-cp pail-desktop-v0.6.4-linux-amd64 pail-v0.6.4-linux-amd64 ~/.local/bin/
-cp pail.desktop ~/.local/share/applications/
-cp pail.png ~/.local/share/icons/hicolor/256x256/apps/
+./install.sh
 ```
 
-如果给桌面程序改了名，把 `pail.desktop` 里的 `Exec=` 一行改成新名字。
+它把 Pail 复制到 `~/.local/share/pail`，在 `~/.local/bin` 里创建 `pail-desktop` 和 `pail` 的链接，并把 Pail 加入应用列表。用更新的压缩包再运行一次，会替换已安装的副本。也可以不安装，直接在解压的文件夹里启动 `./pail-desktop`。
+
+托盘图标需要 `libayatana-appindicator3`；没有它时，关闭窗口就会退出 Pail。
+
+## 在终端里使用 pail
+
+在 Linux 上，`install.sh` 会把 `pail` 放进 `~/.local/bin`；如果这个文件夹不在 `PATH` 里，脚本会提示要添加什么。
+
+在 macOS 上，链接应用里的命令行工具：
+
+```sh
+sudo mkdir -p /usr/local/bin
+sudo ln -sf /Applications/Pail.app/Contents/MacOS/pail /usr/local/bin/pail
+```
+
+在 Windows 上，把 `pail.exe` 所在的文件夹加入 `PATH`，或者用完整路径运行。
+
+链接和 `PATH` 指向已安装的副本，更新后仍然有效。
 
 ## 桌面应用的参数
 
@@ -117,7 +117,15 @@ pail-desktop --config-dir ~/pail-test --size 1280x800 --tool settings
 
 ## 更新到新版本
 
-Pail 不检查更新。先读 [更新日志](../../CHANGELOG.zh-CN.md)，再下载新的压缩包，替换旧的可执行文件。账户、设置和同步任务保存在配置文件夹里，不在程序旁边，所以会保留，见 [数据与安全](privacy.zh-CN.md)。上次退出时未完成的传输会以暂停状态恢复。
+打开**设置 › 更新**，点击**立即检查**。有新版本时，**下载并安装**会下载它，**重启**后开始使用。有传输在进行时 Pail 不会重启。更新会同时替换桌面应用和命令行工具 `pail`；在终端里运行 `pail update` 效果相同。
+
+**检查更新**默认是**手动**。选**每天**或**每周**时，Pail 在当天或当周第一次启动时检查，有新版本只提示，点击之前不会下载。
+
+**下载来源**可选 GitHub 或 pail.download，连不上其中一个时改用另一个。Pail 只安装用 Pail 发布密钥签名的文件。有适用于当前版本的增量更新时，只下载增量更新，不下载完整版本。
+
+以下情况 Pail 不能自动更新：所在文件夹没有写入权限、以 AppImage 运行，或在 macOS 上不在 `Pail.app` 里运行。这时先读 [更新日志](../../CHANGELOG.zh-CN.md)，再下载新的压缩包，替换旧的文件。
+
+账户、设置和同步任务保存在配置文件夹里，不在程序旁边，所以会保留，见 [数据与安全](privacy.zh-CN.md)。上次退出时未完成的传输会以暂停状态恢复。
 
 ## 从源码构建
 
@@ -127,4 +135,4 @@ Pail 不检查更新。先读 [更新日志](../../CHANGELOG.zh-CN.md)，再下�
 go build -o build/ ./cmd/pail-desktop ./cmd/pail
 ```
 
-测试、发布打包和项目结构见 [CONTRIBUTING.md](https://github.com/DejavuMoe/Pail/blob/master/CONTRIBUTING.md)（英文）。
+从源码构建的版本不会自动更新。测试、发布打包和项目结构见 [CONTRIBUTING.md](https://github.com/DejavuMoe/Pail/blob/master/CONTRIBUTING.md)（英文）。

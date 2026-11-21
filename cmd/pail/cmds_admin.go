@@ -1,6 +1,7 @@
 package main
 
 import (
+	"cmp"
 	"context"
 	"flag"
 	"fmt"
@@ -12,6 +13,7 @@ import (
 	"time"
 
 	"github.com/DejavuMoe/Pail/internal/app"
+	"github.com/DejavuMoe/Pail/internal/selfupdate"
 )
 
 // ---- bucket alias --------------------------------------------------------------------
@@ -446,6 +448,20 @@ var settingKeys = []settingKey{
 	{"quit-when-idle", func(s app.Settings) any { return s.QuitWhenIdle }, setBool(func(s *app.Settings) *bool { return &s.QuitWhenIdle })},
 	{"recent-ops", func(s app.Settings) any { return s.RecentOps }, setInt(func(s *app.Settings) *int { return &s.RecentOps })},
 	{"keep-recent-ops", func(s app.Settings) any { return s.KeepRecentOps }, setBool(func(s *app.Settings) *bool { return &s.KeepRecentOps })},
+	{"update-check", func(s app.Settings) any { return string(cmp.Or(s.Updates.Policy, selfupdate.PolicyManual)) }, func(s *app.Settings, v string) error {
+		if p := selfupdate.Policy(v); !p.Valid() {
+			return usagef("update-check must be manual, daily or weekly")
+		}
+		s.Updates.Policy = selfupdate.Policy(v)
+		return nil
+	}},
+	{"update-source", func(s app.Settings) any { return string(cmp.Or(s.Updates.Source, selfupdate.SourceGitHub)) }, func(s *app.Settings, v string) error {
+		if !selfupdate.Source(v).Valid() {
+			return usagef("update-source must be github or mirror")
+		}
+		s.Updates.Source = selfupdate.Source(v)
+		return nil
+	}},
 	{"secret-backend", func(s app.Settings) any { return s.SecretBackend }, nil},
 }
 

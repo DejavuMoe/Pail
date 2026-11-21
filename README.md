@@ -41,7 +41,7 @@
 
 ## Install
 
-Download the archive for your system from the [latest release](https://github.com/DejavuMoe/Pail/releases/latest). The same files are mirrored at [pan.zsh.moe/Pail](https://pan.zsh.moe/Pail/).
+Download the archive for your system from the [latest release](https://github.com/DejavuMoe/Pail/releases/latest). The files of the latest release are also on [pail.download](https://pail.download/download/).
 
 | System | Archive |
 | --- | --- |
@@ -54,9 +54,7 @@ Download the archive for your system from the [latest release](https://github.co
 
 macOS 11 or later is needed. There are no 32-bit builds.
 
-Each archive holds the desktop app and the `pail` command-line tool. On macOS the desktop app is `Pail.app`; the Linux archive also has a `.desktop` entry and an icon.
-
-The executables are named with the version and platform. This document calls them `pail-desktop` and `pail`: rename the files, or create aliases.
+Each archive unpacks into a folder named `Pail` with the desktop app `pail-desktop` and the command-line tool `pail`. On macOS the desktop app is `Pail.app`, and `pail` is inside it at `Pail.app/Contents/MacOS/pail`. The Linux archive also has `install.sh`, a `.desktop` entry and an icon.
 
 ### Check the download
 
@@ -79,6 +77,14 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 ### First launch on Windows
 
 The executables are not signed. If SmartScreen says "Windows protected your PC", choose **More info**, then **Run anyway**.
+
+### First launch on Linux
+
+Run `./install.sh` in the unpacked folder. It copies Pail to `~/.local/share/pail`, links `pail-desktop` and `pail` into `~/.local/bin`, and adds Pail to your applications.
+
+### Updates
+
+In **Settings › Updates**, **Check now** looks for a new version, and Pail can also check daily or weekly. Downloading and restarting wait for your click. An update replaces the desktop app and `pail` together; `pail update` does the same from a terminal. Pail installs only files signed with the Pail release key.
 
 ## Quick start
 
@@ -122,7 +128,7 @@ Every command, its flags, JSON output and exit codes are in the [command-line re
 - **Configuration** is the `Pail` folder in your user configuration directory (`%AppData%\Pail`, `~/Library/Application Support/Pail` or `~/.config/Pail`), or the directory you pass with `--config-dir`. It holds settings, accounts, sync jobs, upload rules, the transfers left unfinished at the last quit and the names of stored secrets.
 - **Secrets** (secret access keys, session tokens, proxy passwords) go to the system keychain under the name `Pail`. Without a keychain, use the encrypted vault in **Settings › Security**.
 - **Logs** are off by default. When on, `logs/pail.log` leaves out URL query strings, Authorization headers, signatures and known secrets. Passwords typed by hand are recognised only by their label, so read a log before you share it.
-- **Network:** Pail connects only to the endpoints of your accounts, through the proxy from **Settings › Network**, an account's own proxy, or `HTTP_PROXY` and `HTTPS_PROXY`. It has no telemetry and does not check for updates.
+- **Network:** Pail connects only to the endpoints of your accounts, through the proxy from **Settings › Network**, an account's own proxy, or `HTTP_PROXY` and `HTTPS_PROXY`. It has no telemetry. It checks for updates only when you click **Check now**, run `pail update`, or choose a daily or weekly check; the check reads a small file from GitHub or pail.download.
 
 ## Supported platforms and services
 

@@ -38,6 +38,7 @@ var settingsSecs = []settingsSec{
 	{"network", locales.SettingsNetwork},
 	{"security", locales.VaultSecurity},
 	{"diagnostics", locales.SettingsDiagnostics},
+	{"updates", locales.SettingsUpdates},
 	{"about", locales.SettingsAbout},
 }
 
@@ -53,6 +54,8 @@ type settingsRail struct {
 	pin    string
 	pinY   float32
 	pinSet bool
+	// want is a section to go to once the page is laid out (openUpdates).
+	want string
 	// tops is where each section starts in the content, as the last frame laid
 	// it out (Element.Bounds). It says where the page scrolls to and which row
 	// the rail marks; nothing is laid out from it.

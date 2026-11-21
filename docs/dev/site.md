@@ -53,11 +53,26 @@ The generator (`tools/site/main.go`):
 - fails when a locale misses a key, when the two locales' key sets differ, when a string is empty, or when `-version` is not a semantic version without the `v` prefix;
 - replaces an existing `-out` directory only when it holds nothing but a previous build.
 
-Flags: `-out`, `-version` (required); `-root` (default: found by walking up to this module's `go.mod`); `-base-url` (default `https://pail.download`, used for canonical links and the sitemap); `-mirror-url` (default `https://pan.zsh.moe/Pail`, below).
+Flags: `-out`, `-version` (required); `-root` (default: found by walking up to this module's `go.mod`); `-base-url` (default `https://pail.download`, used for canonical links and the sitemap); `-mirror-url` (default `https://pail.download/download/`, below).
 
 ### Download mirror
 
-`-mirror-url` is the https root of the download mirror; each release is uploaded to its `v<version>/` directory under the GitHub file names. The pages always get `data-mirror-base=<root>/v<version>/` on the download list for the version they are built for, a GitHub / Mirror source switch, and a plain link to the mirror directory for visitors without JavaScript. `home.js` applies the switch to every download link and stores the choice in `localStorage` under `pail-source`. The build does not check the mirror. `-mirror-url ""` builds pages that offer GitHub only and show no switch.
+`-mirror-url` is the https directory of the download mirror, which holds the files of one release under their GitHub names. The pages always get `data-mirror-base=<directory>/` on the download list, a GitHub / Mirror source switch, and a plain link to the mirror directory for visitors without JavaScript. `home.js` applies the switch to every download link and stores the choice in `localStorage` under `pail-source`. `tools/site` does not check the mirror; the pipeline fills it (below). `-mirror-url ""` builds pages that offer GitHub only and show no switch.
+
+The mirror is part of the site output. After generating the pages, `scripts/build-site.sh` runs
+
+```sh
+go run ./tools/updates mirror -version "$version" -out public -cache "$PAIL_RELEASE_CACHE"
+```
+
+which downloads the release's files from GitHub into the cache directory `v<version>/`, checks the user archives against `SHA256SUMS` and the update files against their manifests and the signatures of `internal/selfupdate.PublicKey`, and then writes:
+
+- `public/download/`: the user archives and `SHA256SUMS`;
+- `public/update/`: the update archives, delta updates and `update-<os>-<arch>.json`, with every URL in the manifests rewritten to `https://pail.download/update/<file>`. The signatures cover the files, not the manifests, so the rewrite needs no key.
+
+Only the latest stable release is kept: the cache drops every other version, and a prerelease is refused. A release made before 0.7.0 has no update files; then `/update/` is empty and only the downloads are mirrored. A cached version that was completely downloaded is not fetched again, so a rebuild of the same version needs no GitHub downloads. `scripts/verify-site.sh` fails when `download/SHA256SUMS` is missing or does not match the archives, and the publish step runs it again on the copy it activates.
+
+The desktop app and `pail update` read `https://pail.download/update/` when the user picks pail.download as the source, and fall back to it when GitHub cannot be reached. Because the mirror follows the site, it moves to a new release only with the next `master` push after that release is public (see [ci.md](ci.md#release-sequence)).
 
 The tests (`go test ./tools/site/...`) build the real site and check both languages and every page, the stable heading ids, that the Chinese docs reuse the English ids in order, that the six download links match the targets in `tools/release` and that each system's row marks one usual archive, the mirror links and switch, the release date, that every internal link and fragment resolves to a built file and id and that external links stay on the allowed hosts, that the scripts only ask for embedded strings, fingerprinting, deterministic output, that a translation with different headings or a link that leaves the repository fails the build, input validation, and the writing rules in [writing.md](writing.md) (`TestCopyRules`, in `tools/site/copy_test.go`).
 
@@ -107,15 +122,15 @@ https://github.com/DejavuMoe/Pail/releases/download/v<version>/SHA256SUMS
 
 The archive names are the ones `tools/release` produces; if the tool's naming changes, the generator must change with it. The tag format `v<version>` is an assumption the release CI must keep (see [ci.md](ci.md)).
 
-The pipeline reads the latest published stable GitHub Release, verifies that all six versioned archive assets and `SHA256SUMS` are present and uploaded, and checks that the checksum file is publicly downloadable. It never selects an unpublished Git tag. If the release or any of its assets is missing, it fails without changing the deployed site. The site moves to a new version with the first `master` push after the release is public, normally the commit that records its validation; run the workflow by hand only when no such push follows.
+The pipeline reads the latest published stable GitHub Release, verifies that all six versioned archive assets and `SHA256SUMS` are present and uploaded, and checks that the checksum file is publicly downloadable. It never selects an unpublished Git tag. If the release or any of its assets is missing, it fails without changing the deployed site. The site and the mirror move to a new version with the first `master` push after the release is public, normally the commit that records its validation. That push is part of every release; run the workflow by hand only when no such push follows.
 
 ## Pipeline (`.woodpecker/site.yml`)
 
 Both `master` push and manual events build and deploy the site. Tag events do not: release asset creation is asynchronous. There is no GitHub website deployment job or GitHub-to-Woodpecker callback token.
 
-The required agent labels are `platform=linux/amd64`, `backend=docker`, `role=netcup-vps500`, `server=netcup-vps500`. The repository must be trusted for host volumes. The Go builder and Alpine publisher are pinned to image digests; Go module/build caches live under `/var/cache/woodpecker/pail/` on that agent.
+The required agent labels are `platform=linux/amd64`, `backend=docker`, `role=netcup-vps500`, `server=netcup-vps500`. The repository must be trusted for host volumes. The Go builder and Alpine publisher are pinned to image digests; Go module/build caches and the release cache of the mirror (`releases`, mounted as `PAIL_RELEASE_CACHE=/cache/releases`) live under `/var/cache/woodpecker/pail/` on that agent.
 
-1. `scripts/build-site.sh` resolves the published version, checks the release assets, runs the generator tests and builds `public/` with the mirror links of that version. The pipeline does not check the mirror and the link rule never changes, so the mirror never needs another run: upload each release's archives and `SHA256SUMS` to `v<version>/` by hand once the release is published. Until they are there, the mirror links of that version fail and the GitHub links work.
+1. `scripts/build-site.sh` resolves the published version, checks the release assets, runs the tests of `tools/site` and `tools/updates`, builds `public/` and fills its download mirror (above). A download or signature failure fails the build without changing the deployed site.
 2. `scripts/verify-site.sh` checks both languages, all page entry points and static assets, rejecting symlinks and other special files.
 3. `scripts/publish-site.sh public <commit>-<pipeline>-<rerun>` copies into a new release directory, validates it, atomically replaces `html`, verifies activation and retains only the current and immediately previous release. It takes a filesystem lock, refuses out-of-root/linked deployment paths and skips older pipelines. Workflow concurrency is also limited to one.
 
@@ -131,7 +146,7 @@ The publish step mounts `/var/www/pail.download:/deploy`; no SSH deployment secr
     <previous>/
 ```
 
-Configure the web server's root as `/var/www/pail.download/html`. Serve `/zh/` from `zh/index.html`, return `404.html` with status 404, send `Cache-Control: public, max-age=31536000, immutable` for fingerprinted assets and `no-cache` for HTML. DNS, TLS, HSTS and server configuration are managed separately.
+Configure the web server's root as `/var/www/pail.download/html`. Serve `/zh/` from `zh/index.html`, return `404.html` with status 404, send `Cache-Control: public, max-age=31536000, immutable` for fingerprinted assets and `no-cache` for HTML. For the mirror, send `no-cache` for the files whose names do not change between releases (`/download/SHA256SUMS`, `/update/update-<os>-<arch>.json` and the `/download/` listing, which nginx generates with `autoindex`) and `public, max-age=604800` for the versioned archives and delta updates, so a deploy takes effect at once behind Cloudflare. DNS, TLS, HSTS and server configuration are managed separately.
 
 Run `sh scripts/test-publish-site.sh` on Linux to check atomic activation, two-release retention, stale-run rejection and preservation of the previous site when validation fails. `SITE_DEPLOY_ROOT` overrides `/deploy` for isolated fixtures. The scripts resolve repository paths from their own location.
 
@@ -142,4 +157,4 @@ go run ./tools/site -out build/site -version 0.6.4
 python -m http.server 4312 --bind 127.0.0.1 --directory build/site
 ```
 
-`python -m http.server` does not send `404.html` for missing paths; open `/404.html` directly to check it. Download links point to the GitHub Release of the version you pass, so they only work for a published version. The source switch is shown by default; add `-mirror-url ""` to preview the GitHub-only page.
+`python -m http.server` does not send `404.html` for missing paths; open `/404.html` directly to check it. Download links point to the GitHub Release of the version you pass, so they only work for a published version. The preview has no mirror files; run `go run ./tools/updates mirror -version <published version> -out build/site -cache build/release-cache` to add them. The source switch is shown by default; add `-mirror-url ""` to preview the GitHub-only page.

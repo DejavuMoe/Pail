@@ -89,7 +89,9 @@ jobs:
     name: Publish complete release
     needs: [preflight, archives]
     runs-on: ubuntu-24.04
-    timeout-minutes: 15
+    timeout-minutes: 20
+    # The environment holds PAIL_UPDATE_KEY and admits v* tags only.
+    environment: release
     permissions:
       contents: write
     steps:
@@ -115,6 +117,13 @@ jobs:
           cat dist/SHA256SUMS-* | LC_ALL=C sort > dist/SHA256SUMS
           rm dist/SHA256SUMS-*
           go run ./tools/verify-release -dir dist -version "$VERSION"
+      - name: Sign updates and make delta updates
+        env:
+          VERSION: ${{ needs.preflight.outputs.version }}
+          PAIL_UPDATE_KEY: ${{ secrets.PAIL_UPDATE_KEY }}
+        run: |
+          go run ./tools/updates sign -dir dist -version "$VERSION"
+          go run ./tools/updates verify -dir dist -version "$VERSION"
       - name: Upload draft and publish
         env:
           GH_TOKEN: ${{ github.token }}

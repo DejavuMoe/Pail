@@ -8,7 +8,8 @@
 ## 结构
 - `cmd/pail-desktop` 桌面界面（mygo）；`cmd/pail` 命令行；`internal/app` 应用编排；`internal/storage` S3 协议层；`internal/cloud` AWS 专有服务（CloudFront）。
 - `internal/rules` 上传规则与压缩；`internal/safepath` 下载路径安全；`internal/trash` 本地回收站；`internal/s3test` 内存 S3 测试服务（`--demo` 也用它）。
-- `tools/genicons` 图标生成；`tools/release` 跨平台发布构建与验包入口，复用 `tools/pack` 和 `tools/verify-release`；`integration/` MinIO 与外部端点验收。架构与不变量见 `docs/dev/architecture.md`。
+- `internal/selfupdate` 自动更新（桌面与命令行共用）；`internal/updatefmt` mygo 更新格式（清单、签名、bsdiff 增量）。
+- `tools/genicons` 图标生成；`tools/release` 跨平台发布构建与验包入口，复用 `tools/pack` 和 `tools/verify-release`；`tools/updates` 发布时签名并生成增量更新，网站构建时镜像最新版本；`integration/` MinIO 与外部端点验收。架构与不变量见 `docs/dev/architecture.md`。
 - `site/` 与 `tools/site` 是 https://pail.download 的静态网站（Landing Page）；部署流水线在 `.woodpecker/site.yml`，说明见 `docs/dev/site.md`。
 
 ## 规则
@@ -40,3 +41,5 @@
 ## 品牌与发布
 - 图标由 `go run ./tools/genicons` 从 `assets/brand/pail-icon.svg` 生成，不手改生成物。
 - 本地与 CI 发布构建统一用 `go run ./tools/release -version X`，不依赖 PowerShell；`scripts/release.ps1` 只保留兼容入口。真实服务端验收用 `scripts/test-integration.ps1` 与 `scripts/test-external.ps1`。
+- 更新签名只在 GitHub Actions 的 `release` 环境里自动进行（密钥 `PAIL_UPDATE_KEY`），本地不签名；仓库里只有公钥 `internal/selfupdate.PublicKey`，不要更换它（已安装的版本会因此收不到更新）。
+- 每次发版成功后必须再向 `master` 推送一次（通常是记录验证结果的提交），网站构建才会把 pail.download 的 `/download/`、`/update/` 换成新版本；不再往 pan.zsh.moe 上传。

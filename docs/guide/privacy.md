@@ -87,11 +87,13 @@ The diagnostic log is off by default. Turn on **Write diagnostic log** in **Sett
 
 ## Network
 
-Pail connects only to the endpoints of your accounts. For AWS accounts that includes AWS STS for AssumeRole and the CloudFront API. With **Default chain** credentials, the AWS SDK can also ask for the instance or container role of the machine.
+Apart from update checks (below), Pail connects only to the endpoints of your accounts. For AWS accounts that includes AWS STS for AssumeRole and the CloudFront API. With **Default chain** credentials, the AWS SDK can also ask for the instance or container role of the machine.
 
 Requests go through the account's own proxy, the proxy in **Settings › Network**, or the `HTTP_PROXY` and `HTTPS_PROXY` environment variables; see [Proxy](connect.md#proxy).
 
-Pail has no telemetry and does not check for updates.
+Pail has no telemetry.
+
+Pail checks for updates only when you click **Check now** in **Settings › Updates**, run `pail update`, or choose a daily or weekly check there. A check reads a small file from GitHub or pail.download that names the latest version; downloading the update waits for your click. These requests go through the proxy in **Settings › Network** and send nothing about your accounts.
 
 ## Clipboard
 

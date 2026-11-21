@@ -6,6 +6,7 @@ import (
 	"fmt"
 	"os"
 	"path/filepath"
+	"time"
 
 	"github.com/DejavuMoe/Pail/internal/safepath"
 	"github.com/DejavuMoe/Pail/internal/storage"
@@ -124,6 +125,12 @@ func (st Settings) validate() error {
 	if pr := st.Proxy.Problem(false); pr != ProxyOK {
 		return errors.New(proxyProblemText(pr))
 	}
+	if p := st.Updates.Policy; p != "" && !p.Valid() {
+		return fmt.Errorf("unknown update policy %q", p)
+	}
+	if s := st.Updates.Source; s != "" && !s.Valid() {
+		return fmt.Errorf("unknown update source %q", s)
+	}
 	return nil
 }
 
@@ -148,7 +155,8 @@ func (s *Service) SaveSettings(st Settings) error {
 	// secrets); whatever the caller passes is replaced by the current value.
 	s.mu.Lock()
 	st.SecretBackend = s.settings.SecretBackend
-	st.Proxy = s.settings.Proxy // only SaveProxy changes it
+	st.Proxy = s.settings.Proxy                         // only SaveProxy changes it
+	st.Updates.LastCheck = s.settings.Updates.LastCheck // only SetUpdateCheck changes it
 	s.mu.Unlock()
 	if err := writeJSONAtomicRetry(s.path("settings.json"), st); err != nil {
 		return classify("SaveSettings", err)
@@ -164,6 +172,24 @@ func (s *Service) SaveSettings(st Settings) error {
 			"prev_upload", old.Limits.Upload, "prev_download", old.Limits.Download, "prev_other", old.Limits.Other)
 	}
 	s.applyLogging(st.LogToFile) // a log file that cannot be opened never fails the save
+	return nil
+}
+
+// SetUpdateCheck records when the desktop app last checked for updates by
+// itself (Settings.Updates.LastCheck), which the update policy counts from.
+func (s *Service) SetUpdateCheck(t time.Time) error {
+	s.wmu.Lock()
+	defer s.wmu.Unlock()
+	s.mu.Lock()
+	st := s.settings
+	s.mu.Unlock()
+	st.Updates.LastCheck = t.UTC().Truncate(time.Second)
+	if err := writeJSONAtomicRetry(s.path("settings.json"), st); err != nil {
+		return classify("SetUpdateCheck", err)
+	}
+	s.mu.Lock()
+	s.settings.Updates.LastCheck = st.Updates.LastCheck
+	s.mu.Unlock()
 	return nil
 }
 

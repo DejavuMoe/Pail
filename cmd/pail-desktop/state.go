@@ -98,6 +98,7 @@ type app struct {
 	confirm   confirmState
 	sf        settingsForm
 	srail     settingsRail // the Settings page: its scrolling and its rail (settings_layout.go)
+	upd       updateUI     // the Updates section of Settings (update.go)
 	vu        vaultUI      // the encrypted vault (vault_ui.go)
 	tl        toolState    // the tool views (tools.go and the *_tool.go files)
 
@@ -303,6 +304,7 @@ func newApp(svc *core.Service, opts options) *app {
 		retryWatches: map[string]*watch{},
 	}
 	a.ctx, a.stop = context.WithCancel(context.Background())
+	a.initUpdates()
 	a.post = a.enqueue
 	a.commands = commandTable()
 	a.commandIndex = map[string]int{}

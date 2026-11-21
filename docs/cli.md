@@ -4,7 +4,7 @@ English | [简体中文](cli.zh-CN.md)
 
 `pail` works with the same accounts, saved sync jobs and secrets as the desktop app. It shares the desktop app's configuration directory and secret store (the OS keychain or the encrypted vault). Accounts, the encrypted vault and the settings can be managed from the command line as well as in the desktop app. Requests go through the account's own proxy when it has one, otherwise through the proxy saved in the desktop app's **Settings › Network**. Without either, `pail` follows the `HTTP_PROXY`, `HTTPS_PROXY` and `NO_PROXY` environment variables.
 
-Release archives use versioned filenames, for example `pail-v<version>-windows-amd64.exe`. The examples below assume you installed the program as `pail` (`pail.exe` on Windows); you can also run the full filename.
+The release archives hold the program as `pail` (`pail.exe` on Windows); on macOS it is `Pail.app/Contents/MacOS/pail`. The examples below assume it is on your `PATH`.
 
 ```text
 pail accounts
@@ -72,6 +72,7 @@ pail sync LOCAL s3://bucket/prefix/ [SYNC FLAGS]    # one-way sync, upload
 pail sync s3://bucket/prefix/ LOCAL [SYNC FLAGS]    # one-way sync, download
 pail sync --job NAME [--dry-run]
 pail sync job ls|add|rm ...                         # saved sync jobs
+pail update [--check]                               # install a newer version of Pail
 pail version
 ```
 
@@ -242,6 +243,7 @@ These commands act on one object. `stat`, `cat`, `tags` and `acl` take `--versio
 - `multipart ls s3://bucket[/prefix/]` lists unfinished multipart uploads with their start time, storage class, upload ID and key. `multipart abort` with the same path aborts them after confirmation and discards the parts already uploaded. `--older-than D` limits it to uploads started longer ago than `D`, for example `36h` or `7d`.
 - `sync job ls` lists the saved sync jobs. `sync job add NAME LOCAL s3://bucket/prefix/` saves an upload job and `sync job add NAME s3://bucket/prefix/ LOCAL` a download job, with the same `--mode`, `--compare`, `--exclude` and `--no-rules` flags as `sync`. The local folder must exist. `sync job rm NAME` removes a saved job after confirmation; local files and objects stay. Run a job with `sync --job NAME`.
 - `cloudfront ls` lists the account's CloudFront distributions; `--bucket B` keeps those with an origin in that bucket. `cloudfront invalidate DISTRIBUTION PATH...` prints the distribution and the paths and asks for confirmation before it creates the invalidation. It works with AWS accounts only.
+- `update` checks for a newer version of Pail and installs it, replacing both the desktop app and `pail`. `--check` only reports what is available. It uses the source chosen with `update-source` and the proxy of **Settings › Network**, and installs only files signed with the Pail release key. On macOS the new `Pail.app` replaces the old one when the command exits. `pail` checks for updates only when you run this command. A build from source, or a copy in a folder you cannot write to, cannot update itself; the command then fails and says why.
 - `settings get` prints every setting as `KEY VALUE`; `settings get KEY` prints only the value. `settings set KEY VALUE` changes one. They are the settings of the desktop app.
 
 | Setting | Values |
@@ -263,13 +265,15 @@ These commands act on one object. `stat`, `cat`, `tags` and `acl` take `--versio
 | `quit-when-idle` | `on` or `off`; closing the desktop window quits when no transfer is running |
 | `recent-ops` | Recent operations kept, 1 to 1000 |
 | `keep-recent-ops` | `on` or `off` |
+| `update-check` | `manual`, `daily` or `weekly`: when the desktop app checks for updates by itself |
+| `update-source` | `github` or `mirror` (pail.download), tried first; the other is the fallback |
 | `secret-backend` | Read only. Change it with `vault init` and `vault backend`. |
 
 The proxy for all accounts is not part of `settings`; set it in the desktop app. An account's own proxy is set with `account edit --proxy`.
 
 ## Progress and output
 
-One line per finished item goes to stderr (`done`, `skipped`, `FAILED`, `UNKNOWN` or `unprocessed`), followed by a summary line. On a terminal a live line shows items, bytes and speed. For machine-readable results use `--json`; otherwise stdout carries only listings, URLs and the sync plan.
+One line per finished item goes to stderr (`done`, `skipped`, `FAILED`, `UNKNOWN` or `unprocessed`), followed by a summary line. On a terminal a live line shows items, bytes and speed. For machine-readable results use `--json`; otherwise stdout carries only listings, URLs, the sync plan and the result of `update`.
 
 ## Confirmation
 

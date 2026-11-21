@@ -4,7 +4,7 @@
 
 `pail` 与桌面应用使用同一套账户、已保存的同步任务和机密：它共用桌面应用的配置目录和机密存储（系统钥匙串或加密保险库）。账户、加密保险库和设置既可以在桌面应用中管理，也可以用命令行管理。账户有自己的代理时，请求经由它发送，否则经由桌面应用**设置 › 网络**里保存的代理；两者都没有时，`pail` 沿用环境变量 `HTTP_PROXY`、`HTTPS_PROXY` 和 `NO_PROXY`。
 
-发布包使用带版本的文件名，例如 `pail-v<version>-windows-amd64.exe`。下文假设程序安装后名为 `pail`（Windows 上为 `pail.exe`），也可以直接运行完整文件名。
+发布包里的程序名是 `pail`（Windows 上为 `pail.exe`）；在 macOS 上是 `Pail.app/Contents/MacOS/pail`。下文假设它已在 `PATH` 中。
 
 ```text
 pail accounts
@@ -72,6 +72,7 @@ pail sync LOCAL s3://bucket/prefix/ [SYNC FLAGS]    # 单向同步：上传
 pail sync s3://bucket/prefix/ LOCAL [SYNC FLAGS]    # 单向同步：下载
 pail sync --job NAME [--dry-run]
 pail sync job ls|add|rm ...                         # 已保存的同步任务
+pail update [--check]                               # 安装 Pail 的新版本
 pail version
 ```
 
@@ -242,6 +243,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 - `multipart ls s3://bucket[/prefix/]` 列出未完成的分段上传，包括开始时间、存储类别、上传 ID 和对象键。`multipart abort` 使用同样的路径，在确认后中止这些上传，并丢弃已上传的分段。`--older-than D` 只处理开始于 `D` 之前的上传，例如 `36h` 或 `7d`。
 - `sync job ls` 列出已保存的同步任务。`sync job add NAME LOCAL s3://bucket/prefix/` 保存一个上传任务，`sync job add NAME s3://bucket/prefix/ LOCAL` 保存一个下载任务，`--mode`、`--compare`、`--exclude` 和 `--no-rules` 与 `sync` 相同。本地文件夹必须已存在。`sync job rm NAME` 在确认后删除已保存的任务，本地文件和对象不受影响。用 `sync --job NAME` 运行任务。
 - `cloudfront ls` 列出账户的 CloudFront 分配；`--bucket B` 只保留源站在该存储桶的分配。`cloudfront invalidate DISTRIBUTION PATH...` 先输出分配和路径并要求确认，再创建失效。它只适用于 AWS 账户。
+- `update` 检查并安装 Pail 的新版本，同时替换桌面应用和 `pail`。`--check` 只报告有没有新版本。它使用 `update-source` 选择的下载来源和**设置 › 网络**里的代理，只安装用 Pail 发布密钥签名的文件。在 macOS 上，命令退出后新的 `Pail.app` 才会替换旧的。`pail` 只在运行这个命令时检查更新。从源码构建的版本，或位于没有写入权限的文件夹里的副本，不能自动更新，这时命令会报错并说明原因。
 - `settings get` 以 `KEY VALUE` 输出所有设置；`settings get KEY` 只输出值。`settings set KEY VALUE` 修改一项。它们就是桌面应用的设置。
 
 | 设置 | 取值 |
@@ -263,13 +265,15 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 | `quit-when-idle` | `on` 或 `off`；没有传输在进行时，关闭桌面窗口即退出 |
 | `recent-ops` | 保留的最近操作条数，1 到 1000 |
 | `keep-recent-ops` | `on` 或 `off` |
+| `update-check` | `manual`、`daily` 或 `weekly`：桌面应用自动检查更新的频率 |
+| `update-source` | `github` 或 `mirror`（pail.download），优先使用，另一个作为备用 |
 | `secret-backend` | 只读。用 `vault init` 和 `vault backend` 更改。 |
 
 所有账户共用的代理不在 `settings` 里，请在桌面应用中设置。账户自己的代理用 `account edit --proxy` 设置。
 
 ## 进度与输出
 
-每完成一个项目，stderr 上输出一行（`done`、`skipped`、`FAILED`、`UNKNOWN` 或 `unprocessed`），最后是一行汇总。在终端中，会有一行实时显示项目数、字节数和速度。需要机器可读的结果时使用 `--json`；否则 stdout 只输出列表、URL 和同步计划。
+每完成一个项目，stderr 上输出一行（`done`、`skipped`、`FAILED`、`UNKNOWN` 或 `unprocessed`），最后是一行汇总。在终端中，会有一行实时显示项目数、字节数和速度。需要机器可读的结果时使用 `--json`；否则 stdout 只输出列表、URL、同步计划和 `update` 的结果。
 
 ## 确认
 

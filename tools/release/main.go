@@ -21,6 +21,8 @@ import (
 	"strings"
 
 	"github.com/DejavuMoe/Pail/internal/buildstamp"
+	"github.com/DejavuMoe/Pail/internal/selfupdate"
+	"github.com/DejavuMoe/Pail/internal/updatefmt"
 )
 
 const allTargets = "windows/amd64,windows/arm64,linux/amd64,linux/arm64,darwin/amd64,darwin/arm64"
@@ -128,13 +130,20 @@ func release(version, targetList, outDir string, cliOnly bool) error {
 			if cliOnly && app == "pail-desktop" {
 				continue
 			}
-			name := executable(app, version, osName, arch)
+			name := executable(app, osName)
 			executables = append(executables, name)
+			args := []string{"build", "-trimpath"}
 			ld := "-s -w " + buildstamp.LDFlag(version)
-			if app == "pail-desktop" && osName == "windows" {
-				ld += " -H windowsgui"
+			if app == "pail-desktop" {
+				// A production build: no developer tools (mygo.IsDev is false).
+				ld += " " + mygoProduction
+				if osName == "windows" {
+					ld += " -H windowsgui"
+				}
+				args = append(args, "-tags", desktopTags)
 			}
-			if err := goRun(root, osName, arch, "build", "-trimpath", "-ldflags", ld, "-o", filepath.Join(dir, name), "./cmd/"+app); err != nil {
+			args = append(args, "-ldflags", ld, "-o", filepath.Join(dir, name), "./cmd/"+app)
+			if err := goRun(root, osName, arch, args...); err != nil {
 				return fmt.Errorf("%s %s: %w", target, app, err)
 			}
 		}
@@ -146,15 +155,34 @@ func release(version, targetList, outDir string, cliOnly bool) error {
 				return err
 			}
 		}
+		if osName == "linux" && !cliOnly {
+			executables = append(executables, "install.sh")
+		}
+		// What this version installs, from which an update knows what to
+		// remove; app bundles are replaced whole.
+		if osName != "darwin" {
+			if err := writeFileList(dir); err != nil {
+				return err
+			}
+		}
 		archive := base + ".zip"
 		if osName == "linux" {
 			archive = base + ".tar.gz"
 		}
 		file := filepath.Join(out, archive)
-		cmd := exec.Command(packer, "-C", dir, "-o", file, "-prefix", base, "-exec", strings.Join(executables, ","))
-		cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
-		if err := cmd.Run(); err != nil {
+		if err := runPacker(packer, "-C", dir, "-o", file, "-prefix", archiveRoot, "-exec", strings.Join(executables, ",")); err != nil {
 			return fmt.Errorf("pack %s: %w", target, err)
+		}
+		if !cliOnly {
+			// The update archive: the app at its root, signed in the release
+			// workflow (tools/updates).
+			update := []string{"-C", dir, "-o", filepath.Join(out, updateArchive(version, osName, arch)), "-exec", strings.Join(executables, ",")}
+			if osName == "darwin" {
+				update = append(update, "-entries", "Pail.app")
+			}
+			if err := runPacker(packer, update...); err != nil {
+				return fmt.Errorf("pack the update of %s: %w", target, err)
+			}
 		}
 		f, err := os.Open(file)
 		if err != nil {
@@ -197,12 +225,49 @@ func goRun(root, osName, arch string, args ...string) error {
 	return cmd.Run()
 }
 
-func executable(app, version, osName, arch string) string {
-	name := app + "-v" + version + "-" + osName + "-" + arch
+// Build settings of the desktop app: mygo's production mode, without its
+// inspector and library downloader, as `mygo build` makes it.
+const (
+	mygoProduction = "-X github.com/egoist/mygo.production=1"
+	desktopTags    = "mygo_noinspector,mygo_nodownload"
+)
+
+// archiveRoot is the folder the user archives extract to. It has no version:
+// updates replace its contents, so a version in its name would go stale.
+const archiveRoot = "Pail"
+
+// executable is the file name of a program; it stays the same across
+// versions, as updates replace the files in place.
+func executable(app, osName string) string {
 	if osName == "windows" {
-		name += ".exe"
+		return app + ".exe"
 	}
-	return name
+	return app
+}
+
+// updateArchive is the name of the update archive of a target, as
+// internal/selfupdate.ArchiveName.
+func updateArchive(version, osName, arch string) string {
+	return selfupdate.ArchiveName(version, osName+"-"+arch)
+}
+
+func runPacker(packer string, args ...string) error {
+	cmd := exec.Command(packer, args...)
+	cmd.Stdout, cmd.Stderr = os.Stdout, os.Stderr
+	return cmd.Run()
+}
+
+// writeFileList writes the updatefmt.FileList of dir, naming its entries.
+func writeFileList(dir string) error {
+	entries, err := os.ReadDir(dir)
+	if err != nil {
+		return err
+	}
+	var names []string
+	for _, e := range entries {
+		names = append(names, e.Name())
+	}
+	return updatefmt.WriteFileList(dir, names)
 }
 
 func copyFile(src, dst string) error {
@@ -256,6 +321,8 @@ func publish(parent, version, source string) error {
 				ext = ".tar.gz"
 			}
 			allowed["Pail-v"+version+"-"+strings.ReplaceAll(target, "/", "-")+ext] = true
+			osName, arch, _ := strings.Cut(target, "/")
+			allowed[updateArchive(version, osName, arch)] = true
 		}
 		for _, e := range entries {
 			if !e.Type().IsRegular() || !allowed[e.Name()] {

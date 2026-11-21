@@ -19,6 +19,8 @@ import (
 	"strings"
 
 	"github.com/DejavuMoe/Pail/internal/buildstamp"
+	"github.com/DejavuMoe/Pail/internal/selfupdate"
+	"github.com/DejavuMoe/Pail/internal/updatefmt"
 )
 
 func main() {
@@ -66,8 +68,18 @@ func verify(dir, version string, targets []string) error {
 		if !slices.Contains(sumLines, line) {
 			return fmt.Errorf("%s: checksum missing or incorrect", name)
 		}
-		if err := verifyArchive(data, base, version, osName, arch); err != nil {
+		files, err := verifyArchive(data, archiveRoot, version, osName, arch)
+		if err != nil {
 			return fmt.Errorf("%s: %w", name, err)
+		}
+		update := selfupdate.ArchiveName(version, osName+"-"+arch)
+		expected[update] = true
+		data, err = os.ReadFile(filepath.Join(dir, update))
+		if err != nil {
+			return err
+		}
+		if err := verifyUpdateArchive(data, files, osName); err != nil {
+			return fmt.Errorf("%s: %w", update, err)
 		}
 	}
 	if len(sumLines) != len(targets) {
@@ -98,6 +110,10 @@ func checkBuildInfo(info *debug.BuildInfo, body []byte, rel string, desktop bool
 	if settings["GOOS"] != osName || settings["GOARCH"] != arch || settings["CGO_ENABLED"] != "0" || info.Path != pkg {
 		return fmt.Errorf("%s: incorrect platform, cgo or executable package", rel)
 	}
+	// The desktop app is a production build of mygo: without its inspector.
+	if desktop && !slices.Contains(strings.Split(settings["-tags"], ","), "mygo_noinspector") {
+		return fmt.Errorf("%s: not built with the tag mygo_noinspector", rel)
+	}
 	ldflags, recorded := settings["-ldflags"]
 	if recorded || settings["-trimpath"] != "true" {
 		declared := ""
@@ -122,25 +138,40 @@ func checkBuildInfo(info *debug.BuildInfo, body []byte, rel string, desktop bool
 	}
 	return nil
 }
-func verifyArchive(data []byte, base, version, osName, arch string) error {
-	suffix := "-v" + version + "-" + osName + "-" + arch
+
+// archiveRoot is the folder the user archives extract to (tools/release).
+const archiveRoot = "Pail"
+
+// archiveFile is a regular file of an archive.
+type archiveFile struct {
+	mode fs.FileMode
+	sum  [32]byte
+}
+
+// verifyArchive checks a user archive, whose entries are all under base, and
+// returns its files, keyed by their path under base.
+func verifyArchive(data []byte, base, version, osName, arch string) (map[string]archiveFile, error) {
 	exe := ""
 	if osName == "windows" {
 		exe = ".exe"
 	}
-	cli := "pail" + suffix + exe
-	desktop := "pail-desktop" + suffix + exe
-	desktopPath := desktop
-	required := map[string]bool{"LICENSE": false, cli: false}
+	cli := "pail" + exe
+	desktop := "pail-desktop" + exe
+	cliPath, desktopPath := cli, desktop
+	required := map[string]bool{"LICENSE": false}
 	if osName == "darwin" {
+		cliPath = "Pail.app/Contents/MacOS/" + cli
 		desktopPath = "Pail.app/Contents/MacOS/" + desktop
 		required["Pail.app/Contents/Info.plist"] = false
 		required["Pail.app/Contents/Resources/pail.icns"] = false
+	} else {
+		required[updatefmt.FileList] = false
 	}
 	if osName == "linux" {
-		required["pail.desktop"], required["pail.png"] = false, false
+		required["pail.desktop"], required["pail.png"], required["install.sh"] = false, false, false
 	}
-	required[desktopPath] = false
+	required[cliPath], required[desktopPath] = false, false
+	files := map[string]archiveFile{}
 	seen := map[string]bool{}
 	check := func(name string, mode fs.FileMode, r io.Reader) error {
 		if !strings.HasPrefix(name, base+"/") || strings.Contains(name, "\\") || strings.Contains(name, "/../") || seen[name] {
@@ -162,10 +193,12 @@ func verifyArchive(data []byte, base, version, osName, arch string) error {
 			return fmt.Errorf("invalid file contents %q: %v", rel, err)
 		}
 		required[rel] = true
-		if rel == cli || rel == desktopPath {
-			if mode.Perm() != 0o755 {
-				return fmt.Errorf("%s: executable mode is %o", rel, mode.Perm())
-			}
+		files[rel] = archiveFile{mode.Perm(), sha256.Sum256(body)}
+		executable := rel == cliPath || rel == desktopPath || rel == "install.sh"
+		if want := fs.FileMode(0o644); executable && mode.Perm() != 0o755 || !executable && mode.Perm() != want {
+			return fmt.Errorf("%s: mode is %o", rel, mode.Perm())
+		}
+		if rel == cliPath || rel == desktopPath {
 			info, err := buildinfo.Read(bytes.NewReader(body))
 			if err != nil {
 				return err
@@ -182,7 +215,89 @@ func verifyArchive(data []byte, base, version, osName, arch string) error {
 		}
 		return nil
 	}
-	if osName == "linux" {
+	if err := walkArchive(data, osName == "linux", check); err != nil {
+		return nil, err
+	}
+	for name, present := range required {
+		if !present {
+			return nil, fmt.Errorf("missing %s", name)
+		}
+	}
+	// The list of what the version installs names its top-level entries.
+	if osName != "darwin" {
+		var top []string
+		for name := range files {
+			t, _, _ := strings.Cut(name, "/")
+			if t != updatefmt.FileList && !slices.Contains(top, t) {
+				top = append(top, t)
+			}
+		}
+		slices.Sort(top)
+		list, err := archiveText(data, osName == "linux", base+"/"+updatefmt.FileList)
+		if err != nil {
+			return nil, err
+		}
+		if got := updatefmt.ParseFileList([]byte(list)); !slices.Equal(got, top) {
+			return nil, fmt.Errorf("%s names %q, want %q", updatefmt.FileList, got, top)
+		}
+	}
+	return files, nil
+}
+
+// verifyUpdateArchive checks that the update archive of a target holds the
+// files of its user archive at its root (the app bundle only on macOS), with
+// the same contents and modes.
+func verifyUpdateArchive(data []byte, user map[string]archiveFile, osName string) error {
+	want := map[string]archiveFile{}
+	for name, f := range user {
+		if osName != "darwin" || strings.HasPrefix(name, "Pail.app/") {
+			want[name] = f
+		}
+	}
+	got := map[string]archiveFile{}
+	err := walkArchive(data, true, func(name string, mode fs.FileMode, r io.Reader) error {
+		if !fs.ValidPath(strings.TrimSuffix(name, "/")) || strings.Contains(name, "\\") {
+			return fmt.Errorf("invalid path %q", name)
+		}
+		if mode.IsDir() {
+			return nil
+		}
+		if !mode.IsRegular() {
+			return fmt.Errorf("non-regular file %q", name)
+		}
+		if _, dup := got[name]; dup {
+			return fmt.Errorf("duplicate path %q", name)
+		}
+		body, err := io.ReadAll(io.LimitReader(r, 256<<20))
+		if err != nil {
+			return err
+		}
+		got[name] = archiveFile{mode.Perm(), sha256.Sum256(body)}
+		return nil
+	})
+	if err != nil {
+		return err
+	}
+	for name, f := range want {
+		g, ok := got[name]
+		switch {
+		case !ok:
+			return fmt.Errorf("missing %s", name)
+		case g != f:
+			return fmt.Errorf("%s differs from the user archive's", name)
+		}
+	}
+	for name := range got {
+		if _, ok := want[name]; !ok {
+			return fmt.Errorf("unexpected file %q", name)
+		}
+	}
+	return nil
+}
+
+// walkArchive calls f with each entry of a .tar.gz or .zip archive.
+func walkArchive(data []byte, tarball bool, f func(name string, mode fs.FileMode, r io.Reader) error) error {
+	if tarball {
 		gz, err := gzip.NewReader(bytes.NewReader(data))
 		if err != nil {
 			return err
@@ -192,36 +307,48 @@ func verifyArchive(data []byte, base, version, osName, arch string) error {
 		for {
 			h, err := tr.Next()
 			if err == io.EOF {
-				break
+				return nil
 			}
 			if err != nil {
 				return err
 			}
-			if err := check(h.Name, h.FileInfo().Mode(), tr); err != nil {
+			if err := f(h.Name, h.FileInfo().Mode(), tr); err != nil {
 				return err
 			}
 		}
-	} else {
-		zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	}
+	zr, err := zip.NewReader(bytes.NewReader(data), int64(len(data)))
+	if err != nil {
+		return err
+	}
+	for _, zf := range zr.File {
+		r, err := zf.Open()
 		if err != nil {
 			return err
 		}
-		for _, f := range zr.File {
-			r, err := f.Open()
-			if err != nil {
-				return err
-			}
-			err = check(f.Name, f.Mode(), r)
-			r.Close()
-			if err != nil {
-				return err
-			}
-		}
-	}
-	for name, present := range required {
-		if !present {
-			return fmt.Errorf("missing %s", name)
+		err = f(zf.Name, zf.Mode(), r)
+		r.Close()
+		if err != nil {
+			return err
 		}
 	}
 	return nil
+}
+
+// archiveText returns the content of the file name of an archive.
+func archiveText(data []byte, tarball bool, name string) (string, error) {
+	var text string
+	found := false
+	err := walkArchive(data, tarball, func(n string, _ fs.FileMode, r io.Reader) error {
+		if n != name {
+			return nil
+		}
+		b, err := io.ReadAll(io.LimitReader(r, 1<<20))
+		text, found = string(b), true
+		return err
+	})
+	if err == nil && !found {
+		err = fmt.Errorf("missing %s", name)
+	}
+	return text, err
 }

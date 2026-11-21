@@ -7,6 +7,9 @@ site="$fixture/site"
 deploy="$fixture/deploy"
 mkdir -p "$deploy"
 go run ./tools/site -out "$site" -version 0.1.0
+mkdir "$site/download"
+printf archive > "$site/download/Pail-v0.1.0-linux-amd64.tar.gz"
+(cd "$site/download" && sha256sum Pail-v0.1.0-linux-amd64.tar.gz > SHA256SUMS)
 export SITE_DEPLOY_ROOT="$deploy"
 sha=aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa
 sh scripts/publish-site.sh "$site" "$sha-1-0"
@@ -19,8 +22,12 @@ test "$(readlink "$deploy/html")" = "releases/$sha-3-0"
 if sh scripts/publish-site.sh "$site" "../bad"; then
     echo "unsafe release id accepted" >&2; exit 1
 fi
-rm "$site/zh/index.html"
+printf tampered > "$site/download/Pail-v0.1.0-linux-amd64.tar.gz"
 if sh scripts/publish-site.sh "$site" "$sha-4-0"; then
+    echo "mirror that does not match SHA256SUMS accepted" >&2; exit 1
+fi
+rm "$site/zh/index.html"
+if sh scripts/publish-site.sh "$site" "$sha-5-0"; then
     echo "incomplete site accepted" >&2; exit 1
 fi
 test "$(readlink "$deploy/html")" = "releases/$sha-3-0"

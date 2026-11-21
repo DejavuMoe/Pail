@@ -7,6 +7,7 @@ import (
 	"io/fs"
 	"os"
 	"path/filepath"
+	"strings"
 	"testing"
 )
 
@@ -35,7 +36,7 @@ var wantModes = map[string]fs.FileMode{
 
 func TestTarGzCarriesUnixModes(t *testing.T) {
 	out := filepath.Join(t.TempDir(), "a.tar.gz")
-	if err := pack(stage(t), out, "pkg", []string{"pail-desktop"}); err != nil {
+	if err := pack(stage(t), out, "pkg", []string{"pail-desktop"}, nil); err != nil {
 		t.Fatal(err)
 	}
 	f, _ := os.Open(out)
@@ -62,7 +63,7 @@ func TestTarGzCarriesUnixModes(t *testing.T) {
 
 func TestZipCarriesUnixModes(t *testing.T) {
 	out := filepath.Join(t.TempDir(), "a.zip")
-	if err := pack(stage(t), out, "pkg", []string{"pail-desktop"}); err != nil {
+	if err := pack(stage(t), out, "pkg", []string{"pail-desktop"}, nil); err != nil {
 		t.Fatal(err)
 	}
 	zr, err := zip.OpenReader(out)
@@ -78,5 +79,38 @@ func TestZipCarriesUnixModes(t *testing.T) {
 		if got[name] != mode {
 			t.Errorf("%s: mode %v, want %v", name, got[name], mode)
 		}
+	}
+}
+
+// Update archives hold the app at their root, and on macOS only the bundle.
+func TestEntriesWithoutPrefix(t *testing.T) {
+	out := filepath.Join(t.TempDir(), "u.tar.gz")
+	if err := pack(stage(t), out, "", []string{"pail-desktop"}, []string{"Pail.app"}); err != nil {
+		t.Fatal(err)
+	}
+	f, _ := os.Open(out)
+	defer f.Close()
+	gz, err := gzip.NewReader(f)
+	if err != nil {
+		t.Fatal(err)
+	}
+	var names []string
+	tr := tar.NewReader(gz)
+	for {
+		h, err := tr.Next()
+		if err != nil {
+			break
+		}
+		names = append(names, h.Name)
+		if h.Name == "Pail.app/Contents/MacOS/pail-desktop" && fs.FileMode(h.Mode).Perm() != 0o755 {
+			t.Errorf("%s: mode %o", h.Name, h.Mode)
+		}
+	}
+	want := []string{"Pail.app/", "Pail.app/Contents/", "Pail.app/Contents/MacOS/", "Pail.app/Contents/MacOS/pail-desktop"}
+	if strings.Join(names, ",") != strings.Join(want, ",") {
+		t.Errorf("entries = %q, want %q", names, want)
+	}
+	if err := pack(stage(t), out, "", nil, []string{"missing"}); err == nil {
+		t.Error("packed a missing entry")
 	}
 }

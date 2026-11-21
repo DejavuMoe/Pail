@@ -22,6 +22,7 @@ import (
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/DejavuMoe/Pail/internal/buildstamp"
+	"github.com/DejavuMoe/Pail/internal/selfupdate"
 	"github.com/egoist/mygo"
 	"github.com/egoist/mygo/transfer"
 	"github.com/egoist/mygo/ui"
@@ -95,6 +96,7 @@ func main() {
 		}
 	}
 	a.quit = mygo.App.Quit
+	a.upd.relaunch = relaunchForUpdate
 	a.themeSet = mygo.Theme.SetSource
 	// The language choice ("" follows the system) is read before the first frame.
 	a.lang = loadLanguageChoice()
@@ -103,6 +105,11 @@ func main() {
 	// The saved (or --theme) appearance reaches the system before the window
 	// exists, so the window buttons start in the right colors.
 	a.syncTheme()
+
+	mygo.App.SetVersion(version)
+	if !*demo {
+		a.checkUpdatesAtStart()
+	}
 
 	mygo.App.WhenReady(func() {
 		if os.Getenv("MYGO_LOCALE") == "" {
@@ -295,4 +302,15 @@ func capture(win *mygo.Window, path string) error {
 		return err
 	}
 	return os.WriteFile(path, out.Bytes(), 0o600)
+}
+
+// relaunchForUpdate quits and starts the updated Pail. On macOS the new app
+// bundle replaces the old one only once this process has exited, and the
+// helper that does it opens Pail again.
+func relaunchForUpdate() {
+	if runtime.GOOS == "darwin" && selfupdate.RelaunchAfterExit(nil) {
+		mygo.App.Quit()
+		return
+	}
+	mygo.App.Relaunch()
 }

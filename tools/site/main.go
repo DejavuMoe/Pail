@@ -30,10 +30,11 @@ import (
 
 const githubURL = "https://github.com/DejavuMoe/Pail"
 
-// defaultMirrorURL is the download mirror. Each release is uploaded to its
-// v<version>/ directory with the GitHub file names, so the pages always offer
-// it next to GitHub, for the version they are built for.
-const defaultMirrorURL = "https://pan.zsh.moe/Pail"
+// defaultMirrorURL is the download mirror: the site build (tools/updates
+// mirror) puts the files of the latest stable release there under their GitHub
+// names, so the pages offer it next to GitHub for the version they are built
+// for.
+const defaultMirrorURL = "https://pail.download/download/"
 
 var versionRE = regexp.MustCompile(`^(0|[1-9]\d*)\.(0|[1-9]\d*)\.(0|[1-9]\d*)(-(0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*)(\.(0|[1-9]\d*|\d*[A-Za-z-][0-9A-Za-z-]*))*)?(\+[0-9A-Za-z-]+(\.[0-9A-Za-z-]+)*)?$`)
 
@@ -94,7 +95,7 @@ type config struct {
 	out       string
 	version   string
 	baseURL   string // scheme and host, no trailing slash
-	mirrorURL string // download mirror root holding v<version>/ directories; empty: GitHub only
+	mirrorURL string // download mirror directory holding the release files; empty: GitHub only
 }
 
 func main() {
@@ -103,7 +104,7 @@ func main() {
 	flag.StringVar(&c.version, "version", "", "release version the download links point to, e.g. 0.6.4")
 	flag.StringVar(&c.root, "root", "", "repository root (default: found from the working directory)")
 	flag.StringVar(&c.baseURL, "base-url", "https://pail.download", "public origin for canonical links and the sitemap")
-	flag.StringVar(&c.mirrorURL, "mirror-url", defaultMirrorURL, "download mirror root holding a v<version>/ directory of the release files; empty links to GitHub only")
+	flag.StringVar(&c.mirrorURL, "mirror-url", defaultMirrorURL, "download mirror directory holding the files of the release; empty links to GitHub only")
 	flag.Parse()
 	if c.root == "" {
 		root, err := findRoot()
@@ -161,7 +162,7 @@ func build(c config) error {
 		if err != nil || m.Scheme != "https" || m.Host == "" || m.RawQuery != "" || m.Fragment != "" {
 			return fmt.Errorf("-mirror-url %q must be an https URL without query or fragment", c.mirrorURL)
 		}
-		mirrorLabel = m.Host + strings.TrimRight(m.Path, "/") + "/v" + c.version
+		mirrorLabel = m.Host + strings.TrimRight(m.Path, "/")
 		mirrorBase = "https://" + mirrorLabel + "/"
 	}
 

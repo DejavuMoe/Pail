@@ -15,13 +15,16 @@ internal/safepath  下载路径安全：拒绝 `..`、绝对路径、Windows 保
 internal/trash     本地删除进系统回收站（Windows、Linux 按 freedesktop 规范）
 internal/s3test    内存版 S3 测试服务
 internal/demo      演示环境（s3test + 示例数据），桌面端测试和 `-tags pail_demo` 的 `--demo` 使用，不进发布构建
+internal/selfupdate 自动更新：检查、下载、验签、替换安装（桌面程序与命令行共用）
+internal/updatefmt mygo 更新格式：清单、Ed25519 签名、bsdiff 增量、`.mygo-files` 文件清单
 integration/       真实服务端验收：MinIO 夹具与外部 S3 兼容端点套件
 tools/genicons     从 SVG 生成图标、.ico、.icns、Windows 资源对象
 tools/release      本地与 CI 共用的 Go 发布入口，跨平台构建并自动验包
 tools/pack         归档写入，保证可执行文件权限为 0755
+tools/updates      发布时签名并生成增量更新（`sign`、`verify`），网站构建时镜像最新版本（`mirror`）
 ```
 
-依赖方向只能向下：`cmd/*` → `internal/app` → `internal/storage` / `internal/cloud` / `internal/rules` / `internal/safepath` / `internal/trash`。界面和命令行不直接访问 S3 SDK。
+依赖方向只能向下：`cmd/*` → `internal/app` → `internal/storage` / `internal/cloud` / `internal/rules` / `internal/safepath` / `internal/trash`。界面和命令行不直接访问 S3 SDK。`cmd/*` 另外直接调用 `internal/selfupdate`；`internal/app` 只为它保存更新设置（`Settings.Updates`）和提供代理地址（`ProxyURL`），不依赖它的下载与安装。
 
 ## 2. 线程规则
 
@@ -64,6 +67,7 @@ tools/pack         归档写入，保证可执行文件权限为 0755
 10. **机密不落配置文件。** secret key、session token、SSE-C key、ZIP 密码只进系统钥匙串或加密保险库；配置文件只保存引用名。日志脱敏：URL 查询串、Authorization、SigV4、密钥标签与敏感字段名，以及从机密存储读出的字面值。
 11. **403 不是"不支持"。** 错误统一包装为 `*OpError`，`Kind` 区分 NotFound、AccessDenied、Unsupported、Conflict、Network、Canceled、Invalid、Locked、Other。
 12. **自定义 endpoint 的 checksum 默认 `WhenRequired`**（含 SDK 分片上传器）。经代理时 `Accept-Encoding` 照常发送但不参与签名，复制源 `x-amz-copy-source` 完整百分号编码。
+13. **只安装签过名的更新。** 更新包和增量包按文件的 SHA-256 用 Ed25519 签名，公钥是 `selfupdate.PublicKey`，私钥只在 GitHub Actions 的 `release` 环境里。清单不签名：篡改清单最多让安装停在旧版本或装上另一个签过名的版本，装不上没发布过的文件。只走 HTTPS。增量包应用失败时改下完整包。下载与安装只在用户点击后进行；有传输在进行时桌面程序不重启。
 
 ## 5. 数据位置与旧版迁移
 
@@ -108,3 +112,12 @@ tools/pack         归档写入，保证可执行文件权限为 0755
 | 原生冒烟 | `--smoke-exit` / `--smoke-screenshot` | Windows 原生与 WSLg 的窗口截图，由人工审阅 |
 
 `internal/s3test` 不校验签名，只检查 Authorization 头存在；条件请求、版本、分片、tagging 与桶配置（可配置为 NotImplemented）都有实现，并提供故障注入（503、断连、缺失 DeleteObjects 确认、延迟）。真实协议兼容性以 MinIO 和外部端点为准。每层覆盖到什么程度，逐功能记录在 [status.md](status.md)。
+
+## 8. 自动更新
+
+- 每个发布、每个目标有一个更新包 `pail-update-<版本>-<os>-<arch>.tar.gz`（只含安装要替换的文件，没有顶层目录）、最多三个增量包和清单 `update-<os>-<arch>.json`，格式与 mygo v0.10.0 的更新器相同（`internal/updatefmt`，bsdiff 与替换流程移植自 mygo，许可证见 `internal/updatefmt/LICENSE.mygo`）。用户下载的压缩包与更新包分开，`SHA256SUMS` 只列压缩包。签名与增量包的生成见 [ci.md](ci.md#update-signing)。
+- 来源：GitHub Releases 的 `releases/latest/download/`，或 pail.download 的 `/update/`（只有最新稳定版，由网站构建写入，见 [site.md](site.md)）。`Check` 先读所选来源的清单，失败时换另一个；清单里的文件下载失败时，也从另一个来源下载同名文件。预发布版本从不提供。
+- `Supported` 决定能否自更新：开发构建（没有版本号）、macOS 上不在 `Pail.app` 里、AppImage、安装文件夹不可写时不能更新，界面与命令行说明原因。
+- 替换：Windows 与 Linux 把应用文件夹里的条目换成新版本的，删除旧 `.mygo-files` 里有、新版本没有的条目；正在运行的可执行文件被改名移开，下次启动时 `CleanLeftovers` 删除。任何一项放不进去就全部还原。macOS 把新的 `Pail.app` 暂存，等进程退出后由辅助进程替换并按需重新打开（`RelaunchAfterExit`）。替换后本进程继续运行旧版本，重启后才是新版本。
+- 桌面程序：`update.go` 的 `updateUI` 状态机（检查、下载进度、可重启、失败），所有回调经 `a.post` 回到界面线程。检查策略（手动、每天、每周）按 `Settings.Updates.LastCheck` 由 `Due` 判断，只在启动时检查一次，只有成功的检查才记录时间；启动时的检查失败只写日志。`--demo` 不检查。
+- 命令行：`pail update [--check]` 用同一个包，从不自行检查；代理设置与桌面程序相同。

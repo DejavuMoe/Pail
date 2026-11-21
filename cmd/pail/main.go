@@ -13,9 +13,12 @@ import (
 	"golang.org/x/term"
 
 	"github.com/DejavuMoe/Pail/internal/app"
+	"github.com/DejavuMoe/Pail/internal/selfupdate"
 )
 
 func main() {
+	// What an update could not remove while the old version ran.
+	selfupdate.CleanLeftovers()
 	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
 	defer stop()
 	io := IO{

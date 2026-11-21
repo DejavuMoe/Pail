@@ -245,3 +245,11 @@ func derefString(p *string) string {
 	}
 	return *p
 }
+
+// ProxyURL is the address of the proxy that the settings send requests
+// through, with its password from the secret store, or "" when the app has
+// no proxy of its own (the environment's applies). Requests that are not an
+// account's, such as the update check, use it too.
+func (s *Service) ProxyURL(ctx context.Context) (string, error) {
+	return s.proxyAddress(ctx, s.Settings().Proxy)
+}

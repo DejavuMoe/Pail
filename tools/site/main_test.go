@@ -191,15 +191,15 @@ func TestMirrorDownloads(t *testing.T) {
 	}
 
 	out := filepath.Join(t.TempDir(), "site")
-	if err := build(config{root: repoRoot(t), out: out, version: "1.2.3", baseURL: "https://pail.download", mirrorURL: defaultMirrorURL + "/"}); err != nil {
+	if err := build(config{root: repoRoot(t), out: out, version: "1.2.3", baseURL: "https://pail.download", mirrorURL: defaultMirrorURL}); err != nil {
 		t.Fatal(err)
 	}
 	for _, p := range []string{"index.html", "zh/index.html"} {
 		page := read(t, filepath.Join(out, filepath.FromSlash(p)))
 		for _, want := range []string{
 			`data-release-base="https://github.com/DejavuMoe/Pail/releases/download/v1.2.3/"`,
-			`data-mirror-base="https://pan.zsh.moe/Pail/v1.2.3/"`,
-			`<a href="https://pan.zsh.moe/Pail/v1.2.3/">pan.zsh.moe/Pail/v1.2.3</a>`,
+			`data-mirror-base="https://pail.download/download/"`,
+			`<a href="https://pail.download/download/">pail.download/download</a>`,
 			`name="source" value="mirror"`,
 		} {
 			if !strings.Contains(page, want) {
@@ -286,7 +286,7 @@ func TestRejectsBadInput(t *testing.T) {
 			t.Errorf("base URL %q accepted", u)
 		}
 	}
-	for _, u := range []string{"http://pan.zsh.moe/Pail", "pan.zsh.moe/Pail", "https://pan.zsh.moe/Pail?x=1"} {
+	for _, u := range []string{"http://pail.download/download/", "pail.download/download/", "https://pail.download/download/?x=1"} {
 		if err := build(config{root: root, out: t.TempDir(), version: "1.2.3", baseURL: "https://pail.download", mirrorURL: u}); err == nil {
 			t.Errorf("mirror URL %q accepted", u)
 		}

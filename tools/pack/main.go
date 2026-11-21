@@ -1,9 +1,10 @@
 // Command pack writes a release archive (.zip or .tar.gz) of a staging
 // directory with Unix permissions set explicitly, so archives built on Windows
 // still carry executable bits: directories and the files named by -exec are
-// 0755, everything else 0644. Entries are placed under -prefix.
+// 0755, everything else 0644. Entries are placed under -prefix; -entries
+// limits the archive to the named top-level entries of the directory.
 //
-//	go run ./tools/pack -C build/stage/x -o out.tar.gz -prefix Pail-x -exec pail-desktop,pail
+//	go run ./tools/pack -C build/stage/x -o out.tar.gz -prefix Pail -exec pail-desktop,pail
 package main
 
 import (
@@ -26,12 +27,17 @@ func main() {
 	out := flag.String("o", "", "output archive (.zip or .tar.gz)")
 	prefix := flag.String("prefix", "", "top-level directory inside the archive")
 	execs := flag.String("exec", "", "comma-separated base names that are executables")
+	only := flag.String("entries", "", "comma-separated top-level entries to archive (default: all)")
 	flag.Parse()
 	if *dir == "" || *out == "" {
 		fmt.Fprintln(os.Stderr, "pack: -C and -o are required")
 		os.Exit(2)
 	}
-	if err := pack(*dir, *out, *prefix, strings.Split(*execs, ",")); err != nil {
+	var entries []string
+	if *only != "" {
+		entries = strings.Split(*only, ",")
+	}
+	if err := pack(*dir, *out, *prefix, strings.Split(*execs, ","), entries); err != nil {
 		fmt.Fprintln(os.Stderr, "pack:", err)
 		os.Exit(1)
 	}
@@ -45,8 +51,9 @@ type entry struct {
 	info fs.FileInfo
 }
 
-func collect(dir, prefix string, execs []string) ([]entry, error) {
+func collect(dir, prefix string, execs, only []string) ([]entry, error) {
 	var es []entry
+	seen := map[string]bool{}
 	err := filepath.WalkDir(dir, func(p string, d fs.DirEntry, err error) error {
 		if err != nil {
 			return err
@@ -57,6 +64,15 @@ func collect(dir, prefix string, execs []string) ([]entry, error) {
 		}
 		if rel == "." && prefix == "" {
 			return nil
+		}
+		if top, _, _ := strings.Cut(filepath.ToSlash(rel), "/"); rel != "." && len(only) > 0 {
+			if !slices.Contains(only, top) {
+				if d.IsDir() {
+					return fs.SkipDir
+				}
+				return nil
+			}
+			seen[top] = true
 		}
 		info, err := d.Info()
 		if err != nil {
@@ -73,11 +89,19 @@ func collect(dir, prefix string, execs []string) ([]entry, error) {
 		es = append(es, e)
 		return nil
 	})
-	return es, err
+	if err != nil {
+		return nil, err
+	}
+	for _, name := range only {
+		if !seen[name] {
+			return nil, fmt.Errorf("no entry %q in %s", name, dir)
+		}
+	}
+	return es, nil
 }
 
-func pack(dir, out, prefix string, execs []string) error {
-	es, err := collect(dir, prefix, execs)
+func pack(dir, out, prefix string, execs, only []string) error {
+	es, err := collect(dir, prefix, execs, only)
 	if err != nil {
 		return err
 	}

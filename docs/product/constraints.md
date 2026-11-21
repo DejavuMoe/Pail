@@ -23,7 +23,7 @@ Scope: the public landing site at https://pail.download (`site/`, built by `tool
 - The site has its own palette and does not follow `cmd/pail-desktop/theme.go`: a near-black ground in dark, white in light, one blue accent, the three blues of the icon's strata for the pail and the feature views. The terminal is dark in both themes; code blocks have a light sheet in the light theme and a dark slate in the dark theme, never pure black.
 - Light and dark follow the system by default; one button in the header steps through System, Light and Dark and the choice persists.
 - Selected, current and on states use at least two cues.
-- Download links point to GitHub Releases assets named by `tools/release`. The mirror at https://pan.zsh.moe/Pail/v<version>/, with the same file names, is always offered as a second source for the same version.
+- Download links point to GitHub Releases assets named by `tools/release`. The mirror at https://pail.download/download/, which the site build fills with the files of the latest stable release under the same names, is always offered as a second source.
 - No analytics, trackers, cookies or external embeds.
 
 ## Explicit non-goals

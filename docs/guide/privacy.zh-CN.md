@@ -87,11 +87,13 @@ Pail 把设置保存在本机的一个文件夹里，把机密存进系统钥匙
 
 ## 网络
 
-Pail 只连接你账户的端点。对 AWS 账户，这包括 AssumeRole 用到的 AWS STS 和 CloudFront API。使用**默认凭证链**时，AWS SDK 还可能向本机所在的实例或容器查询角色凭证。
+除了检查更新（见下文），Pail 只连接你账户的端点。对 AWS 账户，这包括 AssumeRole 用到的 AWS STS 和 CloudFront API。使用**默认凭证链**时，AWS SDK 还可能向本机所在的实例或容器查询角色凭证。
 
 请求经由账户自己的代理、**设置 › 网络**里的代理，或环境变量 `HTTP_PROXY` 和 `HTTPS_PROXY` 发出，见 [代理](connect.zh-CN.md#proxy)。
 
-Pail 没有遥测，也不检查更新。
+Pail 没有遥测。
+
+只有在**设置 › 更新**里点击**立即检查**、运行 `pail update`，或在那里选择每天、每周检查时，Pail 才检查更新。检查时从 GitHub 或 pail.download 读取一个写着最新版本的小文件，下载更新要等你点击。这些请求经由**设置 › 网络**里的代理发出，不包含你账户的任何信息。
 
 ## 剪贴板
 

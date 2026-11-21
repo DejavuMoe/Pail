@@ -3,7 +3,9 @@ package main
 import (
 	"errors"
 	"os"
+	"os/exec"
 	"path/filepath"
+	"runtime"
 	"strings"
 	"testing"
 )
@@ -177,7 +179,8 @@ func TestLaunchAssets(t *testing.T) {
 		t.Run(osName, func(t *testing.T) {
 			dir := t.TempDir()
 			const version = "0.2.0-rc.1+test"
-			exe := executable("pail-desktop", version, osName, "arm64")
+			exe := executable("pail-desktop", osName)
+			writeFixture(t, filepath.Join(dir, executable("pail", osName)), "cli")
 			writeFixture(t, filepath.Join(dir, exe), "executable")
 			if err := launchAssets(root, dir, version, osName, "arm64"); err != nil {
 				t.Fatal(err)
@@ -187,7 +190,13 @@ func TestLaunchAssets(t *testing.T) {
 				if err != nil || !strings.Contains(string(b), "\nExec="+exe+"\n") {
 					t.Fatalf("broken desktop entry: %q %v", b, err)
 				}
+				if b, err := os.ReadFile(filepath.Join(dir, "install.sh")); err != nil || string(b) != installScript {
+					t.Fatalf("no install script: %v", err)
+				}
 			} else {
+				if b, err := os.ReadFile(filepath.Join(dir, "Pail.app", "Contents", "MacOS", "pail")); err != nil || string(b) != "cli" {
+					t.Fatalf("the command line program is not in the bundle: %q %v", b, err)
+				}
 				b, err := os.ReadFile(filepath.Join(dir, "Pail.app", "Contents", "Info.plist"))
 				if err != nil || !strings.Contains(string(b), "<key>CFBundleExecutable</key><string>"+exe+"</string>") ||
 					!strings.Contains(string(b), "<key>CFBundleVersion</key><string>0.2.0</string>") {
@@ -199,4 +208,57 @@ func TestLaunchAssets(t *testing.T) {
 			}
 		})
 	}
+}
+
+// install.sh copies what .mygo-files lists into ~/.local/share/pail, links
+// the programs into ~/.local/bin and registers the menu entry; run again from
+// there, it only registers.
+func TestInstallScript(t *testing.T) {
+	if runtime.GOOS != "linux" {
+		t.Skip("install.sh is for Linux")
+	}
+	home := t.TempDir()
+	src := filepath.Join(t.TempDir(), "Pail")
+	for name, body := range map[string]string{"pail": "cli", "pail-desktop": "app", "pail.png": "png", "LICENSE": "license", "install.sh": installScript, "pail.desktop": "entry"} {
+		writeFixture(t, filepath.Join(src, name), body)
+	}
+	for _, name := range []string{"pail", "pail-desktop", "install.sh"} {
+		if err := os.Chmod(filepath.Join(src, name), 0o755); err != nil {
+			t.Fatal(err)
+		}
+	}
+	if err := writeFileList(src); err != nil {
+		t.Fatal(err)
+	}
+	run := func(script string) {
+		t.Helper()
+		cmd := exec.Command("/bin/sh", script)
+		cmd.Env = []string{"HOME=" + home, "PATH=/usr/bin:/bin"}
+		if out, err := cmd.CombinedOutput(); err != nil {
+			t.Fatalf("%s: %v\n%s", script, err, out)
+		}
+	}
+	run(filepath.Join(src, "install.sh"))
+	dest := filepath.Join(home, ".local", "share", "pail")
+	for name, body := range map[string]string{"pail": "cli", "pail-desktop": "app", "pail.png": "png", "install.sh": installScript} {
+		if b, err := os.ReadFile(filepath.Join(dest, name)); err != nil || string(b) != body {
+			t.Errorf("%s: %.20q, %v", name, b, err)
+		}
+	}
+	if info, err := os.Stat(filepath.Join(dest, "pail")); err != nil || info.Mode().Perm() != 0o755 {
+		t.Errorf("pail not executable: %v", err)
+	}
+	if _, err := os.Stat(filepath.Join(dest, ".mygo-files")); err != nil {
+		t.Error("no file list:", err)
+	}
+	for _, name := range []string{"pail", "pail-desktop"} {
+		if link, err := os.Readlink(filepath.Join(home, ".local", "bin", name)); err != nil || link != filepath.Join(dest, name) {
+			t.Errorf("%s links to %q, %v", name, link, err)
+		}
+	}
+	entry, err := os.ReadFile(filepath.Join(home, ".local", "share", "applications", "pail.desktop"))
+	if err != nil || !strings.Contains(string(entry), "\nExec=\""+filepath.Join(dest, "pail-desktop")+"\"\n") || !strings.Contains(string(entry), "\nIcon="+filepath.Join(dest, "pail.png")+"\n") {
+		t.Errorf("menu entry: %s %v", entry, err)
+	}
+	run(filepath.Join(dest, "install.sh"))
 }

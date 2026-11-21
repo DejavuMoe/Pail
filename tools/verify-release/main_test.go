@@ -26,7 +26,7 @@ func TestRejectsMissingAndUnsafeArchiveEntries(t *testing.T) {
 		if err := zw.Close(); err != nil {
 			t.Fatal(err)
 		}
-		if err := verifyArchive(b.Bytes(), "Pail-v1.2.3-windows-amd64", "1.2.3", "windows", "amd64"); err == nil {
+		if _, err := verifyArchive(b.Bytes(), "Pail-v1.2.3-windows-amd64", "1.2.3", "windows", "amd64"); err == nil {
 			t.Fatalf("accepted incomplete/unsafe archive %q", entry)
 		}
 	}
@@ -51,7 +51,7 @@ func TestRejectsBundledReadmes(t *testing.T) {
 		if err := zw.Close(); err != nil {
 			t.Fatal(err)
 		}
-		err = verifyArchive(b.Bytes(), "Pail-v1.2.3-windows-amd64", "1.2.3", "windows", "amd64")
+		_, err = verifyArchive(b.Bytes(), "Pail-v1.2.3-windows-amd64", "1.2.3", "windows", "amd64")
 		if err == nil || !strings.Contains(err.Error(), "unexpected file") {
 			t.Fatalf("bundled %s not rejected: %v", name, err)
 		}

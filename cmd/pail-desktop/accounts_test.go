@@ -207,12 +207,18 @@ func TestRemoveAccountConfirmsAndExplains(t *testing.T) {
 // reach.
 func (h *harness) showSetting(label string) {
 	h.t.Helper()
-	h.tt.Frame()
-	r, ok := h.tt.Find(label)
-	if !ok {
-		h.t.Fatalf("no settings row %q; have %q", label, h.tt.Texts())
-	}
-	if mid := r.Y + r.H/2; mid < 120 || mid > testH-300 {
+	// A row clipped out of the page reports an empty box at the page's edge,
+	// so a far row takes more than one scroll.
+	for range 8 {
+		h.tt.Frame()
+		r, ok := h.tt.Find(label)
+		if !ok {
+			h.t.Fatalf("no settings row %q; have %q", label, h.tt.Texts())
+		}
+		mid := r.Y + r.H/2
+		if r.H > 0 && mid >= 120 && mid <= testH-300 {
+			return
+		}
 		h.tt.Scroll(700, 300, 0, mid-300)
 		h.settle()
 	}

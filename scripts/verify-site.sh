@@ -16,3 +16,7 @@ done
 test -n "$(find "$site/assets" -type f -name '*.css' -print -quit)"
 test -n "$(find "$site/assets" -type f -name '*.js' -print -quit)"
 test -n "$(find "$site/assets" -type f -name 'search-*.json' -print -quit)"
+# The download mirror (tools/updates mirror): the archives of the release match
+# its SHA256SUMS.
+test -s "$site/download/SHA256SUMS" || { echo "missing site output: download/SHA256SUMS" >&2; exit 1; }
+(cd "$site/download" && sha256sum -c --quiet --strict SHA256SUMS) || { echo "download mirror does not match SHA256SUMS" >&2; exit 1; }

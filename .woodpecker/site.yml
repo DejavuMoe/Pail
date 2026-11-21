@@ -19,9 +19,12 @@ steps:
     environment:
       GOTOOLCHAIN: local
       GOFLAGS: -mod=readonly
+      # The files of the latest release, mirrored under /download/ and /update/.
+      PAIL_RELEASE_CACHE: /cache/releases
     volumes:
       - /var/cache/woodpecker/pail/go-mod:/go/pkg/mod
       - /var/cache/woodpecker/pail/go-build:/root/.cache/go-build
+      - /var/cache/woodpecker/pail/releases:/cache/releases
     commands:
       - apt-get update && apt-get install -y --no-install-recommends jq
       - sh scripts/build-site.sh

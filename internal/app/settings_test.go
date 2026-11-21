@@ -223,3 +223,39 @@ func TestReadJSONMissingAndCorrupt(t *testing.T) {
 		t.Fatalf("corrupt: found=%v err=%v", found, err)
 	}
 }
+
+func TestUpdateSettings(t *testing.T) {
+	s, dir := newTestServiceDir(t, "", nil)
+	st := s.Settings()
+	st.Updates = UpdateSettings{Policy: "weekly", Source: "mirror"}
+	if err := s.SaveSettings(st); err != nil {
+		t.Fatal(err)
+	}
+	when := time.Date(2026, 11, 21, 8, 30, 15, 500, time.FixedZone("CST", 8*3600))
+	if err := s.SetUpdateCheck(when); err != nil {
+		t.Fatal(err)
+	}
+	// SaveSettings keeps LastCheck whatever the caller passes.
+	st.Updates.LastCheck = time.Time{}
+	st.Theme = "dark"
+	if err := s.SaveSettings(st); err != nil {
+		t.Fatal(err)
+	}
+	want := UpdateSettings{Policy: "weekly", Source: "mirror", LastCheck: when.UTC().Truncate(time.Second)}
+	if got := s.Settings().Updates; got != want {
+		t.Fatalf("got %+v, want %+v", got, want)
+	}
+	s2, _ := newTestServiceDir(t, dir, nil)
+	if got := s2.Settings(); got.Updates != want || got.Theme != "dark" {
+		t.Fatalf("reloaded %+v", got)
+	}
+	for _, bad := range []UpdateSettings{{Policy: "hourly"}, {Source: "elsewhere"}} {
+		st.Updates = bad
+		if err := s.SaveSettings(st); !IsKind(err, ErrInvalid) {
+			t.Errorf("%+v: %v", bad, err)
+		}
+	}
+	if got := s.Settings().Updates; got != want {
+		t.Fatalf("a rejected save changed the settings: %+v", got)
+	}
+}

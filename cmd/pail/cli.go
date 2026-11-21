@@ -127,6 +127,7 @@ func init() {
 		{"multipart", "multipart ls s3://bucket[/prefix/]\nmultipart abort s3://bucket[/prefix/] [--older-than D]", "list or abort unfinished multipart uploads", true, setupMultipart},
 		{"cloudfront", "cloudfront invalidate DISTRIBUTION PATH...", "invalidate CloudFront paths (AWS accounts)", true, setupCloudFront},
 		{"settings", "settings get [KEY]\nsettings set KEY VALUE", "read or change the settings shared with the desktop app", false, setupSettings},
+		{"update", "update [--check]", "check for and install a newer version of Pail (the desktop app and this command)", false, setupUpdate},
 		{"sync", "sync LOCAL s3://b/prefix/ | s3://b/prefix/ LOCAL | --job NAME\nsync job ls\nsync job add NAME LOCAL s3://b/prefix/ | s3://b/prefix/ LOCAL [--mode M] [--compare C] [--exclude GLOB] [--no-rules]\nsync job rm NAME", "one-way synchronisation and saved jobs", false, setupSync},
 	}
 }
@@ -363,7 +364,7 @@ func (c *cli) dispatch(ctx context.Context, args []string) error {
 }
 
 // selfUnlocking lists the commands that never get the automatic vault unlock.
-var selfUnlocking = map[string]bool{"vault": true, "sync": true, "account": true, "bucket": true, "settings": true}
+var selfUnlocking = map[string]bool{"vault": true, "sync": true, "account": true, "bucket": true, "settings": true, "update": true}
 
 func findCommand(name string) *command {
 	for i := range commands {
