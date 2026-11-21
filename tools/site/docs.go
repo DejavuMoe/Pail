@@ -95,13 +95,51 @@ func sitePageForSource(file string) (docPage, bool) {
 
 // pageLinks are the site URLs the templates link to, for one language.
 type pageLinks struct {
-	Home, Docs, Install, Connect, Transfers, Versions, Links, Sync, Buckets, Objects, Cli, Privacy, Changelog, License string
+	Home, Docs, Install, Connect, Browse, Transfers, Versions, Links, Sync, Buckets, Objects, Cli, Privacy, Changelog, License string
+}
+
+// paneForPage names the feature view a guide page opens with: the same view
+// the landing page shows for that feature.
+var paneForPage = map[string]string{
+	"browse": "objects", "transfers": "transfers", "versions": "versions", "links": "links", "sync": "sync",
+}
+
+// paneTitles are the locale keys of the names of the feature views.
+var paneTitles = map[string]string{
+	"objects": "tabObjects", "transfers": "tabTransfers", "versions": "tabVersions", "links": "tabLink", "sync": "tabSync",
+}
+
+// learnPages are the guide pages the landing page lists before the downloads.
+var learnPages = []string{"install", "connect", "browse"}
+
+type learnItem struct{ URL, Title, Lede string }
+
+// moreTargets are the guide sections behind the landing page's list of other
+// features, by the icon id that starts each entry of the "more" locale string.
+var moreTargets = map[string][2]string{
+	"rules":    {"sync", "upload-rules"},
+	"buckets":  {"buckets", "bucket-settings"},
+	"props":    {"objects", "headers-and-metadata"},
+	"archive":  {"objects", "restore-from-archive"},
+	"accounts": {"connect", "credentials"},
+	"cdn":      {"links", "cloudfront"},
+	"proxy":    {"connect", "proxy"},
+	"palette":  {"shortcuts", "command-palette"},
+	"lang":     {"shortcuts", "theme-and-language"},
+}
+
+func moreLinksFor(l language) map[string]string {
+	out := map[string]string{}
+	for id, t := range moreTargets {
+		out[id] = docURL(docPageByKey(t[0]), l) + "#" + t[1]
+	}
+	return out
 }
 
 func linksFor(l language) pageLinks {
 	u := func(key string) string { return docURL(docPageByKey(key), l) }
 	return pageLinks{
-		Home: l.Path, Docs: u("index"), Install: u("install"), Connect: u("connect"), Transfers: u("transfers"),
+		Home: l.Path, Docs: u("index"), Install: u("install"), Connect: u("connect"), Browse: u("browse"), Transfers: u("transfers"),
 		Versions: u("versions"), Links: u("links"), Sync: u("sync"), Buckets: u("buckets"), Objects: u("objects"), Cli: u("cli"), Privacy: u("privacy"),
 		Changelog: u("changelog"), License: u("license"),
 	}
@@ -322,7 +360,7 @@ func searchIndex(set docSet, lang language, locales map[string]map[string]string
 
 // renderDocs writes every docs page in every language.
 func renderDocs(c config, set docSet, locales map[string]map[string]string, funcs template.FuncMap, common func(language) map[string]any) error {
-	base, err := parseTemplates(c.root, funcs, "docs.html.tmpl", "social.html.tmpl", "chrome.html.tmpl")
+	base, err := parseTemplates(c.root, funcs, "docs.html.tmpl", "social.html.tmpl", "chrome.html.tmpl", "panes.html.tmpl")
 	if err != nil {
 		return err
 	}
@@ -374,8 +412,14 @@ func renderDocs(c config, set docSet, locales map[string]map[string]string, func
 			if err != nil {
 				return err
 			}
+			pane, paneTitle := paneForPage[p.Key], ""
+			if pane != "" {
+				paneTitle = tr(paneTitles[pane])
+			}
 			data := common(lang)
 			for k, v := range map[string]any{
+				"Pane":           pane,
+				"PaneTitle":      paneTitle,
 				"StructuredData": ld,
 				"OtherPath":      docURL(p, other),
 				"Canonical":      c.baseURL + docURL(p, lang),

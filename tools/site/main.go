@@ -54,6 +54,8 @@ var languages = []language{
 // embedded in every page as JSON.
 var columnsRE = regexp.MustCompile(` {2,}`)
 
+var placeholderRE = regexp.MustCompile(`\{[a-z]+\}`)
+
 var runtimeKeys = []string{"heroDownloadFor", "sourceGithubNote", "sourceMirrorNote", "copyCode", "copiedCode", "searchEmpty", "searchPageHit"}
 
 // asset is a file served from /assets/ under a content-hashed name.
@@ -249,6 +251,18 @@ func build(c config) error {
 			}
 			return p, nil
 		},
+		// fill puts a value into the one {placeholder} of a locale string.
+		"fill": func(format, value string) (string, error) {
+			if !placeholderRE.MatchString(format) {
+				return "", fmt.Errorf("%q has no {placeholder}", format)
+			}
+			return placeholderRE.ReplaceAllLiteralString(format, value), nil
+		},
+		// appSize writes a size from pail's output the way the desktop app
+		// labels it: the same binary steps, named KB, MB and GB.
+		"appSize": func(s string) string {
+			return strings.NewReplacer("KiB", "KB", "MiB", "MB", "GiB", "GB").Replace(s)
+		},
 	}
 
 	cli, err := loadCLIDemo(c.root)
@@ -293,12 +307,19 @@ func build(c config) error {
 		}
 	}
 
-	pageTmpl, err := parseTemplates(c.root, funcs, "index.html.tmpl", "social.html.tmpl", "chrome.html.tmpl")
+	pageTmpl, err := parseTemplates(c.root, funcs, "index.html.tmpl", "social.html.tmpl", "chrome.html.tmpl", "panes.html.tmpl")
 	if err != nil {
 		return err
 	}
 	for i, lang := range languages {
 		other := languages[1-i]
+		// The first pages of the guide, in reading order, with the title and
+		// opening paragraph of each.
+		var learn []learnItem
+		for _, key := range learnPages {
+			d := docs[key][lang.Code]
+			learn = append(learn, learnItem{URL: docURL(docPageByKey(key), lang), Title: d.Title, Lede: d.Lede})
+		}
 		ld, err := appStructuredData(c.baseURL, lang, locales[lang.Code]["metaDescription"], c.version, released,
 			c.baseURL+paths["main-light-"+lang.Code+".webp"], c.baseURL+paths["social.jpg"])
 		if err != nil {
@@ -320,6 +341,8 @@ func build(c config) error {
 			"CLI":            cli,
 			"CLIJSON":        template.JS(cliJSON),
 			"StructuredData": ld,
+			"MoreLinks":      moreLinksFor(lang),
+			"Learn":          learn,
 		} {
 			data[k] = v
 		}

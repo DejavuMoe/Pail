@@ -199,3 +199,104 @@ func TestHeroScreenshotsFollowLanguageAndTheme(t *testing.T) {
 		}
 	}
 }
+
+var rePane = regexp.MustCompile(`(?s)<div class="pane [^>]*data-pane="([a-z]+)".*?\n</div>`)
+
+// A feature on the landing page and the guide page it links to open with the
+// same view, in its finished state: that is what shows without scripts.
+func TestFeatureViewsMatchTheirGuidePages(t *testing.T) {
+	out := buildSite(t, "1.2.3")
+	for _, lang := range languages {
+		home := read(t, filepath.Join(out, filepath.FromSlash(strings.TrimPrefix(lang.Path, "/")), "index.html"))
+		views := map[string]string{}
+		for _, m := range rePane.FindAllStringSubmatch(home, -1) {
+			views[m[1]] = m[0]
+		}
+		chapters := strings.Split(home, `<article class="chapter"`)[1:]
+		if len(chapters) != len(paneForPage) || len(views) != len(paneForPage) {
+			t.Fatalf("%s: %d chapters and %d views for %d features", lang.Code, len(chapters), len(views), len(paneForPage))
+		}
+		for key, name := range paneForPage {
+			url := docURL(docPageByKey(key), lang)
+			var chapter string
+			for _, c := range chapters {
+				if strings.Contains(c, `data-pane="`+name+`"`) {
+					chapter = c
+				}
+			}
+			if !strings.Contains(chapter, `<a class="more" href="`+url+`"`) {
+				t.Errorf("%s: the %s chapter does not link to %s", lang.Code, name, url)
+			}
+			if !strings.Contains(home, `href="#f-`+name+`" data-tab="`+name+`"`) {
+				t.Errorf("%s: the window has no tab for %s", lang.Code, name)
+			}
+			guide := read(t, filepath.Join(out, filepath.FromSlash(strings.TrimPrefix(url, "/")), "index.html"))
+			fig := strings.Index(guide, `<div class="doc-fig" aria-hidden="true">`)
+			if fig < 0 || !strings.Contains(guide[fig:], views[name]) {
+				t.Errorf("%s: %s does not open with the %s view of the landing page", lang.Code, url, name)
+			}
+		}
+		for name, v := range views {
+			if strings.Contains(v, "<a ") || strings.Contains(v, "<button") || strings.Contains(v, "<input") {
+				t.Errorf("%s: the %s view contains a control; it is a picture of the app, hidden from assistive technology", lang.Code, name)
+			}
+		}
+		for _, c := range []struct{ view, want string }{
+			{"objects", `data-s="3" data-st="4"`},
+			{"transfers", strings.Repeat(`<i class="is-done"></i>`, 24)},
+			{"transfers", `<b data-parts-done>24</b>/24`},
+			{"versions", `data-s="4"`},
+			{"links", `<b class="ln-exp" data-exp>3600</b>`},
+			{"sync", `is-shown`},
+		} {
+			if !strings.Contains(views[c.view], c.want) {
+				t.Errorf("%s: the %s view is not built finished: no %q", lang.Code, c.view, c.want)
+			}
+		}
+	}
+}
+
+// The sync view lists the plan the CLI recorded, not one written for the page.
+func TestSyncViewShowsRecordedPlan(t *testing.T) {
+	var sync cliExample
+	for _, e := range recorded(t).Examples {
+		if e.ID == "sync" {
+			sync = e
+		}
+	}
+	if len(sync.Lines) < 4 {
+		t.Fatal("the recording has no sync example with a plan")
+	}
+	home := read(t, filepath.Join(buildSite(t, "1.2.3"), "index.html"))
+	var view string
+	for _, m := range rePane.FindAllStringSubmatch(home, -1) {
+		if m[1] == "sync" {
+			view = m[0]
+		}
+	}
+	for _, l := range sync.Lines[1:4] {
+		path := strings.Fields(l.Text)[1]
+		if !strings.Contains(view, `<span class="sy-path">`+path+`</span>`) {
+			t.Errorf("the sync view does not list %q from the recording", path)
+		}
+	}
+}
+
+// Every entry in the list of other features leads to its section of the guide,
+// and the page names the three guide pages to start with.
+func TestOtherFeaturesAndGuideAreLinked(t *testing.T) {
+	out := buildSite(t, "1.2.3")
+	for _, lang := range languages {
+		home := read(t, filepath.Join(out, filepath.FromSlash(strings.TrimPrefix(lang.Path, "/")), "index.html"))
+		for id, target := range moreLinksFor(lang) {
+			if !strings.Contains(home, `<li><a href="`+target+`"><svg class="ic" aria-hidden="true"><use href="#i-`+id+`"/>`) {
+				t.Errorf("%s: the %q entry does not link to %s", lang.Code, id, target)
+			}
+		}
+		for _, key := range learnPages {
+			if url := docURL(docPageByKey(key), lang); !strings.Contains(home, `<li><a href="`+url+`"><b>`) {
+				t.Errorf("%s: the guide list lacks %s", lang.Code, url)
+			}
+		}
+	}
+}

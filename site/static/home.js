@@ -1,6 +1,7 @@
-// pail.download landing page: the point-cloud pail, the window regions, the
-// feature tour, the feature filter, the terminal and the download picker.
-// Without this file every pane shows its finished state inside its section.
+// pail.download landing page: the point-cloud pail that becomes the outline of
+// the window, the feature views that the scroll position plays, the feature
+// filter, the terminal and the download picker. Without this file every view
+// shows its finished state beside its text.
 (function () {
   'use strict';
   var site = window.PailSite || {};
@@ -12,6 +13,7 @@
   function css(name) { return getComputedStyle(d).getPropertyValue(name).trim(); }
   function onReduce(fn) { if (reduce.addEventListener) reduce.addEventListener('change', fn); else if (reduce.addListener) reduce.addListener(fn); }
   function all(sel, root) { return [].slice.call((root || document).querySelectorAll(sel)); }
+  function clamp(x) { return x < 0 ? 0 : x > 1 ? 1 : x; }
 
   // Motion that runs on its own stops for reduced motion.
   var syncs = [];
@@ -35,39 +37,37 @@
     sync();
   }
 
-  // A timeline of [delay ms, fn] steps that loops until stopped.
-  function sequence(steps, loop) {
-    var timer = 0, i = 0, alive = false;
-    function next() {
-      if (!alive) return;
-      if (i >= steps.length) { if (!loop) return; i = 0; }
-      var s = steps[i++];
-      timer = setTimeout(function () { s[1](); next(); }, s[0]);
-    }
-    return {
-      start: function () { if (alive) return; alive = true; i = 0; next(); },
-      stop: function () { alive = false; clearTimeout(timer); }
-    };
+  // Everything that follows the scroll position reads it here, once a frame.
+  // The listeners are passive: the page scrolls on its own and the views follow.
+  var ticks = [], ticking = false;
+  function tick() {
+    ticking = false;
+    var y = window.scrollY || 0, vh = window.innerHeight || 0;
+    for (var i = 0; i < ticks.length; i++) ticks[i](y, vh);
   }
-  function press(el, then) {
-    el.classList.add('is-press');
-    setTimeout(function () { el.classList.remove('is-press'); if (then) then(); }, 160);
-  }
+  function requestTick() { if (!ticking) { ticking = true; requestAnimationFrame(tick); } }
+  window.addEventListener('scroll', requestTick, { passive: true });
+  window.addEventListener('resize', requestTick);
+  syncs.push(requestTick);
 
-  /* ---------------- hero: objects falling into a pail of points ---------------- */
+  /* ---------------- the pail of points, and the window it turns into ---------------- */
 
   (function () {
     var canvas = document.querySelector('[data-pail]');
     if (!canvas || !canvas.getContext) return;
+    var intro = canvas.parentNode;
+    var stage = intro.querySelector('.hero-stage'), frame = intro.querySelector('.shot-frame'), log = intro.querySelector('.drop-log');
+    if (!stage || !frame) return;
     var ctx = canvas.getContext('2d');
-    var log = canvas.parentNode.querySelector('.drop-log');
     var objects = (canvas.getAttribute('data-objects') || '').split('|').filter(Boolean).map(function (s) {
       var a = s.split('~');
       return { key: a[0], size: a[1] || '' };
     });
     var W = 0, H = 0, dpr = 1, colors = {}, mono = '';
+    var cx = 0, cy = 0, scale = 1, wireSize = 1.4;
+    var s0 = 0, s1 = 1, sA = 0, sB = 1, end = 0, can = true, morph = 0, shot = 1, shotSet = 1, past = false, drawn = '';
     var pts = [], drops = [], rings = [], t0 = 0, last = 0, raf = 0, angle = 0.6, nextDrop = 0, flash = -1e9, pick = 0;
-    var tiltX = 0, tiltTarget = 0, yawNudge = 0, yawTarget = 0;
+    var tiltX = 0, tiltTarget = 0, yawNudge = 0, yawTarget = 0, band = null;
 
     // Seeded random numbers, so the cloud is the same on every visit.
     var seed = 7;
@@ -81,17 +81,17 @@
       var r = 2.2 + rnd() * 2.2, a = rnd() * Math.PI * 2, b = Math.acos(2 * rnd() - 1);
       pts.push({ x: x, y: y, z: z, c: c, s: size || 1, rim: !!rim,
         sx: r * Math.sin(b) * Math.cos(a), sy: r * Math.cos(b), sz: r * Math.sin(b) * Math.sin(a),
-        d: rnd() * 0.55 + (y + 0.6) * 0.35 });
+        d: rnd() * 0.55 + (y + 0.6) * 0.35, u: 0, v: 0, tx: 0, ty: 0, md: 0, arc: 0 });
     }
-    bands.forEach(function (band, bi) {
+    bands.forEach(function (b, bi) {
       var rows = 8;
       for (var k = 0; k < rows; k++) {
-        var u = band[0] + (band[1] - band[0]) * (k / (rows - 1));
+        var u = b[0] + (b[1] - b[0]) * (k / (rows - 1));
         var r = radiusAt(u), n = Math.round(r * 112);
         var off = (k % 2) * Math.PI / n;
         for (var j = 0; j < n; j++) {
           var a = off + j / n * Math.PI * 2;
-          add(Math.cos(a) * r, RIM + u * HEIGHT, Math.sin(a) * r, band[2], k === 0 || k === rows - 1 ? 1.25 : 1, bi === 0 && k < 2);
+          add(Math.cos(a) * r, RIM + u * HEIGHT, Math.sin(a) * r, b[2], k === 0 || k === rows - 1 ? 1.25 : 1, bi === 0 && k < 2);
         }
       }
     });
@@ -104,18 +104,78 @@
       add(Math.cos(ha) * TOP * 1.02, RIM + Math.sin(ha) * 0.62, 0, 'text', 0.9);
     }
 
+    // The window in the screenshot, as fractions of the image: its outline,
+    // the edges of the sidebar and the inspector, and the lines under the
+    // toolbar and above the transfers strip and the status bar. Every point
+    // of the pail gets a place on these lines; the top of the pail goes to
+    // the top of the window and leaves first.
+    (function () {
+      var ASPECT = 1750 / 2684, L = 0.0414, T = 0.0429, R = 0.9579, B = 0.9149, RX = 0.0075, RY = RX / ASPECT;
+      var SIDE = 0.2269, INSP = 0.7195, TOOL = 0.092, STRIP = 0.8509, STATUS = 0.8874;
+      var segs = [
+        [L + RX, T, R - RX, T], [R, T + RY, R, B - RY], [R - RX, B, L + RX, B], [L, B - RY, L, T + RY],
+        [SIDE, T, SIDE, STRIP], [INSP, TOOL, INSP, STRIP], [SIDE, TOOL, R, TOOL], [L, STRIP, R, STRIP], [L, STATUS, R, STATUS]
+      ];
+      var corners = [[L + RX, T + RY, Math.PI, 1.5 * Math.PI], [R - RX, T + RY, 1.5 * Math.PI, 2 * Math.PI], [R - RX, B - RY, 0, 0.5 * Math.PI], [L + RX, B - RY, 0.5 * Math.PI, Math.PI]];
+      var total = 0, lens = segs.map(function (s) { var l = Math.abs(s[2] - s[0]) + Math.abs(s[3] - s[1]) * ASPECT; total += l; return l; });
+      var spare = corners.length * 3, n = pts.length - spare, wire = [];
+      for (var i = 0; i < n; i++) {
+        var at = (i + 0.5) / n * total, k = 0;
+        while (k < segs.length - 1 && at > lens[k]) { at -= lens[k]; k++; }
+        var f = at / lens[k], s = segs[k];
+        wire.push([s[0] + (s[2] - s[0]) * f, s[1] + (s[3] - s[1]) * f]);
+      }
+      corners.forEach(function (c) {
+        for (var j = 1; j <= 3; j++) { var a = c[2] + (c[3] - c[2]) * j / 4; wire.push([c[0] + Math.cos(a) * RX, c[1] + Math.sin(a) * RY]); }
+      });
+      wire.sort(function (a, b) { return a[1] - b[1] || a[0] - b[0]; });
+      var order = pts.map(function (q, i) { return i; }).sort(function (a, b) {
+        return pts[a].y - pts[b].y || Math.atan2(pts[a].z, pts[a].x) - Math.atan2(pts[b].z, pts[b].x);
+      });
+      order.forEach(function (pi, rank) {
+        var q = pts[pi];
+        q.u = wire[rank][0]; q.v = wire[rank][1];
+        q.md = 0.48 * rank / pts.length + rnd() * 0.06;
+        q.arc = (rnd() - 0.5) * 2;
+      });
+    })();
+
     function readColors() {
       colors = { s1: css('--s1'), s2: css('--s2'), s3: css('--s3'), text: css('--text-3'), label: css('--text-2'), signal: css('--signal') };
       mono = css('--mono');
     }
-    function resize() {
-      var r = canvas.getBoundingClientRect();
-      dpr = Math.min(window.devicePixelRatio || 1, 2);
-      W = Math.max(1, Math.round(r.width)); H = Math.max(1, Math.round(r.height));
-      canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
-      ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+
+    // The canvas lies in the page from the top of the hero to the foot of the
+    // screenshot and scrolls with it, so the points never trail the content.
+    function measure() {
+      var ir = intro.getBoundingClientRect(), sr = stage.getBoundingClientRect(), fr = frame.getBoundingClientRect();
+      var y = window.scrollY || 0, vh = window.innerHeight || 1;
+      var w = Math.max(1, Math.round(ir.width)), h = Math.max(1, Math.ceil(fr.bottom - ir.top + 16));
+      var ratio = Math.min(window.devicePixelRatio || 1, 2, Math.sqrt(7e6 / (w * h)), 4096 / h);
+      if (w !== W || h !== H || ratio !== dpr) {
+        W = w; H = h; dpr = ratio;
+        canvas.style.height = H + 'px';
+        canvas.width = Math.round(W * dpr); canvas.height = Math.round(H * dpr);
+        ctx.setTransform(dpr, 0, 0, dpr, 0, 0);
+        band = null;
+        drawn = '';
+      }
+      var sh = Math.max(1, sr.height - 60), fx = fr.left - ir.left, fy = fr.top - ir.top;
+      cx = sr.left - ir.left + sr.width / 2; cy = sr.top - ir.top + sh * 0.58;
+      scale = Math.min(sr.width * 0.36, sh * 0.33);
+      wireSize = Math.max(1.1, Math.min(2, fr.width / 600));
+      for (var i = 0; i < pts.length; i++) { pts[i].tx = fx + pts[i].u * fr.width; pts[i].ty = fy + pts[i].v * fr.height; }
+      var top = ir.top + y;
+      s0 = Math.max(24, top + cy - 0.5 * vh);
+      s1 = Math.max(s0 + 240, top + fy - 0.42 * vh);
+      sA = s0 + 0.9 * (s1 - s0); sB = s1 + 0.2 * vh;
+      // On a screen tall enough to show the screenshot before any scrolling
+      // the pail stays a pail: there is no room for it to become the window.
+      can = top + fy > 0.85 * vh;
+      end = can ? sB + 4 : top + sr.bottom - ir.top;
     }
     function ease(x) { return x <= 0 ? 0 : x >= 1 ? 1 : 1 - Math.pow(1 - x, 4); }
+    function inOut(x) { return x <= 0 ? 0 : x >= 1 ? 1 : x * x * (3 - 2 * x); }
 
     function logRow(o) {
       if (!log) return;
@@ -132,10 +192,10 @@
       requestAnimationFrame(function () { requestAnimationFrame(function () { li.className = ''; }); });
     }
 
-    // Objects fall, cross the rim, and show up in the log.
+    // Objects fall, cross the rim, and show up in the log, while the pail is whole.
     function step(dt, now) {
       if (now - t0 < 1800 || !objects.length) return;
-      if (now >= nextDrop) {
+      if (now >= nextDrop && morph < 0.02) {
         nextDrop = now + 1500 + Math.random() * 500;
         var a = Math.random() * Math.PI * 2, r = Math.sqrt(Math.random()) * TOP * 0.55;
         drops.push({ o: objects[pick++ % objects.length], x: Math.cos(a) * r, z: Math.sin(a) * r, y: -1.6, v: 0.15, inside: false });
@@ -144,16 +204,15 @@
         var p = drops[i];
         p.v += dt * 1.1;
         p.y += p.v * dt;
-        if (!p.inside && p.y > RIM) { p.inside = true; flash = now; rings.push({ x: p.x, z: p.z, t: now }); logRow(p.o); }
+        if (!p.inside && p.y > RIM) { p.inside = true; if (morph < 0.02) { flash = now; rings.push({ x: p.x, z: p.z, t: now }); logRow(p.o); } }
         if (p.y > HEIGHT * 0.2) drops.splice(i, 1);
       }
       rings = rings.filter(function (g) { return now - g.t < 900; });
     }
 
     function draw(el, now) {
-      ctx.clearRect(0, 0, W, H);
-      var scale = Math.min(W * 0.36, H * 0.33);
-      var cx = W / 2, cy = H * 0.58;
+      if (band) ctx.clearRect(0, band[0], W, band[1] - band[0]); else ctx.clearRect(0, 0, W, H);
+      var lo = H, hi = 0;
       var ya = angle + yawNudge, ca = Math.cos(ya), sa = Math.sin(ya);
       var tx = -0.42 + tiltX, ct = Math.cos(tx), st = Math.sin(tx);
       var D = 3.4, unit = Math.max(1, scale / 190);
@@ -164,19 +223,33 @@
         out.x = cx + x1 * f * scale; out.y = cy + y2 * f * scale; out.f = f; out.z = z2;
         return out;
       }
-      var p = {};
-      var glow = Math.max(0, 1 - (now - flash) / 600);
+      var p = {}, m = morph, whole = 1 - clamp(m * 8);
+      var glow = Math.max(0, 1 - (now - flash) / 600) * whole;
+      var sway = Math.min(80, W * 0.06);
       for (var i = 0; i < pts.length; i++) {
         var q = pts[i];
         var k = ease((el - q.d) / 1.5);
-        var x = q.sx + (q.x - q.sx) * k, y = q.sy + (q.y - q.sy) * k, z = q.sz + (q.z - q.sz) * k;
-        project(x, y, z, p);
+        project(q.sx + (q.x - q.sx) * k, q.sy + (q.y - q.sy) * k, q.sz + (q.z - q.sz) * k, p);
         var front = Math.max(0, Math.min(1, 0.5 - p.z * 0.75));
         var lit = q.rim ? glow : 0;
-        ctx.globalAlpha = Math.min(1, (0.22 + 0.78 * front) * (0.35 + 0.65 * k) + lit * 0.5);
-        ctx.fillStyle = lit > 0.3 ? colors.signal : colors[q.c];
+        var alpha = Math.min(1, (0.22 + 0.78 * front) * (0.35 + 0.65 * k) + lit * 0.5);
         var s = (1.15 + front * 1.25 + lit * 1.2) * q.s * p.f * unit;
-        ctx.fillRect(p.x - s / 2, p.y - s / 2, s, s);
+        var x = p.x, y = p.y;
+        if (m > 0) {
+          var km = inOut((m - q.md) / 0.46);
+          if (km > 0) {
+            x += (q.tx - x) * km + Math.sin(km * Math.PI) * q.arc * sway;
+            y += (q.ty - y) * km;
+            s += (wireSize - s) * km;
+            alpha = (alpha + (0.9 - alpha) * km) * (1 - shot * km);
+          }
+        }
+        if (alpha <= 0.004) continue;
+        ctx.globalAlpha = alpha;
+        ctx.fillStyle = lit > 0.3 ? colors.signal : colors[q.c];
+        ctx.fillRect(x - s / 2, y - s / 2, s, s);
+        if (y < lo) lo = y;
+        if (y > hi) hi = y;
       }
       // a ring where each object goes in
       rings.forEach(function (g) {
@@ -185,7 +258,7 @@
         for (var n = 0; n < 28; n++) {
           var a = n / 28 * Math.PI * 2;
           project(g.x + Math.cos(a) * rad, RIM + 0.02, g.z + Math.sin(a) * rad, p);
-          ctx.globalAlpha = (1 - age) * 0.9;
+          ctx.globalAlpha = (1 - age) * 0.9 * whole;
           ctx.fillRect(p.x - 1.2 * unit, p.y - 1.2 * unit, 2.4 * unit, 2.4 * unit);
         }
       });
@@ -193,7 +266,7 @@
       ctx.font = '500 ' + Math.round(11 + unit) + 'px ' + mono;
       ctx.textBaseline = 'middle';
       drops.forEach(function (o) {
-        var fadeIn = Math.min(1, (o.y + 1.6) / 0.3);
+        var fadeIn = Math.min(1, (o.y + 1.6) / 0.3) * whole;
         var fadeOut = o.inside ? Math.max(0, 1 - (o.y - RIM) / 0.35) : 1;
         for (var tr = 0; tr < 6; tr++) {
           project(o.x, o.y - tr * 0.04, o.z, p);
@@ -201,6 +274,7 @@
           ctx.fillStyle = tr ? colors.s2 : colors.signal;
           var ds = (4.2 - tr * 0.5) * p.f * unit;
           ctx.fillRect(p.x - ds / 2, p.y - ds / 2, ds, ds);
+          if (p.y < lo) lo = p.y;
         }
         project(o.x, o.y, o.z, p);
         var label = o.o.key, tw = ctx.measureText(label).width, lx = p.x + 12;
@@ -210,9 +284,10 @@
         ctx.fillText(label, lx, p.y);
       });
       ctx.globalAlpha = 1;
+      band = hi >= lo ? [Math.max(0, Math.floor(lo - 40)), Math.min(H, Math.ceil(hi + 40))] : [0, 0];
     }
 
-    function frame(now) {
+    function frameStep(now) {
       var dt = Math.min(0.05, (now - (last || now)) / 1000);
       last = now;
       angle += dt * 0.2;
@@ -220,24 +295,44 @@
       yawNudge += (yawTarget - yawNudge) * Math.min(1, dt * 3);
       step(dt, now);
       draw((now - t0) / 1000, now);
-      raf = requestAnimationFrame(frame);
+      raf = requestAnimationFrame(frameStep);
     }
-    function start() { if (raf) return; last = 0; raf = requestAnimationFrame(frame); }
-    function stop() {
-      cancelAnimationFrame(raf);
-      raf = 0; drops = []; rings = [];
-      draw(99, performance.now());
+    function still() { drops = []; rings = []; draw(99, performance.now()); }
+    function wipe() { ctx.clearRect(0, 0, W, H); band = [0, 0]; }
+
+    // The loop runs while the points are in view. Past the window they are
+    // gone and nothing is drawn; reduced motion and a hidden tab get one still pail.
+    function follow(y) {
+      var on = moving() && can;
+      morph = on ? clamp((y - s0) / (s1 - s0)) : 0;
+      var o = on ? inOut((y - sA) / (sB - sA)) : 1;
+      shot = on ? o : 0;
+      past = moving() && y > end;
+      // The screenshot takes over from its outline; with reduced motion it is simply there.
+      o = Math.round(o * 200) / 200;
+      if (o !== shotSet) { shotSet = o; frame.style.opacity = o >= 1 ? '' : String(o); }
+      if (!past && !document.hidden && moving()) {
+        drawn = '';
+        if (!raf) { if (!t0) t0 = performance.now(); last = 0; raf = requestAnimationFrame(frameStep); }
+        return;
+      }
+      if (raf) { cancelAnimationFrame(raf); raf = 0; }
+      var want = past ? 'none' : 'still';
+      if (want === drawn) return;
+      drawn = want;
+      if (past) wipe(); else still();
     }
 
     readColors();
-    resize();
-    t0 = performance.now();
-    draw(moving() ? 0 : 99, t0);
+    measure();
+    follow(window.scrollY || 0);
     requestAnimationFrame(function () { canvas.classList.add('is-on'); });
-    whileVisible(canvas, start, stop);
-    document.addEventListener('pail:theme', function () { readColors(); if (!raf) draw(99, performance.now()); });
-    if ('ResizeObserver' in window) new ResizeObserver(function () { resize(); if (!raf) draw(99, performance.now()); }).observe(canvas);
-    var hero = canvas.closest('.hero');
+    ticks.push(function (y) { follow(y); });
+    syncs.push(function () { follow(window.scrollY || 0); });
+    document.addEventListener('pail:theme', function () { readColors(); drawn = ''; follow(window.scrollY || 0); });
+    if ('ResizeObserver' in window) new ResizeObserver(function () { measure(); follow(window.scrollY || 0); }).observe(intro);
+    window.addEventListener('resize', function () { measure(); });
+    var hero = intro.querySelector('.hero');
     if (hero && window.matchMedia('(pointer: fine)').matches) {
       hero.addEventListener('pointermove', function (e) {
         var r = hero.getBoundingClientRect();
@@ -246,227 +341,240 @@
       });
       hero.addEventListener('pointerleave', function () { tiltTarget = 0; yawTarget = 0; });
     }
+    // A press on the pail drops the next object at once.
+    stage.addEventListener('pointerdown', function () { nextDrop = 0; });
   })();
 
-  /* ---------------- features: one window, four views ---------------- */
+  /* ---------------- features: one window, played by the scroll position ---------------- */
 
-  // Each pane plays what the feature does; stop() leaves the finished state.
-  var panes = [
-    function (el) {
+  // Each view is a function of how far its chapter has scrolled, from 0 to 1.
+  // It writes only what changed, so scrolling back plays the view backwards.
+  var scenes = {
+    // Type in the folder filter, open the folder that is left, select an object.
+    objects: function (el) {
+      var q = el.querySelector('[data-ob-q]'), word = q.getAttribute('data-q') || '';
+      var rows = all('.ob-root .ob-row', el), names = rows.map(function (r) { return (r.getAttribute('data-name') || '').toLowerCase(); });
+      var typed = -1, left = rows.length, stage = -1, status = -1;
+      return function (a) {
+        var s = a < 0.38 ? 0 : a < 0.5 ? 1 : a < 0.72 ? 2 : 3;
+        var n = s < 2 ? Math.max(0, Math.min(word.length, Math.floor((a - 0.02) / 0.08))) : 0;
+        if (n !== typed) {
+          typed = n; left = 0;
+          var t = word.slice(0, n).toLowerCase(), gone = 0;
+          q.textContent = word.slice(0, n);
+          // rows that do not match fade out and the rest move up, as transforms
+          rows.forEach(function (r, i) {
+            var hit = names[i].indexOf(t) >= 0;
+            r.classList.toggle('is-out', !hit);
+            r.style.setProperty('--up', gone);
+            if (hit) left++; else gone++;
+          });
+        }
+        var st = s === 3 ? 4 : s === 2 ? 3 : left === rows.length ? 0 : left > 1 ? 1 : 2;
+        if (s !== stage) { stage = s; el.setAttribute('data-s', s); }
+        if (st !== status) { status = st; el.setAttribute('data-st', st); }
+      };
+    },
+    // A multipart upload fills part by part; a download finishes and is checked.
+    transfers: function (el) {
       var row = el.querySelector('[data-parts]');
       var parts = all('.tr-parts i', row), done = row.querySelector('[data-parts-done]'), rate = row.querySelector('[data-parts-rate]');
-      var size = rate.textContent, total = parts.length, next = 0, count = 0, timers = [], alive = false;
+      var size = rate.textContent, unit = row.getAttribute('data-rate') || '', total = parts.length;
       var dl = el.querySelector('[data-dl]'), bar = dl.querySelector('[data-dl-bar]');
       var checking = dl.querySelector('[data-dl-run]'), checked = dl.querySelector('[data-dl-done]');
-      function launch() {
-        if (!alive || next >= total) return;
-        var li = parts[next++], dur = 900 + Math.random() * 1000;
-        li.classList.add('is-up');
-        timers.push(setTimeout(function () {
-          li.classList.remove('is-up'); li.classList.add('is-done');
-          done.textContent = ++count;
-          if (count === total) { rate.textContent = size; timers.push(setTimeout(cycle, 2600)); return; }
-          rate.textContent = (150 + Math.round(Math.random() * 60)) + ' MiB/s';
-          launch();
-        }, dur));
-      }
-      function download() {
-        var p = 0;
-        checking.hidden = true; checked.hidden = true;
-        dl.classList.add('is-run');
-        bar.style.setProperty('--p', '0');
-        (function tick() {
-          if (!alive) return;
-          p = Math.min(1, p + 0.08 + Math.random() * 0.06);
-          bar.style.setProperty('--p', p.toFixed(3));
-          if (p < 1) timers.push(setTimeout(tick, 280));
-          else {
-            checking.hidden = false;
-            timers.push(setTimeout(function () { checking.hidden = true; checked.hidden = false; dl.classList.remove('is-run'); }, 900));
-          }
-        })();
-      }
-      function cycle() {
-        if (!alive) return;
-        next = 0; count = 0; done.textContent = '0';
-        parts.forEach(function (li) { li.classList.remove('is-done', 'is-up'); });
-        rate.textContent = '— MiB/s';
-        timers.push(setTimeout(function () { for (var k = 0; k < 4; k++) launch(); }, 400));
-        download();
-      }
-      return {
-        start: function () { if (alive) return; alive = true; cycle(); },
-        stop: function () {
-          alive = false;
-          timers.forEach(clearTimeout); timers = [];
-          parts.forEach(function (li) { li.classList.remove('is-up'); li.classList.add('is-done'); });
-          done.textContent = String(total); rate.textContent = size;
-          bar.style.removeProperty('--p'); checking.hidden = true; checked.hidden = false; dl.classList.remove('is-run');
+      var key = -1, got = -1, phase = -1;
+      return function (a) {
+        var n = Math.floor(clamp((a - 0.06) / 0.66) * total), up = a > 0.03 && n < total;
+        var k = n * 2 + (up ? 1 : 0);
+        if (k !== key) {
+          key = k;
+          parts.forEach(function (p, i) { p.classList.toggle('is-done', i < n); p.classList.toggle('is-up', up && i >= n && i < n + 3); });
+          done.textContent = n;
+          rate.textContent = n >= total ? size : (n ? 150 + (n * 37) % 60 : '—') + ' ' + unit;
         }
+        var p = Math.round(clamp((a - 0.1) / 0.36) * 100);
+        if (p !== got) { got = p; bar.style.setProperty('--p', (p / 100).toFixed(2)); }
+        var ph = a < 0.46 ? 0 : a < 0.58 ? 1 : 2;
+        if (ph !== phase) { phase = ph; checking.hidden = ph !== 1; checked.hidden = ph !== 2; dl.classList.toggle('is-run', ph !== 2); }
       };
     },
-    function (el) {
-      var fresh = el.querySelector('.vr-new'), pick = el.querySelector('.vr-pick');
-      var seq = sequence([
-        [0, function () { fresh.classList.remove('is-shown'); pick.classList.remove('is-pick'); }],
-        [1200, function () { pick.classList.add('is-pick'); }],
-        [1100, function () { press(pick); }],
-        [300, function () { fresh.classList.add('is-shown'); }],
-        [900, function () { pick.classList.remove('is-pick'); }],
-        [3200, function () {}]
-      ], true);
-      return { start: seq.start, stop: function () { seq.stop(); fresh.classList.add('is-shown'); pick.classList.remove('is-pick'); } };
+    // Pick an old version, restore it, and it becomes the latest.
+    versions: function (el) {
+      var stage = -1;
+      return function (a) {
+        var s = a < 0.18 ? 0 : a < 0.42 ? 1 : a < 0.5 ? 2 : a < 0.78 ? 3 : 4;
+        if (s !== stage) { stage = s; el.setAttribute('data-s', s); }
+      };
     },
-    function (el) {
-      var sig = el.querySelector('[data-sig]'), clock = el.querySelector('[data-clock]'), meter = el.querySelector('[data-clock-bar]');
-      var copy = el.querySelector('[data-copy]');
-      var hex = '0123456789abcdef', life = 3600, left = life, tick = 0, timer = 0, raf = 0, later = 0, alive = false;
-      var original = sig.textContent;
-      function show() {
-        clock.textContent = String(Math.floor(left / 60)).padStart(2, '0') + ':' + String(left % 60).padStart(2, '0');
-        meter.style.setProperty('--left', (left / life).toFixed(4));
-      }
-      function sign() {
-        var to = '', s0 = performance.now();
-        for (var n = 0; n < original.length; n++) to += hex[(Math.random() * 16) | 0];
-        copy.classList.remove('is-done');
-        (function step(t) {
-          var k = Math.min(1, (t - s0) / 700), out = '';
-          for (var c = 0; c < to.length; c++) out += c / to.length < k ? to[c] : hex[(Math.random() * 16) | 0];
+    // Change how long the link is valid: the URL is signed again, then copied.
+    links: function (el) {
+      var sig = el.querySelector('[data-sig]'), exp = el.querySelector('[data-exp]'), clock = el.querySelector('[data-clock]');
+      var presets = all('[data-presets] b', el), copy = el.querySelector('[data-copy]');
+      var to = sig.textContent, from = sig.getAttribute('data-before') || to, hex = '0123456789abcdef';
+      var stage = -1, signed = -2, pressed = -1;
+      return function (a) {
+        var s = a < 0.16 ? 0 : 1;
+        if (s !== stage) {
+          stage = s;
+          presets.forEach(function (b, i) { b.classList.toggle('is-on', i === s); });
+          exp.textContent = s ? '3600' : '900';
+          clock.textContent = s ? '60:00' : '15:00';
+        }
+        var k = s ? Math.round(clamp((a - 0.16) / 0.3) * to.length) : -1;
+        if (k !== signed) {
+          signed = k;
+          var out = k < 0 ? from : to.slice(0, k);
+          for (var c = out.length; c < to.length; c++) out += hex[(c * 7 + k * 13) % 16];
           sig.textContent = out;
-          if (k < 1) raf = requestAnimationFrame(step);
-        })(s0);
-        left = life; show();
-        later = setTimeout(function () { press(copy, function () { if (alive) copy.classList.add('is-done'); }); }, 2200);
-      }
-      return {
-        start: function () {
-          if (alive) return;
-          alive = true;
-          sign();
-          tick = setInterval(function () { left = Math.max(0, left - 1); show(); }, 1000);
-          timer = setInterval(sign, 6000);
-        },
-        stop: function () {
-          alive = false;
-          clearInterval(tick); clearInterval(timer); clearTimeout(later); cancelAnimationFrame(raf);
-          sig.textContent = original; left = life; show(); copy.classList.remove('is-done');
         }
+        var c2 = a < 0.6 ? 0 : a < 0.66 ? 1 : 2;
+        if (c2 !== pressed) { pressed = c2; copy.classList.toggle('is-press', c2 === 1); copy.classList.toggle('is-done', c2 === 2); }
       };
     },
-    function (el) {
-      var lines = all('.sy-plan li', el), sum = el.querySelector('.sy-sum'), runBtn = el.querySelector('[data-run]');
-      function reset(on) {
-        lines.forEach(function (l) { l.classList.toggle('is-shown', on); l.classList.remove('is-done'); });
-        sum.style.opacity = on ? '' : '0';
-      }
-      var steps = [[0, function () { reset(false); }]];
-      lines.forEach(function (l, n) { steps.push([n ? 450 : 600, function () { l.classList.add('is-shown'); }]); });
-      steps.push([450, function () { sum.style.opacity = ''; }]);
-      steps.push([1100, function () { press(runBtn); }]);
-      lines.forEach(function (l) { steps.push([380, function () { l.classList.add('is-done'); }]); });
-      steps.push([3000, function () {}]);
-      var seq = sequence(steps, true);
-      return { start: seq.start, stop: function () { seq.stop(); reset(true); } };
+    // The plan lists every change; then the sync runs and each line is done.
+    sync: function (el) {
+      var lines = all('.sy-plan li', el), sum = el.querySelector('.sy-sum'), run = el.querySelector('[data-run]'), key = '';
+      return function (a) {
+        var shown = a < 0.08 ? 0 : Math.min(lines.length, Math.floor((a - 0.08) / 0.09) + 1);
+        var done = a < 0.56 ? 0 : Math.min(lines.length, Math.floor((a - 0.56) / 0.09) + 1);
+        var k = shown + ':' + done + ':' + (a >= 0.35) + ':' + (a >= 0.5 && a < 0.56);
+        if (k === key) return;
+        key = k;
+        lines.forEach(function (l, i) { l.classList.toggle('is-shown', i < shown); l.classList.toggle('is-done', i < done); });
+        sum.classList.toggle('is-off', a < 0.35);
+        run.classList.toggle('is-press', a >= 0.5 && a < 0.56);
+      };
     }
-  ];
+  };
 
-  // The four features become one list beside one window. A feature opens on
-  // a click; until then the next one opens every few seconds, and hovering or
-  // focusing the tour holds it. On narrow screens the list is an accordion and
-  // the window opens inside the feature, so nothing changes off screen.
+  // Wide screens: the views sit in one window that stays in place, the chapter
+  // at the middle of the screen is the open one, and its scroll progress plays
+  // it. Narrow screens: every chapter keeps its view under its text and plays
+  // it as it comes up the screen. Reduced motion shows the finished views.
   (function () {
-    var tour = document.querySelector('[data-tour]');
-    if (!tour) return;
-    var steps = all('.step', tour), stage = tour.querySelector('.tour-stage');
-    var win = stage.querySelector('.win'), body = stage.querySelector('.win-body'), title = stage.querySelector('.win-title');
-    var narrow = window.matchMedia('(max-width: 1000px)');
-    var players = [], views = [], buttons = [], active = -1, visible = false, touched = false;
-
-    steps.forEach(function (s, i) {
-      var pane = s.querySelector('.pane');
-      body.appendChild(pane);
-      views[i] = pane;
-      players[i] = panes[i] ? panes[i](pane) : { start: function () {}, stop: function () {} };
-      var h = s.querySelector('h3'), b = document.createElement('button');
-      b.type = 'button';
-      b.className = 'step-btn';
-      b.setAttribute('aria-expanded', 'false');
-      b.textContent = h.textContent;
-      b.insertAdjacentHTML('beforeend', '<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg>');
-      h.textContent = '';
-      h.appendChild(b);
-      b.addEventListener('click', function () {
-        touched = true;
-        // Keep the tapped heading where it was while the one above folds.
-        var y = b.getBoundingClientRect().top;
-        set(i);
-        var dy = b.getBoundingClientRect().top - y;
-        if (dy) window.scrollBy(0, dy);
-      });
-      buttons[i] = b;
+    var story = document.querySelector('[data-story]');
+    if (!story) return;
+    var stage = story.querySelector('.story-stage'), win = stage.querySelector('.win'), body = stage.querySelector('.win-body');
+    var prog = stage.querySelector('.win-prog i');
+    var wide = window.matchMedia('(min-width: 1000px) and (min-height: 600px)');
+    var items = all('.chapter', story).map(function (el) {
+      var pane = el.querySelector('.pane'), name = pane.getAttribute('data-pane');
+      return { el: el, home: el.querySelector('.chapter-pane'), pane: pane, tab: stage.querySelector('[data-tab="' + name + '"]'),
+        render: (scenes[name] || function () { return function () {}; })(pane), a: -1, top: 0, h: 0, from: 0, to: 1, ph: 0 };
     });
-    tour.classList.add('has-stage');
-    stage.hidden = false;
+    var staged = false, active = -1, bar = 60, shownProg = -1, queued = false;
 
-    // Wide screens: the stage keeps the height of the tallest view, so the
-    // page never jumps. Narrow screens: the stage sits in the open feature.
+    function paint(it, a) {
+      a = Math.round(a * 400) / 400;
+      if (a !== it.a) { it.a = a; it.render(a); }
+    }
+    function activate(n) {
+      active = n;
+      items.forEach(function (it, i) {
+        it.pane.classList.toggle('is-on', i === n);
+        it.pane.classList.toggle('is-before', i < n);
+        it.el.classList.toggle('is-active', i === n);
+        if (it.tab) { if (i === n) it.tab.setAttribute('aria-current', 'true'); else it.tab.removeAttribute('aria-current'); }
+      });
+      body.style.height = items[n].ph + 'px';
+    }
+    function measure() {
+      queued = false;
+      var y = window.scrollY || 0, vh = window.innerHeight || 1, r = story.getBoundingClientRect();
+      var top = r.top + y, bottom = top + r.height;
+      bar = parseFloat(css('--bar')) || 60;
+      if (staged) {
+        // The tallest view sets the room the window is given, which moves the
+        // chapters: set it first, then read where they are.
+        var mid = bar + (vh - bar) / 2, max = 0;
+        items.forEach(function (it) { it.ph = it.pane.offsetHeight; if (it.ph > max) max = it.ph; });
+        story.style.setProperty('--slot', (max + win.offsetHeight - body.offsetHeight) + 'px');
+        if (active >= 0) body.style.height = items[active].ph + 'px';
+        r = story.getBoundingClientRect(); top = r.top + y; bottom = top + r.height;
+        items.forEach(function (it) {
+          var c = it.el.getBoundingClientRect();
+          it.top = c.top + y; it.h = c.height;
+          it.from = Math.max(top - bar, it.top - mid);
+          it.to = Math.max(it.from + 1, Math.min(bottom - vh, it.top + it.h - mid));
+        });
+      } else {
+        items.forEach(function (it) { var c = it.home.getBoundingClientRect(); it.top = c.top + y; it.h = c.height; });
+      }
+      run(y, vh);
+    }
+    function remeasure() { if (!queued) { queued = true; requestAnimationFrame(measure); } }
     function place() {
-      if (narrow.matches) {
-        if (steps[active] && stage.parentNode !== steps[active]) steps[active].appendChild(stage);
-        stage.style.removeProperty('--stage-h');
+      if (wide.matches !== staged) {
+        staged = wide.matches;
+        items.forEach(function (it) {
+          (staged ? body : it.home).appendChild(it.pane);
+          it.pane.classList.remove('is-on', 'is-before');
+          it.el.classList.remove('is-active');
+        });
+        story.classList.toggle('is-live', staged);
+        active = -1;
+        if (!staged) { body.style.height = ''; story.style.removeProperty('--slot'); }
+      }
+      measure();
+    }
+    function run(y, vh) {
+      var on = moving();
+      if (staged) {
+        var c = y + bar + (vh - bar) / 2, n = 0;
+        for (var i = 1; i < items.length; i++) if (c >= items[i].top) n = i;
+        if (n !== active) activate(n);
+        var it = items[n], a = clamp((y - it.from) / (it.to - it.from));
+        paint(it, on ? Math.min(1, a * 1.2) : 1);
+        a = on ? Math.round(a * 200) / 200 : 0;
+        if (a !== shownProg) { shownProg = a; prog.style.transform = 'scaleX(' + a + ')'; }
         return;
       }
-      if (stage.parentNode !== tour) tour.appendChild(stage);
-      var keep = active, max = 0;
-      views.forEach(function (v, i) {
-        views.forEach(function (w, k) { w.classList.toggle('is-on', k === i); });
-        max = Math.max(max, win.offsetHeight);
+      items.forEach(function (it) {
+        if (!on || it.top + it.h < y) paint(it, 1);
+        else if (it.top > y + vh) paint(it, 0);
+        else paint(it, clamp((y + 0.8 * vh - it.top) / (0.5 * vh)));
       });
-      views.forEach(function (w, k) { w.classList.toggle('is-on', k === keep); });
-      stage.style.setProperty('--stage-h', max + 'px');
     }
 
-    function run() {
-      var go = visible && moving();
-      players.forEach(function (p, i) { if (i !== active || !go) p.stop(); });
-      if (go && players[active]) players[active].start();
-      var auto = go && !touched && !narrow.matches;
-      tour.classList.toggle('is-auto', auto);
-      steps.forEach(function (s) { s.classList.remove('is-timing'); });
-      if (auto && steps[active]) { void steps[active].offsetWidth; steps[active].classList.add('is-timing'); }
-    }
-    function set(n) {
-      if (n === active || n < 0 || n >= steps.length) return;
-      var from = body.offsetHeight;
-      active = n;
-      steps.forEach(function (s, i) { s.classList.toggle('is-active', i === n); buttons[i].setAttribute('aria-expanded', String(i === n)); });
-      views.forEach(function (p, i) { p.classList.toggle('is-on', i === n); });
-      title.textContent = steps[n].getAttribute('data-title');
-      if (narrow.matches) { place(); run(); return; }
-      if (from && moving()) {
-        body.style.height = 'auto';
-        var to = body.offsetHeight;
-        body.style.height = from + 'px';
-        void body.offsetHeight;
-        body.style.height = to + 'px';
-        clearTimeout(body._t);
-        body._t = setTimeout(function () { body.style.height = ''; }, 450);
-      }
-      run();
-    }
-    tour.addEventListener('animationend', function (e) {
-      if (e.animationName === 'step-time' && !touched) set((active + 1) % steps.length);
-    });
-
-    set(0);
     place();
+    ticks.push(run);
+    if (wide.addEventListener) wide.addEventListener('change', place); else if (wide.addListener) wide.addListener(place);
+    window.addEventListener('resize', remeasure);
     if ('ResizeObserver' in window) {
-      var w0 = 0;
-      new ResizeObserver(function () { if (tour.offsetWidth !== w0) { w0 = tour.offsetWidth; place(); run(); } }).observe(tour);
+      var ro = new ResizeObserver(remeasure);
+      ro.observe(document.body);
+      items.forEach(function (it) { ro.observe(it.pane); });
     }
-    whileVisible(stage, function () { visible = true; run(); }, function () { visible = false; run(); }, 0.3);
-    syncs.push(run);
+    // The feature's window is the one its guide page opens with: name it for
+    // the page transition as the link is followed.
+    story.addEventListener('click', function (e) {
+      var link = e.target.closest ? e.target.closest('.chapter-text a') : null;
+      if (!link) return;
+      var mine = items.filter(function (it) { return it.el.contains(link); })[0];
+      items.forEach(function (it) { it.home.style.viewTransitionName = ''; });
+      win.style.viewTransitionName = '';
+      if (staged) win.style.viewTransitionName = 'feature-win';
+      else if (mine) mine.home.style.viewTransitionName = 'feature-win';
+    });
+  })();
+
+  // The header marks the section the page is in.
+  (function () {
+    if (!('IntersectionObserver' in window)) return;
+    var pairs = all('.bar-nav a').map(function (a) {
+      var id = (a.getAttribute('href') || '').split('#')[1];
+      var el = id ? document.getElementById(id) : null;
+      return el ? { a: a, el: el } : null;
+    }).filter(Boolean);
+    if (!pairs.length) return;
+    var io = new IntersectionObserver(function (es) {
+      es.forEach(function (e) {
+        var p = pairs.filter(function (x) { return x.el === e.target; })[0];
+        if (!p) return;
+        if (e.isIntersecting) p.a.setAttribute('aria-current', 'true'); else p.a.removeAttribute('aria-current');
+      });
+    }, { rootMargin: '-45% 0px -55% 0px' });
+    pairs.forEach(function (p) { io.observe(p.el); });
   })();
 
   /* ---------------- the other features, filtered as you type ---------------- */

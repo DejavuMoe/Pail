@@ -43,6 +43,11 @@
 .doc-lede { margin-top: 14px; max-width: 40em; color: var(--text-2); font-size: 1.125rem; line-height: 1.6; }
 .doc-note { margin-top: 14px; padding: 10px 14px; border: 1px solid var(--line); border-radius: 9px; background: var(--panel); color: var(--text-2); font-size: 0.875rem; }
 
+/* The feature view the landing page plays for this subject, still. */
+.doc-fig { margin-top: 28px; }
+.doc-fig .win { border-radius: 12px; box-shadow: none; view-transition-name: feature-win; }
+.doc-fig + .prose { margin-top: 20px; }
+
 .prose { margin-top: 8px; color: var(--text); font-size: 1rem; line-height: 1.75; }
 :lang(zh-Hans) .prose { line-height: 1.85; }
 .prose > * + * { margin-top: 1.1em; }
@@ -162,6 +167,6 @@
   .prose blockquote { border: 1px solid CanvasText; }
 }
 @media print {
-  .docs-nav, .toc, .doc-foot { display: none !important; }
+  .docs-nav, .toc, .doc-foot, .doc-fig { display: none !important; }
   .docs-shell { display: block; }
 }

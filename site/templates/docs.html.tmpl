@@ -38,6 +38,16 @@
       <p class="doc-note">{{t "licenseNote"}}</p>
       {{- end}}
     </header>
+    {{- if .Pane}}
+    <div class="doc-fig" aria-hidden="true">
+      <div class="win">
+        <div class="win-bar"><span class="win-dots"><i></i><i></i><i></i></span><span class="win-title">{{.PaneTitle}}</span></div>
+        <div class="win-body">
+          {{template "pane" .}}
+        </div>
+      </div>
+    </div>
+    {{- end}}
     <div class="prose"{{if .EnglishOnly}} lang="en"{{end}}>
 {{.Content}}
     </div>

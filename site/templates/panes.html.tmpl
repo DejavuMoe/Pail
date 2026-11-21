@@ -1,0 +1,117 @@
+{{/* The feature views: what each part of the app shows, as sample data in its
+finished state. The landing page moves them with the scroll position; the
+guide pages show them still. A list that scrolls in the app (versions) keeps a
+fixed height here and clips its last row. */}}
+
+{{define "pane-objects" -}}
+<div class="pane pane-ob" data-pane="objects" data-s="3" data-st="4" aria-hidden="true">
+  <p class="ob-bar">
+    <span class="ob-crumbs"><svg class="ic"><use href="#i-bucket"/></svg><b>acme-assets</b><span class="ob-crumb"><i>/</i>reports</span></span>
+    <span class="ob-filter"><svg class="ic"><use href="#i-search"/></svg><span class="ob-q" data-ob-q data-q="rep"></span><span class="ob-ph">{{t "obFilter"}}</span></span>
+  </p>
+  <p class="ob-cols">{{range split (t "obCols")}}<span>{{.}}</span>{{end}}</p>
+  <div class="ob-views">
+    <ul class="ob-list ob-root">
+      {{- range split "assets~909 KB|backups~167 KB|logs~2.5 MB|reports~1.8 MB|tmp~0 B|website~81.3 KB"}}{{$r := split2 .}}
+      <li class="ob-row" data-name="{{index $r 0}}"{{if eq (index $r 0) "reports"}} data-open{{end}}><svg class="ic"><use href="#i-folder"/></svg><span class="ob-name">{{index $r 0}}</span><span class="ob-size">{{index $r 1}}</span><span class="ob-type">{{t "obFolder"}}</span><span class="ob-time"></span></li>
+      {{- end}}
+      {{- range split "manifest.json~303 B~JSON|README.txt~445 B~TXT"}}{{$r := split3 .}}
+      <li class="ob-row" data-name="{{index $r 0}}"><svg class="ic"><use href="#i-page"/></svg><span class="ob-name">{{index $r 0}}</span><span class="ob-size">{{index $r 1}}</span><span class="ob-type">{{fill (t "obFile") (index $r 2)}}</span><span class="ob-time">2026-11-07 15:07</span></li>
+      {{- end}}
+    </ul>
+    <ul class="ob-list ob-sub">
+      <li class="ob-row"><svg class="ic"><use href="#i-folder"/></svg><span class="ob-name">exports</span><span class="ob-size">250 B</span><span class="ob-type">{{t "obFolder"}}</span><span class="ob-time"></span></li>
+      {{- range split "2026-Q2-financials.pdf~12.9 KB~PDF|2026-Q2-kpis.xlsx~8.1 KB~XLSX|2026-Q3-financials.pdf~13.8 KB~PDF|2026-Q3-kpis.xlsx~8.8 KB~XLSX|customers-export.csv~250 B~CSV"}}{{$r := split3 .}}
+      <li class="ob-row"><svg class="ic"><use href="#i-page"/></svg><span class="ob-name">{{index $r 0}}</span><span class="ob-size">{{index $r 1}}</span><span class="ob-type">{{fill (t "obFile") (index $r 2)}}</span><span class="ob-time">2026-11-07 15:07</span></li>
+      {{- end}}
+      <li class="ob-row" data-pick><svg class="ic"><use href="#i-page"/></svg><span class="ob-name">q4-report.pdf</span><span class="ob-size">1.8 MB</span><span class="ob-type">{{fill (t "obFile") "PDF"}}</span><span class="ob-time">2026-11-20 09:16</span></li>
+      <li class="ob-row"><svg class="ic"><use href="#i-page"/></svg><span class="ob-name">summary.md</span><span class="ob-size">1.2 KB</span><span class="ob-type">{{fill (t "obFile") "MD"}}</span><span class="ob-time">2026-11-07 15:07</span></li>
+    </ul>
+  </div>
+  <p class="ob-status">{{range split (t "obStatus")}}<span>{{.}}</span>{{end}}</p>
+</div>
+{{- end}}
+
+{{define "pane-transfers" -}}
+<div class="pane pane-tr" data-pane="transfers" aria-hidden="true">
+  <p class="pane-head"><span>{{t "trSummary"}}</span></p>
+  <ul class="tr-list">
+    <li class="tr" data-parts data-rate="MB/s">
+      <span class="tr-dir"><svg class="ic"><use href="#i-up"/></svg></span>
+      <span class="tr-name">backups/2026-11-20.tar</span>
+      <span class="tr-meta"><b data-parts-done>24</b>/24 {{t "transfersParts"}} · 64 MB</span>
+      <span class="tr-rate" data-parts-rate>1.5 GB</span>
+      <span class="tr-parts">{{range split "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24"}}<i class="is-done"></i>{{end}}</span>
+      <span class="tr-btn">{{t "trPause"}}</span>
+    </li>
+    <li class="tr" data-dl>
+      <span class="tr-dir"><svg class="ic"><use href="#i-down"/></svg></span>
+      <span class="tr-name">reports/2026-Q3-financials.pdf</span>
+      <span class="tr-meta"><span data-dl-run hidden>{{t "trChecking"}}</span><span data-dl-done>{{t "trChecked"}}</span></span>
+      <span class="tr-rate">13.8 KB</span>
+      <span class="tr-bar"><i data-dl-bar></i></span>
+      <span class="tr-btn tr-ok"><svg class="ic"><use href="#i-check"/></svg></span>
+    </li>
+    <li class="tr is-paused">
+      <span class="tr-dir"><svg class="ic"><use href="#i-up"/></svg></span>
+      <span class="tr-name">photos/2026/IMG_0412.heic</span>
+      <span class="tr-meta">{{t "trPaused"}}</span>
+      <span class="tr-rate">3.1 MB</span>
+      <span class="tr-bar"><i></i></span>
+      <span class="tr-btn">{{t "trResume"}}</span>
+    </li>
+  </ul>
+</div>
+{{- end}}
+
+{{define "pane-versions" -}}
+<div class="pane pane-vr" data-pane="versions" data-s="4" aria-hidden="true">
+  <p class="pane-head"><span>reports/q4-report.pdf</span></p>
+  <ol class="vr-list">
+    <li class="vr-new"><code>Q7nV2cR8sKeh</code><span class="tag tag-cur">{{t "versionsLatest"}}</span><time>11-20 09:16</time><span class="vr-size">1.8 MB</span></li>
+    <li class="vr-marker"><code>{{t "versionsMarker"}}</code><span></span><time>11-20 09:14</time><span class="vr-size">—</span></li>
+    <li><code>3HL4kqtJ0eWd</code><span></span><time>11-18 17:02</time><span class="vr-size">1.9 MB</span></li>
+    <li class="vr-pick"><code>Xb0Fq2Lm9TzA</code><span class="tag tag-act">{{t "versionsRestore"}}</span><time>11-12 08:41</time><span class="vr-size">1.8 MB</span></li>
+    <li><code>p9ZcW1aEoBn7</code><span></span><time>11-03 11:26</time><span class="vr-size">1.6 MB</span></li>
+    <li><code>kT5mYw8RdU2x</code><span></span><time>10-27 16:40</time><span class="vr-size">1.6 MB</span></li>
+  </ol>
+</div>
+{{- end}}
+
+{{define "pane-links" -}}
+<div class="pane pane-ln" data-pane="links" aria-hidden="true">
+  <p class="pane-head"><span>reports/customers-export.csv</span></p>
+  <div class="ln-form">
+    <span class="ln-label">{{t "lnMethod"}}</span>
+    <span class="seg"><b class="is-on">GET</b><b>PUT</b></span>
+    <span class="ln-label">{{t "lnValid"}}</span>
+    <span class="seg" data-presets>{{range $i, $p := split (t "lnPresets")}}<b{{if eq $i 1}} class="is-on"{{end}}>{{$p}}</b>{{end}}</span>
+  </div>
+  <p class="ln-url"><span class="ln-host">https://acme-assets.s3.us-east-1.amazonaws.com</span><span class="ln-key">/reports/customers-export.csv</span><span class="ln-q">?X-Amz-Algorithm=<b>AWS4-HMAC-SHA256</b></span><span class="ln-q">&amp;X-Amz-Date=<b>20261120T091400Z</b></span><span class="ln-q">&amp;X-Amz-Expires=<b class="ln-exp" data-exp>3600</b></span><span class="ln-q">&amp;X-Amz-SignedHeaders=<b>host</b></span><span class="ln-q">&amp;X-Amz-Signature=<b class="ln-sig" data-sig data-before="b72e0d4c91a6f3587e10c2d9a4b6035f18e7">4f1c9a07e2b85d3360ab17c4e9f2d8150c7a</b></span></p>
+  <p class="ln-foot"><span class="ln-clock">{{t "linksExpires"}} <b data-clock>60:00</b></span><span class="ln-meter"><i data-clock-bar></i></span><span class="btn-mini" data-copy><span class="c-idle">{{t "lnCopy"}}</span><span class="c-done">{{t "lnCopied"}}</span></span></p>
+</div>
+{{- end}}
+
+{{define "pane-sync" -}}
+{{- $sync := example "sync" -}}
+<div class="pane pane-sy" data-pane="sync" aria-hidden="true">
+  <p class="pane-head"><span>./photos → acme-media-archive/photos/</span></p>
+  <p class="sy-opts"><span>{{t "syMode"}} <b>{{t "syMirror"}}</b></span><span>{{t "syCompare"}} <b>{{t "sySizeTime"}}</b></span></p>
+  <ol class="sy-plan">
+    {{- range $i, $l := $sync.Lines}}{{if and (gt $i 0) (lt $i 4)}}{{$c := cols $l.Text}}
+    <li class="{{if eq (index $c 0) "delete"}}sy-del{{else}}sy-up{{end}} is-shown"><span class="sy-act">{{if eq (index $c 0) "delete"}}{{t "syDelete"}}{{else}}{{t "syUpload"}}{{end}}</span><span class="sy-path">{{index $c 1}}</span><span class="sy-size">{{appSize (unparen (index $c 2))}}</span><span class="sy-why">{{pick (t "syReasons") (index $c 3)}}</span></li>
+    {{- end}}{{end}}
+  </ol>
+  <p class="sy-foot"><span class="sy-sum">{{t "sySummary"}}</span><span class="btn-mini btn-mini-primary" data-run>{{t "syRun"}}</span></p>
+</div>
+{{- end}}
+
+{{/* One feature view by name, for pages that show a single one. */}}
+{{define "pane" -}}
+{{- if eq .Pane "objects"}}{{template "pane-objects" .}}
+{{- else if eq .Pane "transfers"}}{{template "pane-transfers" .}}
+{{- else if eq .Pane "versions"}}{{template "pane-versions" .}}
+{{- else if eq .Pane "links"}}{{template "pane-links" .}}
+{{- else if eq .Pane "sync"}}{{template "pane-sync" .}}
+{{- end}}
+{{- end}}

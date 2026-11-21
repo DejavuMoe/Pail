@@ -20,6 +20,7 @@
 {{template "header" .}}
 <main id="main">
 
+  <div class="intro">
   <section class="hero" aria-labelledby="hero-title">
     <div class="wrap hero-grid">
       <div class="hero-text">
@@ -32,7 +33,6 @@
         </div>
       </div>
       <div class="hero-stage">
-        <canvas class="hero-canvas" data-pail data-objects="reports/q4-report.pdf~1.8 MiB|photos/2026/IMG_0412.heic~3.1 MiB|backups/2026-11-20.tar~1.50 GiB|website/index.html~12 KiB|logs/app-2026-11-20.log.gz~840 KiB|invoices/2026-11.pdf~212 KiB|assets/hero@2x.webp~486 KiB|exports/customers.csv~96 KiB" aria-hidden="true"></canvas>
         <ol class="drop-log" aria-hidden="true">
           <li><span class="verb">PUT</span><span class="k">website/index.html</span><span class="s">12 KiB</span><span class="ok">200</span></li>
           <li><span class="verb">PUT</span><span class="k">photos/2026/IMG_0412.heic</span><span class="s">3.1 MiB</span><span class="ok">200</span></li>
@@ -60,133 +60,71 @@
       </figure>
     </div>
   </section>
+  <canvas class="pail-layer" data-pail data-objects="reports/q4-report.pdf~1.8 MiB|photos/2026/IMG_0412.heic~3.1 MiB|backups/2026-11-20.tar~1.50 GiB|website/index.html~12 KiB|logs/app-2026-11-20.log.gz~840 KiB|invoices/2026-11.pdf~212 KiB|assets/hero@2x.webp~486 KiB|exports/customers.csv~96 KiB" aria-hidden="true"></canvas>
+  </div>
 
   <section class="features" id="features" aria-labelledby="features-title">
     <div class="wrap">
       <h2 class="lead" id="features-title">{{t "featLead"}} <span>{{t "featRest"}}</span></h2>
-      <div class="tour" data-tour>
-        <div class="tour-steps">
-
-          <article class="step" data-step="0" data-title="{{t "tabTransfers"}}" aria-labelledby="f-transfers">
-            <h3 id="f-transfers">{{t "transfersTitle"}}</h3>
-            <p>{{t "transfersBody"}}</p>
-            <a class="more" href="{{.Links.Transfers}}">{{t "transfersLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
-            <span class="step-time" aria-hidden="true"></span>
-            <div class="pane pane-tr" data-pane="0" aria-hidden="true">
-              <p class="pane-head"><span>{{t "trSummary"}}</span></p>
-              <ul class="tr-list">
-                <li class="tr" data-parts>
-                  <span class="tr-dir"><svg class="ic"><use href="#i-up"/></svg></span>
-                  <span class="tr-name">backups/2026-11-20.tar</span>
-                  <span class="tr-meta"><b data-parts-done>24</b>/24 {{t "transfersParts"}} · 64 MiB</span>
-                  <span class="tr-rate" data-parts-rate>1.50 GiB</span>
-                  <span class="tr-parts">{{range split "1|2|3|4|5|6|7|8|9|10|11|12|13|14|15|16|17|18|19|20|21|22|23|24"}}<i class="is-done"></i>{{end}}</span>
-                  <span class="tr-btn">{{t "trPause"}}</span>
-                </li>
-                <li class="tr" data-dl>
-                  <span class="tr-dir"><svg class="ic"><use href="#i-down"/></svg></span>
-                  <span class="tr-name">reports/2026-Q3-financials.pdf</span>
-                  <span class="tr-meta"><span data-dl-run hidden>{{t "trChecking"}}</span><span data-dl-done>{{t "trChecked"}}</span></span>
-                  <span class="tr-rate">13.8 KiB</span>
-                  <span class="tr-bar"><i data-dl-bar></i></span>
-                  <span class="tr-btn tr-ok"><svg class="ic"><use href="#i-check"/></svg></span>
-                </li>
-                <li class="tr is-paused">
-                  <span class="tr-dir"><svg class="ic"><use href="#i-up"/></svg></span>
-                  <span class="tr-name">photos/2026/IMG_0412.heic</span>
-                  <span class="tr-meta">{{t "trPaused"}}</span>
-                  <span class="tr-rate">3.1 MiB</span>
-                  <span class="tr-bar"><i></i></span>
-                  <span class="tr-btn">{{t "trResume"}}</span>
-                </li>
-              </ul>
+      <div class="story" data-story>
+        <div class="story-chapters">
+          <article class="chapter" aria-labelledby="f-objects">
+            <div class="chapter-text">
+              <h3 id="f-objects">{{t "objectsTitle"}}</h3>
+              <p>{{t "objectsBody"}}</p>
+              <a class="more" href="{{.Links.Browse}}">{{t "objectsLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
             </div>
+            <div class="chapter-pane">{{template "pane-objects" .}}</div>
           </article>
-
-          <article class="step" data-step="1" data-title="{{t "tabVersions"}}" aria-labelledby="f-versions">
-            <h3 id="f-versions">{{t "versionsTitle"}}</h3>
-            <p>{{t "versionsBody"}}</p>
-            <a class="more" href="{{.Links.Versions}}">{{t "versionsLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
-            <span class="step-time" aria-hidden="true"></span>
-            <div class="pane pane-vr" data-pane="1" aria-hidden="true">
-              <p class="pane-head"><span>reports/q4-report.pdf</span></p>
-              <ol class="vr-list">
-                <li class="vr-new is-shown"><code>Q7nV2cR8sKeh</code><span class="tag tag-cur">{{t "versionsLatest"}}</span><time>11-20 09:16</time><span class="vr-size">1.8 MiB</span></li>
-                <li class="vr-marker"><code>{{t "versionsMarker"}}</code><span></span><time>11-20 09:14</time><span class="vr-size">—</span></li>
-                <li><code>3HL4kqtJ0eWd</code><span></span><time>11-18 17:02</time><span class="vr-size">1.9 MiB</span></li>
-                <li class="vr-pick"><code>Xb0Fq2Lm9TzA</code><span class="tag tag-act">{{t "versionsRestore"}}</span><time>11-12 08:41</time><span class="vr-size">1.8 MiB</span></li>
-                <li><code>p9ZcW1aEoBn7</code><span></span><time>11-03 11:26</time><span class="vr-size">1.6 MiB</span></li>
-              </ol>
+          <article class="chapter" aria-labelledby="f-transfers">
+            <div class="chapter-text">
+              <h3 id="f-transfers">{{t "transfersTitle"}}</h3>
+              <p>{{t "transfersBody"}}</p>
+              <a class="more" href="{{.Links.Transfers}}">{{t "transfersLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
             </div>
+            <div class="chapter-pane">{{template "pane-transfers" .}}</div>
           </article>
-
-          <article class="step" data-step="2" data-title="{{t "tabLink"}}" aria-labelledby="f-links">
-            <h3 id="f-links">{{t "linksTitle"}}</h3>
-            <p>{{t "linksBody"}}</p>
-            <a class="more" href="{{.Links.Links}}">{{t "linksLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
-            <span class="step-time" aria-hidden="true"></span>
-            <div class="pane pane-ln" data-pane="2" aria-hidden="true">
-              <p class="pane-head"><span>reports/customers-export.csv</span></p>
-              <div class="ln-form">
-                <span class="ln-label">{{t "lnMethod"}}</span>
-                <span class="seg"><b class="is-on">GET</b><b>PUT</b></span>
-                <span class="ln-label">{{t "lnValid"}}</span>
-                <span class="seg">{{range $i, $p := split (t "lnPresets")}}<b{{if eq $i 1}} class="is-on"{{end}}>{{$p}}</b>{{end}}</span>
-              </div>
-              <p class="ln-url"><span class="ln-host">https://acme-assets.s3.us-east-1.amazonaws.com</span><span class="ln-key">/reports/customers-export.csv</span><span class="ln-q">?X-Amz-Algorithm=<b>AWS4-HMAC-SHA256</b></span><span class="ln-q">&amp;X-Amz-Date=<b>20261120T091400Z</b></span><span class="ln-q">&amp;X-Amz-Expires=<b>3600</b></span><span class="ln-q">&amp;X-Amz-SignedHeaders=<b>host</b></span><span class="ln-q">&amp;X-Amz-Signature=<b class="ln-sig" data-sig>4f1c9a07e2b85d3360ab17c4e9f2d8150c7a</b></span></p>
-              <p class="ln-foot"><span class="ln-clock">{{t "linksExpires"}} <b data-clock>60:00</b></span><span class="ln-meter"><i data-clock-bar></i></span><span class="btn-mini" data-copy><span class="c-idle">{{t "lnCopy"}}</span><span class="c-done">{{t "lnCopied"}}</span></span></p>
+          <article class="chapter" aria-labelledby="f-versions">
+            <div class="chapter-text">
+              <h3 id="f-versions">{{t "versionsTitle"}}</h3>
+              <p>{{t "versionsBody"}}</p>
+              <a class="more" href="{{.Links.Versions}}">{{t "versionsLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
             </div>
+            <div class="chapter-pane">{{template "pane-versions" .}}</div>
           </article>
-
-          <article class="step" data-step="3" data-title="{{t "tabSync"}}" aria-labelledby="f-sync">
-            <h3 id="f-sync">{{t "syncTitle"}}</h3>
-            <p>{{t "syncBody"}}</p>
-            <a class="more" href="{{.Links.Sync}}">{{t "syncLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
-            <span class="step-time" aria-hidden="true"></span>
-            {{- $sync := example "sync"}}
-            <div class="pane pane-sy" data-pane="3" aria-hidden="true">
-              <p class="pane-head"><span>./photos → acme-media-archive/photos/</span></p>
-              <p class="sy-opts"><span>{{t "syMode"}} <b>{{t "syMirror"}}</b></span><span>{{t "syCompare"}} <b>{{t "sySizeTime"}}</b></span></p>
-              <ol class="sy-plan">
-                {{- range $i, $l := $sync.Lines}}{{if and (gt $i 0) (lt $i 4)}}{{$c := cols $l.Text}}
-                <li class="{{if eq (index $c 0) "delete"}}sy-del{{else}}sy-up{{end}} is-shown"><span class="sy-act">{{if eq (index $c 0) "delete"}}{{t "syDelete"}}{{else}}{{t "syUpload"}}{{end}}</span><span class="sy-path">{{index $c 1}}</span><span class="sy-size">{{unparen (index $c 2)}}</span><span class="sy-why">{{pick (t "syReasons") (index $c 3)}}</span></li>
-                {{- end}}{{end}}
-              </ol>
-              <p class="sy-foot"><span class="sy-sum">{{t "sySummary"}}</span><span class="btn-mini btn-mini-primary" data-run>{{t "syRun"}}</span></p>
+          <article class="chapter" aria-labelledby="f-links">
+            <div class="chapter-text">
+              <h3 id="f-links">{{t "linksTitle"}}</h3>
+              <p>{{t "linksBody"}}</p>
+              <a class="more" href="{{.Links.Links}}">{{t "linksLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
             </div>
+            <div class="chapter-pane">{{template "pane-links" .}}</div>
           </article>
-
+          <article class="chapter" aria-labelledby="f-sync">
+            <div class="chapter-text">
+              <h3 id="f-sync">{{t "syncTitle"}}</h3>
+              <p>{{t "syncBody"}}</p>
+              <a class="more" href="{{.Links.Sync}}">{{t "syncLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+            </div>
+            <div class="chapter-pane">{{template "pane-sync" .}}</div>
+          </article>
         </div>
-        <div class="tour-stage" hidden>
-          <div class="win">
-            <div class="win-bar">
-              <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
-              <span class="win-title" aria-hidden="true">{{t "tabTransfers"}}</span>
+        <div class="story-stage">
+          <div class="win-slot">
+            <div class="win">
+              <div class="win-bar">
+                <span class="win-dots" aria-hidden="true"><i></i><i></i><i></i></span>
+                <nav class="win-tabs" aria-label="{{t "storyTabs"}}">
+                  {{- range split "objects~tabObjects|transfers~tabTransfers|versions~tabVersions|links~tabLink|sync~tabSync"}}{{$a := split2 .}}
+                  <a href="#f-{{index $a 0}}" data-tab="{{index $a 0}}" data-label="{{t (index $a 1)}}">{{t (index $a 1)}}</a>
+                  {{- end}}
+                </nav>
+              </div>
+              <div class="win-prog" aria-hidden="true"><i></i></div>
+              <div class="win-body"></div>
             </div>
-            <div class="win-body"></div>
           </div>
         </div>
-      </div>
-    </div>
-  </section>
-
-  <section class="more-sec" aria-labelledby="more-title">
-    <div class="wrap more-grid">
-      <div class="more-head">
-        <h2 class="lead" id="more-title">{{t "moreLead"}} <span>{{t "moreRest"}}</span></h2>
-        <a class="more" href="{{.Links.Docs}}">{{t "moreLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
-      </div>
-      <div class="cmdk" data-cmdk>
-        <div class="cmdk-field" hidden>
-          <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
-          <input type="search" autocomplete="off" spellcheck="false" placeholder="{{t "moreFilter"}}" aria-label="{{t "moreFilter"}}" aria-controls="cmdk-list">
-        </div>
-        <ul class="cmdk-list" id="cmdk-list">
-          {{- range split (t "more")}}{{$a := split3 .}}
-          <li><svg class="ic" aria-hidden="true"><use href="#i-{{index $a 0}}"/></svg><h3>{{index $a 1}}</h3><p>{{index $a 2}}</p></li>
-          {{- end}}
-        </ul>
-        <p class="cmdk-empty" role="status" data-none="{{t "moreNone"}}"></p>
       </div>
     </div>
   </section>
@@ -215,6 +153,27 @@
     </div>
   </section>
 
+  <section class="more-sec" aria-labelledby="more-title">
+    <div class="wrap more-grid">
+      <div class="more-head">
+        <h2 class="lead" id="more-title">{{t "moreLead"}} <span>{{t "moreRest"}}</span></h2>
+        <a class="more" href="{{.Links.Docs}}">{{t "moreLink"}}<svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a>
+      </div>
+      <div class="cmdk" data-cmdk>
+        <div class="cmdk-field" hidden>
+          <svg class="ic" aria-hidden="true"><use href="#i-search"/></svg>
+          <input type="search" autocomplete="off" spellcheck="false" placeholder="{{t "moreFilter"}}" aria-label="{{t "moreFilter"}}" aria-controls="cmdk-list">
+        </div>
+        <ul class="cmdk-list" id="cmdk-list">
+          {{- range split (t "more")}}{{$a := split3 .}}
+          <li><a href="{{index $.MoreLinks (index $a 0)}}"><svg class="ic" aria-hidden="true"><use href="#i-{{index $a 0}}"/></svg><h3>{{index $a 1}}</h3><p>{{index $a 2}}</p><svg class="ic go" aria-hidden="true"><use href="#i-chev"/></svg></a></li>
+          {{- end}}
+        </ul>
+        <p class="cmdk-empty" role="status" data-none="{{t "moreNone"}}"></p>
+      </div>
+    </div>
+  </section>
+
   <section class="privacy" id="privacy" aria-labelledby="privacy-title">
     <div class="wrap">
       <div class="sec-head">
@@ -226,6 +185,17 @@
         <div><dt>{{index $kv 0}}</dt><dd>{{index $kv 1}}</dd></div>
         {{- end}}
       </dl>
+    </div>
+  </section>
+
+  <section class="learn" aria-labelledby="learn-title">
+    <div class="wrap">
+      <h2 class="lead" id="learn-title">{{t "learnLead"}} <span>{{t "learnRest"}}</span></h2>
+      <ul class="learn-list">
+        {{- range .Learn}}
+        <li><a href="{{.URL}}"><b>{{.Title}}</b><span>{{.Lede}}</span><svg class="ic" aria-hidden="true"><use href="#i-chev"/></svg></a></li>
+        {{- end}}
+      </ul>
     </div>
   </section>
 
