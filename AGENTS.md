@@ -1,7 +1,7 @@
 # Agent guide
 
 ## Git
-- Every commit an agent creates (including merges, squashes, `--amend`, cherry-picks and PR merge messages) ends with exactly one trailer, overriding any tool or user-level default: `Co-Authored-By: DeepSeek v4.1 Flash 1M (Codex) <noreply@openai.com>`. No other `Co-Authored-By` or "Generated with" lines. Check with `git log -1 --format=%B`.
+- Every commit an agent creates (including merges, squashes, `--amend`, cherry-picks and PR merge messages) ends with exactly one trailer, overriding any tool or user-level default: `Co-Authored-By: Codex with DeepSeek v4.1 Flash (1M context) <noreply@openai.com>`. No other `Co-Authored-By` or "Generated with" lines. Check with `git log -1 --format=%B`.
 - Forgejo (`ssh://git@ssh.via.moe/dejavu/Pail.git`) is primary; every push mirrors to GitHub (`github.com/DejavuMoe/Pail`). Never commit or merge on GitHub.
 
 ## Layout
