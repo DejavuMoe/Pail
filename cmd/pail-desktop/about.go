@@ -60,17 +60,20 @@ func (a *app) aboutDialog(c *ui.Context) {
 		hairline(c)
 		ui.Column(c).Gap(4).Children(func() {
 			sectionLabel(c, strings.ToUpper(locales.AboutThirdParty()))
-			notice := func(name, license, url string) {
+			// Each notice links the project and, at the right, its license
+			// text; -8 at either end puts the text on the column's edges.
+			notice := func(name, url, license, licenseURL string) {
 				ui.Row(c.Key("notice:" + url)).Height(28).Gap(12).AlignItems(ui.Center).Children(func() {
 					a.link(c, "github", name, locales.AboutOpenNotice(name), url).Margin(0, 0, 0, -8).Shrink(1).MinWidth(0)
 					ui.Spacer(c)
-					ui.Text(c, license).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().Shrink(0)
+					linkButton(c, icons.Get("scale"), license, locales.AboutOpenLicense(), true).Margin(0, -8, 0, 0).Shrink(0).
+						OnClick(func() { a.openExternal(licenseURL) })
 				})
 			}
 			ui.Column(c).Children(func() {
-				notice(locales.AboutMygo(), locales.AboutLicense(), mygoURL)
-				notice(locales.AboutLucide(), locales.AboutLicenseIsc(), lucideURL)
-				notice(locales.AboutInter(), locales.AboutLicenseOfl(), interURL)
+				notice(locales.AboutMygo(), mygoURL, locales.AboutLicense(), mygoLicenseURL)
+				notice(locales.AboutLucide(), lucideURL, locales.AboutLicenseIsc(), lucideLicenseURL)
+				notice(locales.AboutInter(), interURL, locales.AboutLicenseOfl(), interLicenseURL)
 			})
 		})
 	}, func() {
@@ -82,13 +85,16 @@ func (a *app) aboutDialog(c *ui.Context) {
 	})
 }
 
-// Where the About links go. The third-party projects link to their
-// repositories, where their licenses are.
+// Where the About links go: Pail's license, and each third-party project's
+// repository and license file on its default branch.
 const (
-	licenseURL = repoURL + "/blob/master/LICENSE"
-	mygoURL    = "https://github.com/egoist/mygo"
-	lucideURL  = "https://github.com/lucide-icons/lucide"
-	interURL   = "https://github.com/rsms/inter"
+	licenseURL       = repoURL + "/blob/master/LICENSE"
+	mygoURL          = "https://github.com/egoist/mygo"
+	mygoLicenseURL   = mygoURL + "/blob/main/LICENSE"
+	lucideURL        = "https://github.com/lucide-icons/lucide"
+	lucideLicenseURL = lucideURL + "/blob/main/LICENSE"
+	interURL         = "https://github.com/rsms/inter"
+	interLicenseURL  = interURL + "/blob/master/LICENSE.txt"
 )
 
 // releaseURL is the release page of the running version; a build without a

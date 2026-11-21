@@ -470,6 +470,8 @@ func TestAboutDialog(t *testing.T) {
 		{"MyGo UI framework", mygoURL},
 		{"Lucide icons", lucideURL},
 		{"Inter font (Linux builds)", interURL},
+		{"ISC License", lucideLicenseURL},
+		{"SIL Open Font License 1.1", interLicenseURL},
 	} {
 		h.mustClick(l.label)
 		select {
