@@ -467,6 +467,7 @@ func TestAboutDialog(t *testing.T) {
 	for _, l := range []struct{ label, url string }{
 		{"Version " + version, releaseURL()},
 		{"MIT License", licenseURL},
+		{"MyGo UI framework", mygoURL},
 		{"Lucide icons", lucideURL},
 		{"Inter font (Linux builds)", interURL},
 	} {

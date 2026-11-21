@@ -114,6 +114,16 @@ func (msgs Messages) AboutLucide() string {
 	return Catalog.Format(msgs.locale, "aboutLucide", nil)
 }
 
+// AboutMygo says "MyGo UI framework"
+// in the language the app shows.
+func AboutMygo() string { return In(i18n.Locale()).AboutMygo() }
+
+// AboutMygo says "MyGo UI framework"
+// in the language of msgs.
+func (msgs Messages) AboutMygo() string {
+	return Catalog.Format(msgs.locale, "aboutMygo", nil)
+}
+
 // AboutOpenAuthor says "Open the author's website"
 // in the language the app shows.
 func AboutOpenAuthor() string { return In(i18n.Locale()).AboutOpenAuthor() }

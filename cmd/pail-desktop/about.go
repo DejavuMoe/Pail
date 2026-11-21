@@ -68,6 +68,7 @@ func (a *app) aboutDialog(c *ui.Context) {
 				})
 			}
 			ui.Column(c).Children(func() {
+				notice(locales.AboutMygo(), locales.AboutLicense(), mygoURL)
 				notice(locales.AboutLucide(), locales.AboutLicenseIsc(), lucideURL)
 				notice(locales.AboutInter(), locales.AboutLicenseOfl(), interURL)
 			})
@@ -85,6 +86,7 @@ func (a *app) aboutDialog(c *ui.Context) {
 // repositories, where their licenses are.
 const (
 	licenseURL = repoURL + "/blob/master/LICENSE"
+	mygoURL    = "https://github.com/egoist/mygo"
 	lucideURL  = "https://github.com/lucide-icons/lucide"
 	interURL   = "https://github.com/rsms/inter"
 )
