@@ -76,7 +76,7 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 
 ### 在 Windows 上首次打开
 
-可执行文件没有签名。如果 SmartScreen 提示"Windows 已保护你的电脑"，点击**更多信息**，再点击**仍要运行**。
+可执行文件没有签名。如果 SmartScreen 提示"Windows 已保护你的电脑"，点击 **更多信息**，再点击 **仍要运行**。
 
 ### 在 Linux 上首次打开
 
@@ -84,7 +84,7 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 
 ### 更新
 
-在**设置 › 更新**里，**立即检查**会查找新版本，也可以让 Pail 每天或每周检查一次。下载和重启都要你点击。更新会同时替换桌面应用和 `pail`；在终端里运行 `pail update` 效果相同。Pail 只安装用 Pail 发布密钥签名的文件。
+在 **设置 › 更新** 里，**立即检查** 会查找新版本，也可以让 Pail 每天或每周检查一次。下载和重启都要你点击。更新会同时替换桌面应用和 `pail`；在终端里运行 `pail update` 效果相同。Pail 只安装用 Pail 发布密钥签名的文件。
 
 ## 快速开始
 
@@ -94,8 +94,8 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
    - **路径样式访问**：MinIO 和大多数自建网关需要打开，AWS 保持关闭；
    - 可选的 **CDN URL**，例如 `https://cdn.example.com`。
 
-   点击**测试连接**，然后保存。私有访问密钥会存进系统钥匙串。
-2. 在侧栏选择存储桶。把文件拖进窗口即可上传；选中对象后点击**下载**保存到本地。
+   点击 **测试连接**，然后保存。私有访问密钥会存进系统钥匙串。
+2. 在侧栏选择存储桶。把文件拖进窗口即可上传；选中对象后点击 **下载** 保存到本地。
 
 `pail-desktop` 还支持这些参数：
 
@@ -125,10 +125,10 @@ pail cat s3://my-bucket/notes.txt
 
 ## 数据与隐私
 
-- **配置**保存在用户配置目录下的 `Pail` 文件夹（`%AppData%\Pail`、`~/Library/Application Support/Pail` 或 `~/.config/Pail`），也可以用 `--config-dir` 指定。里面有设置、账户、同步任务、上传规则、上次退出时未完成的传输和已保存机密的名称。
-- **机密**（私有访问密钥、会话令牌、代理密码）存进系统钥匙串，服务名为 `Pail`。没有钥匙串时，可以在**设置 › 安全**里改用加密保险库。
-- **日志**默认关闭。开启后，`logs/pail.log` 不含 URL 查询参数、Authorization 标头、签名和已知的机密值。手动输入的密码只能按标签识别，分享日志前请先检查。
-- **网络**：Pail 只连接你账户的端点，经由**设置 › 网络**里的代理、账户自己的代理，或 `HTTP_PROXY`、`HTTPS_PROXY`。没有遥测。只有点击**立即检查**、运行 `pail update`，或选择每天、每周检查时才检查更新，检查时从 GitHub 或 pail.download 读取一个小文件。
+- **配置** 保存在用户配置目录下的 `Pail` 文件夹（`%AppData%\Pail`、`~/Library/Application Support/Pail` 或 `~/.config/Pail`），也可以用 `--config-dir` 指定。里面有设置、账户、同步任务、上传规则、上次退出时未完成的传输和已保存机密的名称。
+- **机密**（私有访问密钥、会话令牌、代理密码）存进系统钥匙串，服务名为 `Pail`。没有钥匙串时，可以在 **设置 › 安全** 里改用加密保险库。
+- **日志** 默认关闭。开启后，`logs/pail.log` 不含 URL 查询参数、Authorization 标头、签名和已知的机密值。手动输入的密码只能按标签识别，分享日志前请先检查。
+- **网络**：Pail 只连接你账户的端点，经由 **设置 › 网络** 里的代理、账户自己的代理，或 `HTTP_PROXY`、`HTTPS_PROXY`。没有遥测。只有点击 **立即检查**、运行 `pail update`，或选择每天、每周检查时才检查更新，检查时从 GitHub 或 pail.download 读取一个小文件。
 
 ## 支持的平台与服务
 

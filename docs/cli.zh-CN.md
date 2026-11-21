@@ -2,7 +2,7 @@
 
 [English](cli.md) | 简体中文
 
-`pail` 与桌面应用使用同一套账户、已保存的同步任务和机密：它共用桌面应用的配置目录和机密存储（系统钥匙串或加密保险库）。账户、加密保险库和设置既可以在桌面应用中管理，也可以用命令行管理。账户有自己的代理时，请求经由它发送，否则经由桌面应用**设置 › 网络**里保存的代理；两者都没有时，`pail` 沿用环境变量 `HTTP_PROXY`、`HTTPS_PROXY` 和 `NO_PROXY`。
+`pail` 与桌面应用使用同一套账户、已保存的同步任务和机密：它共用桌面应用的配置目录和机密存储（系统钥匙串或加密保险库）。账户、加密保险库和设置既可以在桌面应用中管理，也可以用命令行管理。账户有自己的代理时，请求经由它发送，否则经由桌面应用 **设置 › 网络** 里保存的代理；两者都没有时，`pail` 沿用环境变量 `HTTP_PROXY`、`HTTPS_PROXY` 和 `NO_PROXY`。
 
 发布包里的程序名是 `pail`（Windows 上为 `pail.exe`）；在 macOS 上是 `Pail.app/Contents/MacOS/pail`。下文假设它已在 `PATH` 中。
 
@@ -243,7 +243,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 - `multipart ls s3://bucket[/prefix/]` 列出未完成的分段上传，包括开始时间、存储类别、上传 ID 和对象键。`multipart abort` 使用同样的路径，在确认后中止这些上传，并丢弃已上传的分段。`--older-than D` 只处理开始于 `D` 之前的上传，例如 `36h` 或 `7d`。
 - `sync job ls` 列出已保存的同步任务。`sync job add NAME LOCAL s3://bucket/prefix/` 保存一个上传任务，`sync job add NAME s3://bucket/prefix/ LOCAL` 保存一个下载任务，`--mode`、`--compare`、`--exclude` 和 `--no-rules` 与 `sync` 相同。本地文件夹必须已存在。`sync job rm NAME` 在确认后删除已保存的任务，本地文件和对象不受影响。用 `sync --job NAME` 运行任务。
 - `cloudfront ls` 列出账户的 CloudFront 分配；`--bucket B` 只保留源站在该存储桶的分配。`cloudfront invalidate DISTRIBUTION PATH...` 先输出分配和路径并要求确认，再创建失效。它只适用于 AWS 账户。
-- `update` 检查并安装 Pail 的新版本，同时替换桌面应用和 `pail`。`--check` 只报告有没有新版本。它使用 `update-source` 选择的下载来源和**设置 › 网络**里的代理，只安装用 Pail 发布密钥签名的文件。在 macOS 上，命令退出后新的 `Pail.app` 才会替换旧的。`pail` 只在运行这个命令时检查更新。从源码构建的版本，或位于没有写入权限的文件夹里的副本，不能自动更新，这时命令会报错并说明原因。
+- `update` 检查并安装 Pail 的新版本，同时替换桌面应用和 `pail`。`--check` 只报告有没有新版本。它使用 `update-source` 选择的下载来源和 **设置 › 网络** 里的代理，只安装用 Pail 发布密钥签名的文件。在 macOS 上，命令退出后新的 `Pail.app` 才会替换旧的。`pail` 只在运行这个命令时检查更新。从源码构建的版本，或位于没有写入权限的文件夹里的副本，不能自动更新，这时命令会报错并说明原因。
 - `settings get` 以 `KEY VALUE` 输出所有设置；`settings get KEY` 只输出值。`settings set KEY VALUE` 修改一项。它们就是桌面应用的设置。
 
 | 设置 | 取值 |
