@@ -4,6 +4,17 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Added
+
+- Local AWS profile discovery for `aws login --profile` and other shared AWS profiles. In the account dialog, **AWS profile** lists the profiles found in your AWS config and credentials files with their authentication type and region, plus **Other…** for any custom name. On the command line, `pail account profiles` lists the same profiles.
+- Missing or expired `aws login` sessions report that re-authentication with `aws login` is needed, and Pail reloads updated AWS configuration files without a restart.
+
+### Fixed
+
+- Accounts using an AWS profile or the default credential chain ignored the profile's configured region and forced `us-east-1` when no region was set on the account. Omitting the region now uses the profile's region (or `AWS_REGION`), falling back to `us-east-1`.
+
 ## [0.7.0] - 2026-11-21
 
 ### Added

@@ -17,9 +17,10 @@ type clientEntry struct {
 	cfg storage.Config
 	acc Account
 
-	mu sync.Mutex // guards st and cl
-	st *storage.Client
-	cl *cloud.Client
+	mu       sync.Mutex // guards st, cl and awsStamp
+	st       *storage.Client
+	cl       *cloud.Client
+	awsStamp string
 }
 
 // buildCall lets concurrent callers share one (possibly slow, keyring-prompting)
@@ -160,7 +161,10 @@ func (s *Service) entry(ctx context.Context, id string) (*clientEntry, error) {
 	}
 }
 
-// storageClient returns the (cached) S3 client of an account.
+// storageClient returns the (cached) S3 client of an account. For accounts that
+// read local AWS configuration (profile or default chain), changes to the AWS
+// shared config or credentials files (such as `aws login --profile`) drop the
+// cached clients so the next request reloads them.
 func (s *Service) storageClient(ctx context.Context, id string) (*storage.Client, error) {
 	e, err := s.entry(ctx, id)
 	if err != nil {
@@ -168,12 +172,20 @@ func (s *Service) storageClient(ctx context.Context, id string) (*storage.Client
 	}
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	var stamp string
+	if e.cfg.UseDefaultCredentials {
+		stamp = storage.SharedConfigStamp()
+		if stamp != e.awsStamp {
+			e.st, e.cl = nil, nil
+		}
+	}
 	if e.st == nil {
 		c, err := storage.New(ctx, e.cfg)
 		if err != nil {
 			return nil, err
 		}
 		e.st = c
+		e.awsStamp = stamp
 	}
 	return e.st, nil
 }
@@ -186,12 +198,20 @@ func (s *Service) cloudClient(ctx context.Context, id string) (*cloud.Client, er
 	}
 	e.mu.Lock()
 	defer e.mu.Unlock()
+	var stamp string
+	if e.cfg.UseDefaultCredentials {
+		stamp = storage.SharedConfigStamp()
+		if stamp != e.awsStamp {
+			e.st, e.cl = nil, nil
+		}
+	}
 	if e.cl == nil {
 		c, err := cloud.New(ctx, e.cfg)
 		if err != nil {
 			return nil, err
 		}
 		e.cl = c
+		e.awsStamp = stamp
 	}
 	return e.cl, nil
 }

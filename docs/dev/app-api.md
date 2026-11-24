@@ -130,7 +130,9 @@ type Account struct {
 }
 type AccountBucket struct{ Name, Prefix string } // Prefix "" or ends with "/": the folder the bucket opens in
 type Secrets struct{ SecretAccessKey, SessionToken string }
+type AWSProfile struct{ Name, Region, Auth string } // local AWS config/credentials profile (never carries secrets); Auth: "login" | "sso" | "static" | "role" | "process" | "web_identity" | ""
 
+func AWSProfiles() ([]AWSProfile, error) // reads local AWS config/credentials files; missing files return nil, nil
 func (s *Service) Accounts() []Account
 func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error)
 // sec == nil 表示保留已有机密。先写新机密，再更新账户记录，最后删除旧机密。

@@ -10,6 +10,7 @@ import (
 	"strings"
 	"syscall"
 
+	awsconfig "github.com/aws/aws-sdk-go-v2/config"
 	"github.com/aws/smithy-go"
 )
 
@@ -43,6 +44,9 @@ var (
 	// a bare Linux or WSL install), as opposed to a transient or per-entry
 	// failure. The UI answers it by offering the encrypted vault.
 	ErrKeyringUnavailable = errors.New("no system keychain available")
+	// ErrLoginRequired marks an `aws login` profile whose cached login session
+	// is missing or expired and needs `aws login` to sign in again.
+	ErrLoginRequired = errors.New("AWS login session is missing or expired")
 )
 
 func (k ErrKind) String() string {
@@ -170,6 +174,19 @@ func classify(op string, err error) (res error) {
 		return oe
 	}
 
+	var missingProfile awsconfig.SharedConfigProfileNotExistError
+	if errors.As(err, &missingProfile) {
+		oe.Kind = ErrInvalid
+		oe.Message = fmt.Sprintf("AWS profile %q was not found in your AWS configuration or credentials files", missingProfile.Profile)
+		return oe
+	}
+	if isLoginReauthError(err) {
+		oe.Kind = ErrAccessDenied
+		oe.Message = "AWS login session is missing or expired; run aws login to sign in again"
+		oe.err = fmt.Errorf("%w: %w", ErrLoginRequired, err)
+		return oe
+	}
+
 	var api smithy.APIError
 	if errors.As(err, &api) {
 		oe.Code = api.ErrorCode()
@@ -266,4 +283,12 @@ func isNetworkError(err error) bool {
 		}
 	}
 	return false
+}
+
+func isLoginReauthError(err error) bool {
+	msg := strings.ToLower(err.Error())
+	if !strings.Contains(msg, "please reauthenticate") {
+		return false
+	}
+	return strings.Contains(msg, "load login token:") || strings.Contains(msg, "create oauth2 token:")
 }

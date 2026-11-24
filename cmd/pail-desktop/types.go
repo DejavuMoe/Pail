@@ -30,6 +30,9 @@ func humanError(err error) string {
 	if errors.Is(err, core.ErrConfigLocked) {
 		return locales.TypesConfigBusy()
 	}
+	if errors.Is(err, core.ErrLoginRequired) {
+		return locales.TypesLoginRequired()
+	}
 	var oe *core.OpError
 	if !errors.As(err, &oe) {
 		return err.Error()

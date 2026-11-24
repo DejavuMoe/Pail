@@ -42,6 +42,9 @@ func (a *app) accountButton(c *ui.Context) {
 	k := tk(c)
 	ac := a.account()
 	name, sub := ac.Name, ac.Region
+	if sub == "" && ac.Profile != "" {
+		sub = ac.Profile
+	}
 	if sub == "" {
 		sub = ac.Endpoint
 	}

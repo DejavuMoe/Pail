@@ -168,8 +168,9 @@ func (cfg Config) AWSConfig(ctx context.Context) (aws.Config, error) {
 	if err := cfg.validate(); err != nil {
 		return aws.Config{}, err
 	}
-	if cfg.Region == "" {
-		cfg.Region = "us-east-1"
+	region := cfg.Region
+	if region == "" {
+		region = "us-east-1"
 	}
 	var hc aws.HTTPClient = cfg.HTTPClient
 	if hc == nil {
@@ -178,12 +179,19 @@ func (cfg Config) AWSConfig(ctx context.Context) (aws.Config, error) {
 	var ac aws.Config
 	switch {
 	case cfg.Anonymous:
-		ac = aws.Config{Region: cfg.Region, HTTPClient: hc, Credentials: aws.AnonymousCredentials{}}
+		ac = aws.Config{Region: region, HTTPClient: hc, Credentials: aws.AnonymousCredentials{}}
 	case cfg.AccessKeyID != "":
-		ac = aws.Config{Region: cfg.Region, HTTPClient: hc,
+		ac = aws.Config{Region: region, HTTPClient: hc,
 			Credentials: aws.NewCredentialsCache(credentials.NewStaticCredentialsProvider(cfg.AccessKeyID, cfg.SecretAccessKey, cfg.SessionToken))}
 	case cfg.UseDefaultCredentials:
-		opts := []func(*awsconfig.LoadOptions) error{awsconfig.WithRegion(cfg.Region), awsconfig.WithHTTPClient(hc)}
+		opts := []func(*awsconfig.LoadOptions) error{awsconfig.WithHTTPClient(hc)}
+		if cfg.Region != "" {
+			opts = append(opts, awsconfig.WithRegion(cfg.Region))
+		} else {
+			// Let the selected profile or AWS_REGION supply the region; fall
+			// back to us-east-1 only when neither sets one.
+			opts = append(opts, awsconfig.WithDefaultRegion("us-east-1"))
+		}
 		if cfg.Profile != "" {
 			opts = append(opts, awsconfig.WithSharedConfigProfile(cfg.Profile))
 		}

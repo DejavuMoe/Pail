@@ -195,6 +195,10 @@ func segmentedAction(c *ui.Context, cur int, label string, labels ...string) (in
 // choice is one option of selectBox.
 type choice struct{ Value, Label string }
 
+// choiceDetail is a selectBox option with optional secondary text (such as a
+// profile's authentication method and region).
+type choiceDetail struct{ Value, Label, Secondary string }
+
 // plainChoices offers names as they are; keep, when set and not among them (a
 // value saved earlier), is added at the end so the box can still show it.
 func plainChoices(names []string, keep string) []choice {
@@ -211,13 +215,28 @@ func plainChoices(names []string, keep string) []choice {
 // selectBox is a drop-down styled like an input. It returns true on a new
 // choice.
 func selectBox(c *ui.Context, label string, value *string, opts []choice, width float32) bool {
+	detailed := make([]choiceDetail, len(opts))
+	for i, o := range opts {
+		detailed[i] = choiceDetail{Value: o.Value, Label: o.Label}
+	}
+	return selectBoxDetail(c, label, value, detailed, "", width)
+}
+
+// selectBoxDetail is selectBox with per-option secondary text and an optional
+// placeholder when *value is empty and matches no option.
+func selectBoxDetail(c *ui.Context, label string, value *string, opts []choiceDetail, placeholder string, width float32) bool {
 	k := tk(c)
 	sel := ui.SelectBase(c.Key("sel:"+label), value)
-	shown := *value
+	shown, matched := *value, false
 	for _, o := range opts {
 		if o.Value == *value {
-			shown = o.Label
+			shown, matched = o.Label, true
+			break
 		}
+	}
+	ink := k.Text
+	if !matched && shown == "" && placeholder != "" {
+		shown, ink = placeholder, k.TextSubtle
 	}
 	sel.Trigger.Height(28).Padding(0, 8).Gap(6).Radius(RadiusControl).AlignItems(ui.Center).Background(k.Surface).Label(label)
 	if width > 0 {
@@ -232,7 +251,7 @@ func selectBox(c *ui.Context, label string, value *string, opts []choice, width 
 		sel.Trigger.Border(1, k.BorderStrong)
 	}
 	sel.Trigger.Children(func() {
-		ui.Text(c, shown).FontSize(sizeBody).TextColor(k.Text).SingleLine().Grow(1).MinWidth(0)
+		ui.Text(c, shown).FontSize(sizeBody).TextColor(ink).SingleLine().Grow(1).MinWidth(0)
 		ui.Icon(c, icons.Get("chevron-down")).FontSize(14).TextColor(k.TextMuted)
 	})
 	sel.Popup(func(panel ui.Element) {
@@ -240,10 +259,10 @@ func selectBox(c *ui.Context, label string, value *string, opts []choice, width 
 		overlayPanel(c, panel, overlayPopover)
 		fadeIn(c, panel)
 		for _, o := range opts {
-			// The row under the pointer or the arrows is highlighted (SurfaceHover);
-			// the current option is a different cue: an Accent check and weight 600.
+			// The row under the pointer or the arrows is highlighted (ActiveFill);
+			// the current option is a different cue: an Accent check.
 			item := sel.Item(o.Value)
-			listRow(c, item, rowSpec{Label: o.Label, Checked: o.Value == *value, Highlighted: item.Highlighted()})
+			listRow(c, item, rowSpec{Label: o.Label, Secondary: o.Secondary, Checked: o.Value == *value, Highlighted: item.Highlighted()})
 		}
 	})
 	return sel.Trigger.Changed()

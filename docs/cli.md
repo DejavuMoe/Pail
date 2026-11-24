@@ -37,7 +37,7 @@ Usage:
 
 ```sh
 pail accounts                                       # list accounts
-pail account ls|show|add|edit|test|rm ...           # manage accounts, see Accounts
+pail account ls|profiles|show|add|edit|test|rm ...  # manage accounts, see Accounts
 pail vault status|init|unlock|lock|passwd|backend|reset
                                                     # secret backend and vault, see Encrypted vault
 pail bucket alias s3://bucket [NAME | --clear]      # display name of a bucket
@@ -148,6 +148,7 @@ The key is percent-encoded like the public URL, keeping `/`. The CDN URL is set 
 
 ```text
 pail account ls
+pail account profiles
 pail account show [NAME]
 pail account add NAME --endpoint URL --access-key-id ID [--region R] [--path-style] [--bucket B] [--secret-stdin]
 pail account edit [NAME] [--region R] [--set-secret [--secret-stdin]]
@@ -157,6 +158,7 @@ pail account rm [NAME]
 
 `NAME` is an account name or ID. Without it, the command uses `--account`, or the only account. `account ls` is the same as `accounts`.
 
+- `profiles` lists the local profiles found in your AWS config and credentials files (including sessions created with `aws login --profile`), with their region and authentication type. With `--json`, each row has `"type":"profile"`.
 - `add` takes the new account's name. Before saving it lists the buckets once to test the connection, or with `--bucket` the named folders. A failed test saves nothing. `--no-test` saves without testing; anonymous accounts cannot list buckets, so they need it or `--bucket`.
 - `edit` changes only the flags you give. `--rename NEW` renames the account. A switch is turned off with `--path-style=false`. An empty value, such as `--cdn-url ""`, clears a field.
 - `show` prints the settings without secrets. For a static account it says whether the secret key is stored or missing.
@@ -169,11 +171,11 @@ The account flags are the fields of the desktop app's account dialog:
 | --- | --- |
 | `--provider` | `aws` or `s3`. Default: `s3` with `--endpoint`, otherwise `aws`. |
 | `--endpoint` | Endpoint URL of an S3-compatible service. |
-| `--region` | Region. |
+| `--region` | Region. With `profile` or `default` credentials, omitting it uses the profile's region (or `us-east-1`). |
 | `--path-style` | Address buckets as `endpoint/bucket`. |
 | `--credentials` | `static`, `profile`, `default` or `anonymous`. Default: `static`, or `profile` with `--profile`. |
 | `--access-key-id` | Access key ID for static credentials. It is not secret. |
-| `--profile` | Profile name for the `profile` credentials. |
+| `--profile` | Profile name for the `profile` credentials (including `aws login --profile` sessions). |
 | `--role-arn` | Role to assume. |
 | `--external-id` | External ID of the assumed role. |
 | `--role-session-name` | Session name of the assumed role. |

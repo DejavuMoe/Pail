@@ -24,10 +24,11 @@ Pail 里的一个账户就是到一个存储服务的连接：服务在哪里、
 pail account add backup --endpoint https://s3.example.com --region us-east-1 --path-style --access-key-id AKIAEXAMPLE
 ```
 
-使用 AWS 配置文件的 AWS 账户不需要端点，也不需要私有密钥：
+使用 AWS 配置文件（包括通过 `aws login --profile` 创建的会话）的 AWS 账户不需要端点，也不需要私有密钥；省略 `--region` 时会使用配置文件里的区域：
 
 ```sh
-pail account add work --profile work --region eu-central-1
+pail account profiles
+pail account add work --profile work
 ```
 
 - `--secret-stdin` 从标准输入读取一行作为私有密钥，不再提示输入。`--ask-session-token` 还会读取会话令牌。
@@ -42,11 +43,13 @@ pail account add work --profile work --region eu-central-1
 | 类型 | 参数值 | Pail 使用什么 |
 | --- | --- | --- |
 | **访问密钥** | `static` | Pail 保存的访问密钥 ID 和私有访问密钥。 |
-| **AWS 配置文件** | `profile` | AWS 共享配置和凭证文件中的命名配置，例如 `default`。 |
+| **AWS 配置文件** | `profile` | AWS 配置和凭证文件中的命名配置（包括 `aws login --profile` 和 SSO 会话），例如 `default`。 |
 | **默认凭证链** | `default` | 按 AWS SDK 的标准顺序查找：环境变量、共享文件，然后是实例或容器角色。 |
 | **匿名访问** | `anonymous` | 不签名的请求，只适用于公开的存储桶。 |
 
 对应的参数是 `--credentials`。给出 `--profile` 时默认为 `profile`，否则默认为 `static`。
+
+如果本机 AWS 配置或凭证文件里已有配置文件，**配置文件** 字段会列出它们及其认证方式和区域，并附带 **其他…** 以手动输入任意名称。`aws login` 会话过期后，在终端重新运行 `aws login --profile NAME` 并在 Pail 中重试即可；Pail 会自动重新读取更新后的 AWS 配置文件。
 
 使用 **访问密钥** 时，**会话令牌（可选）** 只有临时凭证才需要，例如来自 AWS STS 的凭证。会话令牌与私有密钥保存在一起，所以修改令牌时要重新输入私有密钥。编辑账户时，**私有访问密钥** 留空即保留已存储的密钥。
 
@@ -72,7 +75,7 @@ Pail 把私有密钥存进系统钥匙串或加密保险库，不写入配置文
 | 其他服务 | 兼容 S3 | 服务商提供的地址 | 按服务商的说明 |
 
 - **端点** 是服务的完整地址，以 `http://` 或 `https://` 开头，不含凭证和查询参数。在命令行里，给出 `--endpoint` 即表示兼容 S3 的账户。
-- **区域** 是请求签名所用的区域，例如 `us-east-1`。除非服务要求特定区域，否则保持默认。
+- **区域** 是请求签名所用的区域，例如 `us-east-1`。使用 **AWS 配置文件** 或 **默认凭证链** 时，留空则使用配置文件里的区域，未设置时默认为 `us-east-1`。其他情况下除非服务要求特定区域，否则保持默认。
 - **路径样式访问** 以“端点/存储桶/对象”的形式访问对象。MinIO 和大多数自建网关需要开启；AWS 保持关闭。命令行参数是 `--path-style`，用 `--path-style=false` 关闭。
 
 ### 高级选项
