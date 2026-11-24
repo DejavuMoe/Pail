@@ -24,10 +24,11 @@ The same menu has **Edit account…** and **Remove account…**. Removing an acc
 pail account add backup --endpoint https://s3.example.com --region us-east-1 --path-style --access-key-id AKIAEXAMPLE
 ```
 
-An AWS account that uses a profile from your AWS configuration needs no endpoint and no secret:
+An AWS account that uses a profile from your AWS configuration (including one created with `aws login --profile`) needs no endpoint and no secret, and uses the profile's region when `--region` is omitted:
 
 ```sh
-pail account add work --profile work --region eu-central-1
+pail account profiles
+pail account add work --profile work
 ```
 
 - `--secret-stdin` reads the secret key from one line of stdin instead of the prompt. `--ask-session-token` also reads a session token.
@@ -42,11 +43,13 @@ Every flag is listed in the [command-line reference](../cli.md#accounts). If you
 | Choice | Flag value | What Pail uses |
 | --- | --- | --- |
 | **Access keys** | `static` | An access key ID and a secret access key that Pail stores. |
-| **AWS profile** | `profile` | A named profile from your AWS shared config and credentials files, for example `default`. |
+| **AWS profile** | `profile` | A named profile from your AWS config and credentials files (including `aws login --profile` and SSO sessions), for example `default`. |
 | **Default chain** | `default` | The standard AWS SDK lookup: environment variables, the shared files, then instance or container roles. |
 | **Anonymous** | `anonymous` | Unsigned requests. Works for public buckets only. |
 
 The flag is `--credentials`. With `--profile` it defaults to `profile`, otherwise to `static`.
+
+When local profiles exist in your AWS configuration or credentials files, the **Profile** field lists them with their authentication type and region, plus **Other…** to type any name. When an `aws login` session expires, run `aws login --profile NAME` in a terminal and retry in Pail; Pail reloads updated AWS configuration files automatically.
 
 With **Access keys**, **Session token (optional)** is only needed for temporary credentials, for example from AWS STS. The token is stored with the secret key, so enter the secret key again when you change the token. When editing an account, leave **Secret access key** empty to keep the stored one.
 
@@ -72,7 +75,7 @@ On the command line these are `--role-arn`, `--external-id` and `--role-session-
 | Other services | S3-compatible | The address from the provider | As the provider says |
 
 - **Endpoint** is the full address of the service, starting with `http://` or `https://`, without credentials or a query string. On the command line, `--endpoint` makes the account S3-compatible.
-- **Region** is the region requests are signed for, such as `us-east-1`. Leave the default unless your service asks for a specific region.
+- **Region** is the region requests are signed for, such as `us-east-1`. With **AWS profile** or **Default chain**, leave it empty to use the profile's region, falling back to `us-east-1`. Otherwise leave the default unless your service asks for a specific region.
 - **Path-style addressing** addresses objects as `endpoint/bucket/object`. MinIO and most self-hosted gateways need it on; keep it off for AWS. On the command line it is `--path-style`, and `--path-style=false` turns it off.
 
 ### Advanced options

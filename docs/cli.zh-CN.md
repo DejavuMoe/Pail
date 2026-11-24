@@ -37,7 +37,7 @@ S3 路径写作 `s3://bucket/key-or-prefix/`，其他参数都视为本地路径
 
 ```sh
 pail accounts                                       # 列出账户
-pail account ls|show|add|edit|test|rm ...           # 管理账户，见"账户"
+pail account ls|profiles|show|add|edit|test|rm ...  # 管理账户，见"账户"
 pail vault status|init|unlock|lock|passwd|backend|reset
                                                     # 机密后端和保险库，见"加密保险库"
 pail bucket alias s3://bucket [NAME | --clear]      # 存储桶的显示名称
@@ -148,6 +148,7 @@ https://{bucket}.cdn.example.com/{key}
 
 ```text
 pail account ls
+pail account profiles
 pail account show [NAME]
 pail account add NAME --endpoint URL --access-key-id ID [--region R] [--path-style] [--bucket B] [--secret-stdin]
 pail account edit [NAME] [--region R] [--set-secret [--secret-stdin]]
@@ -157,6 +158,7 @@ pail account rm [NAME]
 
 `NAME` 是账户名称或 ID。省略时，命令使用 `--account` 指定的账户，或唯一的账户。`account ls` 与 `accounts` 相同。
 
+- `profiles` 列出本机 AWS 配置和凭证文件中的配置文件（包括通过 `aws login --profile` 创建的会话），显示其区域和认证方式。使用 `--json` 时，每行的 `"type"` 为 `"profile"`。
 - `add` 的参数是新账户的名称。保存前会列一次存储桶来测试连接；给出 `--bucket` 时改为列出指定的文件夹。测试失败就不保存。`--no-test` 跳过测试；匿名账户不能列出存储桶，所以需要它或 `--bucket`。
 - `edit` 只修改给出的参数。`--rename NEW` 重命名账户。开关用 `--path-style=false` 关闭。给出空值，例如 `--cdn-url ""`，会清空该字段。
 - `show` 输出账户设置，不含机密。静态账户还会说明私有访问密钥是已保存还是缺失。
@@ -169,11 +171,11 @@ pail account rm [NAME]
 | --- | --- |
 | `--provider` | `aws` 或 `s3`。默认：给出 `--endpoint` 时为 `s3`，否则为 `aws`。 |
 | `--endpoint` | S3 兼容服务的端点 URL。 |
-| `--region` | 区域。 |
+| `--region` | 区域。使用 `profile` 或 `default` 凭据时，省略则使用配置文件里的区域（未设置时为 `us-east-1`）。 |
 | `--path-style` | 以 `endpoint/bucket` 的形式访问存储桶。 |
 | `--credentials` | `static`、`profile`、`default` 或 `anonymous`。默认：`static`；给出 `--profile` 时为 `profile`。 |
 | `--access-key-id` | 静态凭据的访问密钥 ID，它不是机密。 |
-| `--profile` | `profile` 凭据使用的 profile 名称。 |
+| `--profile` | `profile` 凭据使用的配置名称（包括 `aws login --profile` 会话）。 |
 | `--role-arn` | 要代入的角色。 |
 | `--external-id` | 代入角色时使用的外部 ID。 |
 | `--role-session-name` | 代入角色时使用的会话名称。 |

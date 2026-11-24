@@ -4,6 +4,7 @@ import (
 	"time"
 
 	"github.com/DejavuMoe/Pail/internal/selfupdate"
+	"github.com/DejavuMoe/Pail/internal/storage"
 )
 
 // This file holds every exported data type of the app layer (docs/rewrite/APP_API.md
@@ -181,6 +182,24 @@ const (
 
 // Secrets are the keyring-backed parts of a static credential.
 type Secrets struct{ SecretAccessKey, SessionToken string }
+
+// AWSProfile describes one profile found in the local AWS shared configuration
+// and credentials files. It never contains secrets.
+type AWSProfile struct {
+	Name   string `json:"name"`
+	Region string `json:"region,omitempty"`
+	Auth   string `json:"auth,omitempty"` // "login" | "sso" | "static" | "role" | "process" | "web_identity" | ""
+}
+
+// AWSProfile.Auth values.
+const (
+	ProfileAuthLogin       = storage.ProfileAuthLogin
+	ProfileAuthSSO         = storage.ProfileAuthSSO
+	ProfileAuthStatic      = storage.ProfileAuthStatic
+	ProfileAuthRole        = storage.ProfileAuthRole
+	ProfileAuthProcess     = storage.ProfileAuthProcess
+	ProfileAuthWebIdentity = storage.ProfileAuthWebIdentity
+)
 
 // ---- browsing --------------------------------------------------------------
 

@@ -193,6 +193,20 @@ func ValidateAccount(a Account) (Account, error) {
 	return a, nil
 }
 
+// AWSProfiles lists the profiles found in the local AWS shared configuration
+// and credentials files. Missing files return an empty slice and nil error.
+func AWSProfiles() ([]AWSProfile, error) {
+	list, err := storage.ListAWSProfiles()
+	if err != nil {
+		return nil, classify("AWSProfiles", err)
+	}
+	out := make([]AWSProfile, len(list))
+	for i, p := range list {
+		out[i] = AWSProfile{Name: p.Name, Region: p.Region, Auth: p.Auth}
+	}
+	return out, nil
+}
+
 func validateSecrets(sec *Secrets) error {
 	if sec.SecretAccessKey == "" {
 		return errors.New("secret access key is required")

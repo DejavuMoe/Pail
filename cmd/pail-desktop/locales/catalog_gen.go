@@ -424,11 +424,11 @@ func (msgs Messages) AcctCredentials() string {
 	return Catalog.Format(msgs.locale, "acctCredentials", nil)
 }
 
-// AcctCredentialsHelp says "Access keys: an access key ID and secret key stored on this computer. AWS profile: a named profile from your AWS shar…"
+// AcctCredentialsHelp says "Access keys: an access key ID and secret key stored on this computer. AWS profile: a named profile from your AWS conf…"
 // in the language the app shows.
 func AcctCredentialsHelp() string { return In(i18n.Locale()).AcctCredentialsHelp() }
 
-// AcctCredentialsHelp says "Access keys: an access key ID and secret key stored on this computer. AWS profile: a named profile from your AWS shar…"
+// AcctCredentialsHelp says "Access keys: an access key ID and secret key stored on this computer. AWS profile: a named profile from your AWS conf…"
 // in the language of msgs.
 func (msgs Messages) AcctCredentialsHelp() string {
 	return Catalog.Format(msgs.locale, "acctCredentialsHelp", nil)
@@ -644,11 +644,81 @@ func (msgs Messages) AcctProfile() string {
 	return Catalog.Format(msgs.locale, "acctProfile", nil)
 }
 
-// AcctProfileHelp says "The name of a profile in your AWS shared config and credentials files, for example default."
+// AcctProfileAuthLogin says "aws login"
+// in the language the app shows.
+func AcctProfileAuthLogin() string { return In(i18n.Locale()).AcctProfileAuthLogin() }
+
+// AcctProfileAuthLogin says "aws login"
+// in the language of msgs.
+func (msgs Messages) AcctProfileAuthLogin() string {
+	return Catalog.Format(msgs.locale, "acctProfileAuthLogin", nil)
+}
+
+// AcctProfileAuthProcess says "Process"
+// in the language the app shows.
+func AcctProfileAuthProcess() string { return In(i18n.Locale()).AcctProfileAuthProcess() }
+
+// AcctProfileAuthProcess says "Process"
+// in the language of msgs.
+func (msgs Messages) AcctProfileAuthProcess() string {
+	return Catalog.Format(msgs.locale, "acctProfileAuthProcess", nil)
+}
+
+// AcctProfileAuthRole says "IAM role"
+// in the language the app shows.
+func AcctProfileAuthRole() string { return In(i18n.Locale()).AcctProfileAuthRole() }
+
+// AcctProfileAuthRole says "IAM role"
+// in the language of msgs.
+func (msgs Messages) AcctProfileAuthRole() string {
+	return Catalog.Format(msgs.locale, "acctProfileAuthRole", nil)
+}
+
+// AcctProfileAuthSso says "SSO"
+// in the language the app shows.
+func AcctProfileAuthSso() string { return In(i18n.Locale()).AcctProfileAuthSso() }
+
+// AcctProfileAuthSso says "SSO"
+// in the language of msgs.
+func (msgs Messages) AcctProfileAuthSso() string {
+	return Catalog.Format(msgs.locale, "acctProfileAuthSso", nil)
+}
+
+// AcctProfileAuthStatic says "Access keys"
+// in the language the app shows.
+func AcctProfileAuthStatic() string { return In(i18n.Locale()).AcctProfileAuthStatic() }
+
+// AcctProfileAuthStatic says "Access keys"
+// in the language of msgs.
+func (msgs Messages) AcctProfileAuthStatic() string {
+	return Catalog.Format(msgs.locale, "acctProfileAuthStatic", nil)
+}
+
+// AcctProfileAuthWebIdentity says "Web identity"
+// in the language the app shows.
+func AcctProfileAuthWebIdentity() string { return In(i18n.Locale()).AcctProfileAuthWebIdentity() }
+
+// AcctProfileAuthWebIdentity says "Web identity"
+// in the language of msgs.
+func (msgs Messages) AcctProfileAuthWebIdentity() string {
+	return Catalog.Format(msgs.locale, "acctProfileAuthWebIdentity", nil)
+}
+
+// AcctProfileCustom says "Profile name"
+// in the language the app shows.
+func AcctProfileCustom() string { return In(i18n.Locale()).AcctProfileCustom() }
+
+// AcctProfileCustom says "Profile name"
+// in the language of msgs.
+func (msgs Messages) AcctProfileCustom() string {
+	return Catalog.Format(msgs.locale, "acctProfileCustom", nil)
+}
+
+// AcctProfileHelp says "The name of a profile in your AWS config and credentials files, including sessions created with aws login --profile, …"
 // in the language the app shows.
 func AcctProfileHelp() string { return In(i18n.Locale()).AcctProfileHelp() }
 
-// AcctProfileHelp says "The name of a profile in your AWS shared config and credentials files, for example default."
+// AcctProfileHelp says "The name of a profile in your AWS config and credentials files, including sessions created with aws login --profile, …"
 // in the language of msgs.
 func (msgs Messages) AcctProfileHelp() string {
 	return Catalog.Format(msgs.locale, "acctProfileHelp", nil)
@@ -734,11 +804,33 @@ func (msgs Messages) AcctProxyHelp() string {
 	return Catalog.Format(msgs.locale, "acctProxyHelp", nil)
 }
 
-// AcctRegionHelp says "The region requests are signed for, such as us-east-1. Leave the default unless your service asks for a specific region."
+// AcctRegionDefault says "From profile, or us-east-1"
+// in the language the app shows.
+func AcctRegionDefault() string { return In(i18n.Locale()).AcctRegionDefault() }
+
+// AcctRegionDefault says "From profile, or us-east-1"
+// in the language of msgs.
+func (msgs Messages) AcctRegionDefault() string {
+	return Catalog.Format(msgs.locale, "acctRegionDefault", nil)
+}
+
+// AcctRegionFromProfile says "From profile ({region})"
+// in the language the app shows.
+func AcctRegionFromProfile(region string) string {
+	return In(i18n.Locale()).AcctRegionFromProfile(region)
+}
+
+// AcctRegionFromProfile says "From profile ({region})"
+// in the language of msgs.
+func (msgs Messages) AcctRegionFromProfile(region string) string {
+	return Catalog.Format(msgs.locale, "acctRegionFromProfile", map[string]any{"region": region})
+}
+
+// AcctRegionHelp says "The region requests are signed for, such as us-east-1. For an AWS profile or the default chain, leave empty to use th…"
 // in the language the app shows.
 func AcctRegionHelp() string { return In(i18n.Locale()).AcctRegionHelp() }
 
-// AcctRegionHelp says "The region requests are signed for, such as us-east-1. Leave the default unless your service asks for a specific region."
+// AcctRegionHelp says "The region requests are signed for, such as us-east-1. For an AWS profile or the default chain, leave empty to use th…"
 // in the language of msgs.
 func (msgs Messages) AcctRegionHelp() string {
 	return Catalog.Format(msgs.locale, "acctRegionHelp", nil)
@@ -11812,6 +11904,16 @@ func TypesLocked() string { return In(i18n.Locale()).TypesLocked() }
 // in the language of msgs.
 func (msgs Messages) TypesLocked() string {
 	return Catalog.Format(msgs.locale, "typesLocked", nil)
+}
+
+// TypesLoginRequired says "Your AWS login session is missing or expired. Run aws login in a terminal, then try again"
+// in the language the app shows.
+func TypesLoginRequired() string { return In(i18n.Locale()).TypesLoginRequired() }
+
+// TypesLoginRequired says "Your AWS login session is missing or expired. Run aws login in a terminal, then try again"
+// in the language of msgs.
+func (msgs Messages) TypesLoginRequired() string {
+	return Catalog.Format(msgs.locale, "typesLoginRequired", nil)
 }
 
 // TypesNetwork says "Can't reach the server. Check the connection and the endpoint"

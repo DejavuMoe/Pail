@@ -32,11 +32,11 @@ type accountFlags struct {
 func (f *accountFlags) register(fs *flag.FlagSet) {
 	fs.StringVar(&f.provider, "provider", "", "aws or s3 (default: s3 with --endpoint, else aws)")
 	fs.StringVar(&f.endpoint, "endpoint", "", "endpoint URL of an S3-compatible service")
-	fs.StringVar(&f.region, "region", "", "region")
+	fs.StringVar(&f.region, "region", "", "region (default: profile region or us-east-1 for profile/default credentials)")
 	fs.BoolVar(&f.pathStyle, "path-style", false, "address buckets as endpoint/bucket instead of bucket.endpoint")
 	fs.StringVar(&f.credentials, "credentials", "", "static, profile, default or anonymous (default: static, or profile with --profile)")
 	fs.StringVar(&f.accessKeyID, "access-key-id", "", "access key ID (not secret) for static credentials")
-	fs.StringVar(&f.profile, "profile", "", "shared-credentials profile name")
+	fs.StringVar(&f.profile, "profile", "", "AWS profile name from shared config/credentials files (including aws login --profile)")
 	fs.StringVar(&f.roleARN, "role-arn", "", "role to assume (arn:...)")
 	fs.StringVar(&f.externalID, "external-id", "", "external ID for the assumed role")
 	fs.StringVar(&f.roleSessionName, "role-session-name", "", "session name for the assumed role")
@@ -111,7 +111,7 @@ func setupAccount(c *cli, fs *flag.FlagSet) runner {
 	f.register(fs)
 	return func(ctx context.Context, pos []string) error {
 		if len(pos) == 0 {
-			return usagef("account needs a subcommand: ls, show, add, edit, test or rm")
+			return usagef("account needs a subcommand: ls, profiles, show, add, edit, test or rm")
 		}
 		sub, args := pos[0], pos[1:]
 		switch sub {
@@ -123,6 +123,14 @@ func setupAccount(c *cli, fs *flag.FlagSet) runner {
 				return err
 			}
 			return c.listAccounts("account ls")
+		case "profiles":
+			if len(args) != 0 {
+				return usagef("account profiles takes no arguments")
+			}
+			if err := onlyFlags(fs, "account profiles"); err != nil {
+				return err
+			}
+			return c.accountProfiles()
 		case "show", "test", "rm":
 			if len(args) > 1 {
 				return usagef("account %s takes at most one account name", sub)
@@ -160,8 +168,32 @@ func setupAccount(c *cli, fs *flag.FlagSet) runner {
 			}
 			return c.accountEdit(fs, &f)
 		}
-		return usagef("unknown account subcommand %q (ls, show, add, edit, test, rm)", sub)
+		return usagef("unknown account subcommand %q (ls, profiles, show, add, edit, test, rm)", sub)
 	}
+}
+
+func (c *cli) accountProfiles() error {
+	profs, err := app.AWSProfiles()
+	if err != nil {
+		return err
+	}
+	if c.g.json {
+		for _, p := range profs {
+			c.emit(map[string]any{"type": "profile", "name": p.Name, "region": p.Region, "auth": p.Auth})
+		}
+		c.emit(map[string]any{"type": "summary", "command": "account profiles", "ok": true, "count": len(profs)})
+		return nil
+	}
+	if len(profs) == 0 {
+		c.infof("no local AWS profiles found; run aws login --profile NAME or aws configure")
+		return nil
+	}
+	tw := tabwriter.NewWriter(c.io.Stdout, 2, 4, 2, ' ', 0)
+	fmt.Fprintln(tw, "NAME\tREGION\tAUTH")
+	for _, p := range profs {
+		fmt.Fprintf(tw, "%s\t%s\t%s\n", p.Name, orDash(p.Region), orDash(p.Auth))
+	}
+	return tw.Flush()
 }
 
 // pickAccount selects the account named by the optional positional argument,

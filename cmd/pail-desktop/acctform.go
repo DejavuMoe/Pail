@@ -35,6 +35,14 @@ type acctForm struct {
 	secret     string
 	session    string
 	profile    string
+	// profiles are discovered from the local AWS config/credentials files when
+	// the dialog opens; profilePick tracks the select box (profile name or
+	// customProfile). regionEdited tracks whether the user edited Region so
+	// switching to an AWS profile can clear the untouched default us-east-1.
+	profiles     []core.AWSProfile
+	profilePick  string
+	regionEdited bool
+	openGen      int
 
 	advanced   bool
 	roleARN    string
@@ -63,7 +71,92 @@ const (
 	testFailed
 )
 
+const customProfile = "__custom__"
+
 func (f *acctForm) busy() bool { return f.saving || f.test == testRunning }
+
+func (f *acctForm) hasProfile(name string) bool {
+	for _, p := range f.profiles {
+		if p.Name == name {
+			return true
+		}
+	}
+	return false
+}
+
+func (f *acctForm) syncProfilePick() {
+	if len(f.profiles) == 0 {
+		f.profilePick = ""
+		return
+	}
+	if f.profilePick == customProfile {
+		return
+	}
+	if f.profile == "" {
+		f.profilePick = ""
+		return
+	}
+	if f.hasProfile(f.profile) {
+		f.profilePick = f.profile
+		return
+	}
+	f.profilePick = customProfile
+}
+
+func (f *acctForm) selectedProfileRegion() string {
+	name := strings.TrimSpace(f.profile)
+	if name == "" && f.creds == core.CredDefault {
+		name = "default"
+	}
+	if name == "" {
+		return ""
+	}
+	for _, p := range f.profiles {
+		if p.Name == name {
+			return p.Region
+		}
+	}
+	return ""
+}
+
+func profileAuthLabel(auth string) string {
+	switch auth {
+	case core.ProfileAuthLogin:
+		return locales.AcctProfileAuthLogin()
+	case core.ProfileAuthSSO:
+		return locales.AcctProfileAuthSso()
+	case core.ProfileAuthStatic:
+		return locales.AcctProfileAuthStatic()
+	case core.ProfileAuthRole:
+		return locales.AcctProfileAuthRole()
+	case core.ProfileAuthProcess:
+		return locales.AcctProfileAuthProcess()
+	case core.ProfileAuthWebIdentity:
+		return locales.AcctProfileAuthWebIdentity()
+	default:
+		return ""
+	}
+}
+
+func (f *acctForm) profileChoices() []choiceDetail {
+	opts := make([]choiceDetail, 0, len(f.profiles)+1)
+	for _, p := range f.profiles {
+		var parts []string
+		if auth := profileAuthLabel(p.Auth); auth != "" {
+			parts = append(parts, auth)
+		}
+		if p.Region != "" {
+			parts = append(parts, p.Region)
+		}
+		opts = append(opts, choiceDetail{
+			Value:     p.Name,
+			Label:     p.Name,
+			Secondary: strings.Join(parts, " · "),
+		})
+	}
+	opts = append(opts, choiceDetail{Value: customProfile, Label: locales.RewriteOther()})
+	return opts
+}
 
 func credChoices() []choice {
 	return []choice{
@@ -87,36 +180,49 @@ func checksumChoices() []choice {
 func (a *app) openAccountForm(edit bool) {
 	f := &a.af
 	gen := f.testGen + 1
+	openGen := f.openGen + 1
 	// Path-style addressing is what most S3-compatible services need, so a
 	// new account starts with it on.
-	*f = acctForm{open: true, creds: core.CredStatic, region: "us-east-1", checksum: "auto", path: true, testGen: gen}
-	if !edit {
-		return
+	*f = acctForm{open: true, creds: core.CredStatic, region: "us-east-1", checksum: "auto", path: true, testGen: gen, openGen: openGen}
+	if edit {
+		ac := a.account()
+		if ac.ID == "" {
+			f.open = false
+			return
+		}
+		f.editing = ac.ID
+		f.provider = 0
+		if ac.Provider == core.ProviderS3 {
+			f.provider = 1
+		}
+		f.name, f.endpoint, f.region, f.path = ac.Name, ac.Endpoint, ac.Region, ac.PathStyle
+		f.regionEdited = true
+		f.cdnURL, f.cdnBuckets = ac.CDNURL, strings.Join(ac.CDNBuckets, ", ")
+		f.buckets = bucketsText(ac.Buckets)
+		f.creds, f.access, f.profile = ac.Credentials, ac.AccessKeyID, ac.Profile
+		f.hasSec = ac.Credentials == core.CredStatic && !ac.SecretMissing
+		f.missing = ac.SecretMissing
+		f.roleARN, f.externalID, f.roleName = ac.RoleARN, ac.ExternalID, ac.RoleSessionName
+		f.skipTLS = ac.InsecureSkipVerify
+		f.checksum = ac.ChecksumMode
+		if f.checksum == "" {
+			f.checksum = "auto"
+		}
+		f.reqPays, f.proxyMode, f.proxyURL = ac.RequesterPays, ac.ProxyMode, ac.ProxyURL
+		f.advanced = f.roleARN != "" || f.skipTLS || f.checksum != "auto" || f.reqPays || f.proxyMode != core.ProxyGlobal
 	}
-	ac := a.account()
-	if ac.ID == "" {
-		f.open = false
-		return
+	if listProfiles := a.listProfiles; listProfiles != nil {
+		a.bg(func() func() {
+			profs, _ := listProfiles()
+			return func() {
+				if !a.af.open || a.af.openGen != openGen {
+					return
+				}
+				a.af.profiles = profs
+				a.af.syncProfilePick()
+			}
+		})
 	}
-	f.editing = ac.ID
-	f.provider = 0
-	if ac.Provider == core.ProviderS3 {
-		f.provider = 1
-	}
-	f.name, f.endpoint, f.region, f.path = ac.Name, ac.Endpoint, ac.Region, ac.PathStyle
-	f.cdnURL, f.cdnBuckets = ac.CDNURL, strings.Join(ac.CDNBuckets, ", ")
-	f.buckets = bucketsText(ac.Buckets)
-	f.creds, f.access, f.profile = ac.Credentials, ac.AccessKeyID, ac.Profile
-	f.hasSec = ac.Credentials == core.CredStatic && !ac.SecretMissing
-	f.missing = ac.SecretMissing
-	f.roleARN, f.externalID, f.roleName = ac.RoleARN, ac.ExternalID, ac.RoleSessionName
-	f.skipTLS = ac.InsecureSkipVerify
-	f.checksum = ac.ChecksumMode
-	if f.checksum == "" {
-		f.checksum = "auto"
-	}
-	f.reqPays, f.proxyMode, f.proxyURL = ac.RequesterPays, ac.ProxyMode, ac.ProxyURL
-	f.advanced = f.roleARN != "" || f.skipTLS || f.checksum != "auto" || f.reqPays || f.proxyMode != core.ProxyGlobal
 }
 
 // proxyModeChoices are the proxy choices of an account.
@@ -377,6 +483,9 @@ func (a *app) askRemoveAccount() {
 		return
 	}
 	where := ac.Region
+	if where == "" && ac.Profile != "" {
+		where = ac.Profile
+	}
 	if ac.Endpoint != "" {
 		where = ac.Endpoint
 	}
@@ -444,8 +553,18 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 			inputBox(c, &f.endpoint, locales.AcctEndpoint(), "https://s3.example.com", inputOpts{invalid: errs["endpoint"] != "", mono: true})
 		})
 	}
+	regionPh := "us-east-1"
+	if f.creds == core.CredProfile || f.creds == core.CredDefault {
+		if r := f.selectedProfileRegion(); r != "" {
+			regionPh = locales.AcctRegionFromProfile(r)
+		} else {
+			regionPh = locales.AcctRegionDefault()
+		}
+	}
 	formFieldHelp(c, locales.CommonRegion(), locales.AcctRegionHelp(), "", func() {
-		inputBox(c, &f.region, locales.CommonRegion(), "us-east-1", inputOpts{})
+		if inputBox(c, &f.region, locales.CommonRegion(), regionPh, inputOpts{}).Changed() {
+			f.regionEdited = true
+		}
 	})
 	if f.provider == 1 {
 		switchRowHelp(c, locales.AcctPathStyle(), locales.AcctPathStyleHelp(), &f.path)
@@ -460,7 +579,20 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 		inputBox(c, &f.cdnBuckets, locales.AcctCDNBuckets(), locales.AcctAllBuckets(), inputOpts{invalid: errs["cdnBuckets"] != "", mono: true})
 	})
 	formFieldHelp(c, locales.AcctCredentials(), locales.AcctCredentialsHelp(), "", func() {
-		selectBox(c, locales.AcctCredentials(), &f.creds, credChoices(), 0)
+		if selectBox(c, locales.AcctCredentials(), &f.creds, credChoices(), 0) {
+			if !f.regionEdited {
+				switch f.creds {
+				case core.CredProfile, core.CredDefault:
+					if f.region == "us-east-1" {
+						f.region = ""
+					}
+				default:
+					if f.region == "" {
+						f.region = "us-east-1"
+					}
+				}
+			}
+		}
 	})
 	switch f.creds {
 	case core.CredStatic:
@@ -479,7 +611,22 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 		})
 	case core.CredProfile:
 		formFieldHelp(c, locales.AcctProfile(), locales.AcctProfileHelp(), errs["profile"], func() {
-			inputBox(c, &f.profile, locales.AcctProfile(), "default", inputOpts{invalid: errs["profile"] != ""})
+			if len(f.profiles) > 0 {
+				if selectBoxDetail(c, locales.AcctProfile(), &f.profilePick, f.profileChoices(), locales.CommonChoose(), 0) {
+					if f.profilePick == customProfile {
+						if f.hasProfile(f.profile) {
+							f.profile = ""
+						}
+					} else {
+						f.profile = f.profilePick
+					}
+				}
+				if f.profilePick == customProfile {
+					inputBox(c, &f.profile, locales.AcctProfileCustom(), "default", inputOpts{invalid: errs["profile"] != "", focus: true})
+				}
+			} else {
+				inputBox(c, &f.profile, locales.AcctProfile(), "default", inputOpts{invalid: errs["profile"] != ""})
+			}
 		})
 	}
 	// Advanced disclosure.
