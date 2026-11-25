@@ -88,6 +88,28 @@ func vline(c *ui.Context, h float32) ui.Element {
 	return ui.Box(c).Width(1).Height(h).Background(tk(c).Border)
 }
 
+// headerAction is a ghost button for the right end of a dialog's title row
+// (dialogHeader's extra): a muted 14px icon and a 13px label, 24px high. Its
+// negative margins keep the row as high as the title alone (one more at the
+// bottom than the top puts its label on the title's baseline), and the one on
+// the right puts the label's end on the dialog's content edge, as the
+// ghost button's 8px padding would otherwise push it in.
+func headerAction(c *ui.Context, icon *ui.SVG, label string) ui.Element {
+	k := tk(c)
+	b := ui.ButtonBase(c.Key("ha:"+label)).Label(label).Height(24).Padding(0, 6).Gap(6).Radius(RadiusControl).
+		AlignItems(ui.Center).AlignSelf(ui.Center).Margin(-1, -6, -3, 0).Shrink(0)
+	switch {
+	case b.Pressed():
+		b.Background(k.SurfacePressed)
+	case b.Hovered():
+		b.Background(k.SurfaceHover)
+	}
+	return b.Children(func() {
+		ui.Icon(c, icon).FontSize(14).TextColor(k.TextMuted)
+		ui.Text(c, label).FontSize(sizeBody).TextColor(k.Text).SingleLine()
+	})
+}
+
 // ghostButton is the toolbar-style button: no fill, no border, 28px high,
 // a muted 14px icon and a 13px label. icon or label may be empty; a label
 // less button is square. Hover and pressed use the neutral surfaces.

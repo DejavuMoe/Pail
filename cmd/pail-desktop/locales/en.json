@@ -1350,5 +1350,7 @@
   "linkPasteLabel": "Setup link",
   "linkPasteContinue": "Continue",
   "linkNotSetup": "This is not a Pail setup link.",
-  "linkBusy": "The account form is saving. Open the link again when it has finished."
+  "linkBusy": "The account form is saving. Open the link again when it has finished.",
+  "shellAddFromLink": "Add from setup link…",
+  "acctFromLinkButton": "Fill in from a setup link…"
 }

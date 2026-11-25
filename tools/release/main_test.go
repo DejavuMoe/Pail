@@ -187,7 +187,7 @@ func TestLaunchAssets(t *testing.T) {
 			}
 			if osName == "linux" {
 				b, err := os.ReadFile(filepath.Join(dir, "pail.desktop"))
-				if err != nil || !strings.Contains(string(b), "\nExec="+exe+"\n") {
+				if err != nil || !strings.Contains(string(b), "\nExec="+exe+" %u\n") || !strings.Contains(string(b), "\nMimeType=x-scheme-handler/pail;\n") {
 					t.Fatalf("broken desktop entry: %q %v", b, err)
 				}
 				if b, err := os.ReadFile(filepath.Join(dir, "install.sh")); err != nil || string(b) != installScript {
@@ -258,7 +258,8 @@ func TestInstallScript(t *testing.T) {
 		}
 	}
 	entry, err := os.ReadFile(filepath.Join(home, ".local", "share", "applications", "pail.desktop"))
-	if err != nil || !strings.Contains(string(entry), "\nExec=\""+filepath.Join(dest, "pail-desktop")+"\"\n") || !strings.Contains(string(entry), "\nIcon="+filepath.Join(dest, "pail.png")+"\n") {
+	if err != nil || !strings.Contains(string(entry), "\nExec=\""+filepath.Join(dest, "pail-desktop")+"\" %u\n") || !strings.Contains(string(entry), "\nIcon="+filepath.Join(dest, "pail.png")+"\n") ||
+		!strings.Contains(string(entry), "\nMimeType=x-scheme-handler/pail;\n") {
 		t.Errorf("menu entry: %s %v", entry, err)
 	}
 	run(filepath.Join(dest, "install.sh"))

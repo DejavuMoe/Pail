@@ -13687,3 +13687,23 @@ func LinkBusy() string { return In(i18n.Locale()).LinkBusy() }
 func (msgs Messages) LinkBusy() string {
 	return Catalog.Format(msgs.locale, "linkBusy", nil)
 }
+
+// ShellAddFromLink says "Add from setup link…"
+// in the language the app shows.
+func ShellAddFromLink() string { return In(i18n.Locale()).ShellAddFromLink() }
+
+// ShellAddFromLink says "Add from setup link…"
+// in the language of msgs.
+func (msgs Messages) ShellAddFromLink() string {
+	return Catalog.Format(msgs.locale, "shellAddFromLink", nil)
+}
+
+// AcctFromLinkButton says "Fill in from a setup link…"
+// in the language the app shows.
+func AcctFromLinkButton() string { return In(i18n.Locale()).AcctFromLinkButton() }
+
+// AcctFromLinkButton says "Fill in from a setup link…"
+// in the language of msgs.
+func (msgs Messages) AcctFromLinkButton() string {
+	return Catalog.Format(msgs.locale, "acctFromLinkButton", nil)
+}

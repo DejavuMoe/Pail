@@ -39,13 +39,19 @@ cat > "$data/applications/pail.desktop" <<EOF
 Type=Application
 Name=Pail
 Comment=S3 storage manager
-Exec="$dest/pail-desktop"
+Exec="$dest/pail-desktop" %u
 Icon=$dest/pail.png
 Categories=Network;Utility;
+MimeType=x-scheme-handler/pail;
 Terminal=false
 EOF
 if command -v update-desktop-database >/dev/null 2>&1; then
 	update-desktop-database "$data/applications" >/dev/null 2>&1 || true
+fi
+# pail:// setup links open Pail even before its first start (Pail registers
+# them again each time it starts).
+if command -v xdg-mime >/dev/null 2>&1; then
+	xdg-mime default pail.desktop x-scheme-handler/pail >/dev/null 2>&1 || true
 fi
 echo "Installed Pail in $dest"
 case ":$PATH:" in
@@ -59,7 +65,7 @@ func launchAssets(root, dir, version, osName, arch string) error {
 	gen := filepath.Join(root, "assets", "brand", "generated")
 	switch osName {
 	case "linux":
-		entry := fmt.Sprintf("[Desktop Entry]\nType=Application\nName=Pail\nComment=S3 storage manager\nExec=%s\nIcon=pail\nCategories=Network;Utility;\nTerminal=false\n", desktop)
+		entry := fmt.Sprintf("[Desktop Entry]\nType=Application\nName=Pail\nComment=S3 storage manager\nExec=%s %%u\nIcon=pail\nCategories=Network;Utility;\nMimeType=x-scheme-handler/pail;\nTerminal=false\n", desktop)
 		if err := os.WriteFile(filepath.Join(dir, "pail.desktop"), []byte(entry), 0o644); err != nil {
 			return err
 		}

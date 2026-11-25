@@ -93,6 +93,63 @@ func TestPasteSetupLink(t *testing.T) {
 	}
 }
 
+// A first install has no account, so no sidebar and no account menu: the
+// welcome screen offers the link itself, and a link copied from a chat is
+// already in the field.
+func TestSetupLinkOnFirstRun(t *testing.T) {
+	t.Parallel()
+	env, err := newDemoEnv(t.TempDir(), false)
+	if err != nil {
+		t.Fatal(err)
+	}
+	t.Cleanup(env.Close)
+	if err := env.Svc.DeleteAccount(env.Account.ID); err != nil {
+		t.Fatal(err)
+	}
+	h := attach(t, env, "light")
+	link := core.SetupLink{Name: "Quant", Provider: core.ProviderS3, Endpoint: env.Srv.URL, PathStyle: true, Buckets: []string{"acme-analytics"}}.URL()
+	h.tt.SetClipboard("  " + link + "\n")
+	h.mustHave("Connect an S3 account", "Add account", "Add from setup link…")
+	h.snap("welcome-link-light")
+	h.mustClick("Add from setup link…")
+	if !h.a.links.paste.open || h.a.links.paste.text != link {
+		t.Fatalf("paste dialog: %+v", h.a.links.paste)
+	}
+	h.mustClick("Continue")
+	f := &h.a.af
+	if !f.open || !f.fromLink || f.name != "Quant" || f.endpoint != env.Srv.URL {
+		t.Fatalf("form not filled in: %+v", f)
+	}
+	f.access, f.secret = "demo", "demo-secret"
+	h.mustClick("Save")
+	h.waitFor("first account saved", func() bool { return len(env.Svc.Accounts()) == 1 && !h.a.af.open })
+	h.waitFor("sidebar shows the account", func() bool { return h.a.hasAccount() && len(h.a.buckets) == 1 })
+}
+
+// Add account starts from a link too: the paste dialog opens over the form
+// and fills it in. Clipboard text that is not a setup link is left out.
+func TestAddAccountFormTakesALink(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	h.tt.SetClipboard("some other text")
+	h.a.openAccountForm(false)
+	h.settle()
+	h.mustClick("Fill in from a setup link…")
+	if !h.a.links.paste.open || h.a.links.paste.text != "" {
+		t.Fatalf("paste dialog: %+v", h.a.links.paste)
+	}
+	h.tt.Type(core.SetupLink{Name: "Typed", Credentials: core.CredAnonymous}.URL())
+	h.snap("account-form-paste-light")
+	h.mustClick("Continue")
+	if h.a.links.paste.open || !h.a.af.open || h.a.af.name != "Typed" || h.a.af.creds != core.CredAnonymous {
+		t.Fatalf("form: %+v", h.a.af)
+	}
+	h.mustNotHave("Fill in from a setup link…") // the form now says where it came from
+	h.a.openAccountForm(true)
+	h.settle()
+	h.mustNotHave("Fill in from a setup link…") // editing keeps the account it edits
+}
+
 func TestI18NSetupLink(t *testing.T) {
 	h := newHarness(t, "light")
 	h.setLocale("en-XA")

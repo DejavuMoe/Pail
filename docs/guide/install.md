@@ -76,7 +76,7 @@ Unpack the archive and run `install.sh` in the `Pail` folder:
 ./install.sh
 ```
 
-It copies Pail to `~/.local/share/pail`, links `pail-desktop` and `pail` into `~/.local/bin`, and adds Pail to your applications. Running it again from a newer archive replaces the installed copy. You can also start `./pail-desktop` from the unpacked folder without installing.
+It copies Pail to `~/.local/share/pail`, links `pail-desktop` and `pail` into `~/.local/bin`, adds Pail to your applications, and makes Pail open `pail://` setup links. Running it again from a newer archive replaces the installed copy. You can also start `./pail-desktop` from the unpacked folder without installing.
 
 The tray icon needs `libayatana-appindicator3`; without it, closing the window quits Pail.
 

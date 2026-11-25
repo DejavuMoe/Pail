@@ -4,6 +4,13 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [Unreleased]
+
+### Fixed
+
+- A setup link could not be pasted before the first account existed: **Add account from link…** was only in the account menu, which the welcome screen does not show. The welcome screen now has **Add from setup link…**, and **Add account** has **Fill in from a setup link…** at the top. A setup link on the clipboard is filled in when the paste dialog opens.
+- On Linux, `pail://` links did not open Pail until it had been started once. `install.sh` now registers Pail for them.
+
 ## [0.7.2] - 2026-11-25
 
 ### Added

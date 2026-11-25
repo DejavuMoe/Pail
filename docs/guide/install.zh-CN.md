@@ -76,7 +76,7 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 ./install.sh
 ```
 
-它把 Pail 复制到 `~/.local/share/pail`，在 `~/.local/bin` 里创建 `pail-desktop` 和 `pail` 的链接，并把 Pail 加入应用列表。用更新的压缩包再运行一次，会替换已安装的副本。也可以不安装，直接在解压的文件夹里启动 `./pail-desktop`。
+它把 Pail 复制到 `~/.local/share/pail`，在 `~/.local/bin` 里创建 `pail-desktop` 和 `pail` 的链接，把 Pail 加入应用列表，并让 `pail://` 配置链接由 Pail 打开。用更新的压缩包再运行一次，会替换已安装的副本。也可以不安装，直接在解压的文件夹里启动 `./pail-desktop`。
 
 托盘图标需要 `libayatana-appindicator3`；没有它时，关闭窗口就会退出 Pail。
 

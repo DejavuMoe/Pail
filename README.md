@@ -80,7 +80,7 @@ The executables are not signed. If SmartScreen says "Windows protected your PC",
 
 ### First launch on Linux
 
-Run `./install.sh` in the unpacked folder. It copies Pail to `~/.local/share/pail`, links `pail-desktop` and `pail` into `~/.local/bin`, and adds Pail to your applications.
+Run `./install.sh` in the unpacked folder. It copies Pail to `~/.local/share/pail`, links `pail-desktop` and `pail` into `~/.local/bin`, adds Pail to your applications, and makes Pail open `pail://` setup links.
 
 ### Updates
 

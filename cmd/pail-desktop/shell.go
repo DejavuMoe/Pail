@@ -81,11 +81,16 @@ func (a *app) transfersExtent() float32 {
 	return 0
 }
 
-// welcome is the empty state shown until the first account exists.
+// welcome is the empty state shown until the first account exists. There is
+// no sidebar yet, so the account menu's "Add account from link…" is here too:
+// a first install that was sent a setup link starts from it.
 func (a *app) welcome(c *ui.Context) {
 	ui.Column(c).Grow(1).MinHeight(0).Center().Gap(4).Children(func() {
 		emptyLines(c, "database", locales.ShellWelcomeTitle(), locales.ShellWelcomeSub())
-		primaryButton(c, locales.ShellAddAccount(), false).Margin(12, 0, 0, 0).OnClick(func() { a.openAccountForm(false) })
+		ui.Row(c).Gap(8).Margin(12, 0, 0, 0).Children(func() {
+			primaryButton(c, locales.ShellAddAccount(), false).OnClick(func() { a.openAccountForm(false) })
+			secondaryButton(c, locales.ShellAddFromLink(), false).OnClick(a.openPasteLink)
+		})
 	})
 }
 

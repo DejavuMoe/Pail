@@ -1350,5 +1350,7 @@
   "linkPasteLabel": "配置链接",
   "linkPasteContinue": "继续",
   "linkNotSetup": "这不是 Pail 的配置链接。",
-  "linkBusy": "账户正在保存，完成后再打开链接。"
+  "linkBusy": "账户正在保存，完成后再打开链接。",
+  "shellAddFromLink": "从配置链接添加…",
+  "acctFromLinkButton": "用配置链接填写…"
 }

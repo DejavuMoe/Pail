@@ -12,8 +12,8 @@ func (a *app) dialogs(c *ui.Context) {
 	a.mgFrame(c)
 	a.deleteDialog(c)
 	a.folderDialog(c)
-	a.linkDialogs(c) // the paste dialog opens the account form
 	a.accountDialog(c)
+	a.linkDialogs(c)   // over the account form, whose "Fill in from a setup link…" opens the paste dialog
 	a.bucketDialogs(c) // under the confirmation, which a bucket dialog can open
 	a.objOpsDialogs(c)
 	a.confirmDialog(c)
@@ -50,6 +50,12 @@ func dialog(c *ui.Context, open *bool, title string, body, footer func()) {
 // only while the body can scroll; otherwise they are transparent so the layout
 // does not jump.
 func dialogW(c *ui.Context, open *bool, title string, width float32, body, footer func()) {
+	dialogWHead(c, open, title, nil, width, body, footer)
+}
+
+// dialogWHead is dialogW whose title row also holds extra (dialogHeader),
+// such as a headerAction at its right end.
+func dialogWHead(c *ui.Context, open *bool, title string, extra func(), width float32, body, footer func()) {
 	k := tk(c)
 	_, winH := c.Size()
 	if body == nil {
@@ -61,7 +67,7 @@ func dialogW(c *ui.Context, open *bool, title string, width float32, body, foote
 		// shared with other windows' (or tests') dialogs of the same title.
 		st := ui.Local(panel, "body-scroll", func() ui.ScrollState { return ui.ScrollState{} })
 		dialogFrame(c, panel, width, winH)
-		dialogHeader(c, title, nil)
+		dialogHeader(c, title, extra)
 		overflow := st.MaxY > 0
 		divider(c, overflow)
 		ui.Scroll(c).TrackScroll(st).Shrink(1).MinHeight(0).ScrollbarInsets(0, scrollBarInset, 0, 0).Children(func() {

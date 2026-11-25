@@ -522,7 +522,18 @@ func (a *app) accountDialog(c *ui.Context) {
 	if f.editing != "" {
 		title = locales.AcctTitleEdit()
 	}
-	dialogW(c, &f.open, title, acctDialogW, func() {
+	// A new account can start from a setup link instead: the entry sits at
+	// the right of the title row, so it costs the form no height (at 960×600
+	// the form already scrolls). The paste dialog opens over this one and, on
+	// Continue, fills it in.
+	var extra func()
+	if f.editing == "" && !f.fromLink {
+		extra = func() {
+			ui.Spacer(c)
+			headerAction(c, icons.Get("link"), locales.AcctFromLinkButton()).OnClick(a.openPasteLink)
+		}
+	}
+	dialogWHead(c, &f.open, title, extra, acctDialogW, func() {
 		var errs map[string]string
 		if f.tried {
 			errs = f.fieldErrors()

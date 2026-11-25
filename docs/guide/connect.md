@@ -28,9 +28,14 @@ To make a link, open the account menu and choose **Share setup link…**:
 - With **Access keys**, **Recipient's access key ID (optional)** and **Recipient's secret access key (optional)** put keys for that person in the link. Anyone who has the link can use these keys, so send it only through a private channel. Leave both empty and the recipient enters their own.
 - **Copy link** copies the link.
 
-To use a link, click it, or choose **Add account from link…** in the account menu and paste it. When the link names an AWS profile, choose your own under **Profile**. The keys you enter are sent to the endpoint in the link, so check the **Endpoint** of a link from someone you do not know.
+To use a link, click it, or copy it and paste it into Pail:
 
-Each time it starts, Pail registers itself as the program that opens `pail://` links. When a link does not open Pail, use **Add account from link…**.
+- With no account yet, choose **Add from setup link…** on the welcome screen.
+- Otherwise, choose **Add account from link…** in the account menu, or **Fill in from a setup link…** at the top of **Add account**.
+
+A `pail://account` link on the clipboard is already filled in when the paste dialog opens. When the link names an AWS profile, choose your own under **Profile**. The keys you enter are sent to the endpoint in the link, so check the **Endpoint** of a link from someone you do not know.
+
+Each time it starts, Pail registers itself as the program that opens `pail://` links. On Linux, `install.sh` registers it as well. On Windows, a link opens Pail only after Pail has been started once; until then, paste the link.
 
 ## Add an account on the command line
 

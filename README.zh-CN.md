@@ -80,7 +80,7 @@ xattr -dr com.apple.quarantine /Applications/Pail.app
 
 ### 在 Linux 上首次打开
 
-在解压的文件夹里运行 `./install.sh`。它把 Pail 复制到 `~/.local/share/pail`，在 `~/.local/bin` 里创建 `pail-desktop` 和 `pail` 的链接，并把 Pail 加入应用列表。
+在解压的文件夹里运行 `./install.sh`。它把 Pail 复制到 `~/.local/share/pail`，在 `~/.local/bin` 里创建 `pail-desktop` 和 `pail` 的链接，把 Pail 加入应用列表，并让 `pail://` 配置链接由 Pail 打开。
 
 ### 更新
 

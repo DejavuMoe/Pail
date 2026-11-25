@@ -34,6 +34,10 @@ type pasteLinkForm struct {
 	open bool
 	text string
 	err  string
+	// seeded: the clipboard was looked at. A setup link on it fills the field
+	// when the dialog opens, since the usual way here is to copy the link
+	// from a chat first; other clipboard text is left alone.
+	seeded bool
 }
 
 // openShareLink opens the share dialog for the current account.
@@ -223,6 +227,14 @@ func (a *app) pasteLinkDialog(c *ui.Context) {
 			return
 		}
 		a.applySetupLink(l)
+	}
+	if f.open && !f.seeded {
+		f.seeded = true
+		if clip := strings.TrimSpace(c.ReadClipboard()); f.text == "" && clip != "" {
+			if _, err := core.ParseSetupLink(clip); err == nil {
+				f.text = clip
+			}
+		}
 	}
 	dialogW(c, &f.open, locales.LinkPasteTitle(), 480, func() {
 		mutedText(c, locales.LinkPasteIntro())
