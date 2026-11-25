@@ -21,6 +21,10 @@ type acctForm struct {
 	missing bool   // the edited account lost its secret (vault reset): enter it again
 	// noKeychain: saving failed because the system has no keychain.
 	noKeychain bool
+	// fromLink: the form was filled in from a setup link (setuplink.go);
+	// linkKeys: the link carried keys.
+	fromLink bool
+	linkKeys bool
 
 	provider   int // 0 AWS, 1 S3-compatible
 	name       string
@@ -538,6 +542,9 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 	k := tk(c)
 	if f.missing && f.creds == core.CredStatic {
 		warnNotice(c, locales.AcctSecretMissing())
+	}
+	if f.fromLink {
+		a.linkNotice(c)
 	}
 	formFieldHelp(c, locales.AcctProvider(), locales.AcctProviderHelp(), "", func() {
 		if segmented(c, &f.provider, locales.AcctProvider(), "AWS", locales.AcctS3Compatible()) {

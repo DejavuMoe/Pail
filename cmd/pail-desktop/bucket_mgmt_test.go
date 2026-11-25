@@ -114,16 +114,31 @@ func TestDeleteBucketNeedsTheNameTyped(t *testing.T) {
 	}
 	h.tt.Frame()
 	menu := h.menu()
-	for _, want := range []string{"Open", "Bucket settings…", "Empty bucket…", "Delete bucket…", "Copy name"} {
+	for _, want := range []string{"Open", "Bucket settings…", "Copy name"} {
 		if !slices.Contains(menu, want) {
 			t.Errorf("bucket menu %q lacks %q", menu, want)
 		}
 	}
-	if err := h.chooseMenu("Delete bucket…"); err != nil {
+	// Deleting is not in the menu: it is in Bucket settings, after a notice
+	// that says it changes the storage service.
+	if slices.Contains(menu, "Delete bucket…") || slices.Contains(menu, "Empty bucket…") {
+		t.Errorf("bucket menu %q has a one-click delete", menu)
+	}
+	if err := h.chooseMenu("Bucket settings…"); err != nil {
 		t.Fatal(err)
 	}
 	h.settle()
-	h.mustHave("Delete bucket?", demoAccountName, "acme-tiny", "Type the bucket name to confirm", "This cannot be undone.")
+	h.mustClick("Empty or delete")
+	h.settle()
+	h.mustHave("Remote: this changes the storage service, not Pail", demoAccountName, "Deletes the bucket itself. It must be empty first.")
+	h.snap("bucket-settings-danger-light")
+	h.mustClick("Delete bucket…")
+	h.settle()
+	if h.a.mg.bs.open {
+		t.Fatal("the settings dialog stayed open over the confirmation")
+	}
+	h.mustHave("Delete bucket?", "Remote: this changes the storage service, not Pail", demoAccountName, "acme-tiny",
+		"Type the bucket name to confirm", "is deleted on the storage service itself", "This cannot be undone.")
 	h.snap("delete-bucket-light")
 
 	h.tt.Type("acme-ti")

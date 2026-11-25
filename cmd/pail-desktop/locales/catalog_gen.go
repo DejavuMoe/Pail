@@ -2134,13 +2134,13 @@ func (msgs Messages) BucketDialogsDeleteTitle() string {
 	return Catalog.Format(msgs.locale, "bucketDialogsDeleteTitle", nil)
 }
 
-// BucketDialogsDeleteWarning says "{bucket, select, other {This cannot be undone.}}"
+// BucketDialogsDeleteWarning says "The bucket {bucket} is deleted on the storage service itself, for everyone who uses it. This cannot be undone."
 // in the language the app shows.
 func BucketDialogsDeleteWarning(bucket string) string {
 	return In(i18n.Locale()).BucketDialogsDeleteWarning(bucket)
 }
 
-// BucketDialogsDeleteWarning says "{bucket, select, other {This cannot be undone.}}"
+// BucketDialogsDeleteWarning says "The bucket {bucket} is deleted on the storage service itself, for everyone who uses it. This cannot be undone."
 // in the language of msgs.
 func (msgs Messages) BucketDialogsDeleteWarning(bucket string) string {
 	return Catalog.Format(msgs.locale, "bucketDialogsDeleteWarning", map[string]any{"bucket": bucket})
@@ -2230,14 +2230,16 @@ func (msgs Messages) BucketDialogsEmptyTitle() string {
 	return Catalog.Format(msgs.locale, "bucketDialogsEmptyTitle", nil)
 }
 
-// BucketDialogsEmptyWarning says "This cannot be undone."
+// BucketDialogsEmptyWarning says "Every object in {bucket} is deleted on the storage service itself, for everyone who uses it. This cannot be undone."
 // in the language the app shows.
-func BucketDialogsEmptyWarning() string { return In(i18n.Locale()).BucketDialogsEmptyWarning() }
+func BucketDialogsEmptyWarning(bucket string) string {
+	return In(i18n.Locale()).BucketDialogsEmptyWarning(bucket)
+}
 
-// BucketDialogsEmptyWarning says "This cannot be undone."
+// BucketDialogsEmptyWarning says "Every object in {bucket} is deleted on the storage service itself, for everyone who uses it. This cannot be undone."
 // in the language of msgs.
-func (msgs Messages) BucketDialogsEmptyWarning() string {
-	return Catalog.Format(msgs.locale, "bucketDialogsEmptyWarning", nil)
+func (msgs Messages) BucketDialogsEmptyWarning(bucket string) string {
+	return Catalog.Format(msgs.locale, "bucketDialogsEmptyWarning", map[string]any{"bucket": bucket})
 }
 
 // BucketDialogsNameChars says "Use lowercase letters, digits, periods and hyphens"
@@ -9900,11 +9902,11 @@ func (msgs Messages) SidebarOpen() string {
 	return Catalog.Format(msgs.locale, "sidebarOpen", nil)
 }
 
-// SidebarRemoveAccount says "Remove account…"
+// SidebarRemoveAccount says "Remove account from Pail…"
 // in the language the app shows.
 func SidebarRemoveAccount() string { return In(i18n.Locale()).SidebarRemoveAccount() }
 
-// SidebarRemoveAccount says "Remove account…"
+// SidebarRemoveAccount says "Remove account from Pail…"
 // in the language of msgs.
 func (msgs Messages) SidebarRemoveAccount() string {
 	return Catalog.Format(msgs.locale, "sidebarRemoveAccount", nil)
@@ -13432,4 +13434,256 @@ func UpdatesNotWritable() string { return In(i18n.Locale()).UpdatesNotWritable()
 // in the language of msgs.
 func (msgs Messages) UpdatesNotWritable() string {
 	return Catalog.Format(msgs.locale, "updatesNotWritable", nil)
+}
+
+// RemoteHeading says "Remote: this changes the storage service, not Pail"
+// in the language the app shows.
+func RemoteHeading() string { return In(i18n.Locale()).RemoteHeading() }
+
+// RemoteHeading says "Remote: this changes the storage service, not Pail"
+// in the language of msgs.
+func (msgs Messages) RemoteHeading() string {
+	return Catalog.Format(msgs.locale, "remoteHeading", nil)
+}
+
+// RemoteService says "Service"
+// in the language the app shows.
+func RemoteService() string { return In(i18n.Locale()).RemoteService() }
+
+// RemoteService says "Service"
+// in the language of msgs.
+func (msgs Messages) RemoteService() string {
+	return Catalog.Format(msgs.locale, "remoteService", nil)
+}
+
+// BucketSettingsDangerName says "Empty or delete"
+// in the language the app shows.
+func BucketSettingsDangerName() string { return In(i18n.Locale()).BucketSettingsDangerName() }
+
+// BucketSettingsDangerName says "Empty or delete"
+// in the language of msgs.
+func (msgs Messages) BucketSettingsDangerName() string {
+	return Catalog.Format(msgs.locale, "bucketSettingsDangerName", nil)
+}
+
+// BucketSettingsDangerNotice says "Both actions delete data on the storage service itself. They are not settings in Pail."
+// in the language the app shows.
+func BucketSettingsDangerNotice() string { return In(i18n.Locale()).BucketSettingsDangerNotice() }
+
+// BucketSettingsDangerNotice says "Both actions delete data on the storage service itself. They are not settings in Pail."
+// in the language of msgs.
+func (msgs Messages) BucketSettingsDangerNotice() string {
+	return Catalog.Format(msgs.locale, "bucketSettingsDangerNotice", nil)
+}
+
+// BucketSettingsDangerEmptyHelp says "Deletes every object and keeps the bucket."
+// in the language the app shows.
+func BucketSettingsDangerEmptyHelp() string { return In(i18n.Locale()).BucketSettingsDangerEmptyHelp() }
+
+// BucketSettingsDangerEmptyHelp says "Deletes every object and keeps the bucket."
+// in the language of msgs.
+func (msgs Messages) BucketSettingsDangerEmptyHelp() string {
+	return Catalog.Format(msgs.locale, "bucketSettingsDangerEmptyHelp", nil)
+}
+
+// BucketSettingsDangerDeleteHelp says "Deletes the bucket itself. It must be empty first."
+// in the language the app shows.
+func BucketSettingsDangerDeleteHelp() string {
+	return In(i18n.Locale()).BucketSettingsDangerDeleteHelp()
+}
+
+// BucketSettingsDangerDeleteHelp says "Deletes the bucket itself. It must be empty first."
+// in the language of msgs.
+func (msgs Messages) BucketSettingsDangerDeleteHelp() string {
+	return Catalog.Format(msgs.locale, "bucketSettingsDangerDeleteHelp", nil)
+}
+
+// SidebarAddFromLink says "Add account from link…"
+// in the language the app shows.
+func SidebarAddFromLink() string { return In(i18n.Locale()).SidebarAddFromLink() }
+
+// SidebarAddFromLink says "Add account from link…"
+// in the language of msgs.
+func (msgs Messages) SidebarAddFromLink() string {
+	return Catalog.Format(msgs.locale, "sidebarAddFromLink", nil)
+}
+
+// SidebarShareAccount says "Share setup link…"
+// in the language the app shows.
+func SidebarShareAccount() string { return In(i18n.Locale()).SidebarShareAccount() }
+
+// SidebarShareAccount says "Share setup link…"
+// in the language of msgs.
+func (msgs Messages) SidebarShareAccount() string {
+	return Catalog.Format(msgs.locale, "sidebarShareAccount", nil)
+}
+
+// AcctFromLink says "Filled in from a setup link. Check every setting before you save: the keys you enter are sent to {service}."
+// in the language the app shows.
+func AcctFromLink(service string) string { return In(i18n.Locale()).AcctFromLink(service) }
+
+// AcctFromLink says "Filled in from a setup link. Check every setting before you save: the keys you enter are sent to {service}."
+// in the language of msgs.
+func (msgs Messages) AcctFromLink(service string) string {
+	return Catalog.Format(msgs.locale, "acctFromLink", map[string]any{"service": service})
+}
+
+// AcctFromLinkKeys says "Filled in from a setup link, keys included. Check every setting before you save: the keys are sent to {service}."
+// in the language the app shows.
+func AcctFromLinkKeys(service string) string { return In(i18n.Locale()).AcctFromLinkKeys(service) }
+
+// AcctFromLinkKeys says "Filled in from a setup link, keys included. Check every setting before you save: the keys are sent to {service}."
+// in the language of msgs.
+func (msgs Messages) AcctFromLinkKeys(service string) string {
+	return Catalog.Format(msgs.locale, "acctFromLinkKeys", map[string]any{"service": service})
+}
+
+// LinkShareTitle says "Share setup link"
+// in the language the app shows.
+func LinkShareTitle() string { return In(i18n.Locale()).LinkShareTitle() }
+
+// LinkShareTitle says "Share setup link"
+// in the language of msgs.
+func (msgs Messages) LinkShareTitle() string {
+	return Catalog.Format(msgs.locale, "linkShareTitle", nil)
+}
+
+// LinkShareIntro says "Whoever opens this link in Pail gets Add account with these settings filled in. They check them and save the account …"
+// in the language the app shows.
+func LinkShareIntro() string { return In(i18n.Locale()).LinkShareIntro() }
+
+// LinkShareIntro says "Whoever opens this link in Pail gets Add account with these settings filled in. They check them and save the account …"
+// in the language of msgs.
+func (msgs Messages) LinkShareIntro() string {
+	return Catalog.Format(msgs.locale, "linkShareIntro", nil)
+}
+
+// LinkShareAccess says "Recipient's access key ID (optional)"
+// in the language the app shows.
+func LinkShareAccess() string { return In(i18n.Locale()).LinkShareAccess() }
+
+// LinkShareAccess says "Recipient's access key ID (optional)"
+// in the language of msgs.
+func (msgs Messages) LinkShareAccess() string {
+	return Catalog.Format(msgs.locale, "linkShareAccess", nil)
+}
+
+// LinkShareSecret says "Recipient's secret access key (optional)"
+// in the language the app shows.
+func LinkShareSecret() string { return In(i18n.Locale()).LinkShareSecret() }
+
+// LinkShareSecret says "Recipient's secret access key (optional)"
+// in the language of msgs.
+func (msgs Messages) LinkShareSecret() string {
+	return Catalog.Format(msgs.locale, "linkShareSecret", nil)
+}
+
+// LinkShareKeysHelp says "Leave both empty and the recipient enters their own keys. Your own keys are never put in the link."
+// in the language the app shows.
+func LinkShareKeysHelp() string { return In(i18n.Locale()).LinkShareKeysHelp() }
+
+// LinkShareKeysHelp says "Leave both empty and the recipient enters their own keys. Your own keys are never put in the link."
+// in the language of msgs.
+func (msgs Messages) LinkShareKeysHelp() string {
+	return Catalog.Format(msgs.locale, "linkShareKeysHelp", nil)
+}
+
+// LinkShareKeysWarning says "Anyone who has this link can use these keys. Send it only through a private channel."
+// in the language the app shows.
+func LinkShareKeysWarning() string { return In(i18n.Locale()).LinkShareKeysWarning() }
+
+// LinkShareKeysWarning says "Anyone who has this link can use these keys. Send it only through a private channel."
+// in the language of msgs.
+func (msgs Messages) LinkShareKeysWarning() string {
+	return Catalog.Format(msgs.locale, "linkShareKeysWarning", nil)
+}
+
+// LinkShareLink says "Link"
+// in the language the app shows.
+func LinkShareLink() string { return In(i18n.Locale()).LinkShareLink() }
+
+// LinkShareLink says "Link"
+// in the language of msgs.
+func (msgs Messages) LinkShareLink() string {
+	return Catalog.Format(msgs.locale, "linkShareLink", nil)
+}
+
+// LinkCopy says "Copy link"
+// in the language the app shows.
+func LinkCopy() string { return In(i18n.Locale()).LinkCopy() }
+
+// LinkCopy says "Copy link"
+// in the language of msgs.
+func (msgs Messages) LinkCopy() string {
+	return Catalog.Format(msgs.locale, "linkCopy", nil)
+}
+
+// LinkCopied says "Setup link copied"
+// in the language the app shows.
+func LinkCopied() string { return In(i18n.Locale()).LinkCopied() }
+
+// LinkCopied says "Setup link copied"
+// in the language of msgs.
+func (msgs Messages) LinkCopied() string {
+	return Catalog.Format(msgs.locale, "linkCopied", nil)
+}
+
+// LinkPasteTitle says "Add account from link"
+// in the language the app shows.
+func LinkPasteTitle() string { return In(i18n.Locale()).LinkPasteTitle() }
+
+// LinkPasteTitle says "Add account from link"
+// in the language of msgs.
+func (msgs Messages) LinkPasteTitle() string {
+	return Catalog.Format(msgs.locale, "linkPasteTitle", nil)
+}
+
+// LinkPasteIntro says "Paste a pail://account link that someone shared with you. Pail fills in Add account with it; nothing is saved until y…"
+// in the language the app shows.
+func LinkPasteIntro() string { return In(i18n.Locale()).LinkPasteIntro() }
+
+// LinkPasteIntro says "Paste a pail://account link that someone shared with you. Pail fills in Add account with it; nothing is saved until y…"
+// in the language of msgs.
+func (msgs Messages) LinkPasteIntro() string {
+	return Catalog.Format(msgs.locale, "linkPasteIntro", nil)
+}
+
+// LinkPasteLabel says "Setup link"
+// in the language the app shows.
+func LinkPasteLabel() string { return In(i18n.Locale()).LinkPasteLabel() }
+
+// LinkPasteLabel says "Setup link"
+// in the language of msgs.
+func (msgs Messages) LinkPasteLabel() string {
+	return Catalog.Format(msgs.locale, "linkPasteLabel", nil)
+}
+
+// LinkPasteContinue says "Continue"
+// in the language the app shows.
+func LinkPasteContinue() string { return In(i18n.Locale()).LinkPasteContinue() }
+
+// LinkPasteContinue says "Continue"
+// in the language of msgs.
+func (msgs Messages) LinkPasteContinue() string {
+	return Catalog.Format(msgs.locale, "linkPasteContinue", nil)
+}
+
+// LinkNotSetup says "This is not a Pail setup link."
+// in the language the app shows.
+func LinkNotSetup() string { return In(i18n.Locale()).LinkNotSetup() }
+
+// LinkNotSetup says "This is not a Pail setup link."
+// in the language of msgs.
+func (msgs Messages) LinkNotSetup() string {
+	return Catalog.Format(msgs.locale, "linkNotSetup", nil)
+}
+
+// LinkBusy says "The account form is saving. Open the link again when it has finished."
+// in the language the app shows.
+func LinkBusy() string { return In(i18n.Locale()).LinkBusy() }
+
+// LinkBusy says "The account form is saving. Open the link again when it has finished."
+// in the language of msgs.
+func (msgs Messages) LinkBusy() string {
+	return Catalog.Format(msgs.locale, "linkBusy", nil)
 }

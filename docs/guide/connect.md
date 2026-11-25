@@ -14,7 +14,23 @@ An account in Pail is one connection to a storage service: where the service is,
 
 A new account starts with the region `us-east-1`, **Path-style addressing** on, **Access keys** as credentials and **Checksum mode** set to **Auto**.
 
-The same menu has **Edit account…** and **Remove account…**. Removing an account only deletes the saved connection and its stored credentials from this computer. Buckets and objects are not touched. Saved sync jobs of the account stay and stop working.
+The same menu has **Edit account…** and **Remove account from Pail…**. Removing an account only deletes the saved connection and its stored credentials from this computer. Buckets and objects are not touched. Saved sync jobs of the account stay and stop working.
+
+## Share an account as a link
+
+A setup link is a `pail://account` link that holds the settings of an account. Opening it in Pail fills in **Add account**. The person who opens it checks the settings, enters what is missing and chooses **Save**. The form checks the fields as usual, so a link without keys cannot be saved until the keys are entered.
+
+To make a link, open the account menu and choose **Share setup link…**:
+
+- Change the **Name** that the recipient sees, if needed.
+- The link holds the provider, endpoint, region, path-style, the type of credentials, the AWS profile name, the named buckets, the CDN URL and CDN buckets, the AssumeRole fields, the checksum mode and requester pays.
+- The link never holds the account's own keys, its proxy or **Skip TLS verification**.
+- With **Access keys**, **Recipient's access key ID (optional)** and **Recipient's secret access key (optional)** put keys for that person in the link. Anyone who has the link can use these keys, so send it only through a private channel. Leave both empty and the recipient enters their own.
+- **Copy link** copies the link.
+
+To use a link, click it, or choose **Add account from link…** in the account menu and paste it. When the link names an AWS profile, choose your own under **Profile**. The keys you enter are sent to the endpoint in the link, so check the **Endpoint** of a link from someone you do not know.
+
+Each time it starts, Pail registers itself as the program that opens `pail://` links. When a link does not open Pail, use **Add account from link…**.
 
 ## Add an account on the command line
 

@@ -31,6 +31,10 @@
           <a class="btn btn-primary" href="#download" data-hero-download><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg><span data-hero-download-label>{{t "heroDownload"}}</span></a>
           <a class="btn btn-ghost" href="{{.Links.Docs}}">{{t "heroDocs"}}</a>
         </div>
+        <div class="hero-mac" data-hero-mac hidden>
+          <p>{{t "heroMacNote"}}</p>
+          <pre class="code"><code>xattr -dr com.apple.quarantine /Applications/Pail.app</code></pre>
+        </div>
       </div>
       <div class="hero-stage">
         <ol class="drop-log" aria-hidden="true">
@@ -228,6 +232,12 @@
               <span class="dl-arch">{{index $a 1}}</span><span class="dl-file">{{archive $target}}</span><svg class="ic" aria-hidden="true"><use href="#i-down"/></svg></a></li>
             {{- end}}
           </ul>
+          {{- if eq $os "macos"}}
+          <div class="dl-cmd">
+            <p>{{t "dlMacCmd"}}</p>
+            <pre class="code" tabindex="0"><code>xattr -dr com.apple.quarantine /Applications/Pail.app</code></pre>
+          </div>
+          {{- end}}
         </section>
         {{- end}}
       </div>

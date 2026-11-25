@@ -460,9 +460,19 @@ func (a *app) bucketSettingsDialog(c *ui.Context) {
 		// The same card as every dialog (dialogFrame); only the height is fixed,
 		// since the nav and the pane share it and scroll inside it.
 		dialogFrame(c, panel, 760, winH)
-		panel.Height(min(560, max(360, winH-dialogMargin)))
+		// 600 holds the 14 sections and the pinned "Empty or delete" row
+		// without scrolling; lower windows scroll the list.
+		panel.Height(min(600, max(360, winH-dialogMargin)))
 		dialogHeader(c, locales.BucketSettingsTitle(), func() {
-			ui.Text(c, bs.bucket).FontSize(sizeBody).TextColor(k.TextMuted).SingleLine()
+			ui.Text(c, bs.bucket).FontSize(sizeBody).TextColor(k.TextMuted).SingleLine().Shrink(1).MinWidth(0)
+			// Every section changes the bucket on the service: say which one.
+			ui.Spacer(c)
+			// The icon is centred on the text's line; the text gives the row its
+			// baseline (AlignSelf), which the header lines up with the title's.
+			ui.Row(c).Gap(4).AlignItems(ui.Center).Shrink(1).MinWidth(0).Children(func() {
+				ui.Icon(c, iconOf("cloud")).FontSize(12).TextColor(k.TextMuted).Shrink(0)
+				ui.Text(c, a.account().Name+" · "+serviceLabel(a.account(), a.bucketRegion(bs.bucket))).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().MinWidth(0).AlignSelf(ui.Baseline)
+			})
 		})
 		// One sheet in three parts: the title, the nav beside the form, the
 		// buttons. The line between nav and form meets the lines above and below
@@ -489,25 +499,43 @@ func (a *app) bucketSettingsDialog(c *ui.Context) {
 // dialogPad-8 in from the card's edge with 8px padding, so their labels start
 // on the title's left edge. The current section is ActiveFill and weight 600,
 // the others TextMuted (two cues).
+//
+// "Empty or delete" is not one of the scrolling rows: it stays at the foot of
+// the nav, under a full-width Border line, so it shows at every window height
+// (as a 15th row it fell below the fold even at 1440×900). Its row has the same
+// insets as the rows above, so all the labels share one left edge, and the
+// current-section fill travels between the two parts.
 func (a *app) settingsNav(c *ui.Context) {
 	bs := &a.mg.bs
 	k := tk(c)
-	ui.Scroll(c).Width(bsNavW).Shrink(0).MinHeight(0).BorderWidth(0, 1, 0, 0).BorderColor(k.Border).ScrollbarInsets(0, scrollBarInset, 0, 0).Children(func() {
-		list := ui.Column(c).Padding(8, scrollGutter, 8, dialogPad-8).Gap(2)
-		fill := markOf(list)
-		list.Children(func() {
-			for i, sec := range bsSections {
-				if navRow(c, fill, "sec:"+sec.label(), sec.label(), i == bs.section).Clicked() {
-					bs.section = i
+	nav := ui.Column(c).Width(bsNavW).Shrink(0).MinHeight(0).BorderWidth(0, 1, 0, 0).BorderColor(k.Border)
+	fill := markOf(nav)
+	nav.Children(func() {
+		ui.Scroll(c).Grow(1).MinHeight(0).ScrollbarInsets(0, scrollBarInset, 0, 0).Children(func() {
+			ui.Column(c).Padding(8, scrollGutter, 8, dialogPad-8).Gap(2).Children(func() {
+				for i, sec := range bsSections {
+					if navRow(c, fill, "sec:"+sec.label(), sec.label(), i == bs.section).Clicked() {
+						bs.section = i
+					}
 				}
+			})
+		})
+		ui.Box(c).Height(1).Shrink(0).Background(k.Border)
+		ui.Column(c).Shrink(0).Padding(8, scrollGutter, 8, dialogPad-8).Children(func() {
+			if navRow(c, fill, "sec:danger", locales.BucketSettingsDangerName(), bs.section == secDangerIndex()).Clicked() {
+				bs.section = secDangerIndex()
 			}
 		})
 	})
 }
 
 func (a *app) settingsPane(c *ui.Context) {
-	a.ensureCfg()
 	bs := &a.mg.bs
+	if bs.section == secDangerIndex() {
+		a.dangerPane(c)
+		return
+	}
+	a.ensureCfg()
 	sec, s := bs.cur()
 	// The title row is as high as a nav row and as far down as the first one,
 	// so the section's name stands level with the row that chose it.
@@ -541,6 +569,50 @@ func (a *app) settingsPane(c *ui.Context) {
 		paneScroll(c, func() {
 			ui.Column(c).Padding(0, 20, 20, 20).Gap(16).Children(body)
 		})
+	})
+}
+
+// secDangerIndex is the section index of "Empty or delete", after the
+// settings: it loads nothing and only leads to the two confirmations.
+func secDangerIndex() int { return len(bsSections) }
+
+// dangerPane is the "Empty or delete" section. Emptying and deleting are not
+// in the bucket's menu: both act on the service, and reaching them through
+// here keeps them a deliberate step. Each button closes this dialog and opens
+// its own confirmation, which says again where the change goes.
+func (a *app) dangerPane(c *ui.Context) {
+	bs := &a.mg.bs
+	name := bs.bucket
+	ui.Column(c.Key("pane:danger")).Grow(1).MinWidth(0).MinHeight(0).Padding(8, 0, 0, 0).Gap(12).Justify(ui.Start).Children(func() {
+		ui.Row(c).Height(28).Padding(0, dialogPad).AlignItems(ui.Center).Shrink(0).Children(func() {
+			sectionTitle(c, locales.BucketSettingsDangerName())
+		})
+		paneScroll(c, func() {
+			ui.Column(c).Padding(0, 20, 20, 20).Gap(16).Children(func() {
+				a.remoteNotice(c, locales.BucketSettingsDangerNotice(), name)
+				dangerAction(c, locales.BucketDialogsEmptyAction(), locales.BucketSettingsDangerEmptyHelp(), locales.SidebarEmptyBucket(), func() {
+					bs.open = false
+					a.openEmptyBucket(name)
+				})
+				dangerAction(c, locales.BucketDialogsDeleteButton(), locales.BucketSettingsDangerDeleteHelp(), locales.SidebarDeleteBucket(), func() {
+					bs.open = false
+					a.openDeleteBucket(name)
+				})
+			})
+		})
+	})
+}
+
+// dangerAction is one row of dangerPane: a title and what it does, and an
+// outlined Danger button that opens the confirmation.
+func dangerAction(c *ui.Context, title, help, button string, open func()) {
+	k := tk(c)
+	ui.Row(c.Key("danger:" + button)).Gap(16).AlignItems(ui.Center).Children(func() {
+		ui.Column(c).Gap(2).Grow(1).MinWidth(0).Children(func() {
+			ui.Text(c, title).FontSize(sizeBody).FontWeight(500).TextColor(k.Text)
+			mutedText(c, help)
+		})
+		dangerOutlineButton(c, button, false).Shrink(0).OnClick(open)
 	})
 }
 

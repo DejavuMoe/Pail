@@ -79,7 +79,10 @@ func (a *app) accountButton(c *ui.Context) {
 		}
 		m.Separator()
 		m.Item(locales.SidebarAddAccount(), func() { a.openAccountForm(false) }).Icon("plus")
+		m.Item(locales.SidebarAddFromLink(), a.openPasteLink).Icon("link")
+		m.Separator()
 		m.Item(locales.SidebarEditAccount(), func() { a.openAccountForm(true) }).Icon("pencil").Disabled(ac.ID == "")
+		m.Item(locales.SidebarShareAccount(), a.openShareLink).Icon("external-link").Disabled(ac.ID == "")
 		m.Item(locales.SidebarRemoveAccount(), a.askRemoveAccount).Icon("trash-2").Disabled(ac.ID == "")
 	})
 }
@@ -247,9 +250,8 @@ func (a *app) bucketList(c *ui.Context) {
 						if a.cfAvailable() {
 							m.Item(locales.SidebarInvalidateCloudFront(), func() { a.invalidateBucket(name) }).Icon("cloud")
 						}
-						m.Separator()
-						m.Item(locales.SidebarEmptyBucket(), func() { a.openEmptyBucket(name) }).Icon("trash-x")
-						m.Item(locales.SidebarDeleteBucket(), func() { a.openDeleteBucket(name) }).Icon("trash-2")
+						// Emptying and deleting the bucket on the service are in
+						// Bucket settings › Empty or delete, not one click away here.
 						m.Separator()
 						m.Item(locales.SidebarCopyName(), func() {
 							a.copyText(name)

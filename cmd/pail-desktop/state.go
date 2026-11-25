@@ -95,6 +95,7 @@ type app struct {
 	folderDlg folderState
 	alias     aliasState // the Set alias dialog (bucket_alias.go)
 	af        acctForm
+	links     linkDialogs // the setup link dialogs (setuplink.go)
 	confirm   confirmState
 	sf        settingsForm
 	srail     settingsRail // the Settings page: its scrolling and its rail (settings_layout.go)

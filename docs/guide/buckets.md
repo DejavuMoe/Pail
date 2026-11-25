@@ -10,8 +10,9 @@ Right-click a bucket in the sidebar to open its menu. On Windows and Linux, Shif
 - **Download bucket…**, **Copy contents to…** and **Move contents to…**;
 - **Change storage class…** and **Change encryption…** for every object in the bucket;
 - **Invalidate CloudFront…**, for AWS accounts only;
-- **Empty bucket…** and **Delete bucket…**;
 - **Copy name**, which copies the real bucket name.
+
+Emptying and deleting a bucket are not in the menu. They are in **Bucket settings…** › **Empty or delete**.
 
 **Bucket settings…** and **New bucket…** are also in the command palette (`Ctrl+K`, `⌘K` on macOS).
 
@@ -27,13 +28,13 @@ When an account names its buckets with a folder, such as `my-bucket/reports/`, *
 
 ## Empty a bucket
 
-**Empty bucket…** deletes every object in the bucket. The dialog shows the account, the bucket, and the number and size of the objects while Pail counts them.
+Open **Bucket settings…**, choose **Empty or delete**, then **Empty bucket…**. It deletes every object in the bucket on the storage service. The dialog says so first and names the account and the service, then shows the bucket, and the number and size of the objects once Pail has counted them.
 
 In a versioned bucket a plain delete keeps the older versions and only adds delete markers, so the bucket still holds data. Tick **Also delete all versions and delete markers** to remove those too. Emptying cannot be undone.
 
 ## Delete a bucket
 
-**Delete bucket…** asks you to type the bucket name before **Delete bucket** becomes available. A bucket must be empty before it can be deleted. If it is not, the dialog says so and offers **Empty bucket…**. Deleting cannot be undone.
+Open **Bucket settings…**, choose **Empty or delete**, then **Delete bucket…**. It deletes the bucket on the storage service, for everyone who uses it; it is not a setting in Pail. The dialog says so first, names the account and the service, and asks you to type the bucket name before **Delete bucket** becomes available. A bucket must be empty before it can be deleted. If it is not, the dialog says so and offers **Empty bucket…**. Deleting cannot be undone.
 
 ## Copy, move or download the contents
 
@@ -45,7 +46,7 @@ These run as tasks in the transfers panel.
 
 ## Bucket settings
 
-**Bucket settings…** opens one dialog with the 14 settings in a list beside the form. Six are edited in a small form; the other eight are edited as the JSON that the storage service exchanges.
+**Bucket settings…** opens one dialog with the 14 settings in a list beside the form, and **Empty or delete** at the end of the list. Six settings are edited in a small form; the other eight are edited as the JSON that the storage service exchanges. The title row names the account and the service, because every change goes to the bucket on the service.
 
 A setting that the service does not offer shows **Not supported by this provider**. A setting your key may not read or change says that you do not have permission.
 

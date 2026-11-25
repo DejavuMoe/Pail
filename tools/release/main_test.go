@@ -199,7 +199,8 @@ func TestLaunchAssets(t *testing.T) {
 				}
 				b, err := os.ReadFile(filepath.Join(dir, "Pail.app", "Contents", "Info.plist"))
 				if err != nil || !strings.Contains(string(b), "<key>CFBundleExecutable</key><string>"+exe+"</string>") ||
-					!strings.Contains(string(b), "<key>CFBundleVersion</key><string>0.2.0</string>") {
+					!strings.Contains(string(b), "<key>CFBundleVersion</key><string>0.2.0</string>") ||
+					!strings.Contains(string(b), "<key>CFBundleURLSchemes</key><array><string>pail</string></array>") {
 					t.Fatalf("broken app bundle plist: %q %v", b, err)
 				}
 				if b, err := os.ReadFile(filepath.Join(dir, "Pail.app", "Contents", "MacOS", exe)); err != nil || string(b) != "executable" {

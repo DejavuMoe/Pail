@@ -233,15 +233,8 @@ func (a *app) deleteBucket() {
 func (a *app) deleteBucketDialog(c *ui.Context) {
 	f := &a.mg.db
 	dialogW(c, &f.open, locales.BucketDialogsDeleteTitle(), 440, func() {
-		ui.Column(c).Gap(8).Children(func() {
-			fieldRow(c, locales.CommonAccount(), a.account().Name, false)
-			fieldRow(c, locales.CommonBucket(), f.bucket, true)
-			for _, b := range a.buckets {
-				if b.Name == f.bucket && b.Region != "" {
-					fieldRow(c, locales.CommonRegion(), b.Region, false)
-				}
-			}
-		})
+		a.remoteNotice(c, locales.BucketDialogsDeleteWarning(f.bucket), f.bucket)
+		fieldRow(c, locales.CommonBucket(), f.bucket, true)
 		formField(c, locales.BucketDialogsTypeName(), "", func() {
 			in := inputBox(c, &f.typed, locales.BucketDialogsNameInput(), f.bucket, inputOpts{focus: true, mono: true})
 			if in.Changed() {
@@ -263,7 +256,6 @@ func (a *app) deleteBucketDialog(c *ui.Context) {
 				}
 			})
 		}
-		mutedText(c, locales.BucketDialogsDeleteWarning(f.bucket))
 	}, func() {
 		confirmButtons(c, dangerButton, locales.BucketDialogsDeleteButton(), f.typed != f.bucket || f.busy, func() { f.open = false }, a.deleteBucket)
 	})
@@ -369,13 +361,10 @@ func (a *app) emptyBucketDialog(c *ui.Context) {
 	f := &a.mg.eb
 	was := f.open
 	dialogW(c, &f.open, locales.BucketDialogsEmptyTitle(), 440, func() {
+		a.remoteNotice(c, locales.BucketDialogsEmptyWarning(f.bucket), f.bucket)
 		ui.Column(c).Gap(8).Children(func() {
-			fieldRow(c, locales.CommonAccount(), a.account().Name, false)
 			fieldRow(c, locales.CommonBucket(), f.bucket, true)
-		})
-		ui.Column(c).Gap(2).Children(func() {
 			countLine(c, f.state == delCounting, f.summary())
-			mutedText(c, locales.BucketDialogsEmptyWarning())
 		})
 		if a.versioned(a.accountID, f.bucket) {
 			checkboxRowHelp(c, &f.all, locales.BucketDialogsAllVersions(), locales.BucketDialogsAllVersionsHelp())

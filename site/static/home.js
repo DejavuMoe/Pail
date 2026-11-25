@@ -748,6 +748,10 @@
       mine.classList.add('is-mine');
       if (heroLabel && S.heroDownloadFor) heroLabel.textContent = S.heroDownloadFor.replace('{os}', mine.querySelector('h3').textContent);
     }
+    // The hero button downloads the Mac build directly, past the note in the
+    // download table: the command that lets it open goes under the button.
+    var heroMac = document.querySelector('[data-hero-mac]');
+    if (heroMac && os === 'macos') heroMac.hidden = false;
 
     function apply(source) {
       var base = bases[source] || bases.github;

@@ -12,6 +12,7 @@ func (a *app) dialogs(c *ui.Context) {
 	a.mgFrame(c)
 	a.deleteDialog(c)
 	a.folderDialog(c)
+	a.linkDialogs(c) // the paste dialog opens the account form
 	a.accountDialog(c)
 	a.bucketDialogs(c) // under the confirmation, which a bucket dialog can open
 	a.objOpsDialogs(c)
@@ -81,9 +82,11 @@ func dialogFrame(c *ui.Context, panel ui.Element, width, winH float32) {
 }
 
 // dialogHeader is the fixed title row of a dialog; extra, when not nil, adds
-// quiet text after the title (the bucket name in bucket settings).
+// quiet text after the title (the bucket name in bucket settings). The row
+// lines up its texts by their baselines: centred, a 12-13px text after the
+// 15px title sat a pixel above the title's baseline.
 func dialogHeader(c *ui.Context, title string, extra func()) {
-	ui.Row(c).Padding(dialogPad, dialogPad, 12, dialogPad).Gap(8).AlignItems(ui.Center).Shrink(0).Children(func() {
+	ui.Row(c).Padding(dialogPad, dialogPad, 12, dialogPad).Gap(8).AlignItems(ui.Baseline).Shrink(0).Children(func() {
 		sectionTitle(c, title)
 		if extra != nil {
 			extra()

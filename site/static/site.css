@@ -235,6 +235,9 @@ html:not(.js) .pail-layer { display: none; }
 :lang(zh-Hans) .hero h1 { max-width: 9em; font-size: clamp(2.5rem, 1.5rem + 3.4vw, 4.5rem); line-height: 1.12; letter-spacing: 0; font-weight: 700; }
 .hero-lede { max-width: 34em; margin-top: 24px; color: var(--text-2); font-size: clamp(1rem, 0.9rem + 0.4vw, 1.125rem); line-height: 1.6; text-wrap: pretty; }
 .hero-cta { display: flex; flex-wrap: wrap; gap: 12px; margin-top: 36px; }
+.hero-mac { max-width: 36rem; margin-top: 20px; }
+.hero-mac p { margin-bottom: 8px; color: var(--text-2); font-size: 0.875rem; line-height: 1.5; }
+.hero-mac pre.code { padding: 12px 96px 12px 14px; }
 
 .hero-stage { position: relative; align-self: stretch; min-height: 420px; margin-right: calc(-1 * var(--gut)); }
 .drop-log {
@@ -676,9 +679,15 @@ section { position: relative; }
 .dl .ic { color: var(--text-3); }
 .dl:hover .ic { color: var(--text); }
 .is-mine .dl-usual { border-color: color-mix(in srgb, var(--s2) 55%, transparent); box-shadow: 0 0 0 3px color-mix(in srgb, var(--s2) 12%, transparent); }
+/* Under the Mac buttons, in their column: the code starts where their labels do (1px border + 16px). */
+.dl-cmd { grid-column: 2; margin-top: 4px; }
+.dl-cmd p { margin: 0 0 8px; color: var(--text); font-size: 0.875rem; font-weight: 550; line-height: 1.5; }
+.dl-cmd pre.code { padding: 12px 96px 12px 16px; }
+.hero-mac .copy-btn, .dl-cmd .copy-btn { top: 50%; opacity: 1; transform: translateY(-50%); }
 .source-note { display: block; min-height: 1.5em; margin-top: 14px; color: var(--text-3); font-size: 0.8125rem; }
 @media (max-width: 760px) {
   .dl-os { grid-template-columns: minmax(0, 1fr); }
+  .dl-cmd { grid-column: 1; }
   .dl { grid-template-columns: 96px minmax(0, 1fr) 18px; }
 }
 .verify { display: grid; grid-template-columns: minmax(0, 1fr) minmax(0, 1.5fr); gap: 24px 48px; align-items: center; margin-top: clamp(48px, 6vw, 72px); }
@@ -704,7 +713,8 @@ pre.code .c { color: var(--code-dim); }
   border: 1px solid var(--code-line); border-radius: 7px; background: color-mix(in srgb, var(--code-bg) 88%, transparent); color: var(--text-3);
   font-size: 0.75rem; cursor: pointer; opacity: 0; transition: opacity 0.15s, color 0.15s;
 }
-.copy-btn .ic { width: 13px; height: 13px; }
+/* 1px down: centred on the label's line box, the icon sat above the capitals of "Copy". */
+.copy-btn .ic { width: 13px; height: 13px; transform: translateY(1px); }
 .copy-wrap:hover .copy-btn, .copy-btn:focus-visible, .copy-btn.is-done { opacity: 1; }
 .copy-btn:hover, .copy-btn.is-done { color: var(--text); border-color: var(--line-2); }
 @media (hover: none) { .copy-btn { opacity: 1; } }

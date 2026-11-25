@@ -111,6 +111,26 @@ func main() {
 		a.checkUpdatesAtStart()
 	}
 
+	// Setup links (pail://account?...) open the add-account form. A release
+	// build makes itself the handler of the scheme at every start (Windows:
+	// the current user's registry; Linux: a desktop entry; macOS: the bundle's
+	// Info.plist declares it), so that the handler follows the app when its
+	// folder moves. Development builds and separate instances leave the
+	// installed one in place.
+	var showWindow func()
+	if !*demo && *cfgDir == "" && version != "dev" {
+		if err := mygo.App.RegisterURLScheme(core.SetupLinkScheme); err != nil {
+			log.Printf("register %s: links: %v", core.SetupLinkScheme, err)
+		}
+	}
+	// Registered before Run, so that it also gets the link Pail started with.
+	mygo.App.OnOpenURL(func(raw string) {
+		if showWindow != nil {
+			showWindow()
+		}
+		a.enqueue(func() { a.openSetupLink(raw) })
+	})
+
 	mygo.App.WhenReady(func() {
 		if os.Getenv("MYGO_LOCALE") == "" {
 			mygo.App.SetLocale(a.lang) // "" follows the system again
@@ -166,6 +186,7 @@ func main() {
 			}
 		})
 		mygo.App.OnSecondInstance(func([]string, string) { tray.open() })
+		showWindow = tray.open
 		win.OnClosed(a.stop)
 		if *smokeExit > 0 {
 			go smoke(a.ctx, win, *smokeExit, *smokeShot)

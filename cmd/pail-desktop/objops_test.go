@@ -186,8 +186,11 @@ func TestChangeStorageClassOfAWholeBucketFromTheBucketMenu(t *testing.T) {
 	h.tt.Frame()
 	menu := h.menu()
 	if m := menuHas(menu, "Open", "Bucket settings…", "Download bucket…", "Copy contents to…", "Move contents to…",
-		"Change storage class…", "Change encryption…", "Empty bucket…", "Delete bucket…", "Copy name"); len(m) > 0 {
+		"Change storage class…", "Change encryption…", "Copy name"); len(m) > 0 {
 		t.Fatalf("bucket menu %q lacks %q", menu, m)
+	}
+	if slices.Contains(menu, "Empty bucket…") || slices.Contains(menu, "Delete bucket…") {
+		t.Errorf("bucket menu %q deletes on the service in one click", menu)
 	}
 	if slices.Contains(menu, "Invalidate CloudFront…") {
 		t.Error("CloudFront belongs to AWS accounts only")

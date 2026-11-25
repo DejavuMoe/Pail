@@ -139,7 +139,7 @@ func TestAccountSwitcherMenuListsAccounts(t *testing.T) {
 	h := newHarness(t, "light")
 	h.mustClick(demoAccountName)
 	menu := h.menu()
-	for _, want := range []string{demoAccountName, "Add account…", "Edit account…", "Remove account…"} {
+	for _, want := range []string{demoAccountName, "Add account…", "Add account from link…", "Edit account…", "Share setup link…", "Remove account from Pail…"} {
 		if !slices.Contains(menu, want) {
 			t.Errorf("account menu %q missing %q", menu, want)
 		}

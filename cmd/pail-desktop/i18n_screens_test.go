@@ -218,7 +218,7 @@ func bucketPlain() []plainOK {
 	}
 	return []plainOK{
 		plainIn(set),
-		plainSub(bkt, " objects · "),
+		plainSub(bkt, " objects · ", "127.0.0.1:"), // the bucket, and the service the remote notice names
 		func(s string) bool { return strings.HasSuffix(s, "/") },
 	}
 }
@@ -274,6 +274,9 @@ func TestI18NBucket(t *testing.T) {
 		h.settle()
 		h.expectTranslated("bucket settings, policy editor", plain...)
 	}
+	h.a.mg.bs.section = secDangerIndex()
+	h.settle()
+	h.expectTranslated("bucket settings, empty or delete", plain...)
 	h.a.mg.bs.open = false
 	h.settle()
 
@@ -348,7 +351,7 @@ func TestI18NBucket(t *testing.T) {
 
 	h.a.openDeleteBucket(bkt)
 	h.settle()
-	h.mustHave("删除存储桶？", "输入存储桶名称以确认", "将永久删除存储桶 "+bkt+"，无法撤销。")
+	h.mustHave("删除存储桶？", "输入存储桶名称以确认", "远端操作：修改的是存储服务，不是 Pail 的设置", "存储桶 "+bkt+" 会在存储服务上被删除")
 	h.a.mg.db.open = false
 	h.settle()
 

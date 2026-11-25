@@ -102,6 +102,13 @@ func launchAssets(root, dir, version, osName, arch string) error {
   <key>CFBundleShortVersionString</key><string>%s</string>
   <key>LSMinimumSystemVersion</key><string>11.0</string>
   <key>NSHighResolutionCapable</key><true/>
+  <key>CFBundleURLTypes</key>
+  <array>
+    <dict>
+      <key>CFBundleURLName</key><string>moe.dejavu.pail.setup-link</string>
+      <key>CFBundleURLSchemes</key><array><string>pail</string></array>
+    </dict>
+  </array>
 </dict>
 </plist>
 `, desktop, plistVersion, plistVersion)
