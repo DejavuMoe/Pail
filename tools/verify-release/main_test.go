@@ -14,6 +14,22 @@ import (
 	"github.com/DejavuMoe/Pail/internal/buildstamp"
 )
 
+// The entry tools/release writes since 0.7.3 hands the app a pail:// link
+// with %u; the older form without it is still the right executable.
+func TestDesktopEntryRunsApp(t *testing.T) {
+	for entry, want := range map[string]bool{
+		"[Desktop Entry]\nExec=pail-desktop %u\nMimeType=x-scheme-handler/pail;\n": true,
+		"[Desktop Entry]\nExec=pail-desktop\nIcon=pail\n":                          true,
+		"[Desktop Entry]\nExec=pail %u\n":                                          false,
+		"[Desktop Entry]\nExec=pail-desktop --demo\n":                              false,
+		"[Desktop Entry]\nExec=/tmp/pail-desktop %u\n":                             false,
+	} {
+		if got := desktopEntryRunsApp(entry, "pail-desktop"); got != want {
+			t.Errorf("%q: %v, want %v", entry, got, want)
+		}
+	}
+}
+
 func TestRejectsMissingAndUnsafeArchiveEntries(t *testing.T) {
 	for _, entry := range []string{"Pail-v1.2.3-windows-amd64/README.md", "../outside", "Pail-v1.2.3-windows-amd64/pail.exe"} {
 		var b bytes.Buffer

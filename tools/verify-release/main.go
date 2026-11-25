@@ -97,6 +97,13 @@ func verify(dir, version string, targets []string) error {
 	return nil
 }
 
+// desktopEntryRunsApp reports whether a Linux desktop entry starts the
+// desktop app: its Exec line is the executable, alone (0.7.2 and earlier) or
+// followed by the %u that hands it a pail:// link (0.7.3 on).
+func desktopEntryRunsApp(entry, desktop string) bool {
+	return strings.Contains(entry, "\nExec="+desktop+"\n") || strings.Contains(entry, "\nExec="+desktop+" %u\n")
+}
+
 // checkBuildInfo verifies the build information embedded in a release binary.
 func checkBuildInfo(info *debug.BuildInfo, body []byte, rel string, desktop bool, version, osName, arch string) error {
 	settings := map[string]string{}
@@ -207,7 +214,7 @@ func verifyArchive(data []byte, base, version, osName, arch string) (map[string]
 				return err
 			}
 		}
-		if rel == "pail.desktop" && !strings.Contains(string(body), "\nExec="+desktop+"\n") {
+		if rel == "pail.desktop" && !desktopEntryRunsApp(string(body), desktop) {
 			return fmt.Errorf("desktop entry names the wrong executable")
 		}
 		if rel == "Pail.app/Contents/Info.plist" && !strings.Contains(string(body), "<key>CFBundleExecutable</key><string>"+desktop+"</string>") {
