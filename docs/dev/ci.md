@@ -109,7 +109,7 @@ Dependabot security/version update PRs and agentic autofix remain disabled: fixe
 
 ## Release sequence
 
-1. Prepare both changelogs and download documentation on `master`. Commit and push to Forgejo; verify that GitHub has the identical SHA.
+1. Prepare both changelogs and download documentation on `master`. When the release changes what goes into the archives (`tools/release`, the desktop entry, `install.sh`, `Info.plist`), first run `go run ./tools/release -version X.Y.Z` for all six targets: CI tests the packaging code but does not build or verify release archives, so a mismatch with `tools/verify-release` only shows in the Release workflow (the first v0.7.3 tag failed that way). Commit and push to Forgejo; verify that GitHub has the identical SHA.
 2. Wait for every required CI and CodeQL job for that SHA. Review CodeQL alerts; a successful analysis upload alone is not a claim that the code has no findings.
 3. Run `node scripts/check-release.mjs DejavuMoe/Pail <sha>`. The check rejects missing, skipped, failed, pending, wrong-commit, wrong-branch and changed-attempt results. The same check runs again inside Release.
 4. On Windows, create a signed annotated tag, for example `git tag -s v0.7.3 -m "Pail v0.7.3"`, and push only that tag to Forgejo: `git push origin v0.7.3`.
