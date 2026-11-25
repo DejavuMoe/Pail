@@ -40,9 +40,17 @@ func bmValidateBucketName(name string) error {
 	return nil
 }
 
-// CreateBucket creates a bucket. region "" or "us-east-1" sends no
-// LocationConstraint. objectLock enables Object Lock (which also turns on
-// versioning) at creation time; it cannot be added later through this call.
+// CreateBucket creates a bucket. objectLock enables Object Lock (which also
+// turns on versioning) at creation time; it cannot be added later through this
+// call.
+//
+// On AWS, region "" means the region the account's client signs for (its own
+// Region, else the AWS profile's or environment's, else us-east-1), and the
+// request goes to the endpoint of the bucket's region: a regional endpoint
+// rejects any other LocationConstraint, so without this an account could only
+// create buckets in its own region. On an S3-compatible service, region ""
+// sends no LocationConstraint and leaves the choice to the service. us-east-1
+// never sends one.
 func (s *Service) CreateBucket(ctx context.Context, accountID, name, region string, objectLock bool) error {
 	const op = "CreateBucket"
 	if err := checkLocation(op, Location{AccountID: accountID}, false); err != nil {
@@ -56,6 +64,19 @@ func (s *Service) CreateBucket(ctx context.Context, accountID, name, region stri
 	if err != nil {
 		return classify(op, err)
 	}
+	rec, ok := s.account(accountID)
+	if !ok {
+		return opErr(op, ErrNotFound, "no account %q", accountID)
+	}
+	var optFns []func(*s3.Options)
+	if rec.Endpoint == "" { // AWS
+		if region == "" {
+			region = c.Region() // never "": us-east-1 when nothing sets one
+		}
+		if target := region; target != c.Region() {
+			optFns = append(optFns, func(o *s3.Options) { o.Region = target })
+		}
+	}
 	in := &s3.CreateBucketInput{Bucket: aws.String(name)}
 	if region != "" && region != "us-east-1" {
 		in.CreateBucketConfiguration = &types.CreateBucketConfiguration{LocationConstraint: types.BucketLocationConstraint(region)}
@@ -63,7 +84,7 @@ func (s *Service) CreateBucket(ctx context.Context, accountID, name, region stri
 	if objectLock {
 		in.ObjectLockEnabledForBucket = aws.Bool(true)
 	}
-	if _, err := c.S3().CreateBucket(ctx, in); err != nil {
+	if _, err := c.S3().CreateBucket(ctx, in, optFns...); err != nil {
 		return classify(op, err)
 	}
 	if region != "" {

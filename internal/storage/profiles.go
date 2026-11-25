@@ -43,6 +43,29 @@ func sharedCredentialsFilename() string {
 	return awsconfig.DefaultSharedCredentialsFilename()
 }
 
+// AWSEnvRegion returns the region set in the environment (AWS_REGION, else
+// AWS_DEFAULT_REGION). The SDK prefers it over every profile's region.
+func AWSEnvRegion() string { return firstEnv("AWS_REGION", "AWS_DEFAULT_REGION") }
+
+// AWSEnvProfile returns the profile the default credential chain reads:
+// AWS_PROFILE, else AWS_DEFAULT_PROFILE, else "default".
+func AWSEnvProfile() string {
+	if p := firstEnv("AWS_PROFILE", "AWS_DEFAULT_PROFILE"); p != "" {
+		return p
+	}
+	return "default"
+}
+
+// firstEnv mirrors the SDK: the first variable with a non-empty value wins.
+func firstEnv(keys ...string) string {
+	for _, k := range keys {
+		if v := os.Getenv(k); v != "" {
+			return v
+		}
+	}
+	return ""
+}
+
 // SharedConfigStamp returns a lightweight stat fingerprint of the AWS shared
 // configuration and credentials files. Callers use it to notice when commands
 // such as `aws login --profile` or `aws configure` update those files on disk.

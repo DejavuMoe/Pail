@@ -74,7 +74,9 @@ func (a *app) openNewBucket() {
 	if !a.hasAccount() {
 		return
 	}
-	region := a.account().Region
+	// The account's own region, else (AWS profile or default chain) the one
+	// its client resolved from the profile or environment.
+	region := a.svc.AccountRegion(a.accountID)
 	if region == "" {
 		region = "us-east-1"
 	}

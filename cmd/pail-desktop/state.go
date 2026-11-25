@@ -134,10 +134,10 @@ type appPlatform struct {
 	// openURL opens a web address in the default browser (Shell.OpenExternal);
 	// it blocks, so it only runs on a goroutine.
 	openURL func(url string) error
-	// listProfiles reads local AWS shared config/credentials profiles on a
-	// background goroutine for the account dialog; tests override it to stay
-	// independent of the host's ~/.aws files.
-	listProfiles func() ([]core.AWSProfile, error)
+	// localAWS reads the local AWS profiles and environment on a background
+	// goroutine for the account dialog; tests override it to stay independent
+	// of the host's ~/.aws files and AWS_* variables.
+	localAWS func() (core.AWSLocal, error)
 	// quit ends the app (App.Quit); themeSet tells the system which appearance
 	// the app uses (Theme.SetSource), which colors the window controls and the
 	// native menus.
@@ -290,21 +290,21 @@ func newApp(svc *core.Service, opts options) *app {
 		pending:       make(chan func(), 4096),
 		inspectorOpen: true, transfersOpen: true,
 		inspW: 320, sidebarW: 248, transH: 168,
-		layMem:       newLayoutState(),
-		sort:         ui.SortOrder{Column: "name"},
-		cursor:       -1,
-		rowRects:     map[string]ui.Rect{},
-		rowTops:      map[string]float32{},
-		taskIdx:      map[string]int{},
-		watches:      map[string]*watch{},
-		pick:         func(bool) []string { return nil },
-		reveal:       func(string) {},
-		openPath:     func(string) error { return nil },
-		openURL:      func(string) error { return nil },
-		listProfiles: core.AWSProfiles,
-		quit:         func() {},
-		themeSet:     func(mygo.ThemeSource) {},
-		localeSet:    func(string) {}, langSave: func(string) {},
+		layMem:    newLayoutState(),
+		sort:      ui.SortOrder{Column: "name"},
+		cursor:    -1,
+		rowRects:  map[string]ui.Rect{},
+		rowTops:   map[string]float32{},
+		taskIdx:   map[string]int{},
+		watches:   map[string]*watch{},
+		pick:      func(bool) []string { return nil },
+		reveal:    func(string) {},
+		openPath:  func(string) error { return nil },
+		openURL:   func(string) error { return nil },
+		localAWS:  core.LocalAWS,
+		quit:      func() {},
+		themeSet:  func(mygo.ThemeSource) {},
+		localeSet: func(string) {}, langSave: func(string) {},
 		progressSet:  func(mygo.ProgressBar) {},
 		retryWatches: map[string]*watch{},
 	}

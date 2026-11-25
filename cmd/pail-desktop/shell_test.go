@@ -55,7 +55,7 @@ func attachMotion(t *testing.T, env *demoEnv, theme string, still bool) *harness
 		}
 		testLocale.Store(tag)
 	}
-	a.listProfiles = nil
+	a.localAWS = nil
 	h := &harness{t: t, a: a, env: env, tt: ui.NewTester(a.view, testW, testH)}
 	h.settle()
 	return h

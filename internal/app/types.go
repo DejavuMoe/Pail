@@ -191,6 +191,36 @@ type AWSProfile struct {
 	Auth   string `json:"auth,omitempty"` // "login" | "sso" | "static" | "role" | "process" | "web_identity" | ""
 }
 
+// AWSLocal is what the local AWS configuration offers to accounts with AWS
+// profile or default-chain credentials.
+type AWSLocal struct {
+	Profiles []AWSProfile
+	// DefaultProfile is the profile the default chain reads: AWS_PROFILE,
+	// else AWS_DEFAULT_PROFILE, else "default".
+	DefaultProfile string
+	// EnvRegion is AWS_REGION, else AWS_DEFAULT_REGION. When set, the SDK
+	// uses it instead of any profile's region.
+	EnvRegion string
+}
+
+// Region is the region an account using profile (or, with "", the default
+// chain) and no region of its own signs for, as far as the local files and
+// environment tell: "" means none is set and us-east-1 applies.
+func (l AWSLocal) Region(profile string) string {
+	if l.EnvRegion != "" {
+		return l.EnvRegion
+	}
+	if profile == "" {
+		profile = l.DefaultProfile
+	}
+	for _, p := range l.Profiles {
+		if p.Name == profile {
+			return p.Region
+		}
+	}
+	return ""
+}
+
 // AWSProfile.Auth values.
 const (
 	ProfileAuthLogin       = storage.ProfileAuthLogin

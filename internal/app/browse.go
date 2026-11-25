@@ -382,8 +382,10 @@ func (s *Service) PresignURL(ctx context.Context, loc Location, key, versionID, 
 //   - Custom endpoint: path-style when the account says so (or the host is an
 //     IP address / localhost), otherwise <scheme>://<bucket>.<host>/<key>.
 //
-// The region is the one learnt by Buckets, else the account's, else us-east-1.
-// It returns "" for an unknown account.
+// The region is the one learnt by Buckets, else the account's (AccountRegion,
+// which for profile and default-chain accounts includes the region the AWS
+// profile or environment sets), else us-east-1. It returns "" for an unknown
+// account.
 func (s *Service) PublicURL(loc Location, key string) string {
 	s.mu.Lock()
 	rec, ok := s.accountLocked(loc.AccountID)
@@ -393,7 +395,7 @@ func (s *Service) PublicURL(loc Location, key string) string {
 		return ""
 	}
 	if region == "" {
-		region = rec.Region
+		region = s.AccountRegion(loc.AccountID)
 	}
 	if region == "" {
 		region = "us-east-1"

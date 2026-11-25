@@ -13,11 +13,11 @@ import (
 func TestAccountDialogAWSProfilePickerAndRegion(t *testing.T) {
 	t.Parallel()
 	h := newHarness(t, "light")
-	h.a.listProfiles = func() ([]core.AWSProfile, error) {
-		return []core.AWSProfile{
+	h.a.localAWS = func() (core.AWSLocal, error) {
+		return core.AWSLocal{DefaultProfile: "default", Profiles: []core.AWSProfile{
 			{Name: "default", Region: "us-east-1", Auth: core.ProfileAuthStatic},
 			{Name: "work", Region: "ap-northeast-1", Auth: core.ProfileAuthLogin},
-		}, nil
+		}}, nil
 	}
 	h.a.openAccountForm(false)
 	h.settle()
@@ -60,10 +60,10 @@ func TestAccountDialogAWSProfilePickerAndRegion(t *testing.T) {
 func TestAccountDialogAWSProfileCustomAndEdit(t *testing.T) {
 	t.Parallel()
 	h := newHarness(t, "light")
-	h.a.listProfiles = func() ([]core.AWSProfile, error) {
-		return []core.AWSProfile{
+	h.a.localAWS = func() (core.AWSLocal, error) {
+		return core.AWSLocal{DefaultProfile: "default", Profiles: []core.AWSProfile{
 			{Name: "work", Region: "ap-northeast-1", Auth: core.ProfileAuthLogin},
-		}, nil
+		}}, nil
 	}
 
 	// Choosing "Other…" reveals the manual profile name input.
@@ -87,6 +87,44 @@ func TestAccountDialogAWSProfileCustomAndEdit(t *testing.T) {
 	h.settle()
 	if h.a.af.profilePick != customProfile || h.a.af.profile != "custom-prof" {
 		t.Fatalf("edit custom profile: pick=%q profile=%q", h.a.af.profilePick, h.a.af.profile)
+	}
+}
+
+// The region placeholder shows the region the SDK would use: the default
+// chain reads AWS_PROFILE's profile, and AWS_REGION beats every profile.
+func TestAccountDialogRegionPlaceholderFollowsEnvironment(t *testing.T) {
+	t.Parallel()
+	h := newHarness(t, "light")
+	local := core.AWSLocal{DefaultProfile: "work", Profiles: []core.AWSProfile{
+		{Name: "default", Region: "us-east-1", Auth: core.ProfileAuthStatic},
+		{Name: "work", Region: "ap-northeast-1", Auth: core.ProfileAuthLogin},
+	}}
+	h.a.localAWS = func() (core.AWSLocal, error) { return local, nil }
+	h.a.openAccountForm(false)
+	h.settle()
+	h.mustClick("Access keys")
+	h.mustClick("Default chain")
+	if h.a.af.region != "" {
+		t.Fatalf("switching to the default chain kept default region %q", h.a.af.region)
+	}
+	if r := h.a.af.selectedProfileRegion(); r != "ap-northeast-1" {
+		t.Fatalf("default chain with AWS_PROFILE=work: region = %q, want ap-northeast-1", r)
+	}
+
+	local.EnvRegion = "eu-central-1"
+	h.a.openAccountForm(false)
+	h.settle()
+	h.mustClick("Access keys")
+	h.mustClick("Default chain")
+	if r := h.a.af.selectedProfileRegion(); r != "eu-central-1" {
+		t.Fatalf("default chain with AWS_REGION: region = %q, want eu-central-1", r)
+	}
+	h.mustClick("Default chain")
+	h.mustClick("AWS profile")
+	h.mustClick("Choose…")
+	h.mustClick("default")
+	if r := h.a.af.selectedProfileRegion(); r != "eu-central-1" {
+		t.Fatalf("profile with AWS_REGION: region = %q, want eu-central-1", r)
 	}
 }
 

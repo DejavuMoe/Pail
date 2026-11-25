@@ -35,11 +35,12 @@ type acctForm struct {
 	secret     string
 	session    string
 	profile    string
-	// profiles are discovered from the local AWS config/credentials files when
-	// the dialog opens; profilePick tracks the select box (profile name or
-	// customProfile). regionEdited tracks whether the user edited Region so
-	// switching to an AWS profile can clear the untouched default us-east-1.
-	profiles     []core.AWSProfile
+	// local holds the profiles of the local AWS config/credentials files and
+	// the AWS environment, read when the dialog opens; profilePick tracks the
+	// select box (profile name or customProfile). regionEdited tracks whether
+	// the user edited Region so switching to an AWS profile can clear the
+	// untouched default us-east-1.
+	local        core.AWSLocal
 	profilePick  string
 	regionEdited bool
 	openGen      int
@@ -76,7 +77,7 @@ const customProfile = "__custom__"
 func (f *acctForm) busy() bool { return f.saving || f.test == testRunning }
 
 func (f *acctForm) hasProfile(name string) bool {
-	for _, p := range f.profiles {
+	for _, p := range f.local.Profiles {
 		if p.Name == name {
 			return true
 		}
@@ -85,7 +86,7 @@ func (f *acctForm) hasProfile(name string) bool {
 }
 
 func (f *acctForm) syncProfilePick() {
-	if len(f.profiles) == 0 {
+	if len(f.local.Profiles) == 0 {
 		f.profilePick = ""
 		return
 	}
@@ -103,18 +104,16 @@ func (f *acctForm) syncProfilePick() {
 	f.profilePick = customProfile
 }
 
+// selectedProfileRegion is the region an account with the chosen profile or
+// the default chain and no region of its own would use: AWS_REGION when set,
+// else the profile's (for the default chain, AWS_PROFILE's or "default"); ""
+// when neither sets one.
 func (f *acctForm) selectedProfileRegion() string {
-	name := strings.TrimSpace(f.profile)
-	if name == "" && f.creds == core.CredDefault {
-		name = "default"
-	}
-	if name == "" {
-		return ""
-	}
-	for _, p := range f.profiles {
-		if p.Name == name {
-			return p.Region
-		}
+	switch f.creds {
+	case core.CredProfile:
+		return f.local.Region(strings.TrimSpace(f.profile))
+	case core.CredDefault:
+		return f.local.Region("")
 	}
 	return ""
 }
@@ -139,8 +138,8 @@ func profileAuthLabel(auth string) string {
 }
 
 func (f *acctForm) profileChoices() []choiceDetail {
-	opts := make([]choiceDetail, 0, len(f.profiles)+1)
-	for _, p := range f.profiles {
+	opts := make([]choiceDetail, 0, len(f.local.Profiles)+1)
+	for _, p := range f.local.Profiles {
 		var parts []string
 		if auth := profileAuthLabel(p.Auth); auth != "" {
 			parts = append(parts, auth)
@@ -154,7 +153,7 @@ func (f *acctForm) profileChoices() []choiceDetail {
 			Secondary: strings.Join(parts, " · "),
 		})
 	}
-	opts = append(opts, choiceDetail{Value: customProfile, Label: locales.RewriteOther()})
+	opts = append(opts, choiceDetail{Value: customProfile, Label: locales.AcctProfileOther()})
 	return opts
 }
 
@@ -211,14 +210,14 @@ func (a *app) openAccountForm(edit bool) {
 		f.reqPays, f.proxyMode, f.proxyURL = ac.RequesterPays, ac.ProxyMode, ac.ProxyURL
 		f.advanced = f.roleARN != "" || f.skipTLS || f.checksum != "auto" || f.reqPays || f.proxyMode != core.ProxyGlobal
 	}
-	if listProfiles := a.listProfiles; listProfiles != nil {
+	if localAWS := a.localAWS; localAWS != nil {
 		a.bg(func() func() {
-			profs, _ := listProfiles()
+			local, _ := localAWS()
 			return func() {
 				if !a.af.open || a.af.openGen != openGen {
 					return
 				}
-				a.af.profiles = profs
+				a.af.local = local
 				a.af.syncProfilePick()
 			}
 		})
@@ -611,7 +610,7 @@ func (a *app) accountFields(c *ui.Context, errs map[string]string) {
 		})
 	case core.CredProfile:
 		formFieldHelp(c, locales.AcctProfile(), locales.AcctProfileHelp(), errs["profile"], func() {
-			if len(f.profiles) > 0 {
+			if len(f.local.Profiles) > 0 {
 				if selectBoxDetail(c, locales.AcctProfile(), &f.profilePick, f.profileChoices(), locales.CommonChoose(), 0) {
 					if f.profilePick == customProfile {
 						if f.hasProfile(f.profile) {

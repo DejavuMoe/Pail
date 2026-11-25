@@ -69,6 +69,7 @@
   "acctProfileAuthWebIdentity": "Web identity",
   "acctProfileCustom": "Profile name",
   "acctProfileHelp": "The name of a profile in your AWS config and credentials files, including sessions created with aws login --profile, for example default.",
+  "acctProfileOther": "Other…",
   "acctProvider": "Provider",
   "acctProviderHelp": "AWS connects to Amazon S3. S3-compatible connects to another service at an endpoint you enter, such as MinIO or a self-hosted gateway.",
   "acctProxy": "Proxy",

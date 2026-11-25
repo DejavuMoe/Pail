@@ -4,6 +4,7 @@ import (
 	"context"
 	"errors"
 	"sync"
+	"sync/atomic"
 
 	"github.com/DejavuMoe/Pail/internal/cloud"
 	"github.com/DejavuMoe/Pail/internal/storage"
@@ -20,7 +21,11 @@ type clientEntry struct {
 	mu       sync.Mutex // guards st, cl and awsStamp
 	st       *storage.Client
 	cl       *cloud.Client
-	awsStamp string
+	awsStamp string // storage.SharedConfigStamp when the clients were built
+
+	// region is storage.Client.Region of the last built st. It is atomic so
+	// AccountRegion never waits for a client being built.
+	region atomic.Pointer[string]
 }
 
 // buildCall lets concurrent callers share one (possibly slow, keyring-prompting)
@@ -161,10 +166,23 @@ func (s *Service) entry(ctx context.Context, id string) (*clientEntry, error) {
 	}
 }
 
-// storageClient returns the (cached) S3 client of an account. For accounts that
-// read local AWS configuration (profile or default chain), changes to the AWS
-// shared config or credentials files (such as `aws login --profile`) drop the
-// cached clients so the next request reloads them.
+// refreshLocked drops the built clients of an account that reads the local AWS
+// configuration (profile or default chain) when the AWS shared config or
+// credentials files changed on disk, for example after `aws login --profile`,
+// so the next request reloads them. It returns the stamp to record with a
+// newly built client. Caller holds e.mu.
+func (e *clientEntry) refreshLocked() string {
+	if !e.cfg.UseDefaultCredentials {
+		return ""
+	}
+	stamp := storage.SharedConfigStamp()
+	if stamp != e.awsStamp {
+		e.st, e.cl = nil, nil
+	}
+	return stamp
+}
+
+// storageClient returns the (cached) S3 client of an account.
 func (s *Service) storageClient(ctx context.Context, id string) (*storage.Client, error) {
 	e, err := s.entry(ctx, id)
 	if err != nil {
@@ -172,20 +190,15 @@ func (s *Service) storageClient(ctx context.Context, id string) (*storage.Client
 	}
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	var stamp string
-	if e.cfg.UseDefaultCredentials {
-		stamp = storage.SharedConfigStamp()
-		if stamp != e.awsStamp {
-			e.st, e.cl = nil, nil
-		}
-	}
+	stamp := e.refreshLocked()
 	if e.st == nil {
 		c, err := storage.New(ctx, e.cfg)
 		if err != nil {
 			return nil, err
 		}
-		e.st = c
-		e.awsStamp = stamp
+		e.st, e.awsStamp = c, stamp
+		r := c.Region()
+		e.region.Store(&r)
 	}
 	return e.st, nil
 }
@@ -198,20 +211,38 @@ func (s *Service) cloudClient(ctx context.Context, id string) (*cloud.Client, er
 	}
 	e.mu.Lock()
 	defer e.mu.Unlock()
-	var stamp string
-	if e.cfg.UseDefaultCredentials {
-		stamp = storage.SharedConfigStamp()
-		if stamp != e.awsStamp {
-			e.st, e.cl = nil, nil
-		}
-	}
+	stamp := e.refreshLocked()
 	if e.cl == nil {
 		c, err := cloud.New(ctx, e.cfg)
 		if err != nil {
 			return nil, err
 		}
-		e.cl = c
-		e.awsStamp = stamp
+		e.cl, e.awsStamp = c, stamp
 	}
 	return e.cl, nil
+}
+
+// AccountRegion is the region the account's requests are signed for: its own
+// Region, else, for AWS profile and default-chain accounts, the one the AWS
+// profile or environment set when its client was last built. It makes no
+// request and builds nothing, so it returns "" when the account has no region
+// of its own and has not been used yet; callers then assume us-east-1.
+func (s *Service) AccountRegion(accountID string) string {
+	s.mu.Lock()
+	rec, ok := s.accountLocked(accountID)
+	e := s.clients[accountID]
+	s.mu.Unlock()
+	if !ok {
+		return ""
+	}
+	if rec.Region != "" {
+		return rec.Region
+	}
+	if e == nil {
+		return ""
+	}
+	if r := e.region.Load(); r != nil {
+		return *r
+	}
+	return ""
 }

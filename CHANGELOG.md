@@ -8,12 +8,13 @@ All notable changes to this project are documented in this file. The format foll
 
 ### Added
 
-- Local AWS profile discovery for `aws login --profile` and other shared AWS profiles. In the account dialog, **AWS profile** lists the profiles found in your AWS config and credentials files with their authentication type and region, plus **Other…** for any custom name. On the command line, `pail account profiles` lists the same profiles.
+- Local AWS profile discovery for `aws login --profile` and other shared AWS profiles. In the account dialog, **AWS profile** lists the profiles found in your AWS config and credentials files with their authentication type and region, plus **Other…** for any custom name. On the command line, `pail account profiles` lists the same profiles. Thanks to @xjetry for contributing this in [#9](https://github.com/DejavuMoe/Pail/pull/9).
 - Missing or expired `aws login` sessions report that re-authentication with `aws login` is needed, and Pail reloads updated AWS configuration files without a restart.
 
 ### Fixed
 
-- Accounts using an AWS profile or the default credential chain ignored the profile's configured region and forced `us-east-1` when no region was set on the account. Omitting the region now uses the profile's region (or `AWS_REGION`), falling back to `us-east-1`.
+- Accounts using an AWS profile or the default credential chain ignored the profile's configured region and forced `us-east-1` when no region was set on the account. Omitting the region now uses the profile's region (or `AWS_REGION`), falling back to `us-east-1`. New buckets and public links use the same region.
+- Creating an AWS bucket in a region other than the account's failed with `IllegalLocationConstraintException`. The request now goes to the new bucket's region.
 
 ## [0.7.0] - 2026-11-21
 

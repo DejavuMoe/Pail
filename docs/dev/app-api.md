@@ -131,8 +131,15 @@ type Account struct {
 type AccountBucket struct{ Name, Prefix string } // Prefix "" or ends with "/": the folder the bucket opens in
 type Secrets struct{ SecretAccessKey, SessionToken string }
 type AWSProfile struct{ Name, Region, Auth string } // local AWS config/credentials profile (never carries secrets); Auth: "login" | "sso" | "static" | "role" | "process" | "web_identity" | ""
+type AWSLocal struct {
+	Profiles       []AWSProfile
+	DefaultProfile string // AWS_PROFILE, else AWS_DEFAULT_PROFILE, else "default"
+	EnvRegion      string // AWS_REGION, else AWS_DEFAULT_REGION; beats every profile's region
+}
+func (l AWSLocal) Region(profile string) string // region of a profile ("" = the default chain's) without an account region; "" = us-east-1
 
-func AWSProfiles() ([]AWSProfile, error) // reads local AWS config/credentials files; missing files return nil, nil
+func LocalAWS() (AWSLocal, error) // reads local AWS config/credentials files and AWS_* variables; missing files give no profiles
+func (s *Service) AccountRegion(accountID string) string // account Region, else the region its built client resolved; "" before first use; no request, never blocks
 func (s *Service) Accounts() []Account
 func (s *Service) SaveAccount(a Account, sec *Secrets) (Account, error)
 // sec == nil 表示保留已有机密。先写新机密，再更新账户记录，最后删除旧机密。
@@ -150,7 +157,7 @@ const MaxAliasRunes = 64
 
 **指定存储桶。** `Buckets` 非空时账户不再依赖 `s3:ListAllMyBuckets`：`Buckets()` 不发 ListBuckets，直接返回这些条目（`Region` 为空，`Prefix` 为其文件夹），但仍先构建客户端，使保险库锁定与机密缺失照常在这里报告；`TestAccount` 对每个条目发一次 `ListObjectsV2`（MaxKeys 1、Delimiter `/`、Prefix 为该文件夹，单次尝试），最多 8 个并行，各自都有完整的 15 秒上限；按填写顺序返回第一个失败，消息以 `name/folder/` 开头说明是哪一个。`ParseAccountBuckets` 读文本形式 `name` 或 `name/folder/`（缺尾部 `/` 则补上），`NormalizeAccountBuckets` 去空白、校验桶名与文件夹段（不含空段、`.`、`..`）；同一桶名只能出现一次，因为侧栏、别名和 CDN 列表都按桶名索引。桌面界面把该文件夹当作这个存储桶的顶层：侧栏显示 `name/folder/`（有别名时显示别名），面包屑从它开始，"上一级"停在它；下载存储桶、复制或移动内容、更改存储类别与加密作用于该文件夹（下载时以该文件夹为键、从桶根下载，不列出桶根）。清空、删除存储桶和存储桶设置仍针对整个桶，由服务决定是否拒绝。打开存储桶时读取版本控制状态被拒绝不显示错误。
 
-客户端缓存按 accountID 保存 `*storage.Client` 和 `*cloud.Client`，惰性构建，账户变更时失效。`SaveProxy` 改动代理时所有账户的缓存同样失效（连同正在构建的条目，靠 `acctEpoch` 丢弃）；已在运行的传输沿用旧连接。代理只改传输层：`Service` 把 `ProxySettings` 和密码拼成地址放进 `storage.Config.ProxyURL`，进入 `NewHTTPClient`，S3、STS 和 CloudFront 共用同一个 HTTP 客户端。`Scheme` 为空时用 `http.ProxyFromEnvironment`；非空时用 `httpproxy` 按该地址选路，本机地址（localhost 与回环地址）和 `NO_PROXY` 里的主机仍直连。地址不合法时请求直接失败，不退回直连。
+客户端缓存按 accountID 保存 `*storage.Client` 和 `*cloud.Client`，惰性构建，账户变更时失效。AWS 配置文件与默认凭证链账户还记录 AWS 共享配置和凭证文件的大小与修改时间，文件变化（如 `aws login --profile`）后下次使用时重建客户端。这类账户不填区域时由 SDK 按 `AWS_REGION`、配置文件区域、`us-east-1` 的顺序决定签名区域；`AccountRegion` 返回客户端实际使用的区域，`PublicURL` 与新建存储桶以它为账户区域。`SaveProxy` 改动代理时所有账户的缓存同样失效（连同正在构建的条目，靠 `acctEpoch` 丢弃）；已在运行的传输沿用旧连接。代理只改传输层：`Service` 把 `ProxySettings` 和密码拼成地址放进 `storage.Config.ProxyURL`，进入 `NewHTTPClient`，S3、STS 和 CloudFront 共用同一个 HTTP 客户端。`Scheme` 为空时用 `http.ProxyFromEnvironment`；非空时用 `httpproxy` 按该地址选路，本机地址（localhost 与回环地址）和 `NO_PROXY` 里的主机仍直连。地址不合法时请求直接失败，不退回直连。
 
 **代理密码。** 用户名和密码可选，密码需要用户名；`SaveProxy` 清除用户名或协议时一并删除密码。密码存在机密存储的 `proxy/password`，`settings.json` 只记 `hasPassword`。写入顺序与账户机密一致：先写新密码，再写 `settings.json`，最后删除不再需要的旧密码；`settings.json` 写失败时恢复原密码。写入持有 `refMu`，与后端迁移互斥。构建客户端和测试连接时在所有锁之外读取密码；缺失时返回 `NotFound`，保险库锁定时返回 `Locked`，错误消息不含密码。`SetSecretBackend` 把它列入迁移清单；`ResetVault` 把 `hasPassword` 清除并在 `VaultReset.Proxy` 报告。日志里的密码经 `lgAddSecret` 脱敏。
 
@@ -399,6 +406,7 @@ func (s *Service) DeleteVersions(loc Location, refs []ObjectRef) (taskID string,
 
 ```go
 func (s *Service) CreateBucket(ctx context.Context, accountID, name, region string, objectLock bool) error
+// AWS: region "" = the client's region; the request goes to the bucket region's endpoint. S3-compatible: region "" sends no LocationConstraint. us-east-1 never sends one.
 func (s *Service) DeleteBucket(ctx context.Context, accountID, name string) error // must be empty
 func (s *Service) EmptyBucket(accountID, name string, allVersions bool) (taskID string, err error)
 

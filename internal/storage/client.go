@@ -231,6 +231,7 @@ type Client struct {
 	// reqChecksum mirrors the SDK client setting for the multipart uploader,
 	// which otherwise defaults to adding CRC32 on its own.
 	reqChecksum aws.RequestChecksumCalculation
+	region      string
 }
 
 // New builds a client. No network traffic happens until the first call.
@@ -240,7 +241,7 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 		return nil, err
 	}
 	whenRequired := cfg.ChecksumMode == ChecksumWhenRequired || (cfg.ChecksumMode == "" || cfg.ChecksumMode == ChecksumAuto) && cfg.Endpoint != ""
-	c := &Client{reqChecksum: aws.RequestChecksumCalculationWhenSupported}
+	c := &Client{reqChecksum: aws.RequestChecksumCalculationWhenSupported, region: ac.Region}
 	if whenRequired || cfg.ChecksumMode != ChecksumWhenSupported && ac.RequestChecksumCalculation == aws.RequestChecksumCalculationWhenRequired {
 		c.reqChecksum = aws.RequestChecksumCalculationWhenRequired
 	}
@@ -264,6 +265,11 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 	})
 	return c, nil
 }
+
+// Region is the region the client signs requests for: Config.Region, else
+// (profile and default-chain credentials) the one the AWS profile or
+// environment sets, else us-east-1.
+func (c *Client) Region() string { return c.region }
 
 // S3 returns the underlying SDK client for simple calls (Head, List, Put, Tagging, ...).
 // It uses the standard SDK retryer (3 attempts).

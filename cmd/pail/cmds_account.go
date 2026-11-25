@@ -173,10 +173,11 @@ func setupAccount(c *cli, fs *flag.FlagSet) runner {
 }
 
 func (c *cli) accountProfiles() error {
-	profs, err := app.AWSProfiles()
+	local, err := app.LocalAWS()
 	if err != nil {
 		return err
 	}
+	profs := local.Profiles
 	if c.g.json {
 		for _, p := range profs {
 			c.emit(map[string]any{"type": "profile", "name": p.Name, "region": p.Region, "auth": p.Auth})

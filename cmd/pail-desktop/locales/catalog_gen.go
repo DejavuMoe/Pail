@@ -724,6 +724,16 @@ func (msgs Messages) AcctProfileHelp() string {
 	return Catalog.Format(msgs.locale, "acctProfileHelp", nil)
 }
 
+// AcctProfileOther says "Other…"
+// in the language the app shows.
+func AcctProfileOther() string { return In(i18n.Locale()).AcctProfileOther() }
+
+// AcctProfileOther says "Other…"
+// in the language of msgs.
+func (msgs Messages) AcctProfileOther() string {
+	return Catalog.Format(msgs.locale, "acctProfileOther", nil)
+}
+
 // AcctProvider says "Provider"
 // in the language the app shows.
 func AcctProvider() string { return In(i18n.Locale()).AcctProvider() }

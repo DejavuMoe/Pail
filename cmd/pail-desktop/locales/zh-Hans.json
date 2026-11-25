@@ -69,6 +69,7 @@
   "acctProfileAuthWebIdentity": "Web 身份",
   "acctProfileCustom": "配置文件名称",
   "acctProfileHelp": "AWS 配置和凭证文件中的配置名称，包括通过 aws login --profile 创建的会话，例如 default。",
+  "acctProfileOther": "其他…",
   "acctProvider": "服务商",
   "acctProviderHelp": "“AWS”连接 Amazon S3；“兼容 S3”通过填写的端点连接其他服务，例如 MinIO 或自建网关。",
   "acctProxy": "代理",

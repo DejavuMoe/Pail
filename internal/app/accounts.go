@@ -193,16 +193,21 @@ func ValidateAccount(a Account) (Account, error) {
 	return a, nil
 }
 
-// AWSProfiles lists the profiles found in the local AWS shared configuration
-// and credentials files. Missing files return an empty slice and nil error.
-func AWSProfiles() ([]AWSProfile, error) {
+// LocalAWS reads the profiles of the local AWS shared configuration and
+// credentials files (never their secrets) and the AWS environment variables
+// that choose a profile or region. Missing files give no profiles and no error.
+func LocalAWS() (AWSLocal, error) {
 	list, err := storage.ListAWSProfiles()
 	if err != nil {
-		return nil, classify("AWSProfiles", err)
+		return AWSLocal{}, classify("LocalAWS", err)
 	}
-	out := make([]AWSProfile, len(list))
+	out := AWSLocal{
+		Profiles:       make([]AWSProfile, len(list)),
+		DefaultProfile: storage.AWSEnvProfile(),
+		EnvRegion:      storage.AWSEnvRegion(),
+	}
 	for i, p := range list {
-		out[i] = AWSProfile{Name: p.Name, Region: p.Region, Auth: p.Auth}
+		out.Profiles[i] = AWSProfile{Name: p.Name, Region: p.Region, Auth: p.Auth}
 	}
 	return out, nil
 }

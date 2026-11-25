@@ -82,6 +82,7 @@ func setupLoginEnv(t *testing.T, configText string) (configPath, cacheDir string
 	t.Setenv("AWS_REGION", "")
 	t.Setenv("AWS_DEFAULT_REGION", "")
 	t.Setenv("AWS_PROFILE", "")
+	t.Setenv("AWS_DEFAULT_PROFILE", "")
 	t.Setenv("AWS_ACCESS_KEY_ID", "")
 	t.Setenv("AWS_SECRET_ACCESS_KEY", "")
 	t.Setenv("AWS_SESSION_TOKEN", "")
