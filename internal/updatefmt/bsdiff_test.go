@@ -84,7 +84,15 @@ func TestDiffPatch(t *testing.T) {
 // in the old file at the alignment of the previous match, but for a byte
 // at either end: Diff then steps byte by byte through the match, which
 // took time quadratic in its length while each search compared it whole.
+//
+// It is a time budget, so it does not run with -race: there Diff of these
+// 2 MiB takes about 30 s on 8 cores, and a busy CI runner went over the
+// minute. The native test jobs run it on every target; the quadratic Diff it
+// guards against takes hours either way.
 func TestDiffShiftedMatch(t *testing.T) {
+	if raceDetector {
+		t.Skip("time budget; -race slows Diff about 30 times")
+	}
 	r := rand.New(rand.NewPCG(5, 6))
 	x := make([]byte, 1<<20)
 	for i := range x {

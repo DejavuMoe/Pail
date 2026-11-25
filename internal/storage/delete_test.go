@@ -51,10 +51,13 @@ func TestDeleteObjectsProtocolChunksAndOrder(t *testing.T) {
 	for _, partial := range []bool{false, true} {
 		t.Run(fmt.Sprint(partial), func(t *testing.T) {
 			sel := ids(1005)
-			var calls, done atomic.Int32
+			// Each batch is placed by the index in its first version ID
+			// (v-NNNN), not by how many objects came before it: the SDK may
+			// resend a batch whose answer did not reach it, and that repeat
+			// must neither shift the next batch nor count as another one.
+			var mu sync.Mutex
+			batches := map[int]int{} // first index -> objects
 			c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
-				calls.Add(1)
-				offset := int(done.Load())
 				if r.Method != "POST" || r.URL.Path != "/bucket" || !r.URL.Query().Has("delete") {
 					t.Errorf("unexpected request %s %s", r.Method, r.URL)
 					w.WriteHeader(400)
@@ -69,8 +72,19 @@ func TestDeleteObjectsProtocolChunksAndOrder(t *testing.T) {
 					w.WriteHeader(400)
 					return
 				}
+				var offset int
+				if len(body.Objects) == 0 {
+					t.Error("empty batch")
+					w.WriteHeader(400)
+					return
+				}
+				if _, err := fmt.Sscanf(body.Objects[0].VersionID, "v-%d", &offset); err != nil || offset+len(body.Objects) > len(sel) {
+					t.Errorf("batch starts at %q with %d objects", body.Objects[0].VersionID, len(body.Objects))
+					w.WriteHeader(400)
+					return
+				}
 				if want := min(1000, len(sel)-offset); len(body.Objects) != want || body.Quiet == nil || *body.Quiet {
-					t.Errorf("batch objects=%d quiet=%v want=%d", len(body.Objects), body.Quiet, want)
+					t.Errorf("batch at %d: objects=%d quiet=%v want=%d", offset, len(body.Objects), aws.ToBool(body.Quiet), want)
 				}
 				var resp struct {
 					XMLName xml.Name  `xml:"DeleteResult"`
@@ -89,13 +103,18 @@ func TestDeleteObjectsProtocolChunksAndOrder(t *testing.T) {
 						resp.Deleted = append(resp.Deleted, v)
 					}
 				}
-				done.Add(int32(len(body.Objects)))
+				mu.Lock()
+				batches[offset] = len(body.Objects)
+				mu.Unlock()
 				w.Header().Set("Content-Type", "application/xml")
 				_ = xml.NewEncoder(w).Encode(resp)
 			})
 			res := c.DeleteObjects(context.Background(), "bucket", sel)
-			if calls.Load() != 2 || done.Load() != 1005 || len(res) != 1005 {
-				t.Fatalf("calls=%d objects=%d results=%d", calls.Load(), done.Load(), len(res))
+			mu.Lock()
+			got := fmt.Sprint(batches)
+			mu.Unlock()
+			if got != "map[0:1000 1000:5]" || len(res) != 1005 {
+				t.Fatalf("batches=%s results=%d, want map[0:1000 1000:5] and 1005", got, len(res))
 			}
 			fails := 0
 			if partial {
