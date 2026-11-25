@@ -39,9 +39,9 @@ Windows 的压缩包里是 `pail-desktop.exe`、`pail.exe`、`.mygo-files` 和�
 每个版本都有一个 `SHA256SUMS` 文件，每个压缩包占一行。计算压缩包的 SHA-256，与对应的那一行比较：
 
 ```sh
-sha256sum Pail-v0.7.0-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.7.0-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.7.0-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.7.1-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.7.1-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.7.1-windows-amd64.zip         # Windows PowerShell
 ```
 
 在 Linux 上，把 `SHA256SUMS` 和压缩包放在同一个文件夹里，`sha256sum` 可以直接比较，一致时输出 `OK`：

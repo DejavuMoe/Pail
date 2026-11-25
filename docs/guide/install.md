@@ -39,9 +39,9 @@ The Windows archives hold `pail-desktop.exe`, `pail.exe`, `.mygo-files` and the 
 Each release has a `SHA256SUMS` file with one line per archive. Compute the archive's SHA-256 hash and compare it with its line:
 
 ```sh
-sha256sum Pail-v0.7.0-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.7.0-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.7.0-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.7.1-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.7.1-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.7.1-windows-amd64.zip         # Windows PowerShell
 ```
 
 On Linux, with `SHA256SUMS` in the same folder as the archive, `sha256sum` can do the comparison and print `OK`:

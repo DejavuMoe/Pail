@@ -1,9 +1,9 @@
 // Command updates signs the update files of a release and mirrors the latest
 // release on pail.download.
 //
-//	go run ./tools/updates sign   -dir dist -version 0.7.0   # PAIL_UPDATE_KEY
-//	go run ./tools/updates verify -dir dist -version 0.7.0
-//	go run ./tools/updates mirror -version 0.7.0 -out public -cache /cache
+//	go run ./tools/updates sign   -dir dist -version 0.7.1   # PAIL_UPDATE_KEY
+//	go run ./tools/updates verify -dir dist -version 0.7.1
+//	go run ./tools/updates mirror -version 0.7.1 -out public -cache /cache
 //
 // sign runs in the release workflow, after tools/release built the update
 // archives (pail-update-<version>-<target>.tar.gz). Per target it signs the

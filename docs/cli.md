@@ -107,6 +107,7 @@ With `--json`, a command prints one object per row, then the summary. The `type`
 | Command | Type |
 | --- | --- |
 | `accounts`, `account ls`, `account show` | `account` |
+| `account profiles` | `profile` |
 | `buckets`, `ls` without a path | `bucket` |
 | `ls` | `folder` or `object` |
 | `versions` | `version` |

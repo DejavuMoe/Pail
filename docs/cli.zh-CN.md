@@ -107,6 +107,7 @@ pail version
 | 命令 | type |
 | --- | --- |
 | `accounts`、`account ls`、`account show` | `account` |
+| `account profiles` | `profile` |
 | `buckets`、不带路径的 `ls` | `bucket` |
 | `ls` | `folder` 或 `object` |
 | `versions` | `version` |
