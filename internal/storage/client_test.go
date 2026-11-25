@@ -27,11 +27,70 @@ func testClient(t *testing.T, h http.HandlerFunc) *Client {
 	t.Helper()
 	server := httptest.NewServer(h)
 	t.Cleanup(server.Close)
-	c, err := New(context.Background(), testConfig(server))
+	cfg := testConfig(server)
+	tl := &transportLog{base: server.Client().Transport}
+	cfg.HTTPClient = &http.Client{Transport: tl}
+	// Registered after server.Close, so it runs before it.
+	t.Cleanup(func() {
+		if t.Failed() {
+			for _, e := range tl.list() {
+				t.Logf("transport error (the SDK resends the request): %s", e)
+			}
+		}
+	})
+	c, err := New(context.Background(), cfg)
 	if err != nil {
 		t.Fatal(err)
 	}
 	return c
+}
+
+// transportLog records the transport errors of a test client, and the errors
+// of reading response bodies, which the SDK also treats as retryable when
+// they are connection errors. GitHub runners now and then break a loopback
+// connection after the test server answered, and the SDK resends the request
+// (DeleteObjects tests saw a batch twice); a failing test prints them, so the
+// next one says which error it was.
+type transportLog struct {
+	base http.RoundTripper
+	mu   sync.Mutex
+	errs []string
+}
+
+func (l *transportLog) add(r *http.Request, what string, err error) {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	l.errs = append(l.errs, fmt.Sprintf("%s %s %s: %T: %v", r.Method, r.URL.RequestURI(), what, err, err))
+}
+
+func (l *transportLog) list() []string {
+	l.mu.Lock()
+	defer l.mu.Unlock()
+	return append([]string(nil), l.errs...)
+}
+
+func (l *transportLog) RoundTrip(r *http.Request) (*http.Response, error) {
+	resp, err := l.base.RoundTrip(r)
+	if err != nil {
+		l.add(r, "request", err)
+		return resp, err
+	}
+	resp.Body = &loggedBody{ReadCloser: resp.Body, log: l, req: r}
+	return resp, nil
+}
+
+type loggedBody struct {
+	io.ReadCloser
+	log *transportLog
+	req *http.Request
+}
+
+func (b *loggedBody) Read(p []byte) (int, error) {
+	n, err := b.ReadCloser.Read(p)
+	if err != nil && !errors.Is(err, io.EOF) {
+		b.log.add(b.req, "response body", err)
+	}
+	return n, err
 }
 
 func TestSignedSpecialKeysAndPagination(t *testing.T) {

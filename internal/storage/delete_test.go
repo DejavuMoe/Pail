@@ -207,14 +207,15 @@ func TestDeleteObjectsCancellation(t *testing.T) {
 	t.Run("during", func(t *testing.T) {
 		ctx, cancel := context.WithCancel(context.Background())
 		defer cancel()
-		var calls atomic.Int32
 		c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
-			n := calls.Add(1)
 			var body struct {
 				Objects []xmlItem `xml:"Object"`
 			}
 			_ = xml.NewDecoder(r.Body).Decode(&body)
-			if n == 2 {
+			// The second batch (it starts at index 1000) cancels. It is told
+			// by its content, not by being the second request: the SDK may
+			// resend the first batch, which must still be answered.
+			if len(body.Objects) > 0 && body.Objects[0].VersionID == "v-1000" {
 				cancel()
 				return
 			}
@@ -236,13 +237,13 @@ func TestDeleteObjectsCancellation(t *testing.T) {
 // A chunk the service refused with a 4xx is definitively failed (nothing was
 // deleted); later chunks are still attempted when not cancelled.
 func TestDeleteObjectsChunkErrorContinues(t *testing.T) {
-	var calls atomic.Int32
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Objects []xmlItem `xml:"Object"`
 		}
 		_ = xml.NewDecoder(r.Body).Decode(&body)
-		if calls.Add(1) == 1 {
+		// The first batch is refused, every time it comes (see "during").
+		if len(body.Objects) > 0 && body.Objects[0].VersionID == "v-0000" {
 			w.WriteHeader(403)
 			fmt.Fprint(w, `<Error><Code>AccessDenied</Code><Message>no</Message></Error>`)
 			return
