@@ -27,7 +27,7 @@
 
 ## Features
 
-- **Accounts.** Access keys, AWS profiles (including `aws login` and SSO sessions), the default credential chain, AssumeRole or anonymous access. A custom endpoint, region and path-style addressing for other services, with a connection test. For a key that may not list buckets, name the buckets yourself, each with the folder the key may use. One proxy (HTTP, HTTPS or SOCKS5) for all accounts, or a proxy of an account's own. Requester pays buckets.
+- **Accounts.** Access keys, AWS profiles (including `aws login` and SSO sessions), the default credential chain, AssumeRole or anonymous access. A custom endpoint, region and path-style addressing for other services, with a connection test. For a key that may not list buckets, name the buckets yourself, each with the folder the key may use. One proxy (HTTP, HTTPS or SOCKS5) for all accounts, or a proxy of an account's own. Requester pays buckets. Share the settings of an account as a `pail://` setup link; the recipient adds their own keys.
 - **Browsing.** A sortable, multi-select object table that pages by itself, with breadcrumbs, filter, flat view and inspector. Preview text, images and hex. Copy keys, URIs and presigned URLs. Folder sizes on request.
 - **Transfers.** Upload and download files, folders, versions and whole buckets, or drag files into the window. Separate queues with progress, speed, pause, resume, cancel and retry; unfinished transfers come back paused after a restart. Upload and download speed limits. Copy and move between accounts. Five policies for files that already exist. Large files go up in parts with checksums; downloads replace the target only after they are verified.
 - **Object properties.** Headers, metadata, tags, ACL, storage class and server-side encryption (SSE-S3, SSE-KMS, SSE-C) for one object or a selection.
@@ -61,9 +61,9 @@ Each archive unpacks into a folder named `Pail` with the desktop app `pail-deskt
 Compare the archive's SHA-256 hash with its line in `SHA256SUMS` from the same release:
 
 ```sh
-sha256sum Pail-v0.7.1-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.7.1-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.7.1-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.7.2-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.7.2-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.7.2-windows-amd64.zip         # Windows PowerShell
 ```
 
 ### First launch on macOS

@@ -4,6 +4,18 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.2] - 2026-11-25
+
+### Added
+
+- Setup links share the settings of an account as a `pail://account` link. **Share setup link…** in the account menu makes one; it never holds the account's own keys, and you can add keys for the recipient. Clicking a link, or pasting it into **Add account from link…**, fills in **Add account**. The recipient checks the settings and saves the account, and the form still asks for any missing keys.
+
+### Changed
+
+- **Empty bucket…** and **Delete bucket…** moved from the bucket menu to **Bucket settings…** › **Empty or delete**. Their dialogs now open with a notice that the change happens on the storage service, not in Pail, and name the account and the service.
+- The title of **Bucket settings** names the account and the service.
+- **Remove account…** is now **Remove account from Pail…**.
+
 ## [0.7.1] - 2026-11-25
 
 ### Added
