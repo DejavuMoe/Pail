@@ -203,19 +203,14 @@ func (s *Service) SaveProxy(p ProxySettings, password *string) error {
 	}
 
 	s.wmu.Lock()
-	s.mu.Lock()
-	st := s.settings
-	s.mu.Unlock()
-	st.Proxy = p
-	if err := writeJSONAtomicRetry(s.path("settings.json"), st); err != nil {
+	if _, err := s.writeSettingsLocked(op, func(st *Settings) { st.Proxy = p }); err != nil {
 		s.wmu.Unlock()
 		if rollback != nil {
 			rollback()
 		}
-		return classify(op, err)
+		return err
 	}
 	s.mu.Lock()
-	s.settings = st
 	if cur != p || newPassword {
 		// Clients are built with the proxy URL, which carries the password: drop
 		// them (and the builds under way, by their epoch) so that the next

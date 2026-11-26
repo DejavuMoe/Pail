@@ -20,12 +20,12 @@
 | `upload-rules.json` | `[]rules.UploadRule` |
 | `mime-types.json` | `map[string]string`（扩展名 → Content-Type） |
 | `sync-jobs.json` | `[]SyncJob` |
-| `transfers.json` | 退出时未完成的逐文件传输（`SaveTransfers` 写入，`RestoreTransfers` 读取后删除；`format` 为 1），见 §4 |
+| `transfers.json` | 退出时未完成的逐文件传输与扫描位置（`SaveTransfers` 写入，`RestoreTransfers` 读取后删除；写入 `format` 2，也读 v0.7.x 写入的 1），见 §4 |
 | `secret-refs.json` | 机密引用名（不含值） |
 | `vault.json` | 可选的加密保险库，见 §1.1（仅 `SecretBackend == "vault"` 时存在） |
 | `logs/pail.log` | 脱敏日志（`Settings.LogToFile` 开启时） |
 
-多实例之间以最后一次写入为准。钥匙串的服务名和条目键见 architecture.md §5。
+多实例之间以最后一次写入为准，只有机密存储例外：另一实例切换过机密存储时，本实例的 `SaveSettings`、`SaveProxy`、`SetUpdateCheck` 和账户写入返回 `Conflict`，文件不变，需重新打开应用。钥匙串的服务名和条目键见 architecture.md §5。
 
 ```go
 type Options struct {
@@ -159,7 +159,7 @@ const MaxAliasRunes = 64
 
 客户端缓存按 accountID 保存 `*storage.Client` 和 `*cloud.Client`，惰性构建，账户变更时失效。AWS 配置文件与默认凭证链账户还记录 AWS 共享配置和凭证文件的大小与修改时间，文件变化（如 `aws login --profile`）后下次使用时重建客户端。这类账户不填区域时由 SDK 按 `AWS_REGION`、配置文件区域、`us-east-1` 的顺序决定签名区域；`AccountRegion` 返回客户端实际使用的区域，`PublicURL` 与新建存储桶以它为账户区域。`SaveProxy` 改动代理时所有账户的缓存同样失效（连同正在构建的条目，靠 `acctEpoch` 丢弃）；已在运行的传输沿用旧连接。代理只改传输层：`Service` 把 `ProxySettings` 和密码拼成地址放进 `storage.Config.ProxyURL`，进入 `NewHTTPClient`，S3、STS 和 CloudFront 共用同一个 HTTP 客户端。`Scheme` 为空时用 `http.ProxyFromEnvironment`；非空时用 `httpproxy` 按该地址选路，本机地址（localhost 与回环地址）和 `NO_PROXY` 里的主机仍直连。地址不合法时请求直接失败，不退回直连。
 
-**代理密码。** 用户名和密码可选，密码需要用户名；`SaveProxy` 清除用户名或协议时一并删除密码。密码存在机密存储的 `proxy/password`，`settings.json` 只记 `hasPassword`。写入顺序与账户机密一致：先写新密码，再写 `settings.json`，最后删除不再需要的旧密码；`settings.json` 写失败时恢复原密码。写入持有 `refMu`，与后端迁移互斥。构建客户端和测试连接时在所有锁之外读取密码；缺失时返回 `NotFound`，保险库锁定时返回 `Locked`，错误消息不含密码。`SetSecretBackend` 把它列入迁移清单；`ResetVault` 把 `hasPassword` 清除并在 `VaultReset.Proxy` 报告。日志里的密码经 `lgAddSecret` 脱敏。
+**代理密码。** 用户名和密码可选，密码需要用户名；`SaveProxy` 清除用户名或协议时一并删除密码。密码存在机密存储的 `proxy/password`，`settings.json` 只记 `hasPassword`。写入顺序与账户机密一致：先写新密码，再写 `settings.json`，最后删除不再需要的旧密码；`settings.json` 写失败时恢复原密码。写入持有 `refMu`，与后端迁移互斥。只有使用全局代理（`ProxyMode` 为空）的账户在构建客户端和测试连接时读取密码，在所有锁之外；缺失时返回 `NotFound`，保险库锁定时返回 `Locked`，错误消息不含密码。`SetSecretBackend` 把它列入迁移清单；`ResetVault` 把 `hasPassword` 清除并在 `VaultReset.Proxy` 报告。日志里的密码经 `lgAddSecret` 脱敏。
 
 **桶别名。** `BucketAliases` 是只在本机配置里的显示名，不改桶、不进任何请求。`SetBucketAlias` 去首尾空白，最长 `MaxAliasRunes` 个字符（按 rune），不含控制字符，同一账户内不能重复；空别名或与桶名相同即删除。别名只由它写入：`SaveAccount` 忽略传入的 `BucketAliases` 并保留已存的，新账户从空开始；`DeleteBucket` 成功后清除该桶的别名。界面在侧边栏、路径栏、命令面板、检查器标题和"返回"按钮用别名，在删除、清空、复制等对话框、对象 URI 和传输任务里仍用真实名称。
 
@@ -241,36 +241,68 @@ type Task struct {
 	Started            time.Time
 	Finished           time.Time
 	Err                string
-	Pausable           bool // a per-file upload or download
+	Pausable           bool  // a per-file upload or download, or a transfer's scan
+	Phase              Phase // what a running per-file transfer does while no bytes move; "" otherwise
 }
+type Phase string // PhaseNone "" | PhasePreparing | PhaseCompressing | PhaseVerifying | PhaseDecoding | PhaseFinishing
 type ItemResult struct {
 	Key, VersionID string
 	Status         string // "succeeded" | "failed" | "unknown" | "unprocessed" | "skipped"
 	Err            string
 }
 type Event struct{ Task Task; Removed bool }
+type TaskGroupResult struct{ Pending, Succeeded, Failed, Canceled int } // Succeeded counts transferred items, the rest tasks
+type GroupProgress struct {
+	ID            string
+	Kind          Kind   // KindUpload | KindDownload; KindOther for a group without transfers
+	Title, Detail string // "Upload photos" / "Upload 3 items", "→ s3://bucket/prefix/"; downloads "s3://bucket/prefix/ → C:\dir"
+	Roots         int    // paths or keys selected; 0 when unknown
+	Name          string // the single root's name when Roots == 1
+	Created       time.Time
+	Files                                                       int // file tasks submitted so far
+	FilesQueued, FilesRunning, FilesPaused                      int
+	FilesSucceeded, FilesSkipped, FilesFailed, FilesCanceled    int
+	BytesTotal, BytesDone int64
+	Speed                 float64 // sum over running files
+	Scanning              bool    // the scan is unfinished: Files and BytesTotal may still grow
+	Paused                bool
+	Pausable              bool
+	Result                TaskGroupResult
+}
+func (g GroupProgress) FilesFinished() int
 
 func (s *Service) Subscribe(fn func(Event)) (unsubscribe func()) // fn is called off the UI thread, throttled to ≤10 events/s per task
 func (s *Service) Tasks() []Task
 func (s *Service) TaskItems(id string) []ItemResult
 func (s *Service) Cancel(id string) error           // queued: removed immediately; running: ctx canceled
 func (s *Service) CancelGroup(groupID string) error
+func (s *Service) TaskGroup(id string) (TaskGroupResult, bool)
+func (s *Service) GroupProgress(id string) (GroupProgress, bool) // while any member is unfinished or retained
+func (s *Service) TaskGroups() []GroupProgress                   // groups with an unfinished member, oldest first
 func (s *Service) Retry(id string) (string, error)  // new task with failed+unprocessed items only
 func (s *Service) ClearFinished()
-func (s *Service) Pause(id string) error           // task or group; only per-file transfers pause
+func (s *Service) Pause(id string) error           // task or group; only per-file transfers (and scans) pause
 func (s *Service) Resume(id string) error          // back to the end of its queue; the file starts again
+func (s *Service) PauseGroup(id string) error      // Pause for a group id only (NotFound otherwise)
+func (s *Service) ResumeGroup(id string) error
+func (s *Service) Pausable(id string) bool
 func (s *Service) PauseAll()
 func (s *Service) ResumeAll()
-func (s *Service) SaveTransfers() error            // queued, running and paused per-file transfers -> transfers.json
-func (s *Service) RestoreTransfers() (int, error)  // submits them paused, one group per saved group
+func (s *Service) SaveTransfers() error            // queued, running and paused per-file transfers and unfinished scans -> transfers.json
+func (s *Service) RestoreTransfers() (int, error)  // submits them paused, one group per saved group; returns the number of tasks
 ```
 
-- 暂停：排队中的任务离开队列；运行中的任务像取消一样中断（分片上传被中止，下载的临时文件被删除），然后以 Paused 等待，`done` 不关闭，组的 `Pending` 不变。继续时从头传输该文件。暂停整组时，扫描之后提交的同组文件也以 Paused 登记，扫描在积压上限处等待（Paused 计入积压）。扫描和批量任务不受暂停影响。`Shutdown` 把 Paused 任务结束为 Canceled。
-- 跨会话：只保存不带同步前提（`Sync`）的上传和下载；恢复的下载第一次运行就重新 HEAD 对象。账户已删除的条目被丢弃。桌面程序在退出时保存、启动时恢复；命令行不读写这个文件。
+- 阶段：`Phase` 只在逐文件传输运行时非空。上传：准备（客户端、规则、HEAD 与冲突判断）、压缩（写临时压缩文件）、核对（同名文件的内容比较、重放确认）、正文全部发出后为结束（完成分片上传）；下载：准备（重新 HEAD、本地判断）、正文收齐后为结束，核对大小、解码、发布期间分别为核对、解码、结束。字节在流动时为空；暂停、结束时清空。阶段变化经同一节流发出事件，不变时 `SetPhase` 只是一次原子读。
+- 批次进度：`GroupProgress` 的计数在入队、开始、暂停、结束时于 `q.mu` 内增减，覆盖批次整个生命周期，不受 1000 条历史淘汰影响；`TaskGroups` 只遍历还有未完成成员的批次，只对运行中的文件求和字节与速度，可在每次事件后调用。文件指逐文件的上传、下载任务；扫描、同步的删除任务不算文件。`BytesTotal` 是扫描时得到的大小之和（本地 stat、列出的大小），运行中的文件按实际传输的大小修正（压缩后）；已结束的文件不论结果都按整个大小计入 `BytesDone`，全部结束时两者相等。`Paused` 表示整组暂停，或没有排队、运行中的文件和扫描而有暂停的成员。
+- 速度过期：运行中的任务 5 秒没有进度时，速度在下一次检查（每秒一次，只在有任务运行时）发出一次速度为 0 的事件。
+- 暂停：排队中的任务离开队列；运行中的任务像取消一样中断（分片上传被中止，下载的临时文件被删除），然后以 Paused 等待，`done` 不关闭，组的 `Pending` 不变。继续时从头传输该文件。扫描也可暂停：它停在当前位置（不再提交文件），继续时从该位置往下走，已提交的文件不再提交。暂停整组（`Pause`/`PauseGroup` 传组 ID，或 `PauseAll`）同时暂停扫描，之后提交的同组文件以 Paused 登记；只有扫描在运行的组同样暂停。单独暂停的文件计入扫描的积压。批量任务不受暂停影响。`Shutdown` 把 Paused 任务结束为 Canceled。
+- 取消扫描：运行、排队或暂停中的扫描被取消时，从当前位置起的每个根（上传的路径、下载的选择）报告为 `unprocessed`，部分扫描的文件夹整个算在内；`Retry` 照旧在新批次中重新扫描这些根以及失败的项。从未开始的扫描被取消时不报告项，`Retry` 重新扫描全部。
+- 跨会话：只保存不带同步前提（`Sync`）的上传和下载，以及它们所在批次未完成的扫描（同步运行不保存）；恢复的下载第一次运行就重新 HEAD 对象。账户已删除的条目被丢弃。`format` 2 的每个批次带 `info`（`GroupProgress` 的标题、说明）和可选的 `scan`：上传为目标、根、冲突策略、规则开关，下载为解析后的 `DownloadRequest`，加上位置 `pos{next, path, after, files}`、位置之前失败的项 `failed`（恢复的扫描再报告一次，`Retry` 可重扫）以及下载在大小写不敏感文件系统上已分配的本地名 `claims`。`format` 1 只有 `jobs`，照旧恢复，批次说明取第一个文件的。桌面程序在退出时保存、启动时恢复；命令行不读写这个文件。
+- 扫描位置：最后处理完的条目，按扫描的确定顺序。处理完指交给队列成为文件任务，或作为扫描任务的项报告（跳过的符号链接与特殊文件、失败的路径或文件夹、下载的文件夹占位对象）。上传依次走各根，文件夹内深度优先、每层按名称排序（`os.ReadDir`），位置是该条目在根下的路径分段（根本身被跳过或失败时整个根算处理完）；下载依次处理各选择，前缀按列出顺序（UTF-8 二进制序），位置是最后处理的 key，继续时用 `StartAfter`（整个选择失败时该选择算处理完）。交给队列时，位置与提交文件任务在同一次 `q.mu` 临界区内前进，所以保存的每个文件要么是已保存的任务，要么在位置之后；报告项时，位置与记录该项一起前进，所以失败项要么已在位置之前被保存，要么之后会被再次遇到，不会两样都有。每个条目在一个扫描任务中（跨暂停与继续）只报告一次，恢复的扫描也只报告一次：跳过项不再报告，失败项由 `failed` 报告一次。两次会话之间在位置之前新建的条目不会再被发现（不属于原操作已走过的部分），删掉的条目直接不再出现；顺序单调，扫描不会跳过未提交的条目，也不会循环。上一会话完成的文件不再提交，也不会为它发 HEAD 或 GET。
 
 - 三类队列各自 FIFO，提交时登记顺序；`Limits` 下调不打断已运行的任务。
 - 一个任务占一个槽。批量服务端操作（删除、复制、改属性等）是一个 Other 任务，内部用 `BulkWorkers` 个并发 worker 处理各项。
-- 上传或下载多个文件时展开为每文件一个任务（共享 GroupID），队列额度即并发文件数。扫描文件夹或前缀的过程本身是一个 Other 任务，扫描完再展开。
+- 上传或下载多个文件时展开为每文件一个任务（共享 GroupID），队列额度即并发文件数。扫描文件夹或前缀的过程本身是一个 Kind 为 Other 的任务，边扫描边展开，排队的同组文件（含暂停的）达到积压上限（`max(4×限额, 64)`）时等待。扫描不占 `Limits.Other` 的槽，提交即开始，所以等待中的扫描不会挡住删除、复制等任务；其余任务照旧按 FIFO 占槽。
 
 ## 5. 传输（`transfers.go`、`upload_rules.go`、`mime.go`）
 

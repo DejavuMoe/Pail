@@ -515,9 +515,13 @@ func (s *Service) TestAccount(ctx context.Context, a Account, sec *Secrets) erro
 			}
 		}
 	}
-	proxy, err := s.proxyAddress(ctx, s.Settings().Proxy)
-	if err != nil {
-		return classify(op, err)
+	// As for the cached clients (entry): only an account that uses the
+	// global proxy needs its password.
+	proxy := ""
+	if a.ProxyMode == ProxyGlobal {
+		if proxy, err = s.proxyAddress(ctx, s.Settings().Proxy); err != nil {
+			return classify(op, err)
+		}
 	}
 	c, err := storage.New(ctx, storageConfig(a, secrets, proxy))
 	if err != nil {

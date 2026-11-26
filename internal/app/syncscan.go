@@ -237,7 +237,7 @@ type syRemote struct {
 // (keys ending in "/") are not part of a sync and are left out.
 func syListRemote(ctx context.Context, c *storage.Client, loc Location) ([]syRemote, error) {
 	var out []syRemote
-	err := scanList(ctx, c, loc.Bucket, loc.Prefix, func(o bkObj) error {
+	err := scanList(ctx, c, loc.Bucket, loc.Prefix, "", func(o bkObj) error {
 		rel := relativeKey(o.Key, loc.Prefix)
 		if rel == "" || strings.HasSuffix(rel, "/") || !strings.HasPrefix(o.Key, loc.Prefix) {
 			return nil

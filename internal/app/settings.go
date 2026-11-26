@@ -151,20 +151,18 @@ func (s *Service) SaveSettings(st Settings) error {
 	}
 	s.wmu.Lock()
 	defer s.wmu.Unlock()
-	// The secret backend changes only through SetSecretBackend (it migrates the
-	// secrets); whatever the caller passes is replaced by the current value.
-	s.mu.Lock()
-	st.SecretBackend = s.settings.SecretBackend
-	st.Proxy = s.settings.Proxy                         // only SaveProxy changes it
-	st.Updates.LastCheck = s.settings.Updates.LastCheck // only SetUpdateCheck changes it
-	s.mu.Unlock()
-	if err := writeJSONAtomicRetry(s.path("settings.json"), st); err != nil {
-		return classify("SaveSettings", err)
+	var old Settings
+	if _, err := s.writeSettingsLocked("SaveSettings", func(cur *Settings) {
+		old = *cur
+		// The secret backend changes only through SetSecretBackend (it migrates
+		// the secrets); whatever the caller passes is replaced by the current value.
+		st.SecretBackend = cur.SecretBackend
+		st.Proxy = cur.Proxy                         // only SaveProxy changes it
+		st.Updates.LastCheck = cur.Updates.LastCheck // only SetUpdateCheck changes it
+		*cur = st
+	}); err != nil {
+		return err
 	}
-	s.mu.Lock()
-	old := s.settings
-	s.settings = st
-	s.mu.Unlock()
 	s.setLimits(st.Limits)
 	applyBandwidth(st)
 	if old.Limits != st.Limits {
@@ -180,17 +178,42 @@ func (s *Service) SaveSettings(st Settings) error {
 func (s *Service) SetUpdateCheck(t time.Time) error {
 	s.wmu.Lock()
 	defer s.wmu.Unlock()
+	_, err := s.writeSettingsLocked("SetUpdateCheck", func(cur *Settings) {
+		cur.Updates.LastCheck = t.UTC().Truncate(time.Second)
+	})
+	return err
+}
+
+// errBackendChanged is the message of the Conflict a settings or account
+// write returns when another instance switched the secret backend.
+const errBackendChanged = "the secret backend changed in another instance; reopen the application before changing settings, accounts or credentials"
+
+// writeSettingsLocked is the only writer of settings.json. It applies mutate
+// to a copy of the current settings, writes the result and makes it current.
+// It re-reads settings.json first: when another instance (the command line)
+// switched the secret backend since this one loaded it, writing this copy
+// would put the old backend back and strand every secret, so it refuses with
+// Conflict and writes nothing. Caller holds wmu (and may hold backendMu);
+// Service.mu is not held across the disk I/O.
+func (s *Service) writeSettingsLocked(op string, mutate func(*Settings)) (Settings, error) {
+	disk := DefaultSettings()
+	if _, err := readJSON(s.path("settings.json"), &disk); err != nil {
+		return Settings{}, classify(op, err)
+	}
 	s.mu.Lock()
 	st := s.settings
 	s.mu.Unlock()
-	st.Updates.LastCheck = t.UTC().Truncate(time.Second)
+	if disk.withDefaults().SecretBackend != st.SecretBackend {
+		return Settings{}, &OpError{Op: op, Kind: ErrConflict, Message: errBackendChanged}
+	}
+	mutate(&st)
 	if err := writeJSONAtomicRetry(s.path("settings.json"), st); err != nil {
-		return classify("SetUpdateCheck", err)
+		return Settings{}, classify(op, err)
 	}
 	s.mu.Lock()
-	s.settings.Updates.LastCheck = st.Updates.LastCheck
+	s.settings = st
 	s.mu.Unlock()
-	return nil
+	return st, nil
 }
 
 // MaxBandwidthKiBps is the highest bandwidth limit (about 10 GB/s).

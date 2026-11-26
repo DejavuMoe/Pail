@@ -57,7 +57,7 @@ func (s *Service) beginAccountWriteCtx(ctx context.Context) (func(), error) {
 	}
 	if st.withDefaults().SecretBackend != s.SecretBackend() {
 		end()
-		return nil, &OpError{Kind: ErrConflict, Message: "the secret backend changed in another instance; reopen the application before editing accounts or credentials"}
+		return nil, &OpError{Kind: ErrConflict, Message: errBackendChanged}
 	}
 	s.mu.Lock()
 	for _, old := range s.accounts {

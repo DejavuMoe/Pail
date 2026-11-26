@@ -10,7 +10,7 @@ import (
 	"time"
 )
 
-// This file implements the task queue (APP_API.md section 4).
+// This file implements the task queue (docs/dev/app-api.md section 4).
 //
 // Internal API for the files that implement operations (transfers, bulk,
 // versions, buckets, sync ...):
@@ -23,6 +23,7 @@ import (
 //	        r.SetTotal(totalBytes, items)    // optional, may be refined later with AddTotal
 //	        ...
 //	        r.AddBytes(n) / r.SetBytes(cumulative)   // progress; both are cheap and goroutine-safe
+//	        r.SetPhase(PhaseVerifying)       // per-file transfers: what happens while no bytes move
 //	        r.Item(ItemResult{Key: k, Status: ItemSucceeded})  // one per object, any goroutine
 //	        return nil
 //	    },
@@ -33,7 +34,8 @@ import (
 // Contract for Work:
 //   - Honour ctx. When it is cancelled, stop, report every item not attempted as
 //     ItemUnprocessed and return ctx.Err(); the task ends as Canceled and
-//     Retry can resume exactly those items.
+//     Retry can resume exactly those items. (Scans report what they did not
+//     scan through taskSpec.Unfinished instead, so that a pause is not a cancel.)
 //   - A non-nil error means the task as a whole failed (Failed, or Canceled if
 //     ctx was cancelled). Per-item problems are reported with Item and the task
 //     returns nil; the queue then derives Succeeded / PartiallyFailed.
@@ -44,6 +46,10 @@ import (
 // Locking: Service.q.mu guards task bookkeeping and is never held across I/O or
 // while calling subscribers. Events travel through an internal buffer drained
 // by one goroutine, so slow subscribers cannot slow down Work.
+//
+// Groups: every status change goes through setStatusLocked, which keeps the
+// counters of the task's group exact (GroupProgress), so that group queries,
+// group cancel and pause, and the scan back-pressure never walk the task map.
 
 const (
 	// maxFinishedTasks bounds memory: older finished tasks are evicted (FIFO).
@@ -55,6 +61,9 @@ const (
 	maxSucceededItemsKept = 10000
 	// maxCanceledGroups bounds the remembered CancelGroup ids.
 	maxCanceledGroups = 1000
+	// staleTick is how often running tasks are checked for a speed that went
+	// stale since their last event.
+	staleTick = time.Second
 )
 
 // taskSpec describes work for the queue.
@@ -74,6 +83,34 @@ type taskSpec struct {
 	// Saved describes a per-file transfer so that it can be paused, resumed
 	// and kept across restarts. nil for every other task.
 	Saved *savedTransfer
+	// Scan marks the task that walks the selection of a transfer group and
+	// submits its per-file tasks. A scan takes no Limits.Other slot, pauses
+	// and resumes with its group (Work runs again and continues where it
+	// stopped) and is not a file of the group.
+	Scan bool
+	// Unfinished, for a scan, returns the unprocessed items for what it has not
+	// scanned yet; the queue adds them when the scan ends Canceled. nil items
+	// when it never started. Called with q.mu held: it must not call the queue.
+	Unfinished func() []ItemResult
+	// Save, for a scan, describes how to continue it in a later session
+	// (SaveTransfers). Called with q.mu held: it must not call the queue.
+	Save func() *savedScan
+	// SizeHint is the expected size of a per-file transfer, known when it is
+	// submitted; its group counts it in BytesTotal while the task waits.
+	SizeHint int64
+	// Info describes the group of the task. The first member that carries it
+	// sets it.
+	Info *groupInfo
+}
+
+// groupInfo describes a transfer group for its row (GroupProgress). It is
+// kept in transfers.json.
+type groupInfo struct {
+	Kind   Kind   `json:"kind"`
+	Title  string `json:"title"`
+	Detail string `json:"detail"`
+	Roots  int    `json:"roots,omitempty"`
+	Name   string `json:"name,omitempty"`
 }
 
 // run is the handle Work uses to report progress. All methods are safe for
@@ -88,15 +125,17 @@ func (r *run) SetTotal(bytes int64, items int) {
 	r.t.total.Store(bytes)
 	r.s.q.mu.Lock()
 	r.t.pub.Items = items
+	r.s.recountBytesLocked(r.t, bytes)
 	r.s.emitLocked(r.t, false)
 	r.s.q.mu.Unlock()
 }
 
 // AddTotal grows the expected totals (used while a folder scan is discovering files).
 func (r *run) AddTotal(bytes int64, items int) {
-	r.t.total.Add(bytes)
+	total := r.t.total.Add(bytes)
 	r.s.q.mu.Lock()
 	r.t.pub.Items += items
+	r.s.recountBytesLocked(r.t, total)
 	r.s.emitLocked(r.t, false)
 	r.s.q.mu.Unlock()
 }
@@ -127,6 +166,27 @@ func (r *run) SetBytes(done int64) {
 	}
 }
 
+// SetPhase records what the task is doing while no bytes move (PhaseNone
+// while they do). It costs one atomic load when the phase does not change;
+// a change is published through the event throttle.
+func (r *run) SetPhase(p Phase) {
+	if r.t.getPhase() == p {
+		return
+	}
+	r.t.phase.Store(p)
+	r.s.q.mu.Lock()
+	r.s.emitLocked(r.t, false)
+	r.s.q.mu.Unlock()
+}
+
+// withPhase runs fn in phase p and restores the phase that was set before.
+func (r *run) withPhase(p Phase, fn func() error) error {
+	prev := r.t.getPhase()
+	r.SetPhase(p)
+	defer r.SetPhase(prev)
+	return fn()
+}
+
 // SetDetail replaces the detail line ("scanning 1234 objects ...").
 func (r *run) SetDetail(d string) {
 	r.s.q.mu.Lock()
@@ -139,10 +199,12 @@ func (r *run) SetDetail(d string) {
 // as done; failed and unknown items also count as failed; unprocessed items
 // count as neither.
 func (r *run) Item(it ItemResult) {
-	q := &r.s.q
-	q.mu.Lock()
-	defer q.mu.Unlock()
-	t := r.t
+	r.s.q.mu.Lock()
+	defer r.s.q.mu.Unlock()
+	r.s.itemLocked(r.t, it)
+}
+
+func (s *Service) itemLocked(t *task, it ItemResult) {
 	t.reported++
 	switch it.Status {
 	case ItemSucceeded:
@@ -172,7 +234,7 @@ func (r *run) Item(it ItemResult) {
 	if t.reported > t.pub.Items {
 		t.pub.Items = t.reported
 	}
-	r.s.emitLocked(t, false)
+	s.emitLocked(t, false)
 }
 
 // task is the queue's record of one task.
@@ -197,6 +259,14 @@ type task struct {
 	removed  bool
 	err      error // error returned by Work, kept for the diagnostic log
 	timer    *time.Timer
+	inQueue  bool  // waiting in q.queued or q.scans
+	grouped  bool  // counted in q.groups[pub.GroupID]
+	file     bool  // a per-file transfer (KindUpload or KindDownload)
+	scan     bool  // spec.Scan
+	counted  int64 // bytes this file contributes to its group's BytesTotal
+	// emittedSpeed is the speed of the last event, so that a speed gone
+	// stale since then is published once (staleWatch).
+	emittedSpeed float64
 	// armed is true while a trailing throttled event is scheduled; it lets
 	// progress callbacks skip the lock on the hot path.
 	armed atomic.Bool
@@ -204,24 +274,42 @@ type task struct {
 	bytes atomic.Int64
 	total atomic.Int64
 	speed speedMeter
+	phase atomic.Value // Phase
 
 	lastEmit time.Time
 }
 
+func (t *task) getPhase() Phase {
+	p, _ := t.phase.Load().(Phase)
+	return p
+}
+
 // queueState is the queue of one Service.
 type queueState struct {
-	mu          sync.Mutex
-	tasks       map[string]*task
-	groups      map[string]*taskGroup
-	seq         uint64
-	groupSeq    uint64
-	queued      [3][]*task
-	running     [3]int
-	limits      [3]int
-	finished    []*task // in finishing order, oldest first
-	maxFinished int
-	closed      bool
-	wg          sync.WaitGroup
+	mu       sync.Mutex
+	tasks    map[string]*task
+	groups   map[string]*taskGroup
+	active   map[string]*taskGroup // groups with Pending > 0
+	seq      uint64
+	groupSeq uint64
+	queued   [3][]*task
+	running  [3]int
+	limits   [3]int
+	scans    []*task // queued scans: they start without waiting for a slot
+	scanning int     // running scans
+	// backlogFloor is the least backlogMax (a variable for tests).
+	backlogFloor int
+	finished     []*task // in finishing order, oldest first
+	maxFinished  int
+	closed       bool
+	wg           sync.WaitGroup
+
+	// runningSet holds every running task, for staleWatch.
+	runningSet map[*task]struct{}
+	// staleWatching is true while the staleWatch goroutine runs.
+	staleWatching bool
+	staleAfter    time.Duration // speed with no sample for this long is 0
+	staleTick     time.Duration
 
 	canceledGroups map[string]struct{}
 	canceledOrder  []string
@@ -236,9 +324,108 @@ type queueState struct {
 	bus *eventBus
 }
 
+// taskGroup is the bookkeeping of one group. The counters cover the group's
+// whole life; finished members stay counted after they are evicted.
 type taskGroup struct {
 	result   TaskGroupResult
 	retained int
+	seq      uint64
+	created  time.Time
+	info     *groupInfo
+	kind     Kind // of the first file, when info is nil
+	hasKind  bool
+	members  []*task // in submission order; removed ones are compacted lazily
+	dead     int     // removed tasks still in members
+
+	files, queued, running, paused, pausable int
+	succeeded, skipped, failed, canceled     int
+	scans, scansPaused                       int // unfinished scans, and the paused ones among them
+
+	bytesTotal, bytesFinished int64
+	runningSet                map[*task]struct{} // running files
+}
+
+// count adds d to the counters of status st for member t.
+func (g *taskGroup) count(t *task, st Status, d int) {
+	switch {
+	case t.scan:
+		switch st {
+		case StatusQueued, StatusRunning:
+			g.scans += d
+		case StatusPaused:
+			g.scans += d
+			g.scansPaused += d
+		}
+	case t.file:
+		switch st {
+		case StatusQueued:
+			g.queued += d
+		case StatusRunning:
+			g.running += d
+			if d > 0 {
+				g.runningSet[t] = struct{}{}
+			} else {
+				delete(g.runningSet, t)
+			}
+		case StatusPaused:
+			g.paused += d
+		case StatusSucceeded:
+			if t.pub.ItemsSkipped > 0 && t.pub.ItemsSkipped == t.pub.ItemsDone {
+				g.skipped += d
+			} else {
+				g.succeeded += d
+			}
+		case StatusCanceled:
+			g.canceled += d
+		default:
+			g.failed += d
+		}
+		if t.spec.Saved != nil && (st == StatusQueued || st == StatusRunning) {
+			g.pausable += d
+		}
+	}
+}
+
+// setStatusLocked moves t to st, keeping its group's counters exact.
+func (s *Service) setStatusLocked(t *task, st Status) {
+	old := t.pub.Status
+	if old == st {
+		return
+	}
+	t.pub.Status = st
+	if old == StatusRunning {
+		delete(s.q.runningSet, t)
+	}
+	if st == StatusRunning {
+		s.q.runningSet[t] = struct{}{}
+	}
+	if !t.grouped {
+		return
+	}
+	g := s.q.groups[t.pub.GroupID]
+	if g == nil {
+		return
+	}
+	g.count(t, old, -1)
+	g.count(t, st, 1)
+	if t.file && st.Finished() {
+		fin := max(t.counted, t.bytes.Load())
+		g.bytesTotal += fin - t.counted
+		t.counted = fin
+		g.bytesFinished += fin
+	}
+}
+
+// recountBytesLocked makes the group of a running file count total bytes for
+// it: the size the file actually transfers replaces the hint given at submit.
+func (s *Service) recountBytesLocked(t *task, total int64) {
+	if !t.file || !t.grouped || t.pub.Status.Finished() {
+		return
+	}
+	if g := s.q.groups[t.pub.GroupID]; g != nil {
+		g.bytesTotal += total - t.counted
+		t.counted = total
+	}
 }
 
 // notifyStateLocked wakes the callers parked in waitGroupBacklog. Caller holds q.mu.
@@ -250,22 +437,19 @@ func (s *Service) notifyStateLocked() {
 }
 
 // backlogMax is the number of queued tasks one scan may leave waiting in the
-// queue of kind k: four times the category's concurrency limit, at least 64.
+// queue of kind k: four times the category's concurrency limit, at least
+// backlogFloor (64).
 func (s *Service) backlogMax(k Kind) int {
 	s.q.mu.Lock()
-	l := s.q.limits[kindIndex(k)]
-	s.q.mu.Unlock()
-	if m := 4 * l; m > 64 {
-		return m
-	}
-	return 64
+	defer s.q.mu.Unlock()
+	return max(4*s.q.limits[kindIndex(k)], s.q.backlogFloor)
 }
 
-// waitGroupBacklog blocks until fewer than max tasks of group are QUEUED (so a
-// submit that follows keeps the backlog at or below max), or ctx ends. Scans
-// call it before every submit so that a huge folder does not materialise one
-// queued task per file up front. State changes of any task wake it; it returns
-// ctx.Err() promptly when the scan is cancelled.
+// waitGroupBacklog blocks until fewer than max files of group are queued or
+// paused (so a submit that follows keeps the backlog at or below max), or ctx
+// ends. Scans call it before every submit so that a huge folder does not
+// materialise one queued task per file up front. State changes of any task
+// wake it; it returns ctx.Err() promptly when the scan is cancelled or paused.
 func (s *Service) waitGroupBacklog(ctx context.Context, group string, max int) error {
 	q := &s.q
 	for {
@@ -274,18 +458,8 @@ func (s *Service) waitGroupBacklog(ctx context.Context, group string, max int) e
 		}
 		q.mu.Lock()
 		n := 0
-		for k := range q.queued {
-			for _, t := range q.queued[k] {
-				if t.pub.GroupID == group {
-					n++
-				}
-			}
-		}
-		// Paused tasks wait too: a paused group's scan stops at the backlog.
-		for _, t := range q.tasks {
-			if t.pub.GroupID == group && t.pub.Status == StatusPaused {
-				n++
-			}
+		if g := q.groups[group]; g != nil {
+			n = g.queued + g.paused
 		}
 		if n < max {
 			q.mu.Unlock()
@@ -307,8 +481,13 @@ func (s *Service) waitGroupBacklog(ctx context.Context, group string, max int) e
 func (s *Service) initQueue(l Limits) {
 	s.q.tasks = map[string]*task{}
 	s.q.groups = map[string]*taskGroup{}
+	s.q.active = map[string]*taskGroup{}
+	s.q.runningSet = map[*task]struct{}{}
+	s.q.staleAfter = speedStale
+	s.q.staleTick = staleTick
 	s.q.limits = [3]int{l.Upload, l.Download, l.Other}
 	s.q.maxFinished = maxFinishedTasks
+	s.q.backlogFloor = 64
 	s.q.canceledGroups = map[string]struct{}{}
 	s.q.pausedGroups = map[string]struct{}{}
 	s.q.bus = newEventBus()
@@ -342,6 +521,14 @@ func kindIndex(k Kind) int {
 // that was cancelled, the task is registered as already Canceled so that
 // callers never lose track of it.
 func (s *Service) submit(spec taskSpec) string {
+	return s.submitWith(spec, nil)
+}
+
+// submitWith is submit that also runs registered (if non-nil) with q.mu held,
+// in the same critical section that registers the task: a scan advances its
+// saved position there, so that SaveTransfers sees a file either as a task or
+// as not yet scanned, never both or neither.
+func (s *Service) submitWith(spec taskSpec, registered func()) string {
 	q := &s.q
 	q.mu.Lock()
 	defer q.mu.Unlock()
@@ -350,18 +537,37 @@ func (s *Service) submit(spec taskSpec) string {
 	ctx, cancel := context.WithCancel(context.Background())
 	t := &task{
 		seq: q.seq, spec: spec, ctx: ctx, cancel: cancel, done: make(chan struct{}),
+		scan: spec.Scan,
 		pub: Task{ID: fmt.Sprintf("t%d", q.seq), GroupID: spec.Group, Kind: spec.Kind, Title: spec.Title,
-			Detail: spec.Detail, Status: StatusQueued, Created: s.now(), Pausable: spec.Saved != nil},
+			Detail: spec.Detail, Status: StatusQueued, Created: s.now(), Pausable: canPause(spec)},
 	}
 	q.tasks[t.pub.ID] = t
 	if spec.Group != "" {
 		g := q.groups[spec.Group]
 		if g == nil {
-			g = &taskGroup{}
+			g = &taskGroup{seq: q.seq, created: t.pub.Created, runningSet: map[*task]struct{}{}}
 			q.groups[spec.Group] = g
+		}
+		if g.info == nil && spec.Info != nil {
+			g.info = spec.Info
 		}
 		g.retained++
 		g.result.Pending++
+		q.active[spec.Group] = g
+		g.members = append(g.members, t)
+		t.grouped = true
+		if t.file = spec.Kind != KindOther; t.file {
+			if !g.hasKind {
+				g.kind, g.hasKind = spec.Kind, true
+			}
+			g.files++
+			t.counted = max(spec.SizeHint, 0)
+			g.bytesTotal += t.counted
+		}
+		g.count(t, StatusQueued, 1)
+	}
+	if registered != nil {
+		registered()
 	}
 	_, groupCanceled := q.canceledGroups[spec.Group]
 	if q.closed || (spec.Group != "" && groupCanceled) {
@@ -372,16 +578,73 @@ func (s *Service) submit(spec taskSpec) string {
 		s.finishQueuedLocked(t, msg)
 		return t.pub.ID
 	}
-	if _, paused := q.pausedGroups[spec.Group]; paused && spec.Group != "" && spec.Saved != nil {
-		t.pub.Status = StatusPaused
+	if _, paused := q.pausedGroups[spec.Group]; paused && spec.Group != "" && canPause(spec) {
+		s.setStatusLocked(t, StatusPaused)
 		s.emitLocked(t, false)
 		return t.pub.ID
 	}
-	i := kindIndex(spec.Kind)
-	q.queued[i] = append(q.queued[i], t)
+	s.enqueueLocked(t)
 	s.emitLocked(t, false)
 	s.dispatchLocked()
 	return t.pub.ID
+}
+
+// canPause reports whether tasks of spec can be paused.
+func canPause(spec taskSpec) bool { return spec.Saved != nil || spec.Scan }
+
+// queueOf returns the queue t waits in.
+func (s *Service) queueOf(t *task) *[]*task {
+	if t.scan {
+		return &s.q.scans
+	}
+	return &s.q.queued[kindIndex(t.pub.Kind)]
+}
+
+// enqueueLocked appends t to the end of its queue.
+func (s *Service) enqueueLocked(t *task) {
+	p := s.queueOf(t)
+	*p = append(*p, t)
+	t.inQueue = true
+}
+
+// unqueueLocked removes t from its queue, in place.
+func (s *Service) unqueueLocked(t *task) {
+	if !t.inQueue {
+		return
+	}
+	t.inQueue = false
+	p := s.queueOf(t)
+	qq := *p
+	for j, x := range qq {
+		if x == t {
+			copy(qq[j:], qq[j+1:])
+			qq[len(qq)-1] = nil
+			*p = qq[:len(qq)-1]
+			return
+		}
+	}
+}
+
+// unqueueWhereLocked removes every queued task for which drop is true in one
+// pass over the queues, so that group operations stay linear.
+func (s *Service) unqueueWhereLocked(drop func(*task) bool) {
+	filter := func(p *[]*task) {
+		qq := *p
+		kept := qq[:0]
+		for _, t := range qq {
+			if drop(t) {
+				t.inQueue = false
+			} else {
+				kept = append(kept, t)
+			}
+		}
+		clear(qq[len(kept):])
+		*p = kept
+	}
+	for k := range s.q.queued {
+		filter(&s.q.queued[k])
+	}
+	filter(&s.q.scans)
 }
 
 // tasksActive reports whether any task is running or waiting in a queue.
@@ -389,6 +652,9 @@ func (s *Service) tasksActive() bool {
 	q := &s.q
 	q.mu.Lock()
 	defer q.mu.Unlock()
+	if q.scanning > 0 || len(q.scans) > 0 {
+		return true
+	}
 	for k := 0; k < 3; k++ {
 		if q.running[k] > 0 || len(q.queued[k]) > 0 {
 			return true
@@ -397,11 +663,18 @@ func (s *Service) tasksActive() bool {
 	return false
 }
 
-// dispatchLocked starts queued tasks while slots are free.
+// dispatchLocked starts queued tasks while slots are free. Scans start at once.
 func (s *Service) dispatchLocked() {
 	q := &s.q
 	if q.closed {
 		return
+	}
+	for len(q.scans) > 0 {
+		t := q.scans[0]
+		q.scans[0] = nil
+		q.scans = q.scans[1:]
+		q.scanning++
+		s.startLocked(t)
 	}
 	for k := 0; k < 3; k++ {
 		for q.running[k] < q.limits[k] && len(q.queued[k]) > 0 {
@@ -409,16 +682,28 @@ func (s *Service) dispatchLocked() {
 			q.queued[k][0] = nil
 			q.queued[k] = q.queued[k][1:]
 			q.running[k]++
-			s.notifyStateLocked()
-			t.pub.Status = StatusRunning
-			t.pub.Started = s.now()
-			t.speed.start(time.Now())
-			s.emitLocked(t, false)
-			q.wg.Add(1)
-			s.lgInfo("task started", "task", t.pub.ID, "kind", t.pub.Kind.String(), "title", t.pub.Title)
-			go s.runTask(t)
+			s.startLocked(t)
 		}
 	}
+}
+
+func (s *Service) startLocked(t *task) {
+	q := &s.q
+	t.inQueue = false
+	s.notifyStateLocked()
+	s.setStatusLocked(t, StatusRunning)
+	t.pub.Started = s.now()
+	t.phase.Store(PhaseNone)
+	t.speed.start(time.Now())
+	t.speed.setStale(q.staleAfter)
+	s.emitLocked(t, false)
+	q.wg.Add(1)
+	s.lgInfo("task started", "task", t.pub.ID, "kind", t.pub.Kind.String(), "title", t.pub.Title)
+	if !q.staleWatching {
+		q.staleWatching = true
+		go s.staleWatch()
+	}
+	go s.runTask(t)
 }
 
 func (s *Service) runTask(t *task) {
@@ -442,14 +727,21 @@ func (s *Service) finishRunning(t *task, err error) {
 	q := &s.q
 	q.mu.Lock()
 	defer q.mu.Unlock()
-	q.running[kindIndex(t.pub.Kind)]--
+	if t.scan {
+		q.scanning--
+	} else {
+		q.running[kindIndex(t.pub.Kind)]--
+	}
 	t.pub.Finished = s.now()
 	t.err = err
+	t.phase.Store(PhaseNone)
 	canceled := t.ctx.Err() != nil
-	if t.pausing && canceled && !q.closed && len(t.items) == 0 {
-		// Paused: the file starts again from the beginning on Resume.
+	if t.pausing && canceled && !q.closed && (len(t.items) == 0 || t.scan) {
+		// Paused: a file starts again from the beginning on Resume, a scan
+		// continues where it stopped.
 		t.pausing = false
-		t.pub.Status, t.pub.Err, t.pub.Finished, t.pub.Started = StatusPaused, "", time.Time{}, time.Time{}
+		s.setStatusLocked(t, StatusPaused)
+		t.pub.Err, t.pub.Finished, t.pub.Started = "", time.Time{}, time.Time{}
 		t.bytes.Store(0)
 		t.speed.stop()
 		s.notifyStateLocked()
@@ -463,35 +755,56 @@ func (s *Service) finishRunning(t *task, err error) {
 		return
 	}
 	t.pausing, t.resumeAfter = false, false
+	var st Status
 	switch {
 	case err != nil && canceled:
-		t.pub.Status, t.pub.Err = StatusCanceled, "canceled"
+		st, t.pub.Err = StatusCanceled, "canceled"
+		s.addUnfinishedLocked(t)
 	case err != nil:
-		t.pub.Status, t.pub.Err = StatusFailed, err.Error()
-	case t.pub.ItemsFailed > 0 || t.hasUnprocessed():
-		t.pub.Status = StatusPartiallyFailed
-		t.pub.Err = fmt.Sprintf("%d of %d item(s) did not complete", t.countNotOK(), t.pub.Items)
+		st, t.pub.Err = StatusFailed, err.Error()
+	case t.pub.ItemsFailed > 0 || t.pub.ItemsUnprocessed > 0:
+		st = StatusPartiallyFailed
+		t.pub.Err = fmt.Sprintf("%d of %d item(s) did not complete", t.pub.ItemsFailed+t.pub.ItemsUnprocessed, t.pub.Items)
 	default:
-		t.pub.Status = StatusSucceeded
+		st = StatusSucceeded
+	}
+	s.setStatusLocked(t, st)
+	if st == StatusSucceeded {
 		t.spec = taskSpec{} // nothing to retry; release captured data
 	}
 	s.completeLocked(t)
 	s.dispatchLocked()
 }
 
-// finishQueuedLocked ends a task that never ran as Canceled.
+// addUnfinishedLocked reports what a canceled scan did not scan.
+func (s *Service) addUnfinishedLocked(t *task) {
+	if t.spec.Unfinished == nil {
+		return
+	}
+	for _, it := range t.spec.Unfinished() {
+		s.itemLocked(t, it)
+	}
+}
+
+// finishQueuedLocked ends a task that is not running (queued or paused) as Canceled.
 func (s *Service) finishQueuedLocked(t *task, msg string) {
-	t.pub.Status = StatusCanceled
+	s.unqueueLocked(t)
+	s.addUnfinishedLocked(t)
+	s.setStatusLocked(t, StatusCanceled)
 	t.pub.Err = msg
 	t.pub.Finished = s.now()
 	s.completeLocked(t)
 }
 
-// completeLocked performs the bookkeeping common to every final state.
+// completeLocked performs the bookkeeping common to every final state. The
+// status is already set (setStatusLocked).
 func (s *Service) completeLocked(t *task) {
 	q := &s.q
 	if g := q.groups[t.pub.GroupID]; g != nil {
 		g.result.Pending--
+		if g.result.Pending == 0 {
+			delete(q.active, t.pub.GroupID)
+		}
 		switch t.pub.Status {
 		case StatusSucceeded:
 			if t.pub.Kind != KindOther {
@@ -518,26 +831,6 @@ func (s *Service) completeLocked(t *task) {
 	}
 }
 
-func (t *task) hasUnprocessed() bool { return t.countStatus(ItemUnprocessed) > 0 }
-func (t *task) countStatus(st string) int {
-	n := 0
-	for _, it := range t.items {
-		if it.Status == st {
-			n++
-		}
-	}
-	return n
-}
-func (t *task) countNotOK() int {
-	n := 0
-	for _, it := range t.items {
-		if it.Status != ItemSucceeded && it.Status != ItemSkipped {
-			n++
-		}
-	}
-	return n
-}
-
 // removeLocked drops a finished task and tells subscribers.
 func (s *Service) removeLocked(t *task) {
 	if t.removed {
@@ -545,10 +838,20 @@ func (s *Service) removeLocked(t *task) {
 	}
 	t.removed = true
 	delete(s.q.tasks, t.pub.ID)
-	if g := s.q.groups[t.pub.GroupID]; g != nil {
+	if g := s.q.groups[t.pub.GroupID]; g != nil && t.grouped {
 		g.retained--
 		if g.retained == 0 {
 			delete(s.q.groups, t.pub.GroupID)
+			delete(s.q.active, t.pub.GroupID)
+		} else if g.dead++; g.dead > 32 && 2*g.dead > len(g.members) {
+			kept := g.members[:0]
+			for _, m := range g.members {
+				if !m.removed {
+					kept = append(kept, m)
+				}
+			}
+			clear(g.members[len(kept):])
+			g.members, g.dead = kept, 0
 		}
 	}
 	s.q.bus.send(Event{Task: t.snapshot(), Removed: true}, true)
@@ -561,6 +864,7 @@ func (t *task) snapshot() Task {
 	p.BytesTotal = t.total.Load()
 	if p.Status == StatusRunning {
 		p.Speed = t.speed.value(time.Now())
+		p.Phase = t.getPhase()
 	}
 	return p
 }
@@ -574,6 +878,14 @@ func (s *Service) touch(t *task) {
 	s.q.mu.Lock()
 	s.emitLocked(t, false)
 	s.q.mu.Unlock()
+}
+
+// sendLocked publishes the current state of t as a progress event.
+func (s *Service) sendLocked(t *task) {
+	t.lastEmit = time.Now()
+	ev := Event{Task: t.snapshot()}
+	t.emittedSpeed = ev.Task.Speed
+	s.q.bus.send(ev, false)
 }
 
 // emitLocked publishes the current state of t, throttled to one event per
@@ -595,8 +907,7 @@ func (s *Service) emitLocked(t *task, final bool) {
 	}
 	since := time.Since(t.lastEmit)
 	if t.lastEmit.IsZero() || since >= emitInterval {
-		t.lastEmit = time.Now()
-		s.q.bus.send(Event{Task: t.snapshot()}, false)
+		s.sendLocked(t)
 		return
 	}
 	t.armed.Store(true)
@@ -608,9 +919,35 @@ func (s *Service) emitLocked(t *task, final bool) {
 		if t.pub.Status.Finished() || t.removed {
 			return
 		}
-		t.lastEmit = time.Now()
-		s.q.bus.send(Event{Task: t.snapshot()}, false)
+		s.sendLocked(t)
 	})
+}
+
+// staleWatch publishes once, with Speed 0, every running task whose last
+// event showed a speed that has since gone stale (a stalled transfer emits no
+// progress, so nothing else would). It runs while tasks are running.
+func (s *Service) staleWatch() {
+	q := &s.q
+	q.mu.Lock()
+	every := q.staleTick
+	q.mu.Unlock()
+	tick := time.NewTicker(every)
+	defer tick.Stop()
+	for range tick.C {
+		q.mu.Lock()
+		if q.closed || len(q.runningSet) == 0 {
+			q.staleWatching = false
+			q.mu.Unlock()
+			return
+		}
+		now := time.Now()
+		for t := range q.runningSet {
+			if t.emittedSpeed > 0 && t.speed.value(now) == 0 {
+				s.emitLocked(t, false)
+			}
+		}
+		q.mu.Unlock()
+	}
 }
 
 // ---- public API ---------------------------------------------------------------------------
@@ -624,6 +961,67 @@ func (s *Service) TaskGroup(id string) (TaskGroupResult, bool) {
 		return g.result, true
 	}
 	return TaskGroupResult{}, false
+}
+
+// GroupProgress returns the progress of a group while any member is running
+// or retained (like TaskGroup).
+func (s *Service) GroupProgress(id string) (GroupProgress, bool) {
+	s.q.mu.Lock()
+	defer s.q.mu.Unlock()
+	g := s.q.groups[id]
+	if g == nil {
+		return GroupProgress{}, false
+	}
+	return s.groupProgressLocked(id, g, time.Now()), true
+}
+
+// TaskGroups returns the progress of every group that still has an unfinished
+// member (queued, running or paused), oldest first. Its cost does not depend
+// on the number of tasks: call it on every event.
+func (s *Service) TaskGroups() []GroupProgress {
+	s.q.mu.Lock()
+	defer s.q.mu.Unlock()
+	type entry struct {
+		id string
+		g  *taskGroup
+	}
+	es := make([]entry, 0, len(s.q.active))
+	for id, g := range s.q.active {
+		es = append(es, entry{id, g})
+	}
+	sort.Slice(es, func(i, j int) bool { return es[i].g.seq < es[j].g.seq })
+	now := time.Now()
+	out := make([]GroupProgress, len(es))
+	for i, e := range es {
+		out[i] = s.groupProgressLocked(e.id, e.g, now)
+	}
+	return out
+}
+
+func (s *Service) groupProgressLocked(id string, g *taskGroup, now time.Time) GroupProgress {
+	p := GroupProgress{
+		ID: id, Kind: KindOther, Created: g.created,
+		Files: g.files, FilesQueued: g.queued, FilesRunning: g.running, FilesPaused: g.paused,
+		FilesSucceeded: g.succeeded, FilesSkipped: g.skipped, FilesFailed: g.failed, FilesCanceled: g.canceled,
+		BytesTotal: g.bytesTotal, BytesDone: g.bytesFinished,
+		Scanning: g.scans > 0,
+		Result:   g.result,
+	}
+	if g.hasKind {
+		p.Kind = g.kind
+	}
+	if g.info != nil {
+		p.Kind, p.Title, p.Detail, p.Roots, p.Name = g.info.Kind, g.info.Title, g.info.Detail, g.info.Roots, g.info.Name
+	}
+	for t := range g.runningSet {
+		p.BytesDone += t.bytes.Load()
+		p.Speed += t.speed.value(now)
+	}
+	scansActive := g.scans - g.scansPaused
+	p.Pausable = g.pausable > 0 || scansActive > 0
+	_, paused := s.q.pausedGroups[id]
+	p.Paused = paused || (g.paused+g.scansPaused > 0 && g.queued == 0 && g.running == 0 && scansActive == 0)
+	return p
 }
 
 // Subscribe registers fn for task events and returns the unsubscribe function.
@@ -688,17 +1086,7 @@ func (s *Service) Cancel(id string) error {
 
 func (s *Service) cancelLocked(t *task) {
 	switch t.pub.Status {
-	case StatusQueued:
-		i := kindIndex(t.pub.Kind)
-		qq := s.q.queued[i]
-		for j, x := range qq {
-			if x == t {
-				s.q.queued[i] = append(qq[:j:j], qq[j+1:]...)
-				break
-			}
-		}
-		s.finishQueuedLocked(t, "canceled")
-	case StatusPaused:
+	case StatusQueued, StatusPaused:
 		s.finishQueuedLocked(t, "canceled")
 	case StatusRunning:
 		t.pausing, t.resumeAfter = false, false
@@ -716,12 +1104,7 @@ func (s *Service) CancelGroup(groupID string) error {
 	if groupID == "" {
 		return invalid("CancelGroup", "group id is required")
 	}
-	var members []*task
-	for _, t := range q.tasks {
-		if t.pub.GroupID == groupID {
-			members = append(members, t)
-		}
-	}
+	members := s.groupMembersLocked(groupID)
 	if len(members) == 0 {
 		return opErr("CancelGroup", ErrNotFound, "no tasks in group %q", groupID)
 	}
@@ -734,7 +1117,7 @@ func (s *Service) CancelGroup(groupID string) error {
 			q.canceledOrder = q.canceledOrder[1:]
 		}
 	}
-	sort.Slice(members, func(i, j int) bool { return members[i].seq < members[j].seq })
+	s.unqueueWhereLocked(func(t *task) bool { return t.pub.GroupID == groupID })
 	for _, t := range members {
 		s.cancelLocked(t)
 	}
@@ -834,11 +1217,15 @@ func (s *Service) shutdownQueue(ctx context.Context) error {
 	q := &s.q
 	q.mu.Lock()
 	q.closed = true
+	var waiting []*task
 	for k := 0; k < 3; k++ {
-		for _, t := range q.queued[k] {
-			s.finishQueuedLocked(t, "canceled: the application is shutting down")
-		}
-		q.queued[k] = nil
+		waiting = append(waiting, q.queued[k]...)
+	}
+	waiting = append(waiting, q.scans...)
+	sort.Slice(waiting, func(i, j int) bool { return waiting[i].seq < waiting[j].seq })
+	s.unqueueWhereLocked(func(*task) bool { return true })
+	for _, t := range waiting {
+		s.finishQueuedLocked(t, "canceled: the application is shutting down")
 	}
 	for _, t := range q.tasks {
 		switch t.pub.Status {
@@ -874,6 +1261,7 @@ type speedMeter struct {
 	lastT  time.Time
 	lastB  int64
 	primed bool
+	stale  time.Duration // 0 = speedStale
 }
 
 const (
@@ -885,6 +1273,12 @@ const (
 func (m *speedMeter) start(now time.Time) {
 	m.mu.Lock()
 	m.lastT, m.lastB, m.ema, m.primed = now, 0, 0, false
+	m.mu.Unlock()
+}
+
+func (m *speedMeter) setStale(d time.Duration) {
+	m.mu.Lock()
+	m.stale = d
 	m.mu.Unlock()
 }
 
@@ -916,7 +1310,11 @@ func (m *speedMeter) sample(now time.Time, total int64) {
 func (m *speedMeter) value(now time.Time) float64 {
 	m.mu.Lock()
 	defer m.mu.Unlock()
-	if !m.primed || now.Sub(m.lastT) > speedStale {
+	stale := m.stale
+	if stale <= 0 {
+		stale = speedStale
+	}
+	if !m.primed || now.Sub(m.lastT) > stale {
 		return 0
 	}
 	return m.ema

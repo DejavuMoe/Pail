@@ -398,17 +398,8 @@ func (s *Service) SetSecretBackend(ctx context.Context, backend, password string
 
 	// Commit: persist the setting while no reader is inside a backend call.
 	s.wmu.Lock()
-	s.mu.Lock()
-	st := s.settings
-	s.mu.Unlock()
-	st.SecretBackend = backend
 	s.backendMu.Lock()
-	err = writeJSONAtomicRetry(s.path("settings.json"), st)
-	if err == nil {
-		s.mu.Lock()
-		s.settings = st
-		s.mu.Unlock()
-	}
+	_, err = s.writeSettingsLocked(op, func(st *Settings) { st.SecretBackend = backend })
 	s.backendMu.Unlock()
 	s.wmu.Unlock()
 	if err != nil {
@@ -484,21 +475,14 @@ func (s *Service) ResetVault() (VaultReset, error) {
 		s.mu.Unlock()
 
 		s.wmu.Lock()
-		s.mu.Lock()
-		st := s.settings
-		s.mu.Unlock()
-		st.SecretBackend = SecretBackendKeyring
-		if st.Proxy.HasPassword {
-			res.Proxy = true
-			st.Proxy.HasPassword = false
-		}
 		s.backendMu.Lock()
-		err := writeJSONAtomicRetry(s.path("settings.json"), st)
-		if err == nil {
-			s.mu.Lock()
-			s.settings = st
-			s.mu.Unlock()
-		}
+		_, err := s.writeSettingsLocked(op, func(st *Settings) {
+			st.SecretBackend = SecretBackendKeyring
+			if st.Proxy.HasPassword {
+				res.Proxy = true
+				st.Proxy.HasPassword = false
+			}
+		})
 		s.backendMu.Unlock()
 		s.wmu.Unlock()
 		if err != nil {

@@ -376,14 +376,77 @@ type Task struct {
 	Started          time.Time
 	Finished         time.Time
 	Err              string
-	// Pausable marks a per-file upload or download: Pause and Resume apply.
+	// Pausable marks a per-file upload or download, or the scan of a folder
+	// transfer: Pause and Resume apply.
 	Pausable bool
+	// Phase says what a running per-file transfer is doing while no bytes
+	// move (PhaseNone while they do, and for every task that is not running).
+	Phase Phase
 }
+
+// Phase is the step a running per-file transfer is in.
+type Phase string
+
+// Task phases. PhaseNone means bytes are moving (or the task is not running).
+const (
+	PhaseNone        Phase = ""
+	PhasePreparing   Phase = "preparing"   // client, upload rules, local checks, HEAD and conflict resolution
+	PhaseCompressing Phase = "compressing" // writing the compressed upload body to a spool file
+	PhaseVerifying   Phase = "verifying"   // hashing or reading back content to compare (identity checks, replays, download checks)
+	PhaseDecoding    Phase = "decoding"    // decompressing a downloaded object
+	PhaseFinishing   Phase = "finishing"   // every byte sent or received: completing the upload, publishing the file
+)
 
 // TaskGroupResult totals a group independently of its retained task history.
 // Succeeded counts transferred upload/download items; the other fields count tasks.
 type TaskGroupResult struct {
 	Pending, Succeeded, Failed, Canceled int
+}
+
+// GroupProgress is the state of one transfer group (one user action: a
+// folder or multi-file upload or download, a sync run) for a single row in a
+// list. Counters are exact for the whole life of the group, independent of
+// the retained task history. File counters count per-file transfer tasks
+// (KindUpload and KindDownload members); scans and other members (a sync
+// run's delete task) are not files.
+type GroupProgress struct {
+	ID   string
+	Kind Kind // KindUpload or KindDownload; KindOther for a group without transfers
+	// Title and Detail describe the action, e.g. "Upload photos" and
+	// "→ s3://bucket/prefix/". Roots is the number of paths or keys the user
+	// selected (0 when unknown); Name is the single root's name when Roots == 1.
+	Title, Detail string
+	Roots         int
+	Name          string
+	Created       time.Time
+
+	Files          int // file tasks submitted so far (grows while Scanning)
+	FilesQueued    int
+	FilesRunning   int
+	FilesPaused    int
+	FilesSucceeded int // transferred
+	FilesSkipped   int // ended without transferring (conflict policy, identical file)
+	FilesFailed    int // Failed or PartiallyFailed
+	FilesCanceled  int
+
+	// BytesTotal is the sum of the files' sizes as known when they were
+	// submitted, corrected by the size a running file actually transfers
+	// (after compression). BytesDone counts finished files with their whole
+	// size, whatever their outcome, plus the current bytes of running files,
+	// so that BytesDone == BytesTotal once every file finished.
+	BytesTotal, BytesDone int64
+	Speed                 float64 // bytes/s, sum over running files
+
+	Scanning bool // a scan of the group is unfinished: Files and BytesTotal may still grow
+	Paused   bool // paused as a whole, or nothing left to run but paused members
+	Pausable bool // Pause(ID) would pause something now
+
+	Result TaskGroupResult // the same as TaskGroup(ID)
+}
+
+// FilesFinished is the number of files with a final state.
+func (g GroupProgress) FilesFinished() int {
+	return g.FilesSucceeded + g.FilesSkipped + g.FilesFailed + g.FilesCanceled
 }
 
 // ItemResult.Status values.

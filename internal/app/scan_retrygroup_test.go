@@ -32,27 +32,23 @@ func TestTransferScanRetryUsesFreshGroup(t *testing.T) {
 					})
 					spec = e.s.downloadScanSpec(group, DownloadRequest{Source: e.loc("b", ""), Keys: []string{"folder/"}, DestDir: dest, Conflict: ConflictRename}, "Scan")
 				}
-				var blocker string
 				if failure == "before items" {
 					spec.Work = func(context.Context, *run) error { return errors.New("failed before the scanner was initialized") }
 				} else if failure == "queued cancellation" {
-					started := make(chan struct{})
-					blocker = e.s.submit(taskSpec{Kind: KindOther, Work: func(ctx context.Context, _ *run) error {
-						close(started)
-						<-ctx.Done()
-						return ctx.Err()
-					}})
-					<-started
+					// Scans take no Limits.Other slot, so a scan that never ran
+					// is one whose group was paused before it was submitted.
+					e.s.q.mu.Lock()
+					e.s.q.pausedGroups[group] = struct{}{}
+					e.s.q.mu.Unlock()
 				}
 				id := e.s.submit(spec)
-				if blocker != "" {
+				if failure == "queued cancellation" {
+					if st := statusOf(t, e.s, id); st != StatusPaused {
+						t.Fatalf("scan of a paused group is %s", st)
+					}
 					if err := e.s.CancelGroup(group); err != nil {
 						t.Fatal(err)
 					}
-					if err := e.s.Cancel(blocker); err != nil {
-						t.Fatal(err)
-					}
-					wait(t, e.s, blocker)
 				}
 				initial := wait(t, e.s, id)
 				if !initial.Status.Finished() || initial.Status == StatusSucceeded {

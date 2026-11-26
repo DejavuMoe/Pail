@@ -5,12 +5,11 @@ import (
 	"errors"
 	"fmt"
 	"io/fs"
+	"maps"
 	"os"
 	"path"
 	"path/filepath"
-	"runtime"
 	"strings"
-	"sync"
 	"sync/atomic"
 	"time"
 
@@ -149,17 +148,36 @@ func downloadUnits(req DownloadRequest) []scanUnit {
 	return us
 }
 
+// downloadGroupInfo describes the group of a download of units.
+func downloadGroupInfo(req DownloadRequest, units []scanUnit) *groupInfo {
+	info := &groupInfo{
+		Kind: KindDownload, Title: fmt.Sprintf("Download %d items", len(units)), Roots: len(units),
+		Detail: "s3://" + req.Source.Bucket + "/" + req.Source.Prefix + " → " + req.DestDir,
+	}
+	if len(units) == 1 {
+		switch u := units[0]; {
+		case u.Whole:
+			info.Name = req.Source.Bucket
+		default:
+			info.Name = path.Base(strings.TrimSuffix(u.Key, "/"))
+		}
+		info.Title = "Download " + info.Name
+	}
+	return info
+}
+
 // downloadScanSpec is the spec of the scan task of req. Retry rescans the units
 // whose items failed or were left unprocessed.
 func (s *Service) downloadScanSpec(group string, req DownloadRequest, verb string) taskSpec {
+	return s.downloadScanSpecFrom(group, req, verb, newScanState())
+}
+
+// downloadScanSpecFrom is downloadScanSpec continuing from st (a restored scan).
+func (s *Service) downloadScanSpecFrom(group string, req DownloadRequest, verb string, st *scanState) taskSpec {
 	const op = "Download"
 	units := downloadUnits(req)
-	var (
-		holdMu sync.Mutex
-		last   *remoteScan
-	)
 	spec := taskSpec{
-		Kind: KindOther, Group: group, RetryEmpty: true,
+		Kind: KindOther, Group: group, RetryEmpty: true, Scan: true, Info: downloadGroupInfo(req, units),
 		Title:  fmt.Sprintf("%s %d selection(s) for download", verb, len(units)),
 		Detail: "s3://" + req.Source.Bucket + "/" + req.Source.Prefix + " → " + req.DestDir,
 	}
@@ -168,44 +186,52 @@ func (s *Service) downloadScanSpec(group string, req DownloadRequest, verb strin
 		if err != nil {
 			return err
 		}
-		ds := &remoteScan{s: s, r: r, ctx: ctx, c: c, req: req, group: group, retry: map[string]scanUnit{}, names: newNameClaims(runtime.GOOS)}
+		for _, f := range st.begin() {
+			r.Item(f.item)
+		}
+		ds := &remoteScan{s: s, r: r, ctx: ctx, c: c, req: req, group: group, st: st}
 		if !req.WholeBucket {
 			ds.prefix = req.Source.Prefix
 		}
-		holdMu.Lock()
-		last = ds
-		holdMu.Unlock()
-		for i, u := range units {
-			if err := ds.unit(u); err != nil {
-				for _, rest := range units[i:] {
-					ds.remember(rest)
-					r.Item(ItemResult{Key: rest.Item, VersionID: rest.VersionID, Status: ItemUnprocessed, Err: "not scanned: canceled"})
-				}
-				return err
+		for {
+			i, _, after := st.position()
+			if i >= len(units) {
+				break
 			}
+			if err := ds.unit(i, units[i], after); err != nil {
+				return err // canceled or paused: Unfinished reports what is left
+			}
+			st.finish(i)
 		}
-		ds.mu.Lock()
-		n := ds.files
-		ds.mu.Unlock()
-		r.SetDetail(scanDetail(n))
+		r.SetDetail(scanDetail(st.fileCount()))
 		return nil
+	}
+	spec.Unfinished = func() []ItemResult {
+		return st.unfinished(len(units), func(i int) (ItemResult, scanFailure) {
+			u := units[i]
+			it := ItemResult{Key: u.Item, VersionID: u.VersionID, Status: ItemUnprocessed, Err: "not scanned: canceled"}
+			return it, scanFailure{item: it, unit: &u}
+		})
+	}
+	spec.Save = func() *savedScan {
+		st.mu.Lock()
+		defer st.mu.Unlock()
+		sd := &savedDownloadScan{Request: req, Pos: st.pos(), Failed: st.savedFailures()}
+		if len(st.names.owners) > 0 {
+			sd.Claims = maps.Clone(st.names.owners)
+		}
+		return &savedScan{Download: sd}
 	}
 	spec.Retry = func(failed []ItemResult) (taskSpec, bool) {
 		if len(failed) == 0 {
 			return s.downloadScanSpec(s.newGroupID(), req, "Rescan"), true
 		}
-		holdMu.Lock()
-		prev := last
-		holdMu.Unlock()
-		if prev == nil {
-			return taskSpec{}, false
-		}
-		prev.mu.Lock()
+		st.mu.Lock()
 		next := req
 		next.Keys, next.Versions, next.WholeBucket = nil, nil, false
 		seen := map[string]bool{}
 		for _, it := range failed {
-			u, ok := prev.retry[it.Key+"\x00"+it.VersionID]
+			u, ok := st.units[it.Key+"\x00"+it.VersionID]
 			if !ok || seen[u.id()] {
 				continue
 			}
@@ -219,7 +245,7 @@ func (s *Service) downloadScanSpec(group string, req DownloadRequest, verb strin
 				next.Keys = append(next.Keys, u.Key)
 			}
 		}
-		prev.mu.Unlock()
+		st.mu.Unlock()
 		if !next.WholeBucket && len(next.Keys) == 0 && len(next.Versions) == 0 {
 			return taskSpec{}, false
 		}
@@ -228,7 +254,8 @@ func (s *Service) downloadScanSpec(group string, req DownloadRequest, verb strin
 	return spec
 }
 
-// remoteScan expands the selection of a download into per-file tasks.
+// remoteScan is one run of a download scan: it expands the selection from
+// the position of st into per-file tasks.
 type remoteScan struct {
 	s      *Service
 	r      *run
@@ -237,12 +264,7 @@ type remoteScan struct {
 	req    DownloadRequest
 	group  string
 	prefix string // keys are made relative to it ("" for whole-bucket downloads)
-
-	names *nameClaims // local names handed out by this scan (case-insensitive file systems)
-
-	mu    sync.Mutex
-	retry map[string]scanUnit
-	files int
+	st     *scanState
 }
 
 // collisionNote is the item note of a file renamed because its local path
@@ -286,51 +308,59 @@ func (c *nameClaims) claim(rel, owner string) string {
 	}
 }
 
-func (ds *remoteScan) remember(u scanUnit) {
-	ds.mu.Lock()
-	ds.retry[u.id()] = u
-	ds.mu.Unlock()
+// fail records and reports a failed item at entry (i, key; "" = the whole
+// unit) and moves past it; u is what a retry rescans (nil: nothing).
+func (ds *remoteScan) fail(i int, key string, it ItemResult, u *scanUnit) {
+	it.Status = ItemFailed
+	ds.st.fail(scanFailure{item: it, unit: u}, i, nil, key)
+	ds.r.Item(it)
 }
 
-// unit scans one selection. It returns an error only when the task context
-// ended; every other problem is a failed item.
-func (ds *remoteScan) unit(u scanUnit) error {
+// unit scans selection i from after (a key of its listing; "" from the
+// start). It returns an error only when the task context ended; every other
+// problem is a failed item.
+func (ds *remoteScan) unit(i int, u scanUnit, after string) error {
 	if err := ds.ctx.Err(); err != nil {
 		return err
 	}
 	var err error
+	list := func(o bkObj) error { return ds.object(i, o, false, false) }
 	switch {
 	case u.Whole:
-		err = scanList(ds.ctx, ds.c, ds.req.Source.Bucket, "", func(o bkObj) error { return ds.object(o, false) })
+		err = scanList(ds.ctx, ds.c, ds.req.Source.Bucket, "", after, list)
 	case u.Folder:
-		err = scanList(ds.ctx, ds.c, ds.req.Source.Bucket, u.Key, func(o bkObj) error { return ds.object(o, false) })
+		err = scanList(ds.ctx, ds.c, ds.req.Source.Bucket, u.Key, after, list)
 	default:
 		var ro bkObj
 		if ro, err = headRemote(ds.ctx, ds.c, ds.req.Source.Bucket, u.Key, u.VersionID); err == nil {
-			err = ds.object(ro, u.VersionID != "")
+			err = ds.object(i, ro, u.VersionID != "", true)
 		}
 	}
 	if cerr := ds.ctx.Err(); cerr != nil {
 		return cerr
 	}
 	if err != nil {
-		ds.remember(u)
-		ds.r.Item(ItemResult{Key: u.Item, VersionID: u.VersionID, Status: ItemFailed, Err: err.Error()})
+		ds.fail(i, "", ItemResult{Key: u.Item, VersionID: u.VersionID, Err: err.Error()}, &u)
 	}
 	return nil
 }
 
-// object handles one discovered object: a folder placeholder creates a
-// directory, anything else becomes a download task. A returned error ends the
-// listing of the current unit (only the task context ending does that;
-// per-object problems are reported as items).
-func (ds *remoteScan) object(o bkObj, versioned bool) error {
+// object handles one discovered object of unit i (single: the unit is this
+// one object): a folder placeholder creates a directory, anything else
+// becomes a download task. A returned error ends the listing of the current
+// unit (only the task context ending does that; per-object problems are
+// reported as items).
+func (ds *remoteScan) object(i int, o bkObj, versioned, single bool) error {
 	if err := ds.ctx.Err(); err != nil {
 		return err
 	}
 	rel := relativeKey(o.Key, ds.prefix)
 	if rel == "" {
 		return nil // the selected folder's own placeholder object
+	}
+	pos := o.Key // the position once this object is handled; "" = the whole unit
+	if single {
+		pos = ""
 	}
 	if strings.HasSuffix(rel, "/") {
 		u := scanUnit{Item: o.Key, Key: o.Key, Folder: true}
@@ -339,15 +369,16 @@ func (ds *remoteScan) object(o bkObj, versioned bool) error {
 		}
 		dir, err := localJoin("Download", ds.req.DestDir, strings.TrimSuffix(rel, "/"))
 		if err == nil {
-			err = os.MkdirAll(dir, 0o755)
-			if err != nil {
-				ds.remember(u)
+			if err = os.MkdirAll(dir, 0o755); err != nil {
+				ds.fail(i, pos, ItemResult{Key: o.Key, VersionID: u.VersionID, Err: err.Error()}, &u)
+				return nil
 			}
 		}
 		if err != nil {
-			ds.r.Item(ItemResult{Key: o.Key, VersionID: u.VersionID, Status: ItemFailed, Err: err.Error()})
+			ds.fail(i, pos, ItemResult{Key: o.Key, VersionID: u.VersionID, Err: err.Error()}, nil)
 			return nil
 		}
+		ds.st.pass(i, nil, pos)
 		ds.r.Item(ItemResult{Key: o.Key, VersionID: u.VersionID, Status: ItemSucceeded})
 		return nil
 	}
@@ -355,26 +386,25 @@ func (ds *remoteScan) object(o bkObj, versioned bool) error {
 		rel = versionedKey(rel, o.VersionID)
 	}
 	if _, err := localJoin("Download", ds.req.DestDir, rel); err != nil {
-		ds.r.Item(ItemResult{Key: o.Key, VersionID: o.VersionID, Status: ItemFailed, Err: err.Error()})
+		ds.fail(i, pos, ItemResult{Key: o.Key, VersionID: o.VersionID, Err: err.Error()}, nil)
 		return nil
 	}
 	note := ""
-	if claimed := ds.names.claim(rel, o.Key+"\x00"+o.VersionID); claimed != rel {
+	ds.st.mu.Lock()
+	claimed := ds.st.names.claim(rel, o.Key+"\x00"+o.VersionID)
+	ds.st.mu.Unlock()
+	if claimed != rel {
 		rel, note = claimed, collisionNote
 	}
 	if err := ds.s.waitGroupBacklog(ds.ctx, ds.group, ds.s.backlogMax(KindDownload)); err != nil {
 		return err
 	}
-	ds.s.submit(ds.s.downloadTaskSpec(ds.group, downloadJob{
+	ds.s.submitWith(ds.s.downloadTaskSpec(ds.group, downloadJob{
 		Src: ds.req.Source, Key: o.Key, VersionID: o.VersionID, ETag: o.ETag, Size: o.Size, Modified: o.Modified,
 		DestDir: ds.req.DestDir, Rel: rel, Policy: ds.req.Conflict, Decode: ds.req.Decode,
 		PasswordRef: ds.req.PasswordRef, MaxDecoded: ds.req.MaxDecoded, Note: note,
-	}))
-	ds.mu.Lock()
-	ds.files++
-	n := ds.files
-	ds.mu.Unlock()
-	if n%50 == 0 {
+	}), func() { ds.st.handOver(i, nil, pos) })
+	if n := ds.st.fileCount(); n%50 == 0 {
 		ds.r.SetDetail(scanDetail(n))
 	}
 	return nil
@@ -399,10 +429,11 @@ func (s *Service) downloadSpec(group string, j downloadJob, priorRuns int32) tas
 	var runs atomic.Int32
 	runs.Store(priorRuns)
 	spec := taskSpec{
-		Kind: KindDownload, Group: group, Title: "Download " + path.Base(j.Rel),
+		Kind: KindDownload, Group: group, Title: "Download " + path.Base(j.Rel), SizeHint: j.Size,
 		Detail: "→ " + dir,
 		Work: func(ctx context.Context, r *run) error {
 			job := j
+			r.SetPhase(PhasePreparing)
 			if runs.Add(1) > 1 && job.VersionID == "" && job.Sync == nil {
 				// A retry: the object may have changed since the scan, so look it up again.
 				if err := s.refreshDownloadJob(ctx, &job); err != nil {
@@ -527,7 +558,14 @@ func (s *Service) runDownload(ctx context.Context, r *run, j downloadJob) (err e
 	if j.ETag != "" {
 		in.IfMatch = aws.String(j.ETag)
 	}
-	n, err := c.Download(ctx, in, f, storage.TransferOptions{PartSize: s.partSize(), Size: j.Size, Progress: r.SetBytes})
+	r.SetPhase(PhaseNone)
+	progress := func(n int64) {
+		r.SetBytes(n)
+		if n >= j.Size {
+			r.SetPhase(PhaseFinishing) // every byte received
+		}
+	}
+	n, err := c.Download(ctx, in, f, storage.TransferOptions{PartSize: s.partSize(), Size: j.Size, Progress: progress})
 	if err != nil {
 		if cerr := ctx.Err(); cerr != nil {
 			return cerr
@@ -541,6 +579,7 @@ func (s *Service) runDownload(ctx context.Context, r *run, j downloadJob) (err e
 	if err := ctx.Err(); err != nil {
 		return err
 	}
+	r.SetPhase(PhaseVerifying)
 	if j.Size >= 0 && n != j.Size {
 		return opErr(op, ErrConflict, "%q has %d bytes instead of the %d listed; nothing was saved", j.Key, n, j.Size)
 	}
@@ -551,6 +590,7 @@ func (s *Service) runDownload(ctx context.Context, r *run, j downloadJob) (err e
 		return classify(op, err)
 	}
 	if mode != DecodeRaw {
+		r.SetPhase(PhaseDecoding)
 		out, err := safepath.CreateTemp(dir)
 		if err != nil {
 			return classify(op, err)
@@ -569,6 +609,7 @@ func (s *Service) runDownload(ctx context.Context, r *run, j downloadJob) (err e
 		}
 		final, finalSize = out, st.Size()
 	}
+	r.SetPhase(PhaseFinishing)
 	if err := final.Close(); err != nil {
 		return classify(op, err)
 	}

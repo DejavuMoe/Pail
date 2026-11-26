@@ -11,7 +11,6 @@ import (
 	"path"
 	"path/filepath"
 	"strings"
-	"sync"
 	"time"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -30,6 +29,9 @@ type uploadJob struct {
 	Policy  ConflictPolicy
 	NoRules bool
 	Folder  bool // zero-byte "name/" folder object for an empty local folder
+	// Size is the file size the scan saw: a hint for the group's progress
+	// until the task runs. 0 in transfers.json written by older versions.
+	Size int64 `json:",omitempty"`
 	// Sync is set by RunSync (syncrun.go): the upload then replaces the conflict
 	// policy with the preconditions observed by the preview.
 	Sync *syncUploadPre
@@ -97,57 +99,74 @@ func scanTitle(verb string, n int) string {
 	return fmt.Sprintf("%s %d items for upload", verb, n)
 }
 
+// uploadGroupInfo describes the group of an upload of roots into dest.
+func uploadGroupInfo(dest Location, roots []scanRoot) *groupInfo {
+	info := &groupInfo{Kind: KindUpload, Title: fmt.Sprintf("Upload %d items", len(roots)), Detail: "→ s3://" + dest.Bucket + "/" + dest.Prefix, Roots: len(roots)}
+	if len(roots) == 1 {
+		info.Name = filepath.Base(roots[0].Local)
+		info.Title = "Upload " + info.Name
+	}
+	return info
+}
+
 // uploadScanSpec is the spec of the scan task over roots. Its Retry rescans the
 // roots whose items failed or were left unprocessed, with the same keys.
 func (s *Service) uploadScanSpec(group string, dest Location, roots []scanRoot, policy ConflictPolicy, noRules bool, verb string) taskSpec {
-	var (
-		holdMu sync.Mutex
-		last   *localScan // state of the most recent run, for Retry
-	)
+	return s.uploadScanSpecFrom(group, dest, roots, policy, noRules, verb, newScanState())
+}
+
+// uploadScanSpecFrom is uploadScanSpec continuing from st (a restored scan).
+func (s *Service) uploadScanSpecFrom(group string, dest Location, roots []scanRoot, policy ConflictPolicy, noRules bool, verb string, st *scanState) taskSpec {
 	spec := taskSpec{
 		Kind: KindOther, Group: group, Title: scanTitle(verb, len(roots)),
 		Detail: "→ s3://" + dest.Bucket + "/" + dest.Prefix, RetryEmpty: true,
+		Scan: true, Info: uploadGroupInfo(dest, roots),
 	}
 	spec.Work = func(ctx context.Context, r *run) error {
-		ls := &localScan{s: s, r: r, ctx: ctx, group: group, dest: dest, policy: policy, noRules: noRules, retry: map[string]scanRoot{}}
-		holdMu.Lock()
-		last = ls
-		holdMu.Unlock()
-		for i, rt := range roots {
-			if err := ls.root(rt); err != nil {
-				for _, rest := range roots[i:] {
-					ls.remember(rest.Local, rest.Key)
-					r.Item(ItemResult{Key: rest.Local, Status: ItemUnprocessed, Err: "not scanned: canceled"})
-				}
-				return err
-			}
+		for _, f := range st.begin() {
+			r.Item(f.item)
 		}
-		ls.mu.Lock()
-		n := ls.files
-		ls.mu.Unlock()
-		r.SetDetail(scanDetail(n))
+		ls := &localScan{s: s, r: r, ctx: ctx, group: group, dest: dest, policy: policy, noRules: noRules, st: st}
+		for {
+			i, after, _ := st.position()
+			if i >= len(roots) {
+				break
+			}
+			if err := ls.root(i, roots[i], after); err != nil {
+				return err // canceled or paused: Unfinished reports what is left
+			}
+			st.finish(i)
+		}
+		r.SetDetail(scanDetail(st.fileCount()))
 		return nil
+	}
+	spec.Unfinished = func() []ItemResult {
+		return st.unfinished(len(roots), func(i int) (ItemResult, scanFailure) {
+			it := ItemResult{Key: roots[i].Local, Status: ItemUnprocessed, Err: "not scanned: canceled"}
+			return it, scanFailure{item: it, root: &roots[i]}
+		})
+	}
+	spec.Save = func() *savedScan {
+		st.mu.Lock()
+		defer st.mu.Unlock()
+		return &savedScan{Upload: &savedUploadScan{
+			Dest: dest, Roots: roots, Policy: policy, NoRules: noRules, Pos: st.pos(), Failed: st.savedFailures(),
+		}}
 	}
 	spec.Retry = func(failed []ItemResult) (taskSpec, bool) {
 		if len(failed) == 0 {
 			return s.uploadScanSpec(s.newGroupID(), dest, roots, policy, noRules, "Rescan"), true
 		}
-		holdMu.Lock()
-		prev := last
-		holdMu.Unlock()
-		if prev == nil {
-			return taskSpec{}, false
-		}
-		prev.mu.Lock()
+		st.mu.Lock()
 		var next []scanRoot
 		seen := map[string]bool{}
 		for _, it := range failed {
-			if rt, ok := prev.retry[it.Key]; ok && !seen[it.Key] {
+			if rt, ok := st.roots[it.Key]; ok && !seen[it.Key] {
 				seen[it.Key] = true
 				next = append(next, rt)
 			}
 		}
-		prev.mu.Unlock()
+		st.mu.Unlock()
 		if len(next) == 0 {
 			return taskSpec{}, false
 		}
@@ -164,7 +183,7 @@ func (s *Service) uploadTaskSpec(group string, j uploadJob) taskSpec {
 		title += "/"
 	}
 	spec := taskSpec{
-		Kind: KindUpload, Group: group, Title: title,
+		Kind: KindUpload, Group: group, Title: title, SizeHint: j.Size,
 		Detail: "→ s3://" + j.Dest.Bucket + "/" + keyDir(j.Key),
 		Work:   func(ctx context.Context, r *run) error { return s.runUpload(ctx, r, j) },
 	}
@@ -176,6 +195,7 @@ func (s *Service) uploadTaskSpec(group string, j uploadJob) taskSpec {
 
 func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 	const op = "Upload"
+	r.SetPhase(PhasePreparing)
 	c, err := s.bucketClient(ctx, op, j.Dest)
 	if err != nil {
 		return err
@@ -266,18 +286,20 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 		if comp == nil || spooled != nil {
 			return nil
 		}
-		sp, n, err := s.spoolCompressed(ctx, f, j.Local, comp)
-		if err != nil {
-			return classify(op, err)
-		}
-		spooled, body, bodySize = sp, sp, n
-		r.SetTotal(n, 1)
-		if j.Sync != nil && in.Metadata[syMetaSHA] != "" {
-			if in.Metadata[syMetaBodySHA], err = syBodySHA(ctx, sp); err != nil {
+		return r.withPhase(PhaseCompressing, func() error {
+			sp, n, err := s.spoolCompressed(ctx, f, j.Local, comp)
+			if err != nil {
 				return classify(op, err)
 			}
-		}
-		return nil
+			spooled, body, bodySize = sp, sp, n
+			r.SetTotal(n, 1)
+			if j.Sync != nil && in.Metadata[syMetaSHA] != "" {
+				if in.Metadata[syMetaBodySHA], err = syBodySHA(ctx, sp); err != nil {
+					return classify(op, err)
+				}
+			}
+			return nil
+		})
 	}
 	// A size comparison needs the artifact size, so compress first for it; the
 	// other policies decide first so that a skipped file costs no compression.
@@ -293,16 +315,23 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 		blind    int   // > 0: the destination cannot be inspected (HEAD denied); the number of the current create-only attempt
 		blindErr error // the denial that led there
 	)
-	sameBody := func(key string, h remoteHead) (bool, error) {
-		if _, err := body.Seek(0, io.SeekStart); err != nil {
-			return false, err
-		}
-		local, err := syBodySHA(ctx, body)
-		if err != nil {
-			return false, err
-		}
-		remote, err := syRemoteBodySHA(ctx, c, j.Dest.Bucket, key, h.etag)
-		return err == nil && remote == local, err
+	sameBody := func(key string, h remoteHead) (same bool, err error) {
+		err = r.withPhase(PhaseVerifying, func() error {
+			if _, err := body.Seek(0, io.SeekStart); err != nil {
+				return classify(op, err)
+			}
+			local, err := syBodySHA(ctx, body)
+			if err != nil {
+				return classify(op, err)
+			}
+			remote, err := syRemoteBodySHA(ctx, c, j.Dest.Bucket, key, h.etag)
+			if err != nil {
+				return classify(op, err)
+			}
+			same = remote == local
+			return nil
+		})
+		return same, err
 	}
 	// identical reports whether an existing destination already holds this very
 	// file: same artifact size, modification time and verified content. The
@@ -318,28 +347,38 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 			return sameBody(key, h)
 		}
 		// AES ZIP has a random salt, so a rescan verifies the decrypted bytes.
-		tmp, err := os.CreateTemp("", spoolPrefix+"*"+spoolSuffix)
-		if err != nil {
-			return false, err
-		}
-		defer func() { tmp.Close(); os.Remove(tmp.Name()) }()
-		get := &s3.GetObjectInput{Bucket: aws.String(j.Dest.Bucket), Key: aws.String(key), IfMatch: aws.String(h.etag)}
-		if _, err := c.Download(ctx, get, tmp, storage.TransferOptions{Size: h.size}); err != nil {
-			return false, err
-		}
-		digest := sha256.New()
-		if err := s.decodeInto(ctx, tmp, h.size, digest, DecodeZip, comp.PasswordRef, size); err != nil {
-			return false, err
-		}
-		if _, err := f.Seek(0, io.SeekStart); err != nil {
-			return false, err
-		}
-		local, err := syBodySHA(ctx, f)
-		return err == nil && local == hex.EncodeToString(digest.Sum(nil)), err
+		var same bool
+		err := r.withPhase(PhaseVerifying, func() error {
+			tmp, err := os.CreateTemp("", spoolPrefix+"*"+spoolSuffix)
+			if err != nil {
+				return classify(op, err)
+			}
+			defer func() { tmp.Close(); os.Remove(tmp.Name()) }()
+			get := &s3.GetObjectInput{Bucket: aws.String(j.Dest.Bucket), Key: aws.String(key), IfMatch: aws.String(h.etag)}
+			if _, err := c.Download(ctx, get, tmp, storage.TransferOptions{Size: h.size}); err != nil {
+				return classify(op, err)
+			}
+			digest := sha256.New()
+			if err := s.decodeInto(ctx, tmp, h.size, digest, DecodeZip, comp.PasswordRef, size); err != nil {
+				return classify(op, err)
+			}
+			if _, err := f.Seek(0, io.SeekStart); err != nil {
+				return classify(op, err)
+			}
+			local, err := syBodySHA(ctx, f)
+			if err != nil {
+				return classify(op, err)
+			}
+			same = local == hex.EncodeToString(digest.Sum(nil))
+			return nil
+		})
+		return same, err
 	}
 	resolve := func() (conflictDecision, error) {
+		r.SetPhase(PhasePreparing)
 		if j.Sync != nil {
-			return syncUploadDecision(ctx, c, j.Dest.Bucket, finalKey, j.Sync)
+			d, err := syncUploadDecision(ctx, c, j.Dest.Bucket, finalKey, j.Sync)
+			return d, classify(op, err)
 		}
 		var (
 			d   conflictDecision
@@ -355,7 +394,7 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 			blind, blindErr = 1, err
 			return conflictDecision{Key: finalKey, CreateOnly: true}, nil
 		}
-		return d, err
+		return d, classify(op, err)
 	}
 	dec, err := resolve()
 	if err != nil {
@@ -365,6 +404,7 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 	// the SDK retryer may resend a PutObject / CompleteMultipartUpload that had
 	// committed, and the replay then meets its own object with a 412.
 	replayed := func(key string) bool {
+		r.SetPhase(PhaseVerifying)
 		h, err := headRemoteMeta(ctx, c, j.Dest.Bucket, key)
 		if err != nil || !h.exists || h.size != bodySize {
 			return false
@@ -384,6 +424,13 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 	}
 
 	partSize := s.partSize()
+	// Every byte sent: what is left is completing the upload.
+	progress := func(n int64) {
+		r.SetBytes(n)
+		if n >= bodySize {
+			r.SetPhase(PhaseFinishing)
+		}
+	}
 	write := func(ifNoneMatch, ifMatch string) (string, error) {
 		if _, err := body.Seek(0, io.SeekStart); err != nil {
 			return "", err
@@ -397,7 +444,8 @@ func (s *Service) runUpload(ctx context.Context, r *run, j uploadJob) error {
 		if ifMatch != "" {
 			put.IfMatch = aws.String(ifMatch)
 		}
-		res, err := c.Upload(ctx, &put, storage.TransferOptions{PartSize: partSize, Progress: r.SetBytes})
+		r.SetPhase(PhaseNone)
+		res, err := c.Upload(ctx, &put, storage.TransferOptions{PartSize: partSize, Progress: progress})
 		if err != nil {
 			return "", err
 		}

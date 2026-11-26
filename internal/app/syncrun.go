@@ -100,33 +100,42 @@ func (s *Service) RunSync(p SyncPreview) (string, error) {
 	}
 
 	group := s.newGroupID()
+	info := &groupInfo{Kind: KindDownload, Title: "Sync " + job.Name, Detail: "s3://" + job.Remote.Bucket + "/" + job.Remote.Prefix + " → " + job.LocalDir, Roots: 1, Name: job.Name}
+	if up {
+		info.Kind, info.Detail = KindUpload, job.LocalDir+" → s3://"+job.Remote.Bucket+"/"+job.Remote.Prefix
+	}
+	// first carries the group's description: whichever task is submitted first.
+	first := func(spec taskSpec) taskSpec {
+		spec.Info, info = info, nil
+		return spec
+	}
 	for _, a := range ups {
 		local, _ := safepath.Join(job.LocalDir, a.Path) // validated above
 		meta := map[string]string{syMetaSize: strconv.FormatInt(a.LocalSize, 10)}
 		if a.SHA256 != "" {
 			meta[syMetaSHA] = a.SHA256
 		}
-		s.submit(s.uploadTaskSpec(group, uploadJob{
-			Dest: job.Remote, Local: local, Key: prefix + a.Path, Policy: ConflictOverwrite, NoRules: job.NoRules,
+		s.submit(first(s.uploadTaskSpec(group, uploadJob{
+			Dest: job.Remote, Local: local, Key: prefix + a.Path, Policy: ConflictOverwrite, NoRules: job.NoRules, Size: a.LocalSize,
 			Sync: &syncUploadPre{Key: a.Key, ETag: a.ETag, Size: a.LocalSize, MTime: a.LocalMTime, Meta: meta},
-		}))
+		})))
 	}
 	for _, a := range downs {
 		var mod time.Time
 		if a.RemoteTime != 0 {
 			mod = time.Unix(0, a.RemoteTime)
 		}
-		s.submit(s.downloadTaskSpec(group, downloadJob{
+		s.submit(first(s.downloadTaskSpec(group, downloadJob{
 			Src: job.Remote, Key: a.Key, ETag: a.ETag, Size: a.Size, Modified: mod,
 			DestDir: job.LocalDir, Rel: a.Path, Policy: ConflictOverwrite,
 			Sync: &syncDownloadPre{Exists: a.LocalExists, Size: a.LocalSize, MTime: a.LocalMTime},
-		}))
+		})))
 	}
 	if len(dels) > 0 {
 		if up {
-			s.submit(s.syncDeleteRemoteSpec(group, job.Remote, dels))
+			s.submit(first(s.syncDeleteRemoteSpec(group, job.Remote, dels)))
 		} else {
-			s.submit(s.syncDeleteLocalSpec(group, job.LocalDir, dels))
+			s.submit(first(s.syncDeleteLocalSpec(group, job.LocalDir, dels)))
 		}
 	}
 	s.lgInfo("sync run started", "job", job.ID, "group", group, "direction", job.Direction, "uploads", len(ups), "downloads", len(downs), "deletes", len(dels))

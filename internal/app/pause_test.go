@@ -181,7 +181,12 @@ func TestSaveAndRestoreTransfers(t *testing.T) {
 		}
 		return n
 	}
-	eventually(t, "two paused files", func() bool { return paused(e.s) == 2 })
+	// The scan pauses too, wherever it is; files it submitted are paused.
+	eventually(t, "group paused", func() bool {
+		p, _ := e.s.GroupProgress(group)
+		return p.Paused && !p.Pausable
+	})
+	want := paused(e.s)
 	if err := e.s.SaveTransfers(); err != nil {
 		t.Fatal(err)
 	}
@@ -189,18 +194,19 @@ func TestSaveAndRestoreTransfers(t *testing.T) {
 	// A new session on the same configuration.
 	s2, _ := newTestServiceDir(t, e.s.dir, e.s.osKr)
 	n, err := s2.RestoreTransfers()
-	if err != nil || n != 2 {
-		t.Fatalf("restored %d: %v", n, err)
+	if err != nil || n != want {
+		t.Fatalf("restored %d of %d: %v", n, want, err)
 	}
 	if _, err := os.Stat(filepath.Join(e.s.dir, transfersFile)); !os.IsNotExist(err) {
 		t.Fatal("transfers.json kept after restore")
 	}
-	if paused(s2) != 2 {
+	if paused(s2) != want {
 		t.Fatal("restored transfers are not paused")
 	}
 	s2.ResumeAll()
 	ctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
 	defer cancel()
+	eventually(t, "restored group done", func() bool { return len(s2.TaskGroups()) == 0 })
 	for _, tk := range s2.Tasks() {
 		if got, err := s2.waitTask(ctx, tk.ID); err != nil || got.Status != StatusSucceeded {
 			t.Fatalf("%+v %v", got, err)
