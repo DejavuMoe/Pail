@@ -92,14 +92,20 @@ func (a *app) selectedFolders() []string {
 	return out
 }
 
-// shownFolders are the folder keys of the rows shown, in table order.
+// shownFolders are the folder keys of the rows shown, in table order. The
+// slice is shared until the rows change: read it, do not change it.
 func (a *app) shownFolders() []string {
+	if c := &a.vc; c.shownOK && c.shownRows == a.rowsGen && c.shownN == len(a.rows) {
+		return c.shown
+	}
+	a.vc.builds.shown++
 	var out []string
 	for _, e := range a.rows {
 		if e.Folder {
 			out = append(out, e.Key)
 		}
 	}
+	a.vc.shown, a.vc.shownRows, a.vc.shownN, a.vc.shownOK = out, a.rowsGen, len(a.rows), true
 	return out
 }
 
@@ -116,7 +122,21 @@ func (a *app) anyIdle(keys []string) bool {
 // canSizeSelection and canSizeShown enable the two commands: a folder that is
 // not being sized, whether or not it has a size already.
 func canSizeSelection(a *app) bool { return liveBrowsing(a) && a.anyIdle(a.selectedFolders()) }
-func canSizeShown(a *app) bool     { return liveBrowsing(a) && a.anyIdle(a.shownFolders()) }
+
+// canSizeShown is asked by the toolbar and the menu every frame; the answer
+// holds until the rows, the open folder or a folder's size state change.
+func canSizeShown(a *app) bool {
+	if !liveBrowsing(a) {
+		return false
+	}
+	c := &a.vc
+	if c.idleOK && c.idleRows == a.rowsGen && c.idleSize == a.sizeGen && c.idleScope == a.scope && c.idleN == len(a.rows) {
+		return c.idle
+	}
+	on := a.anyIdle(a.shownFolders())
+	c.idle, c.idleRows, c.idleSize, c.idleScope, c.idleN, c.idleOK = on, a.rowsGen, a.sizeGen, a.scope, len(a.rows), true
+	return on
+}
 
 // sizeFolders queues the folders of the open folder that are not being sized,
 // ones that have a size too (which is then measured again), and starts as many
@@ -133,6 +153,7 @@ func (a *app) sizeFolders(keys []string) {
 		s.Prefix = k
 		id := sizeKey(s.AccountID, s.Bucket, k)
 		a.sizes.by[id] = &folderSize{scope: s, state: sizeQueued}
+		a.sizeGen++
 		a.sizes.queue = append(a.sizes.queue, id)
 	}
 	a.pumpSizes()
@@ -180,6 +201,7 @@ func (a *app) walkFolder(fs *folderSize) {
 				return
 			}
 			fs.cancel = nil
+			a.sizeGen++
 			switch {
 			case err != nil:
 				fs.state, fs.err = sizeFailed, humanError(err)
@@ -187,7 +209,7 @@ func (a *app) walkFolder(fs *folderSize) {
 				fs.state, fs.est = sizeReady, est
 			}
 			if a.sort.Column == "size" {
-				a.rowsDirty = true // the folder moves to its place among the folders
+				a.sizeDirty = true // the folder moves to its place among the folders
 			}
 		})
 	}()
@@ -209,6 +231,7 @@ func (a *app) dropSizes(s Scope) {
 			fs.cancel()
 		}
 		delete(a.sizes.by, id)
+		a.sizeGen++
 	}
 }
 

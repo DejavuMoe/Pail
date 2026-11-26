@@ -38,6 +38,7 @@ type syncState struct {
 
 	buckets map[string][]string // account id -> bucket names
 	bLoad   map[string]bool
+	bErr    map[string]string // account id -> why its buckets could not be listed (not cached as an empty list)
 
 	pv       *core.SyncPreview
 	pvSig    string
@@ -206,7 +207,7 @@ func (a *app) syncEnter() {
 	if s.pvCancel != nil {
 		s.pvCancel()
 	}
-	*s = syncState{sel: -1, buckets: map[string][]string{}, bLoad: map[string]bool{}, pvGen: s.pvGen + 1, gen: s.gen + 1}
+	*s = syncState{sel: -1, buckets: map[string][]string{}, bLoad: map[string]bool{}, bErr: map[string]string{}, pvGen: s.pvGen + 1, gen: s.gen + 1}
 	s.jobs = a.svc.SyncJobs()
 	if len(s.jobs) > 0 {
 		a.syncSelect(0)
@@ -251,7 +252,7 @@ func (a *app) syncEnsureBuckets(acct string) {
 	if acct == "" || s.buckets == nil {
 		return
 	}
-	if _, ok := s.buckets[acct]; ok || s.bLoad[acct] {
+	if _, ok := s.buckets[acct]; ok || s.bLoad[acct] || s.bErr[acct] != "" {
 		return
 	}
 	if acct == a.accountID && len(a.buckets) > 0 {
@@ -267,11 +268,14 @@ func (a *app) syncEnsureBuckets(acct string) {
 		bs, err := a.svc.Buckets(ctx, acct)
 		return func() {
 			delete(s.bLoad, acct)
+			if err != nil {
+				// Not remembered as "no buckets": the form says why and Retry asks again.
+				s.bErr[acct] = humanError(err)
+				return
+			}
 			names := []string{}
-			if err == nil {
-				for _, b := range bs {
-					names = append(names, b.Name)
-				}
+			for _, b := range bs {
+				names = append(names, b.Name)
 			}
 			s.buckets[acct] = names
 		}
@@ -350,9 +354,18 @@ func (a *app) syncAskDelete() {
 		message: locales.SyncDeleteNote(),
 		action:  locales.SyncDeleteAction(), danger: true,
 		run: func() {
+			gen := s.gen
 			a.bg(func() func() {
 				err := a.svc.DeleteSyncJob(j.ID)
 				return func() {
+					if gen != s.gen {
+						// The tool was left or another job chosen meanwhile: only the
+						// list of jobs is brought up to date, not what is on screen.
+						if err == nil {
+							s.jobs = a.svc.SyncJobs()
+						}
+						return
+					}
 					if err != nil {
 						s.err = humanError(err)
 						return
@@ -482,7 +495,7 @@ func (a *app) syncAskRun() {
 // runSync starts the plan pv.
 func (a *app) runSync(pv core.SyncPreview) {
 	a.bg(func() func() {
-		_, err := a.svc.RunSync(pv)
+		gid, err := a.svc.RunSync(pv)
 		return func() {
 			if err != nil {
 				a.toast(locales.SyncStartFailed(humanError(err)))
@@ -491,6 +504,10 @@ func (a *app) runSync(pv core.SyncPreview) {
 			a.transfersOpen, a.transTab = true, 0
 			a.syncClearPreview()
 			a.toast(locales.SyncStarted())
+			// The finish is told like any queued action's: a toast (a system
+			// notification while the window is hidden), a line in the recent
+			// operations and, if the run wrote to the bucket on screen, its listing.
+			a.addWatch(gid, &watch{loc: pv.Job.Remote, kind: "sync", dest: pv.Job.LocalDir, remote: pv.Job.Direction == "upload"})
 		}
 	})
 }
@@ -639,10 +656,17 @@ func (a *app) syncFields(c *ui.Context) {
 			})
 		})
 		cell(c, "sb", func() {
-			formField(c, locales.CommonBucket(), "", func() {
+			bucketErr := ""
+			if e := s.bErr[f.acct]; e != "" && len(s.buckets[f.acct]) == 0 {
+				bucketErr = locales.SyncBucketsFailed(e)
+			}
+			formField(c, locales.CommonBucket(), bucketErr, func() {
 				names := s.buckets[f.acct]
 				if len(names) == 0 {
 					inputBox(c, &f.bucket, locales.SyncBucketLabel(), locales.SyncBucketName(), inputOpts{mono: true})
+					if s.bErr[f.acct] != "" && ghostButton(c, icons.Get("rotate-cw"), locales.CommonRetry(), locales.CommonRetry(), false).Clicked() {
+						delete(s.bErr, f.acct)
+					}
 					return
 				}
 				selectBox(c, locales.SyncBucketLabel(), &f.bucket, plainChoices(names, f.bucket), 0)

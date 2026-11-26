@@ -116,6 +116,13 @@ type appPlatform struct {
 	post    func(fn func())
 	pending chan func()
 	wake    atomic.Pointer[func()]
+	// quietWake runs the drain without asking for a frame (main: RunOnMain).
+	quietWake atomic.Pointer[func()]
+	// postQuiet is post that asks for no frame (main: RunOnMain); nil means the
+	// same as post. listShowsProgress says the transfer list shows byte progress
+	// (set by the UI thread, read by the event callback).
+	postQuiet         func(fn func())
+	listShowsProgress atomic.Bool
 	// pick opens a native file or folder chooser; it blocks, so it only runs
 	// on a goroutine.
 	pick func(dir bool) []string
@@ -152,7 +159,10 @@ type appPlatform struct {
 	progressShown mygo.ProgressBar
 	// localeSet shows a language (App.SetLocale), langSave keeps the choice.
 	localeSet func(tag string)
-	langSave  func(tag string)
+	langSave  func(tag string) error
+	// langBusy: a langSave runs off the UI thread; langDirty: a newer choice waits.
+	langBusy, langDirty bool
+	langPending         string
 }
 
 // appNav is where the user is: the account, its buckets, and the bucket,
@@ -180,23 +190,28 @@ type appNav struct {
 // appListing is the open folder: what was loaded, and the rows the table
 // shows of it (listing.go, objects.go).
 type appListing struct {
-	raw         []Entry // everything loaded under the prefix
-	rows        []Entry // filtered and sorted, what the table shows
-	byKey       map[string]int
-	rowsDirty   bool
-	rebuiltAt   time.Time // when the rows were last rebuilt
-	rebuildWake bool      // a timer is set to bring the next rebuild about
-	loading     bool
-	listErr     string
-	listGen     int
-	cancelList  context.CancelFunc
-	selectAfter string // key to select once the listing has loaded
-	listQuiet   bool   // the list being started is a refresh after an action: it keeps took
-	search      string
-	sort        ui.SortOrder
-	sortSeen    ui.SortOrder
-	list        ui.ListState
-	sizes       folderSizes // the folder sizes asked for (foldersize.go)
+	raw       []Entry // everything loaded under the prefix
+	rows      []Entry // filtered and sorted, what the table shows
+	byKey     map[string]int
+	rowsDirty bool
+	sizeDirty bool // a folder size arrived while the rows are sorted by size
+	// rawGen and rowsGen move when raw (the listing) and rows (what is shown of
+	// it) are replaced: what is derived from them (viewcache.go) is kept until then.
+	rawGen, rowsGen, sizeGen uint64
+	vc                       viewCache
+	rebuiltAt                time.Time // when the rows were last rebuilt
+	rebuildWake              bool      // a timer is set to bring the next rebuild about
+	loading                  bool
+	listErr                  string
+	listGen                  int
+	cancelList               context.CancelFunc
+	selectAfter              string // key to select once the listing has loaded
+	listQuiet                bool   // the list being started is a refresh after an action: it keeps took
+	search                   string
+	sort                     ui.SortOrder
+	sortSeen                 ui.SortOrder
+	list                     ui.ListState
+	sizes                    folderSizes // the folder sizes asked for (foldersize.go)
 }
 
 // appOpsLog is how long operations took: the last one in the status bar and
@@ -257,7 +272,10 @@ type appDetails struct {
 // appTasks is the queue as the UI knows it, and what to do when a task ends
 // (tasks.go, transfers.go).
 type appTasks struct {
-	tasks        []Task // submission order; the panel shows newest first
+	tasks        []Task // submission order
+	applies      int    // task event batches applied (tests count them)
+	reindexes    int    // times the task list was indexed from scratch (tests count them)
+	tv           trView // what the transfers panel, status bar and tray show of tasks
 	taskIdx      map[string]int
 	inbox        eventInbox
 	unsub        func()
@@ -282,7 +300,10 @@ type appCommands struct {
 type eventInbox struct {
 	mu        sync.Mutex
 	events    []core.Event
-	scheduled bool
+	scheduled bool // an apply is queued for the UI thread
+	urgent    bool // the queued events hold more than progress
+	timerSet  bool // a timer will bring the progress that waited
+	lastApply time.Time
 }
 
 func newApp(svc *core.Service, opts options) *app {
@@ -305,13 +326,14 @@ func newApp(svc *core.Service, opts options) *app {
 		localAWS:  core.LocalAWS,
 		quit:      func() {},
 		themeSet:  func(mygo.ThemeSource) {},
-		localeSet: func(string) {}, langSave: func(string) {},
+		localeSet: func(string) {}, langSave: func(string) error { return nil },
 		progressSet:  func(mygo.ProgressBar) {},
 		retryWatches: map[string]*watch{},
 	}
 	a.ctx, a.stop = context.WithCancel(context.Background())
 	a.initUpdates()
 	a.post = a.enqueue
+	a.postQuiet = a.enqueueQuiet
 	a.commands = commandTable()
 	a.commandIndex = map[string]int{}
 	for i, c := range a.commands {
@@ -359,6 +381,22 @@ func (a *app) enqueue(fn func()) {
 	}
 }
 
+// enqueueQuiet is enqueue for work whose result nothing on screen shows: it
+// still runs on the UI thread, in the same turn as everything else queued, but
+// asks for no frame when the window has a quiet wake-up.
+func (a *app) enqueueQuiet(fn func()) {
+	select {
+	case a.pending <- fn:
+	case <-a.ctx.Done():
+		return
+	}
+	if w := a.quietWake.Load(); w != nil {
+		(*w)()
+	} else if w := a.wake.Load(); w != nil {
+		(*w)()
+	}
+}
+
 // drain runs the callbacks that background work queued (tests; the real
 // window uses Window.Update).
 func (a *app) drain() {
@@ -367,6 +405,7 @@ func (a *app) drain() {
 		case fn := <-a.pending:
 			fn()
 		default:
+			a.listShowsProgress.Store(a.transfersOpen && a.transTab == 0)
 			a.syncProgress()
 			a.syncTray()
 			return

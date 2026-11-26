@@ -72,7 +72,7 @@ func TestI18NShell(t *testing.T) {
 	h.settle()
 
 	// ---- English stays as it was ----
-	h.mustHave("BUCKETS", "TOOLS", "Name", "Storage class", "2 items selected", "748 B", "Completed 2", "Active 0", "Clear finished")
+	h.mustHave("BUCKETS", "TOOLS", "Name", "Storage class", "2 items selected", "748 B", "Completed 1", "Active 0", "Clear finished")
 	h.mustNotHave("已选")
 
 	// ---- pseudo locale: nothing of the shell stays English ----
@@ -115,7 +115,7 @@ func TestI18NShell(t *testing.T) {
 	// ---- Chinese ----
 	h.setLocale("zh-Hans")
 	h.mustHave("存储桶", "工具", "名称", "大小", "类型", "修改时间", "存储类别",
-		"已选 2 项", "748 B", "传输", "已完成 2", "进行中 0", "失败 0", "清除已结束项", "9 项", "平铺", "显示已删除")
+		"已选 2 项", "748 B", "传输", "已完成 1", "进行中 0", "失败 0", "清除已结束项", "9 项", "平铺", "显示已删除")
 	h.mustNotHave("BUCKETS", "TOOLS", "Clear finished")
 	h.mustHave("标准") // a storage class of the table
 

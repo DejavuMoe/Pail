@@ -5892,6 +5892,16 @@ func (msgs Messages) LanguageFollowSystem() string {
 	return Catalog.Format(msgs.locale, "languageFollowSystem", nil)
 }
 
+// LanguageSaveFailed says "Could not save the language choice: {detail}"
+// in the language the app shows.
+func LanguageSaveFailed(detail string) string { return In(i18n.Locale()).LanguageSaveFailed(detail) }
+
+// LanguageSaveFailed says "Could not save the language choice: {detail}"
+// in the language of msgs.
+func (msgs Messages) LanguageSaveFailed(detail string) string {
+	return Catalog.Format(msgs.locale, "languageSaveFailed", map[string]any{"detail": detail})
+}
+
 // BucketCopyConflictPolicy says "Conflict policy"
 // in the language the app shows.
 func BucketCopyConflictPolicy() string { return In(i18n.Locale()).BucketCopyConflictPolicy() }
@@ -6232,11 +6242,11 @@ func (msgs Messages) SettingsDownloadRate() string {
 	return Catalog.Format(msgs.locale, "settingsDownloadRate", nil)
 }
 
-// SettingsRateHelp says "In KiB per second, for all accounts together. 0 means no limit. A running transfer follows a change from its next part."
+// SettingsRateHelp says "In KiB per second, for all accounts together. 0 means no limit. They limit uploads and downloads of objects only, and…"
 // in the language the app shows.
 func SettingsRateHelp() string { return In(i18n.Locale()).SettingsRateHelp() }
 
-// SettingsRateHelp says "In KiB per second, for all accounts together. 0 means no limit. A running transfer follows a change from its next part."
+// SettingsRateHelp says "In KiB per second, for all accounts together. 0 means no limit. They limit uploads and downloads of objects only, and…"
 // in the language of msgs.
 func (msgs Messages) SettingsRateHelp() string {
 	return Catalog.Format(msgs.locale, "settingsRateHelp", nil)
@@ -7380,6 +7390,16 @@ func PreviewTooLarge(limit string) string { return In(i18n.Locale()).PreviewTooL
 // in the language of msgs.
 func (msgs Messages) PreviewTooLarge(limit string) string {
 	return Catalog.Format(msgs.locale, "previewTooLarge", map[string]any{"limit": limit})
+}
+
+// PreviewTooManyPixels says "Too large to preview (over {limit} megapixels)"
+// in the language the app shows.
+func PreviewTooManyPixels(limit string) string { return In(i18n.Locale()).PreviewTooManyPixels(limit) }
+
+// PreviewTooManyPixels says "Too large to preview (over {limit} megapixels)"
+// in the language of msgs.
+func (msgs Messages) PreviewTooManyPixels(limit string) string {
+	return Catalog.Format(msgs.locale, "previewTooManyPixels", map[string]any{"limit": limit})
 }
 
 // PreviewZoomIn says "Zoom in"
@@ -10560,6 +10580,26 @@ func (msgs Messages) SyncBucketName() string {
 	return Catalog.Format(msgs.locale, "syncBucketName", nil)
 }
 
+// SyncBucketsFailed says "Could not list the buckets: {detail}"
+// in the language the app shows.
+func SyncBucketsFailed(detail string) string { return In(i18n.Locale()).SyncBucketsFailed(detail) }
+
+// SyncBucketsFailed says "Could not list the buckets: {detail}"
+// in the language of msgs.
+func (msgs Messages) SyncBucketsFailed(detail string) string {
+	return Catalog.Format(msgs.locale, "syncBucketsFailed", map[string]any{"detail": detail})
+}
+
+// SyncCanceled says "Sync canceled"
+// in the language the app shows.
+func SyncCanceled() string { return In(i18n.Locale()).SyncCanceled() }
+
+// SyncCanceled says "Sync canceled"
+// in the language of msgs.
+func (msgs Messages) SyncCanceled() string {
+	return Catalog.Format(msgs.locale, "syncCanceled", nil)
+}
+
 // SyncChooseFirst says "Choose a local folder and a bucket first"
 // in the language the app shows.
 func SyncChooseFirst() string { return In(i18n.Locale()).SyncChooseFirst() }
@@ -10740,6 +10780,16 @@ func (msgs Messages) SyncDiscardTitle(name string) string {
 	return Catalog.Format(msgs.locale, "syncDiscardTitle", map[string]any{"name": name})
 }
 
+// SyncDone says "Synced {files}"
+// in the language the app shows.
+func SyncDone(files string) string { return In(i18n.Locale()).SyncDone(files) }
+
+// SyncDone says "Synced {files}"
+// in the language of msgs.
+func (msgs Messages) SyncDone(files string) string {
+	return Catalog.Format(msgs.locale, "syncDone", map[string]any{"files": files})
+}
+
 // SyncDownload says "Download"
 // in the language the app shows.
 func SyncDownload() string { return In(i18n.Locale()).SyncDownload() }
@@ -10778,6 +10828,16 @@ func SyncEmptySub() string { return In(i18n.Locale()).SyncEmptySub() }
 // in the language of msgs.
 func (msgs Messages) SyncEmptySub() string {
 	return Catalog.Format(msgs.locale, "syncEmptySub", nil)
+}
+
+// SyncErrors says "Sync finished with errors: {done} transferred, {failed} failed"
+// in the language the app shows.
+func SyncErrors(done string, failed string) string { return In(i18n.Locale()).SyncErrors(done, failed) }
+
+// SyncErrors says "Sync finished with errors: {done} transferred, {failed} failed"
+// in the language of msgs.
+func (msgs Messages) SyncErrors(done string, failed string) string {
+	return Catalog.Format(msgs.locale, "syncErrors", map[string]any{"done": done, "failed": failed})
 }
 
 // SyncExcludes says "Excludes"
@@ -10858,6 +10918,16 @@ func SyncFilterSkipped() string { return In(i18n.Locale()).SyncFilterSkipped() }
 // in the language of msgs.
 func (msgs Messages) SyncFilterSkipped() string {
 	return Catalog.Format(msgs.locale, "syncFilterSkipped", nil)
+}
+
+// SyncFinished says "Sync finished"
+// in the language the app shows.
+func SyncFinished() string { return In(i18n.Locale()).SyncFinished() }
+
+// SyncFinished says "Sync finished"
+// in the language of msgs.
+func (msgs Messages) SyncFinished() string {
+	return Catalog.Format(msgs.locale, "syncFinished", nil)
 }
 
 // SyncFolderPath says "Folder path"
@@ -11662,6 +11732,16 @@ func (msgs Messages) TransfersBytesOf(done string, total string) string {
 	return Catalog.Format(msgs.locale, "transfersBytesOf", map[string]any{"done": done, "total": total})
 }
 
+// TransfersCancelGroup says "Cancel this batch"
+// in the language the app shows.
+func TransfersCancelGroup() string { return In(i18n.Locale()).TransfersCancelGroup() }
+
+// TransfersCancelGroup says "Cancel this batch"
+// in the language of msgs.
+func (msgs Messages) TransfersCancelGroup() string {
+	return Catalog.Format(msgs.locale, "transfersCancelGroup", nil)
+}
+
 // TransfersCanceled says "Canceled"
 // in the language the app shows.
 func TransfersCanceled() string { return In(i18n.Locale()).TransfersCanceled() }
@@ -11742,6 +11822,128 @@ func (msgs Messages) TransfersFailed() string {
 	return Catalog.Format(msgs.locale, "transfersFailed", nil)
 }
 
+// TransfersGroupDownloadFiles says "Download {n, plural, one {# file} other {# files}}"
+// in the language the app shows.
+func TransfersGroupDownloadFiles(n int) string {
+	return In(i18n.Locale()).TransfersGroupDownloadFiles(n)
+}
+
+// TransfersGroupDownloadFiles says "Download {n, plural, one {# file} other {# files}}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupDownloadFiles(n int) string {
+	return Catalog.Format(msgs.locale, "transfersGroupDownloadFiles", map[string]any{"n": n})
+}
+
+// TransfersGroupDownloadItems says "Download {n, plural, one {# item} other {# items}}"
+// in the language the app shows.
+func TransfersGroupDownloadItems(n int) string {
+	return In(i18n.Locale()).TransfersGroupDownloadItems(n)
+}
+
+// TransfersGroupDownloadItems says "Download {n, plural, one {# item} other {# items}}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupDownloadItems(n int) string {
+	return Catalog.Format(msgs.locale, "transfersGroupDownloadItems", map[string]any{"n": n})
+}
+
+// TransfersGroupDownloadName says "Download {name}"
+// in the language the app shows.
+func TransfersGroupDownloadName(name string) string {
+	return In(i18n.Locale()).TransfersGroupDownloadName(name)
+}
+
+// TransfersGroupDownloadName says "Download {name}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupDownloadName(name string) string {
+	return Catalog.Format(msgs.locale, "transfersGroupDownloadName", map[string]any{"name": name})
+}
+
+// TransfersGroupFiles says "{done} / {total, plural, one {# file} other {# files}}"
+// in the language the app shows.
+func TransfersGroupFiles(done string, total int) string {
+	return In(i18n.Locale()).TransfersGroupFiles(done, total)
+}
+
+// TransfersGroupFiles says "{done} / {total, plural, one {# file} other {# files}}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupFiles(done string, total int) string {
+	return Catalog.Format(msgs.locale, "transfersGroupFiles", map[string]any{"done": done, "total": total})
+}
+
+// TransfersGroupFilesGrowing says "{done} / {total, plural, one {#+ file} other {#+ files}}"
+// in the language the app shows.
+func TransfersGroupFilesGrowing(done string, total int) string {
+	return In(i18n.Locale()).TransfersGroupFilesGrowing(done, total)
+}
+
+// TransfersGroupFilesGrowing says "{done} / {total, plural, one {#+ file} other {#+ files}}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupFilesGrowing(done string, total int) string {
+	return Catalog.Format(msgs.locale, "transfersGroupFilesGrowing", map[string]any{"done": done, "total": total})
+}
+
+// TransfersGroupPaused says "{n} paused"
+// in the language the app shows.
+func TransfersGroupPaused(n string) string { return In(i18n.Locale()).TransfersGroupPaused(n) }
+
+// TransfersGroupPaused says "{n} paused"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupPaused(n string) string {
+	return Catalog.Format(msgs.locale, "transfersGroupPaused", map[string]any{"n": n})
+}
+
+// TransfersGroupQueued says "{n} more queued"
+// in the language the app shows.
+func TransfersGroupQueued(n string) string { return In(i18n.Locale()).TransfersGroupQueued(n) }
+
+// TransfersGroupQueued says "{n} more queued"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupQueued(n string) string {
+	return Catalog.Format(msgs.locale, "transfersGroupQueued", map[string]any{"n": n})
+}
+
+// TransfersGroupSync says "Sync {name}"
+// in the language the app shows.
+func TransfersGroupSync(name string) string { return In(i18n.Locale()).TransfersGroupSync(name) }
+
+// TransfersGroupSync says "Sync {name}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupSync(name string) string {
+	return Catalog.Format(msgs.locale, "transfersGroupSync", map[string]any{"name": name})
+}
+
+// TransfersGroupUploadFiles says "Upload {n, plural, one {# file} other {# files}}"
+// in the language the app shows.
+func TransfersGroupUploadFiles(n int) string { return In(i18n.Locale()).TransfersGroupUploadFiles(n) }
+
+// TransfersGroupUploadFiles says "Upload {n, plural, one {# file} other {# files}}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupUploadFiles(n int) string {
+	return Catalog.Format(msgs.locale, "transfersGroupUploadFiles", map[string]any{"n": n})
+}
+
+// TransfersGroupUploadItems says "Upload {n, plural, one {# item} other {# items}}"
+// in the language the app shows.
+func TransfersGroupUploadItems(n int) string { return In(i18n.Locale()).TransfersGroupUploadItems(n) }
+
+// TransfersGroupUploadItems says "Upload {n, plural, one {# item} other {# items}}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupUploadItems(n int) string {
+	return Catalog.Format(msgs.locale, "transfersGroupUploadItems", map[string]any{"n": n})
+}
+
+// TransfersGroupUploadName says "Upload {name}"
+// in the language the app shows.
+func TransfersGroupUploadName(name string) string {
+	return In(i18n.Locale()).TransfersGroupUploadName(name)
+}
+
+// TransfersGroupUploadName says "Upload {name}"
+// in the language of msgs.
+func (msgs Messages) TransfersGroupUploadName(name string) string {
+	return Catalog.Format(msgs.locale, "transfersGroupUploadName", map[string]any{"name": name})
+}
+
 // TransfersItemsFailed says "{failed} of {total} items failed"
 // in the language the app shows.
 func TransfersItemsFailed(failed string, total string) string {
@@ -11776,6 +11978,86 @@ func (msgs Messages) TransfersMore(n string) string {
 	return Catalog.Format(msgs.locale, "transfersMore", map[string]any{"n": n})
 }
 
+// TransfersPauseGroup says "Pause this batch"
+// in the language the app shows.
+func TransfersPauseGroup() string { return In(i18n.Locale()).TransfersPauseGroup() }
+
+// TransfersPauseGroup says "Pause this batch"
+// in the language of msgs.
+func (msgs Messages) TransfersPauseGroup() string {
+	return Catalog.Format(msgs.locale, "transfersPauseGroup", nil)
+}
+
+// TransfersPauseGroupTip says "Pause every file in this batch. Files in progress start again from the beginning when resumed"
+// in the language the app shows.
+func TransfersPauseGroupTip() string { return In(i18n.Locale()).TransfersPauseGroupTip() }
+
+// TransfersPauseGroupTip says "Pause every file in this batch. Files in progress start again from the beginning when resumed"
+// in the language of msgs.
+func (msgs Messages) TransfersPauseGroupTip() string {
+	return Catalog.Format(msgs.locale, "transfersPauseGroupTip", nil)
+}
+
+// TransfersPauseTip says "Pause. When resumed, this file starts again from the beginning"
+// in the language the app shows.
+func TransfersPauseTip() string { return In(i18n.Locale()).TransfersPauseTip() }
+
+// TransfersPauseTip says "Pause. When resumed, this file starts again from the beginning"
+// in the language of msgs.
+func (msgs Messages) TransfersPauseTip() string {
+	return Catalog.Format(msgs.locale, "transfersPauseTip", nil)
+}
+
+// TransfersPhaseCompressing says "Compressing…"
+// in the language the app shows.
+func TransfersPhaseCompressing() string { return In(i18n.Locale()).TransfersPhaseCompressing() }
+
+// TransfersPhaseCompressing says "Compressing…"
+// in the language of msgs.
+func (msgs Messages) TransfersPhaseCompressing() string {
+	return Catalog.Format(msgs.locale, "transfersPhaseCompressing", nil)
+}
+
+// TransfersPhaseDecoding says "Decoding…"
+// in the language the app shows.
+func TransfersPhaseDecoding() string { return In(i18n.Locale()).TransfersPhaseDecoding() }
+
+// TransfersPhaseDecoding says "Decoding…"
+// in the language of msgs.
+func (msgs Messages) TransfersPhaseDecoding() string {
+	return Catalog.Format(msgs.locale, "transfersPhaseDecoding", nil)
+}
+
+// TransfersPhaseFinishing says "Finishing…"
+// in the language the app shows.
+func TransfersPhaseFinishing() string { return In(i18n.Locale()).TransfersPhaseFinishing() }
+
+// TransfersPhaseFinishing says "Finishing…"
+// in the language of msgs.
+func (msgs Messages) TransfersPhaseFinishing() string {
+	return Catalog.Format(msgs.locale, "transfersPhaseFinishing", nil)
+}
+
+// TransfersPhasePreparing says "Preparing…"
+// in the language the app shows.
+func TransfersPhasePreparing() string { return In(i18n.Locale()).TransfersPhasePreparing() }
+
+// TransfersPhasePreparing says "Preparing…"
+// in the language of msgs.
+func (msgs Messages) TransfersPhasePreparing() string {
+	return Catalog.Format(msgs.locale, "transfersPhasePreparing", nil)
+}
+
+// TransfersPhaseVerifying says "Verifying…"
+// in the language the app shows.
+func TransfersPhaseVerifying() string { return In(i18n.Locale()).TransfersPhaseVerifying() }
+
+// TransfersPhaseVerifying says "Verifying…"
+// in the language of msgs.
+func (msgs Messages) TransfersPhaseVerifying() string {
+	return Catalog.Format(msgs.locale, "transfersPhaseVerifying", nil)
+}
+
 // TransfersQueued says "Queued"
 // in the language the app shows.
 func TransfersQueued() string { return In(i18n.Locale()).TransfersQueued() }
@@ -11784,6 +12066,26 @@ func TransfersQueued() string { return In(i18n.Locale()).TransfersQueued() }
 // in the language of msgs.
 func (msgs Messages) TransfersQueued() string {
 	return Catalog.Format(msgs.locale, "transfersQueued", nil)
+}
+
+// TransfersResumeGroup says "Resume this batch"
+// in the language the app shows.
+func TransfersResumeGroup() string { return In(i18n.Locale()).TransfersResumeGroup() }
+
+// TransfersResumeGroup says "Resume this batch"
+// in the language of msgs.
+func (msgs Messages) TransfersResumeGroup() string {
+	return Catalog.Format(msgs.locale, "transfersResumeGroup", nil)
+}
+
+// TransfersScanning says "Scanning…"
+// in the language the app shows.
+func TransfersScanning() string { return In(i18n.Locale()).TransfersScanning() }
+
+// TransfersScanning says "Scanning…"
+// in the language of msgs.
+func (msgs Messages) TransfersScanning() string {
+	return Catalog.Format(msgs.locale, "transfersScanning", nil)
 }
 
 // TransfersSummaryActive says "{n} active"

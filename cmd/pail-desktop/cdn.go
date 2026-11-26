@@ -22,8 +22,10 @@ func (a *app) cdnSelection() []string {
 }
 
 // hasCDNSelection is a live selection holding at least one object with a CDN link.
+// Any object has a link when one of the bucket's does (CDNURL is "" only for a
+// folder or a bucket without one), so the summary answers it without a link per key.
 func hasCDNSelection(a *app) bool {
-	return liveSelection(a) && len(a.cdnSelection()) > 0
+	return liveSelection(a) && a.selSummary().files > 0 && a.objectCDN("x") != ""
 }
 
 // oneCDNObject is a single live object with a CDN link.

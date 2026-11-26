@@ -26,8 +26,6 @@ type mpState struct {
 	list           ui.ListState
 	sel            ui.Selection[string]
 	cursor         int
-	abortTask      string // task being awaited after an Abort
-	abortN         int
 }
 
 func mpColumns() []ui.TableColumn {
@@ -123,62 +121,44 @@ func (a *app) mpAskAbort() {
 						return
 					}
 					m.sel.Clear()
-					m.abortTask, m.abortN = id, len(ups)
 					a.transfersOpen, a.transTab = true, 0
+					a.follow(id, a.mpAborted(loc))
 				}
 			})
 		},
 	}
 }
 
-// mpCheckAbort toasts and refreshes once the abort task has finished.
-func (a *app) mpCheckAbort() {
-	m := &a.tl.mp
-	if m.abortTask == "" {
-		return
-	}
-	found := false
-	done, failed, canceled := 0, false, false
-	firstErr := ""
-	for _, t := range a.tasks {
-		if t.ID != m.abortTask && t.GroupID != m.abortTask {
-			continue
-		}
-		found = true
-		if !t.Status.Finished() {
-			return
-		}
+// mpAborted is what follows the abort task of the uploads of loc, run by the
+// follow machinery in the turn the task finishes (also while the tool is not
+// open or the window is hidden): it says how it ended and, if the list of that
+// bucket is on screen, lists it again.
+func (a *app) mpAborted(loc Scope) func(Task) {
+	return func(t Task) {
 		sum := a.bulkSummary(t)
-		done += t.ItemsDone - t.ItemsFailed - t.ItemsSkipped
-		failed = failed || sum.failed > 0 || t.Status == core.StatusFailed || t.Status == core.StatusPartiallyFailed
-		canceled = canceled || t.Status == core.StatusCanceled
-		if firstErr == "" {
-			firstErr = sum.firstErr
+		done := t.ItemsDone - t.ItemsFailed - t.ItemsSkipped
+		failed := sum.failed > 0 || t.Status == core.StatusFailed || t.Status == core.StatusPartiallyFailed
+		switch {
+		case t.Status == core.StatusCanceled:
+			a.toast(locales.MultipartAbortCanceled(done))
+		case failed:
+			msg := locales.MultipartAbortFailed(sum.firstErr)
+			if done > 0 {
+				msg = locales.MultipartAborted(done) + " · " + msg
+			}
+			a.toast(msg)
+		default:
+			a.toast(locales.MultipartAborted(done))
+		}
+		if m := &a.tl.mp; a.tool == "multipart" && m.loc == loc {
+			a.mpLoad()
 		}
 	}
-	if !found {
-		return
-	}
-	m.abortTask = ""
-	switch {
-	case canceled:
-		a.toast(locales.MultipartAbortCanceled(done))
-	case failed:
-		msg := locales.MultipartAbortFailed(firstErr)
-		if done > 0 {
-			msg = locales.MultipartAborted(done) + " · " + msg
-		}
-		a.toast(msg)
-	default:
-		a.toast(locales.MultipartAborted(done))
-	}
-	a.mpLoad()
 }
 
 func (a *app) mpView(c *ui.Context) {
 	k := tk(c)
 	m := &a.tl.mp
-	a.mpCheckAbort()
 	ui.Column(c).Grow(1).MinHeight(0).Children(func() {
 		ui.Row(c).Height(48).Padding(0, 16).Gap(8).AlignItems(ui.Center).Shrink(0).Children(func() {
 			names := make([]string, len(a.buckets))

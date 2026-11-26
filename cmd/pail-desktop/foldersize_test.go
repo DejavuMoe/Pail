@@ -222,17 +222,17 @@ func TestFolderSizeFailureIsShownAndCanBeRetried(t *testing.T) {
 
 func TestTrayStatusFollowsTransfers(t *testing.T) {
 	t.Parallel()
-	if got := trayStatus(nil); got != "No transfers in progress" {
+	if got := trayStatus(nil, nil); got != "No transfers in progress" {
 		t.Fatalf("idle: %q", got)
 	}
 	running := []Task{
 		{ID: "1", Kind: core.KindUpload, Status: core.StatusRunning, BytesTotal: 200, BytesDone: 50},
 		{ID: "2", Kind: core.KindDownload, Status: core.StatusRunning, BytesTotal: 200, BytesDone: 50},
 	}
-	if got := trayStatus(running); got != "2 transfers · 25%" {
+	if got := trayStatus(running, nil); got != "2 transfers · 25%" {
 		t.Fatalf("running: %q", got)
 	}
-	if got := trayStatus([]Task{{ID: "1", Kind: core.KindUpload, Status: core.StatusQueued}}); got != "1 transfer in progress" {
+	if got := trayStatus([]Task{{ID: "1", Kind: core.KindUpload, Status: core.StatusQueued}}, nil); got != "1 transfer in progress" {
 		t.Fatalf("queued: %q", got)
 	}
 	if got := trayTitle(mygo.ProgressBar{State: mygo.ProgressNormal, Value: 0.07}); got != "  7%" {

@@ -20,11 +20,11 @@ func (a *app) view(c *ui.Context) {
 		c.DisableAnimations()
 	}
 	k := applyTheme(c, a.opts.theme)
-	a.sel.touch() // mygo may have changed the choice between frames
+	a.sel.sync() // mygo may have changed the choice between frames
 	a.syncTheme()
 	a.drain()
 	if time.Since(a.vu.at) > time.Second {
-		a.refreshVault() // an idle auto-lock shows up here
+		a.pollVault() // an idle auto-lock shows up here
 	}
 	a.autoTransfers()
 	a.flushOutput(c)
@@ -65,6 +65,7 @@ func (a *app) view(c *ui.Context) {
 	a.dialogs(c)
 	a.menuLayer(c)   // above the dialogs, under the toasts
 	toastViewport(c) // last, so a toast floats above the dialogs
+	a.listShowsProgress.Store(a.transfersOpen && a.transTab == 0)
 }
 
 // transfersExtent is the height of the transfers panel: the height the user

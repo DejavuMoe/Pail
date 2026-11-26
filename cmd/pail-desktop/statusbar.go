@@ -5,7 +5,6 @@ import (
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
-	core "github.com/DejavuMoe/Pail/internal/app"
 	"github.com/egoist/mygo/ui"
 )
 
@@ -39,18 +38,8 @@ func (a *app) statusBar(c *ui.Context) {
 // strip (transfersBar).
 func (a *app) transferCounts(c *ui.Context, part func(string)) {
 	k := tk(c)
-	var up, down int
-	for _, t := range a.tasks {
-		if taskGroup(t) != 0 {
-			continue
-		}
-		switch t.Kind {
-		case core.KindUpload:
-			up++
-		case core.KindDownload:
-			down++
-		}
-	}
+	// Files that are queued or running, as the tray counts them (a.tv).
+	up, down := a.tv.up, a.tv.down
 	cmd := a.cmd("transfers")
 	b := ui.ButtonBase(c.Key("transfers")).Label(cmd.text()).Tooltip(cmd.tooltip()).Expanded(a.transfersOpen).
 		Height(20).Padding(0, 6).Gap(6).Radius(RadiusKeycap).AlignItems(ui.Center)

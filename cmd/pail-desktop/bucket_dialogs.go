@@ -323,17 +323,27 @@ func (a *app) emptyBucket() {
 		return
 	}
 	name, acct, all := f.bucket, a.accountID, f.all && a.versioned(a.accountID, f.bucket)
+	gen := f.gen
 	f.busy = true
 	a.bg(func() func() {
 		id, err := a.svc.EmptyBucket(acct, name, all)
 		return func() {
 			f := &a.mg.eb
-			f.busy = false
+			current := f.gen == gen // not another bucket's dialog opened meanwhile
+			if current {
+				f.busy = false
+			}
 			if err != nil {
-				f.err = humanError(err)
+				if current {
+					f.err = humanError(err)
+				} else {
+					a.toast(locales.BucketDialogsEmptyFailed(name, humanError(err)))
+				}
 				return
 			}
-			f.open = false
+			if current {
+				f.open = false
+			}
 			a.transfersOpen, a.transTab = true, 0
 			a.follow(id, func(t Task) {
 				sum := a.bulkSummary(t)

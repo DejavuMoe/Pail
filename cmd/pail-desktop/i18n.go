@@ -1,6 +1,8 @@
 package main
 
 import (
+	"errors"
+	"io/fs"
 	"os"
 	"path/filepath"
 	"strings"
@@ -69,18 +71,21 @@ func loadLanguageChoice() string {
 }
 
 // saveLanguageChoice keeps the choice; "" removes the file.
-func saveLanguageChoice(tag string) {
+func saveLanguageChoice(tag string) error {
 	p := languagePath()
 	if p == "" || strings.TrimSpace(os.Getenv("MYGO_LOCALE")) != "" {
-		return
+		return nil
 	}
 	if tag == "" {
-		_ = os.Remove(p)
-		return
+		if err := os.Remove(p); err != nil && !errors.Is(err, fs.ErrNotExist) {
+			return err
+		}
+		return nil
 	}
-	if err := os.MkdirAll(filepath.Dir(p), 0o755); err == nil {
-		_ = os.WriteFile(p, []byte(tag+"\n"), 0o644)
+	if err := os.MkdirAll(filepath.Dir(p), 0o755); err != nil {
+		return err
 	}
+	return os.WriteFile(p, []byte(tag+"\n"), 0o644)
 }
 
 // validLanguage returns tag when it names one of the app's languages.
@@ -101,7 +106,38 @@ func (a *app) setLanguage(tag string) {
 	}
 	a.lang = tag
 	a.localeSet(tag)
-	a.langSave(tag)
+	a.saveLanguage(tag)
+}
+
+// saveLanguage writes the choice off the UI thread, one write at a time: a
+// choice made while one is being written waits and is written after it, so the
+// last click is the one kept. A failure is told in a toast; the language stays
+// as chosen for this run.
+func (a *app) saveLanguage(tag string) {
+	a.langPending, a.langDirty = tag, true
+	if a.langBusy {
+		return
+	}
+	a.langBusy = true
+	a.flushLanguage()
+}
+
+func (a *app) flushLanguage() {
+	tag := a.langPending
+	a.langDirty = false
+	a.bg(func() func() {
+		err := a.langSave(tag)
+		return func() {
+			a.langBusy = false
+			if err != nil {
+				a.toast(locales.LanguageSaveFailed(humanError(err)))
+			}
+			if a.langDirty {
+				a.langBusy = true
+				a.flushLanguage()
+			}
+		}
+	})
 }
 
 // languageItems is the native menu's Language submenu: radio items, each

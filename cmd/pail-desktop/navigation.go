@@ -98,6 +98,8 @@ func (a *app) clearListing() {
 	}
 	a.listGen++
 	a.raw, a.rows, a.byKey = nil, nil, nil
+	a.rawGen++
+	a.rowsGen++
 	a.loading, a.listErr, a.rowsDirty = false, "", false
 	a.selectAfter = ""
 	a.sel.Clear()

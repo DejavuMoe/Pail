@@ -9,6 +9,7 @@ import (
 	"strings"
 	"sync"
 	"testing"
+	"time"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
 	core "github.com/DejavuMoe/Pail/internal/app"
@@ -117,6 +118,49 @@ func i18nScenarios(loc string) []struct {
 	}
 	return []sc{
 		{"main", func(h *harness) { h.mustClick("manifest.json") }},
+		{"transfers-group", func(h *harness) {
+			// A folder upload with files running (one compressing), one paused and a
+			// backlog, a folder still being scanned, a download with a phase, and
+			// a standalone delete.
+			ts, gs := groupFixture(time.Now())
+			base := time.Now()
+			ts = append(ts,
+				Task{ID: "scan2", GroupID: "g2", Kind: core.KindOther, Title: "Scan 3 items for upload", Status: core.StatusRunning, Pausable: true, Created: base},
+				Task{ID: "d1", GroupID: "g3", Kind: core.KindDownload, Title: "Download backup.tar.gz", Detail: "C:/Users/me/Downloads", Status: core.StatusRunning, BytesTotal: 800 << 20, BytesDone: 800 << 20, Phase: core.PhaseFinishing, Pausable: true, Created: base},
+				Task{ID: "x1", Kind: core.KindOther, Title: "Delete 12 items", Status: core.StatusQueued, Created: base},
+			)
+			gs = append(gs, core.GroupProgress{ID: "g2", Kind: core.KindDownload, Title: "Download 3 items", Detail: "s3://acme-assets/ → C:/Users/me/Downloads", Roots: 3, Created: base, Files: 1234, FilesSucceeded: 1000, BytesTotal: 3 << 30, BytesDone: 2 << 30, Scanning: true, Pausable: true},
+				core.GroupProgress{ID: "g3", Kind: core.KindDownload, Created: base, Files: 1, FilesRunning: 1, BytesTotal: 800 << 20, BytesDone: 800 << 20})
+			h.setView(ts, gs)
+			h.a.tl.tr = trAuto{init: true, seen: len(h.a.tasks), prevOpen: true}
+			h.a.transfersOpen = true
+			h.a.transTab = 0
+		}},
+		{"transfers-scan", func(h *harness) {
+			// A download whose scan goes on (the total grows), with one file running and
+			// a backlog, then a paused batch.
+			base := time.Now()
+			h.setView([]Task{
+				{ID: "d1", GroupID: "g2", Kind: core.KindDownload, Title: "Download a.bin", Status: core.StatusRunning, BytesTotal: 3 << 30, BytesDone: 1 << 30, Speed: 30 << 20, Pausable: true, Created: base},
+				{ID: "p1", GroupID: "g4", Kind: core.KindUpload, Title: "Upload b.bin", Status: core.StatusPaused, Pausable: true, Created: base.Add(time.Second)},
+			}, []core.GroupProgress{
+				{ID: "g2", Kind: core.KindDownload, Title: "Download 3 items", Detail: "s3://acme-assets/ → C:/Users/me/Downloads", Roots: 3, Created: base, Files: 1234, FilesSucceeded: 1000, FilesRunning: 1, FilesQueued: 233, BytesTotal: 3 << 30, BytesDone: 2 << 30, Speed: 30 << 20, Scanning: true, Pausable: true},
+				{ID: "g4", Kind: core.KindUpload, Title: "Upload 2 items", Detail: "→ s3://acme-assets/", Roots: 2, Created: base.Add(time.Second), Files: 40, FilesPaused: 40, BytesTotal: 1 << 30, Paused: true, Pausable: false},
+			})
+			h.a.tl.tr = trAuto{init: true, seen: len(h.a.tasks), prevOpen: true}
+			h.a.transfersOpen = true
+			h.a.transTab = 0
+		}},
+		{"transfers-failed", func(h *harness) {
+			now := time.Now()
+			h.setView([]Task{
+				{ID: "c1", Kind: core.KindUpload, Title: "Upload photos/img001.jpg", Status: core.StatusCanceled, Created: now, Finished: now},
+				{ID: "c2", Kind: core.KindUpload, Title: "Upload photos/img002.jpg", Status: core.StatusFailed, Err: "Access denied (AccessDenied)", Created: now, Finished: now},
+			}, nil)
+			h.a.tl.tr = trAuto{init: true, seen: len(h.a.tasks), prevOpen: true}
+			h.a.transfersOpen = true
+			h.a.transTab = 2
+		}},
 		{"account-help-tooltip", func(h *harness) {
 			h.a.openAccountForm(false)
 			h.a.af.provider = 1

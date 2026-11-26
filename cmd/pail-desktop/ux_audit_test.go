@@ -264,6 +264,7 @@ func seedTasks(h *harness) {
 		{ID: "t6", Kind: core.KindOther, Title: "Delete 12 items", Status: core.StatusPartiallyFailed, Items: 12, ItemsFailed: 3, Created: now, Finished: now},
 	}
 	h.a.reindexTasks()
+	h.a.rebuildTransfers()
 	h.a.transfersOpen = true
 	h.a.tl.tr = trAuto{init: true, seen: len(h.a.tasks), prevOpen: true}
 	h.tt.Frame()

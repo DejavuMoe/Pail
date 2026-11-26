@@ -63,10 +63,19 @@ func iconButton(c *ui.Context, icon *ui.SVG, label string) ui.Element {
 	return iconButtonOff(c, icon, label, false)
 }
 
+// iconButtonTip is iconButton whose tooltip says more than its name.
+func iconButtonTip(c *ui.Context, icon *ui.SVG, label, tip string) ui.Element {
+	return iconButtonFull(c, icon, label, tip, false)
+}
+
 // iconButtonOff is iconButton that can be disabled: 0.4 opacity and no hover.
 func iconButtonOff(c *ui.Context, icon *ui.SVG, label string, disabled bool) ui.Element {
+	return iconButtonFull(c, icon, label, label, disabled)
+}
+
+func iconButtonFull(c *ui.Context, icon *ui.SVG, label, tip string, disabled bool) ui.Element {
 	k := tk(c)
-	b := ui.ButtonBase(c).Label(label).Tooltip(label).Size(24, 24).Radius(RadiusControl).Center().Disabled(disabled)
+	b := ui.ButtonBase(c).Label(label).Tooltip(tip).Size(24, 24).Radius(RadiusControl).Center().Disabled(disabled)
 	switch {
 	case disabled:
 		b.Opacity(0.4)

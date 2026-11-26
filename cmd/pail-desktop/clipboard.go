@@ -1,6 +1,7 @@
 package main
 
 import (
+	"slices"
 	"strings"
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
@@ -25,7 +26,7 @@ func canPaste(a *app) bool { return a.browsing() && a.mg.clip.has() && !a.mg.del
 
 // copySelection puts the selection on the in-app clipboard.
 func (a *app) copySelection(cut bool) {
-	keys := a.selectedKeys()
+	keys := slices.Clone(a.selectedKeys()) // the clipboard outlives the shared slice
 	if len(keys) == 0 {
 		return
 	}
@@ -38,14 +39,7 @@ func (a *app) isCutRow(key string) bool {
 	return c.cut && c.loc == a.scope && a.keyInClip(key)
 }
 
-func (a *app) keyInClip(key string) bool {
-	for _, k := range a.mg.clip.keys {
-		if k == key {
-			return true
-		}
-	}
-	return false
-}
+func (a *app) keyInClip(key string) bool { return a.inClip(key) }
 
 // paste copies or moves the clipboard into the open folder, also from
 // another account (the objects then stream through Pail).

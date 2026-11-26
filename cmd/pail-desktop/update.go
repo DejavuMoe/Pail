@@ -178,11 +178,12 @@ func (a *app) cancelUpdate() {
 	}
 }
 
-// restartForUpdate starts the installed update; while transfers run it says
-// so and waits for another click.
+// restartForUpdate starts the installed update; while transfers are queued or
+// running it says so and waits for another click. Paused transfers do not hold
+// it back: quitting saves them (main, SaveTransfers) and they come back paused.
 func (a *app) restartForUpdate() {
-	if n := countTasks(a.tasks)[0]; n > 0 {
-		a.toast(locales.UpdatesRestartBusy(n))
+	if n, busy := busyTasks(a.tasks); busy {
+		a.toast(locales.UpdatesRestartBusy(max(n, 1)))
 		return
 	}
 	a.upd.relaunch()

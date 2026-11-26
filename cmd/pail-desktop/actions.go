@@ -45,9 +45,19 @@ func (a *app) timeout(d time.Duration) (context.Context, context.CancelFunc) {
 // outcome and refreshes the listing when it changed the bucket.
 type watch struct {
 	loc  Scope
-	kind string // "upload" | "download" | "delete"
+	kind string // "upload" | "download" | "delete" | "sync"
 	dest string // download folder
 	file string // the single downloaded file, when exactly one was asked for
+	// remote is, for a sync, whether the run changes the bucket (an upload
+	// sync); a download sync only writes local files.
+	remote bool
+}
+
+// changesBucket reports whether what the watch follows changes the objects of
+// its bucket: uploads, deletes and a sync that writes to it. A download changes
+// nothing there, so the folder sizes computed and the listing on screen stay.
+func (w *watch) changesBucket() bool {
+	return w.kind == "upload" || w.kind == "delete" || w.kind == "sync" && w.remote
 }
 
 // addWatch starts following key (a group ID or task ID). Events that arrived
@@ -113,9 +123,19 @@ func (a *app) finishWatch(w *watch, ts []Task, result core.TaskGroupResult, grou
 	if grouped {
 		done, failed, canceled = result.Succeeded, result.Failed, result.Canceled
 	}
-	a.dropSizes(w.loc) // where it changed things, not only where the table is
+	changes := w.changesBucket()
+	if changes {
+		a.dropSizes(w.loc) // where it changed things, not only where the table is
+	}
 	d, ran := groupDuration(ts)
-	op := opEntry{what: w.kind, ran: ran, d: d, account: w.loc.AccountID, accountName: a.accountNameOf(w.loc.AccountID),
+	what := w.kind
+	if w.kind == "sync" { // the list of recent operations has no line of its own for it
+		what = tookDownload
+		if w.remote {
+			what = tookUpload
+		}
+	}
+	op := opEntry{what: what, ran: ran, d: d, account: w.loc.AccountID, accountName: a.accountNameOf(w.loc.AccountID),
 		where: scopeText(w.loc), n: done, bad: failed, err: firstErr}
 	if w.kind == tookDelete {
 		op.n, op.bad = items, itemsFailed
@@ -127,7 +147,7 @@ func (a *app) finishWatch(w *watch, ts []Task, result core.TaskGroupResult, grou
 		op.state = opCanceled
 	}
 	a.noteOp(op)
-	if w.loc.AccountID == a.scope.AccountID && w.loc.Bucket == a.scope.Bucket && a.scope.Bucket != "" {
+	if changes && w.loc.AccountID == a.scope.AccountID && w.loc.Bucket == a.scope.Bucket && a.scope.Bucket != "" {
 		a.reloadQuietly()
 	}
 	switch w.kind {
@@ -159,6 +179,17 @@ func (a *app) finishWatch(w *watch, ts []Task, result core.TaskGroupResult, grou
 			a.toast(locales.ActionsDownloadCanceled())
 		default:
 			a.toast(locales.ActionsNothingDownloaded())
+		}
+	case "sync":
+		switch {
+		case failed > 0:
+			a.toast(locales.SyncErrors(fmt.Sprint(done), fmt.Sprint(failed)))
+		case canceled > 0:
+			a.toast(locales.SyncCanceled())
+		case done > 0:
+			a.toast(locales.SyncDone(locales.CommonFiles(done)))
+		default:
+			a.toast(locales.SyncFinished())
 		}
 	case "delete":
 		switch {

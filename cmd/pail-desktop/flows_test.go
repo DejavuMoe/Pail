@@ -119,7 +119,7 @@ func TestUploadCreatesTaskAndObject(t *testing.T) {
 	if !ok || !bytes.Equal(got, data) {
 		t.Fatalf("object on the server: ok=%v len=%d", ok, len(got))
 	}
-	h.mustClick("Completed 2") // the scan task and the file
+	h.mustClick("Completed 1") // the file; its succeeded scan is not listed or counted
 	h.mustHave("Upload hello.bin")
 	h.snap("transfers-completed-light")
 }
@@ -219,7 +219,7 @@ func TestTaskbarProgressOfActiveTasks(t *testing.T) {
 		{"half-percent steps", []Task{{Status: core.StatusRunning, BytesTotal: 1000, BytesDone: 333}}, bar(0.335)},
 		{"nothing counted yet", []Task{{Status: core.StatusQueued}}, mygo.ProgressBar{State: mygo.ProgressIndeterminate}},
 	} {
-		if got := taskbarProgress(c.tasks); got != c.want {
+		if got := taskbarProgress(c.tasks, nil); got != c.want {
 			t.Errorf("%s: %+v, want %+v", c.name, got, c.want)
 		}
 	}

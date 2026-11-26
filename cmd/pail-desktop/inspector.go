@@ -159,7 +159,8 @@ func (a *app) folderSizeDetail(c *ui.Context, e Entry) {
 
 // objectTabs shows the tab chosen for the single selected object.
 func (a *app) objectTabs(c *ui.Context) {
-	e := a.rows[a.byKey[a.selectedKeys()[0]]]
+	key, _ := a.soleSelected()
+	e := a.rows[a.byKey[key]]
 	k := tk(c)
 	// Overview, Headers and Tags need the HEAD answer; the rest only the key.
 	needsHead := a.inspTab <= 2

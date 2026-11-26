@@ -93,7 +93,9 @@ func (a *app) signedObjects() []string {
 	return out
 }
 
-func hasObjectSelection(a *app) bool { return a.browsing() && len(a.signedObjects()) > 0 }
+// hasObjectSelection is asked every frame (the toolbar, the native menu): the
+// summary says in O(1) whether an object, not only folders, is chosen.
+func hasObjectSelection(a *app) bool { return a.browsing() && a.selSummary().files > 0 }
 
 // openSigned opens the dialog for keys; version prefills the version field of
 // a single object. Without one, the version chosen in the Versions tab is used.

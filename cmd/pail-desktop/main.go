@@ -157,6 +157,8 @@ func main() {
 		// the UI thread. Work queued before the window existed goes now.
 		wake := func() { win.Update(a.uiTurn) }
 		a.wake.Store(&wake)
+		quiet := func() { mygo.RunOnMain(a.uiTurn) }
+		a.quietWake.Store(&quiet)
 		wake()
 		redraw := func() { win.Update(func() {}) }
 		installMenu(a, runtime.GOOS, mygo.App.SetMenu, redraw)

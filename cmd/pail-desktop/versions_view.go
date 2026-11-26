@@ -426,6 +426,7 @@ func (a *app) reloadDeleted() {
 			}
 			a.mg.del.keys = keys
 			a.raw = entries
+			a.rawGen++
 			a.rowsDirty = true
 			a.pruneSelection()
 			a.applySelectAfter()

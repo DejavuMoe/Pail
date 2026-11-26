@@ -475,9 +475,10 @@ func TestToastFadesInPlace(t *testing.T) {
 	}
 }
 
-// The progress bar's fill eases to a new fraction rather than jumping, then
-// rests exactly there.
-func TestProgressBarEasesToANewFraction(t *testing.T) {
+// The progress bar's fill goes to a new fraction at once and rests there: an
+// ease that the next report interrupts would never settle, and the window
+// would draw for as long as a transfer runs.
+func TestProgressBarSnapsToANewFraction(t *testing.T) {
 	t.Parallel()
 	frac := 0.2
 	view := func(c *ui.Context) {
@@ -502,19 +503,16 @@ func TestProgressBarEasesToANewFraction(t *testing.T) {
 	if got := fill(); got < 31 || got > 33 {
 		t.Fatalf("the fill is %d wide at 0.2, want about 32", got)
 	}
-	frac = 0.8
-	tt.Frame()
-	tt.Advance(50 * time.Millisecond)
-	tt.Frame()
-	mid := fill()
-	tt.Advance(time.Second)
-	tt.Frame()
-	end := fill()
-	if !(mid > 33 && mid < end) || end < 127 || end > 129 {
-		t.Errorf("the fill goes 32, %d, %d: want it between at 50ms and 128 at rest", mid, end)
-	}
-	if tt.FramePending() {
-		t.Error("the progress bar keeps asking for frames at rest")
+	for _, f := range []float64{0.25, 0.251, 0.8} {
+		frac = f
+		tt.Frame()
+		want := int(f*colProgress + 0.5)
+		if got := fill(); got < want-1 || got > want+1 {
+			t.Errorf("the fill is %d wide at %.3f, want about %d at once", got, f, want)
+		}
+		if tt.FramePending() {
+			t.Errorf("the progress bar asks for frames after a move to %.3f", f)
+		}
 	}
 }
 
@@ -579,7 +577,7 @@ func TestCollapsedTransfersCountsAreSeparate(t *testing.T) {
 	}
 }
 
-// Only motion.go animates, and the progress bar's fill: a view that wants a
+// Only motion.go animates: a view that wants a
 // mark to travel or a colour to fade calls arrive, slideTo, fadeTo or fadeIn,
 // and any other that asks mygo for an animation, a transition or a rolling
 // count breaks the rule of docs/dev/design.md "Motion".
@@ -587,8 +585,7 @@ func TestOnlyTheTokenMoves(t *testing.T) {
 	t.Parallel()
 	anim := regexp.MustCompile(`\.(AnimatePose|AnimateTo|AnimateColor|Transition|ContentTransition)\(|ui\.Animation\{|SpringOptions`)
 	allowed := map[string]string{
-		"motion.go":    "",
-		"transfers.go": `AnimateTo("w", float32(frac*colProgress), baseAnim)`,
+		"motion.go": "",
 	}
 	files, err := filepath.Glob("*.go")
 	if err != nil {

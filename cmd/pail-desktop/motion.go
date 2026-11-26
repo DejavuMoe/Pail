@@ -20,8 +20,9 @@ import (
 //   - an overlay coming in (dialog and its scrim, command palette, select
 //     popup, menu, submenu, popover, toast) fades in where it rests (fadeIn);
 //     nothing scales or slides, and it goes at once when it closes;
-//   - the fill of a progress bar follows the progress, so that it does not
-//     jitter with every chunk;
+//   - the fill of a progress bar does not move over time: it snaps to each
+//     report (an ease that the next report interrupts never settles, and the
+//     window would draw for as long as a transfer runs);
 //   - a page travels to the section chosen from its list of sections
 //     (glideTo), so that where it went is seen.
 //
@@ -37,8 +38,8 @@ import (
 // wheel's notches is mygo's own (as browsers scroll), not an animation of the
 // app. TestOnlyTheTokenMoves keeps every other view from animating.
 
-// The three tokens. baseAnim brings an overlay in and carries the page and the
-// progress bar; moveAnim carries a mark, and starts faster because it answers
+// The three tokens. baseAnim brings an overlay in and carries the page;
+// moveAnim carries a mark, and starts faster because it answers
 // a click; tintAnim changes a colour.
 const (
 	durBase = 250 * time.Millisecond

@@ -53,10 +53,11 @@ func TestLanguageFromTheMoreMenu(t *testing.T) {
 func TestLanguageChoiceIsSavedAndRestored(t *testing.T) {
 	h := newHarness(t, "light")
 	var saved []string
-	h.a.langSave = func(tag string) { saved = append(saved, tag) }
+	h.a.langSave = func(tag string) error { saved = append(saved, tag); return nil }
 	h.a.setLanguage("zh-Hans")
 	h.a.setLanguage("zh-Hans") // no change, nothing saved
 	h.a.setLanguage("")
+	h.settle() // the writes happen off the UI thread, one at a time, in the order of the clicks
 	if len(saved) != 2 || saved[0] != "zh-Hans" || saved[1] != "" {
 		t.Fatalf("saved %q, want [zh-Hans \"\"]", saved)
 	}

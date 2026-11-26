@@ -56,6 +56,8 @@ type vaultUI struct {
 	backend     string          // cached Service.SecretBackend
 	state       core.VaultState // cached Service.VaultState
 	at          time.Time       // when the cache was read
+	polling     bool            // a pollVault is in flight
+	readGen     int             // moves when refreshVault reads: an older poll answer is stale
 	keyringDown bool            // a secret operation reported ErrKeyringUnavailable
 
 	create, unlock, change, toKeychain pwDialog
@@ -86,9 +88,35 @@ func (v *vaultUI) modal() bool {
 // refreshVault reads the backend and the lock state again. Cheap: no keychain.
 func (a *app) refreshVault() {
 	v := &a.vu
+	v.readGen++
 	v.backend = a.svc.SecretBackend()
 	v.state = a.svc.VaultState()
 	v.at = time.Now()
+}
+
+// pollVault is refreshVault off the UI thread, for the reads nobody waits for
+// (the once-a-second look at an idle auto-lock): VaultState stats vault.json
+// and takes the vault's lock, which a password change holds across Argon2id
+// and fsync. One call is in flight at a time, so a slow one is not stacked
+// on; an answer that a refreshVault (a click's own read) has overtaken is
+// dropped.
+func (a *app) pollVault() {
+	v := &a.vu
+	if v.polling {
+		return
+	}
+	v.polling, v.at = true, time.Now()
+	gen := v.readGen
+	a.bg(func() func() {
+		backend, state := a.svc.SecretBackend(), a.svc.VaultState()
+		return func() {
+			v.polling = false
+			if v.readGen != gen {
+				return
+			}
+			v.backend, v.state, v.at = backend, state, time.Now()
+		}
+	})
 }
 
 func (a *app) vaultMode() bool   { return a.vu.backend == core.SecretBackendVault }
@@ -105,7 +133,7 @@ func (a *app) vaultPoll() {
 			return
 		case <-t.C:
 			if a.svc.SecretBackend() == core.SecretBackendVault {
-				a.post(a.refreshVault)
+				a.post(a.pollVault)
 			}
 		}
 	}

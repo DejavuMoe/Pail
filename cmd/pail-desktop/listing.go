@@ -8,6 +8,7 @@ import (
 	"time"
 
 	core "github.com/DejavuMoe/Pail/internal/app"
+	"github.com/egoist/mygo/ui"
 )
 
 // reload lists the current scope again: what it shows may have changed, so the
@@ -77,6 +78,7 @@ func (a *app) listScope() {
 				} else {
 					a.raw = append(a.raw, page.Entries...)
 				}
+				a.rawGen++
 				a.rowsDirty = true
 				if page.NextToken == "" {
 					a.loading = false
@@ -132,10 +134,14 @@ const rebuildEvery = 250 * time.Millisecond
 // listing wait for the next rebuildEvery, and a timer brings that frame about
 // when no other event does.
 func (a *app) rowsDue() bool {
-	if !a.rowsDirty && a.sort == a.sortSeen {
+	if !a.rowsDirty && !a.sizeDirty && a.sort == a.sortSeen {
 		return false
 	}
-	if !a.loading || a.sort != a.sortSeen || a.rebuiltAt.IsZero() {
+	// Folder sizes that arrive while the rows are sorted by size are batched
+	// like the pages of a listing: each one moves a folder, but a sort per
+	// size would cost more than the moves are worth.
+	waits := a.loading || a.sizeDirty && !a.rowsDirty
+	if !waits || a.sort != a.sortSeen || a.rebuiltAt.IsZero() {
 		return true
 	}
 	wait := rebuildEvery - time.Since(a.rebuiltAt)
@@ -149,16 +155,50 @@ func (a *app) rowsDue() bool {
 	return false
 }
 
+// sortedCache is the whole listing in sort order with its names in lower case:
+// a filter keystroke only picks from it, and a sort, a listing or a folder
+// size that arrives is what makes it again.
+type sortedCache struct {
+	ok      bool
+	rawGen  uint64
+	rawN    int
+	sort    ui.SortOrder
+	sizeGen uint64
+	all     []Entry
+	lower   []string
+}
+
 // rebuildRows filters and sorts raw into rows: folders always first.
 func (a *app) rebuildRows() {
 	a.selSum.ok = false // which chosen rows show depends on the rows
+	sc := &a.vc.srt
+	if !(sc.ok && sc.rawGen == a.rawGen && sc.rawN == len(a.raw) && sc.sort == a.sort && sc.sizeGen == a.sizeGen) {
+		a.vc.builds.sorted++
+		all := slices.Clone(a.raw)
+		a.sortEntries(all)
+		lower := make([]string, len(all))
+		for i, e := range all {
+			lower[i] = strings.ToLower(e.Name)
+		}
+		*sc = sortedCache{ok: true, rawGen: a.rawGen, rawN: len(a.raw), sort: a.sort, sizeGen: a.sizeGen, all: all, lower: lower}
+	}
 	q := strings.ToLower(strings.TrimSpace(a.search))
-	rows := make([]Entry, 0, len(a.raw))
-	for _, e := range a.raw {
-		if q == "" || strings.Contains(strings.ToLower(e.Name), q) {
-			rows = append(rows, e)
+	var rows []Entry
+	if q == "" {
+		rows = slices.Clone(sc.all)
+	} else {
+		rows = make([]Entry, 0, len(sc.all))
+		for i, e := range sc.all {
+			if strings.Contains(sc.lower[i], q) {
+				rows = append(rows, e)
+			}
 		}
 	}
+	a.installRows(rows)
+}
+
+// sortEntries puts rows in the table's order.
+func (a *app) sortEntries(rows []Entry) {
 	desc := a.sort.Descending
 	col := a.sort.Column
 	slices.SortStableFunc(rows, func(x, y Entry) int {
@@ -202,13 +242,18 @@ func (a *app) rebuildRows() {
 		}
 		return d
 	})
+}
+
+// installRows makes rows what the table shows.
+func (a *app) installRows(rows []Entry) {
 	a.rows = rows
 	a.byKey = make(map[string]int, len(rows))
 	for i, e := range rows {
 		a.byKey[e.Key] = i
 	}
+	a.rowsGen++
 	a.sel.touch() // which chosen keys are listed, and their rows, may differ
-	a.rowsDirty = false
+	a.rowsDirty, a.sizeDirty = false, false
 	a.sortSeen = a.sort
 	a.rebuiltAt = time.Now()
 }

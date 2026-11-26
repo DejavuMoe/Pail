@@ -320,7 +320,7 @@ func TestMultipartListAndAbort(t *testing.T) {
 	h.mustHave("Abort 2 uploads?", bkt)
 	h.a.confirm.run()
 	h.a.confirm.open = false
-	h.waitFor("list emptied after the abort", func() bool { return m.loaded && len(m.items) == 0 && m.abortTask == "" })
+	h.waitFor("list emptied after the abort", func() bool { return m.loaded && len(m.items) == 0 })
 	h.settle()
 	h.mustHave("No incomplete uploads")
 	if !h.a.transfersOpen {
@@ -1207,9 +1207,10 @@ func TestMultipartAbortPartialUsesActualResults(t *testing.T) {
 	}
 	h.waitTask("Abort 2 multipart upload(s)", core.StatusPartiallyFailed)
 	h.settle()
-	h.a.tl.mp = mpState{abortTask: id, abortN: 2, bucket: loc.Bucket, loc: loc}
+	h.a.tl.mp = mpState{bucket: loc.Bucket, loc: loc}
+	h.a.tool = "multipart"
 	h.a.toasts = nil
-	h.a.mpCheckAbort()
+	h.a.follow(id, h.a.mpAborted(loc)) // the task has finished: reported at once
 	if len(h.a.toasts) != 1 {
 		t.Fatalf("completion toast count=%d", len(h.a.toasts))
 	}
@@ -1271,9 +1272,11 @@ func TestMultipartAbortReportsTerminalOutcome(t *testing.T) {
 			if status == core.StatusPartiallyFailed {
 				h.a.tasks[0].ItemsFailed = 1
 			}
-			h.a.tl.mp = mpState{abortTask: "abort", abortN: 2}
+			h.a.reindexTasks()
 			h.a.toasts = nil
-			h.a.mpCheckAbort()
+			// The abort task is followed like any queued action's: its finish is
+			// reported in the turn it arrives, tool open or not.
+			h.a.follow("abort", h.a.mpAborted(Scope{}))
 			if len(h.a.toasts) != 1 {
 				t.Fatalf("completion toast count=%d", len(h.a.toasts))
 			}
@@ -1291,7 +1294,7 @@ func TestMultipartAbortReportsTerminalOutcome(t *testing.T) {
 			} else if !strings.Contains(msg, "denied") || msg == "Aborted 2 uploads" {
 				t.Fatalf("failure reported as success: %q", msg)
 			}
-			if h.a.tl.mp.abortTask != "" {
+			if len(h.a.mg.follows) != 0 {
 				t.Fatal("finished abort still followed")
 			}
 		})

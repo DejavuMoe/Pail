@@ -57,20 +57,33 @@ func (a *app) autoTransfers() {
 	t.seen, t.prevOpen = n, a.transfersOpen
 }
 
-// taskbarProgress is what the taskbar button shows of the active (queued and
-// running) tasks: the share of their bytes done, or of their items when none
-// of them counts bytes, at steps of half a percent so that a transfer's ten
-// reports a second do not each reach the system. A task that has not
-// started yet adds no total, so the bar can step back when it starts. With
-// active tasks and nothing counted yet it is indeterminate; with none, empty.
-func taskbarProgress(ts []Task) mygo.ProgressBar {
+// taskbarProgress is what the taskbar button shows of the active (queued,
+// running and paused) work: the share of its bytes done, or of its files and
+// items when none of it counts bytes, at steps of half a percent so that a
+// transfer's ten reports a second do not each reach the system. A group of
+// files counts as a whole through its progress (finished files with their
+// whole size, queued ones with the size they were submitted with), so the
+// share does not fall back when a file starts or finishes; a folder still
+// being scanned can still grow its total. Tasks of a group are not counted
+// again; other active tasks count their own bytes, or items. With active work
+// and nothing counted yet it is indeterminate; with none, empty.
+func taskbarProgress(ts []Task, gs []core.GroupProgress) mygo.ProgressBar {
 	var bytes, bytesDone, items, itemsDone int64
-	active := false
+	active := len(gs) > 0
+	inGroup := make(map[string]bool, len(gs))
+	for _, g := range gs {
+		inGroup[g.ID] = true
+		bytes, bytesDone = bytes+g.BytesTotal, bytesDone+g.BytesDone
+		items, itemsDone = items+int64(g.Files), itemsDone+int64(g.FilesFinished())
+	}
 	for _, t := range ts {
 		if taskGroup(t) != 0 {
 			continue
 		}
 		active = true
+		if inGroup[t.GroupID] && t.GroupID != "" && (t.Kind != core.KindOther || isScanTask(t)) {
+			continue // the group's progress has it
+		}
 		bytes, bytesDone = bytes+t.BytesTotal, bytesDone+t.BytesDone
 		items, itemsDone = items+int64(t.Items), itemsDone+int64(t.ItemsDone)
 	}
@@ -91,7 +104,7 @@ func taskbarProgress(ts []Task) mygo.ProgressBar {
 
 // syncProgress runs after queued updates, even while the window is not drawing.
 func (a *app) syncProgress() {
-	if p := taskbarProgress(a.tasks); p != a.progressShown {
+	if p := a.tv.progress; p != a.progressShown {
 		a.progressShown = p
 		a.progressSet(p)
 	}
@@ -102,7 +115,7 @@ func (a *app) syncProgress() {
 // status bar's transfer counts are the way to the panel.
 func (a *app) transfersBar(c *ui.Context) {
 	k := tk(c)
-	n := countTasks(a.tasks)
+	n := a.tv.n
 	bar := ui.Row(c).Height(collapsedBar).Padding(0, 16).Gap(8).AlignItems(ui.Center).
 		BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Background(k.Background)
 	if bar.Hovered() {
@@ -132,6 +145,10 @@ const (
 	colBytes    = 128
 	colSpeed    = 112
 	rowGap      = 12
+	// groupRowH is a group's row: two lines of text in the number columns.
+	groupRowH = 44
+	// memberIndent moves a group's files in from the group's own row.
+	memberIndent = 24
 	// maxTaskRows bounds the rows built per frame; a folder upload can queue
 	// thousands of files.
 	maxTaskRows = 200
@@ -141,7 +158,7 @@ const (
 // filter tabs, then 32px rows.
 func (a *app) transfersPanel(c *ui.Context) {
 	k := tk(c)
-	n := countTasks(a.tasks)
+	n := a.tv.n
 	ui.Column(c).Fill().MinHeight(0).Background(k.Background).BorderWidth(1, 0, 0, 0).BorderColor(k.Border).Children(func() {
 		ui.Row(c).Height(32).Padding(0, 8, 0, 16).Gap(16).AlignItems(ui.Center).Shrink(0).Children(func() {
 			ui.Text(c, locales.TransfersTitle()).FontWeight(600).FontSize(sizeBody).TextColor(k.Text)
@@ -170,15 +187,10 @@ func (a *app) transfersPanel(c *ui.Context) {
 			})
 			ui.Spacer(c)
 			if a.transTab == 0 {
-				pausable, paused := false, false
-				for _, t := range a.tasks {
-					pausable = pausable || t.Pausable && (t.Status == core.StatusQueued || t.Status == core.StatusRunning)
-					paused = paused || t.Status == core.StatusPaused
-				}
-				if pausable {
+				if a.tv.pausable {
 					ghostButton(c, icons.Get("pause"), locales.TransfersPauseAll(), locales.TransfersPauseAll(), false).Height(24).OnClick(a.svc.PauseAll)
 				}
-				if paused {
+				if a.tv.paused {
 					ghostButton(c, icons.Get("play"), locales.TransfersResumeAll(), locales.TransfersResumeAll(), false).Height(24).OnClick(a.svc.ResumeAll)
 				}
 			}
@@ -189,29 +201,36 @@ func (a *app) transfersPanel(c *ui.Context) {
 			}
 		})
 		hairline(c)
-		// Newest first.
-		var shown []Task
-		more := 0
-		for i := len(a.tasks) - 1; i >= 0; i-- {
-			t := a.tasks[i]
-			if taskGroup(t) != a.transTab {
-				continue
+		// The Active tab is in queue order (running, then paused, then queued;
+		// oldest first within each), the finished tabs newest first; all of it
+		// was worked out when the tasks last changed (rebuildTransfers).
+		rows, more := a.tv.active, a.tv.activeMore
+		if a.transTab > 0 {
+			list := a.tv.finished[a.transTab-1]
+			more = a.tv.finishedMore[a.transTab-1]
+			rows = make([]trRow, len(list))
+			for i, t := range list {
+				rows[i] = trRow{kind: trTask, t: t}
 			}
-			if len(shown) == maxTaskRows {
-				more++
-				continue
-			}
-			shown = append(shown, t)
 		}
-		if len(shown) == 0 {
+		if len(rows) == 0 {
 			ui.Column(c).Grow(1).Center().Children(func() {
 				mutedText(c, []string{locales.TransfersEmptyActive(), locales.TransfersEmptyCompleted(), locales.TransfersEmptyFailed()}[a.transTab])
 			})
 			return
 		}
 		paneScroll(c, func() {
-			for _, t := range shown {
-				a.taskRow(c.Key(t.ID), t)
+			for _, r := range rows {
+				switch r.kind {
+				case trGroup:
+					a.groupRow(c.Key("g:"+r.g.ID), r.g)
+				case trQueued:
+					a.memberLine(c.Key("q:"+r.g.ID), locales.TransfersGroupQueued(groupInt(r.n)))
+				case trPaused:
+					a.memberLine(c.Key("p:"+r.g.ID), locales.TransfersGroupPaused(groupInt(r.n)))
+				default:
+					a.taskRow(c.Key(r.t.ID), r.t, r.member)
+				}
 			}
 			if more > 0 {
 				ui.Row(c).Height(32).Padding(0, 16).AlignItems(ui.Center).Children(func() {
@@ -223,10 +242,11 @@ func (a *app) transfersPanel(c *ui.Context) {
 }
 
 // progressBar is the fixed 160x4 bar; frac is 0..1, danger paints it Danger.
-// The fill's width eases to each new fraction over baseAnim (a task reports
-// about ten times a second, so the target moves on before the ease ends and
-// the fill just keeps going, instead of jumping by every chunk); its colour
-// changes at once.
+// The fill snaps to the whole pixel of each new fraction. It does not ease: a
+// task reports about ten times a second and the bar is 160 px wide, so a
+// report moves it by a pixel or two at most, while an ease that its next
+// target interrupts never settles, and the window would draw (and rebuild its
+// view) at the display's rate for as long as a transfer runs.
 func progressBar(c *ui.Context, frac float64, danger bool) {
 	k := tk(c)
 	fill := k.Accent
@@ -235,8 +255,7 @@ func progressBar(c *ui.Context, frac float64, danger bool) {
 	}
 	frac = max(0, min(1, frac))
 	ui.Box(c).Width(colProgress).Height(4).Radius(RadiusBar).Background(k.Border).Shrink(0).Clip().Children(func() {
-		bar := ui.Box(c).Height(4).Radius(RadiusBar)
-		bar.Width(bar.AnimateTo("w", float32(frac*colProgress), baseAnim)).Background(fill)
+		ui.Box(c).Height(4).Radius(RadiusBar).Width(float32(math.Round(frac * colProgress))).Background(fill)
 	})
 }
 
@@ -252,13 +271,25 @@ func taskProgress(t Task) (frac float64, text string) {
 	return 0, "—"
 }
 
-func (a *app) taskRow(c *ui.Context, t Task) {
+// taskRow is one task; member indents it under its group's row.
+func (a *app) taskRow(c *ui.Context, t Task, member bool) {
 	k := tk(c)
-	icon := map[core.Kind]string{core.KindUpload: "arrow-up", core.KindDownload: "arrow-down", core.KindOther: "layers"}[t.Kind]
-	direction := map[core.Kind]string{core.KindUpload: locales.TransfersUpload(), core.KindDownload: locales.TransfersDownload(), core.KindOther: locales.TransfersTask()}[t.Kind]
+	var icon, direction string
+	switch t.Kind {
+	case core.KindUpload:
+		icon, direction = "arrow-up", locales.TransfersUpload()
+	case core.KindDownload:
+		icon, direction = "arrow-down", locales.TransfersDownload()
+	default:
+		icon, direction = "layers", locales.TransfersTask()
+	}
 	// The right padding leaves the scroll bar its own gutter, clear of the
 	// cancel / retry buttons.
-	row := ui.Row(c).Height(32).Padding(0, scrollGutter+2, 0, 16).Gap(rowGap).AlignItems(ui.Center)
+	left := float32(16)
+	if member {
+		left += memberIndent
+	}
+	row := ui.Row(c).Height(32).Padding(0, scrollGutter+2, 0, left).Gap(rowGap).AlignItems(ui.Center)
 	if row.Hovered() {
 		row.Background(k.SurfaceHover)
 	}
@@ -300,9 +331,12 @@ func (a *app) taskRow(c *ui.Context, t Task) {
 			default:
 				progressBar(c, frac, false)
 				bytesCell(progress)
-				if t.BytesTotal > 0 {
+				switch {
+				case t.Phase != "":
+					speedCell(phaseLabel(t.Phase)) // no bytes move: say what happens instead
+				case t.BytesTotal > 0:
 					speedCell(formatSpeed(t.Speed) + " · " + formatETA(t.BytesDone, t.BytesTotal, t.Speed))
-				} else {
+				default:
 					speedCell("")
 				}
 			}
@@ -312,7 +346,7 @@ func (a *app) taskRow(c *ui.Context, t Task) {
 					a.resumeTask(t.ID)
 				}
 			case t.Pausable:
-				if iconButton(c, icons.Get("pause"), locales.TransfersPause()).Clicked() {
+				if iconButtonTip(c, icons.Get("pause"), locales.TransfersPause(), locales.TransfersPauseTip()).Clicked() {
 					a.pauseTask(t.ID)
 				}
 			default:
@@ -334,21 +368,115 @@ func (a *app) taskRow(c *ui.Context, t Task) {
 			ui.Box(c).Size(24, 24).Shrink(0)
 		default:
 			label := t.Err
+			// A cancel is the user's own doing, not an error: the recent
+			// operations list draws it with an x in TextMuted, so does this.
+			icon, col := "circle-alert", k.Danger
 			switch {
 			case t.Status == core.StatusCanceled:
-				label = locales.TransfersCanceled()
+				label, icon, col = locales.TransfersCanceled(), "x", k.TextMuted
 			case label == "" && t.Status == core.StatusPartiallyFailed:
 				label = locales.TransfersItemsFailed(fmt.Sprint(t.ItemsFailed), fmt.Sprint(t.Items))
 			case label == "":
 				label = locales.TransfersFailed()
 			}
 			ui.Row(c).Width(colProgress + colBytes + colSpeed + 2*rowGap).Shrink(0).Gap(6).AlignItems(ui.Center).Tooltip(label).Children(func() {
-				ui.Icon(c, icons.Get("circle-alert")).FontSize(14).TextColor(k.Danger).Shrink(0)
-				ui.Text(c, label).FontSize(sizeSecondary).TextColor(k.Danger).SingleLine().MinWidth(0)
+				ui.Icon(c, icons.Get(icon)).FontSize(14).TextColor(col).Shrink(0)
+				ui.Text(c, label).FontSize(sizeSecondary).TextColor(col).SingleLine().MinWidth(0)
 			})
 			if iconButton(c, icons.Get("rotate-cw"), locales.CommonRetry()).Clicked() {
 				a.retryTask(t.ID)
 			}
 		}
+	})
+}
+
+// groupRow is the summary row of a transfer of many files (or of one whose scan
+// is not done): its name and destination, the progress over all bytes known so
+// far, the files done of the files known, the summed speed, and the buttons
+// that pause, resume and cancel the whole group. Its running and paused files
+// follow as member rows.
+func (a *app) groupRow(c *ui.Context, g core.GroupProgress) {
+	k := tk(c)
+	icon, direction := "arrow-up", locales.TransfersUpload()
+	if g.Kind == core.KindDownload {
+		icon, direction = "arrow-down", locales.TransfersDownload()
+	}
+	title := groupTitle(g)
+	tip := title
+	if g.Detail != "" {
+		tip += "  " + g.Detail
+	}
+	row := ui.Row(c).Height(groupRowH).Padding(0, scrollGutter+2, 0, 16).Gap(rowGap).AlignItems(ui.Center)
+	if row.Hovered() {
+		row.Background(k.SurfaceHover)
+	}
+	// Two lines in the number columns: the files above the bytes, the speed
+	// above the hint that the total still grows.
+	cell := func(w float32, end bool, top, bottom string, topCol, bottomCol ui.Color) {
+		line := func(i int, s string, col ui.Color) {
+			t := ui.Text(c.Key(i), s).FontSize(sizeSecondary).TextColor(col).SingleLine().MinWidth(0)
+			if end {
+				t.TextAlign(ui.End)
+			}
+		}
+		ui.Column(c).Width(w).Shrink(0).Children(func() {
+			line(0, top, topCol)
+			line(1, bottom, bottomCol)
+		})
+	}
+	var frac float64
+	bytes := ""
+	if g.BytesTotal > 0 {
+		frac = float64(g.BytesDone) / float64(g.BytesTotal)
+		bytes = locales.TransfersBytesOf(humanBytes(g.BytesDone), humanBytes(g.BytesTotal))
+	}
+	speed, hint := "", ""
+	if g.Scanning && !g.Paused {
+		hint = locales.TransfersScanning()
+	}
+	if !g.Paused && g.FilesRunning > 0 && g.BytesTotal > 0 {
+		speed = formatSpeed(g.Speed) + " · " + formatETA(g.BytesDone, g.BytesTotal, g.Speed)
+	}
+	row.Children(func() {
+		ui.Icon(c, icons.Get(icon)).FontSize(14).TextColor(k.TextMuted).Shrink(0).Tooltip(direction)
+		ui.Row(c).Grow(1).Basis(0).MinWidth(120).Gap(8).AlignItems(ui.Center).Tooltip(tip).Children(func() {
+			ui.Text(c, title).FontSize(sizeBody).FontWeight(500).TextColor(k.Text).SingleLine().Shrink(0).MaxWidthPercent(70)
+			if g.Detail != "" {
+				ui.Text(c, g.Detail).FontSize(sizeSecondary).TextColor(k.TextMuted).SingleLine().MinWidth(0)
+			}
+		})
+		if g.Paused {
+			ui.Row(c).Width(colProgress).Shrink(0).Gap(6).AlignItems(ui.Center).Children(func() {
+				ui.Icon(c, icons.Get("pause")).FontSize(12).TextColor(k.TextMuted)
+				ui.Text(c, locales.TransfersPaused()).FontSize(sizeSecondary).TextColor(k.TextMuted)
+			})
+		} else {
+			progressBar(c, frac, false) // empty while nothing is known
+		}
+		cell(colBytes, true, groupFilesText(g), bytes, k.TextMuted, k.TextSubtle)
+		cell(colSpeed, false, speed, hint, k.TextSubtle, k.TextSubtle)
+		switch {
+		case g.Paused:
+			if iconButton(c, icons.Get("play"), locales.TransfersResumeGroup()).Clicked() {
+				a.resumeGroup(g.ID)
+			}
+		case g.Pausable:
+			if iconButtonTip(c, icons.Get("pause"), locales.TransfersPauseGroup(), locales.TransfersPauseGroupTip()).Clicked() {
+				a.pauseGroup(g.ID)
+			}
+		default:
+			ui.Box(c).Size(24, 24).Shrink(0)
+		}
+		if iconButton(c, icons.Get("x"), locales.TransfersCancelGroup()).Clicked() {
+			a.cancelGroup(g.ID)
+		}
+	})
+}
+
+// memberLine is a muted line under a group that counts files instead of
+// listing them: those waiting for their turn, or paused with the group.
+func (a *app) memberLine(c *ui.Context, text string) {
+	ui.Row(c).Height(24).Padding(0, scrollGutter+2, 0, 16+memberIndent+14+rowGap).AlignItems(ui.Center).Children(func() {
+		subtleText(c, text)
 	})
 }

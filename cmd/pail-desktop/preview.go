@@ -6,12 +6,19 @@ import (
 	"encoding/csv"
 	"encoding/json"
 	"fmt"
+	"image"
+	_ "image/gif"  // image.DecodeConfig
+	_ "image/jpeg" // image.DecodeConfig
+	_ "image/png"  // image.DecodeConfig
 	"io"
 	"math"
 	"path"
 	"strings"
 	"time"
 	"unicode/utf8"
+
+	_ "golang.org/x/image/bmp"  // image.DecodeConfig
+	_ "golang.org/x/image/webp" // image.DecodeConfig
 
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/icons"
 	"github.com/DejavuMoe/Pail/cmd/pail-desktop/locales"
@@ -35,14 +42,18 @@ const (
 const (
 	noneEmpty = iota + 1
 	noneLarge
+	noneHuge // an image with too many pixels
 )
 
 const (
 	previewLimit    = 1 << 20 // bytes fetched for text
 	previewHexLen   = 4 << 10 // bytes a hex dump shows
 	maxImagePreview = 8 << 20
-	previewCSVRows  = 200 // rows of a CSV table, header included
-	previewCSVCols  = 40
+	// maxImagePixels bounds what a small file can unpack to: a decoded picture
+	// is four bytes a pixel (160 MB here), however few bytes it was sent in.
+	maxImagePixels = 40_000_000
+	previewCSVRows = 200 // rows of a CSV table, header included
+	previewCSVCols = 40
 
 	zoomStep = 1.25 // a zoom button, or a notch of the wheel with Ctrl held
 	maxZoom  = 8    // times the size that fits the panel
@@ -200,6 +211,12 @@ func (a *app) ensurePreview() {
 	a.bg(func() func() {
 		defer cancel()
 		data, truncated, err := a.svc.Preview(ctx, loc, key, "", limit)
+		// Decoding, indenting, parsing and building the editor's buffer happen
+		// here; the UI thread only takes the finished result.
+		var res previewResult
+		if err == nil {
+			res = renderPreview(kind, key, ct, tsv, data, truncated, limit)
+		}
 		return func() {
 			if gen != a.prev.gen || a.prev.key != key {
 				return
@@ -208,30 +225,57 @@ func (a *app) ensurePreview() {
 				a.prev.state, a.prev.msg = previewFailed, humanError(err)
 				return
 			}
-			if kind == "image" {
-				bm, err := ui.DecodeBitmap(data)
-				if err != nil {
-					a.prev.state, a.prev.bad = previewFailed, true
-					return
-				}
-				a.prev.img = bm
-				a.prev.w, a.prev.h = bm.Size()
+			switch {
+			case res.bad:
+				a.prev.state, a.prev.bad = previewFailed, true
+			case res.huge:
+				a.prev.state, a.prev.none = previewNone, noneHuge
+			case res.img != nil:
+				a.prev.img = res.img
+				a.prev.w, a.prev.h = res.img.Size()
 				a.prev.state = previewReady
-				return
+			default:
+				b := res.body
+				a.prev.kind, a.prev.text, a.prev.note, a.prev.rows = b.kind, b.text, b.note, b.rows
+				a.prev.colW, a.prev.ed = res.colW, res.ed
+				a.prev.state = previewReady
 			}
-			b := buildPreview(kind, tsv, data, truncated, limit)
-			a.prev.kind, a.prev.text, a.prev.note, a.prev.rows = b.kind, b.text, b.note, b.rows
-			a.prev.colW = csvWidths(b.rows)
-			if b.kind != "csv" {
-				lang := ""
-				if b.kind != "hex" {
-					lang = previewLanguage(b.kind, key, ct)
-				}
-				a.prev.ed = newPreviewEditor(b.text, lang, locales.PreviewLabelOf(baseName(key)))
-			}
-			a.prev.state = previewReady
 		}
 	})
+}
+
+// previewResult is a fetched object made ready to show, off the UI thread.
+type previewResult struct {
+	bad, huge bool
+	img       *ui.Bitmap // image
+	body      previewBody
+	colW      []float32
+	ed        *editor.State // every kind but csv
+}
+
+// renderPreview does the work of showing data: decode a picture (refusing one
+// with more than maxImagePixels), or format, parse and load it in an editor.
+func renderPreview(kind, key, contentType string, tsv bool, data []byte, truncated bool, limit int64) previewResult {
+	if kind == "image" {
+		if cfg, _, err := image.DecodeConfig(bytes.NewReader(data)); err == nil && int64(cfg.Width)*int64(cfg.Height) > maxImagePixels {
+			return previewResult{huge: true}
+		}
+		bm, err := ui.DecodeBitmap(data)
+		if err != nil {
+			return previewResult{bad: true}
+		}
+		return previewResult{img: bm}
+	}
+	b := buildPreview(kind, tsv, data, truncated, limit)
+	res := previewResult{body: b, colW: csvWidths(b.rows)}
+	if b.kind != "csv" {
+		lang := ""
+		if b.kind != "hex" {
+			lang = previewLanguage(b.kind, key, contentType)
+		}
+		res.ed = newPreviewEditor(b.text, lang, locales.PreviewLabelOf(baseName(key)))
+	}
+	return res
 }
 
 // previewBody is a fetched object ready to show.
@@ -451,8 +495,11 @@ func (a *app) previewTab(c *ui.Context, e Entry) {
 		emptyBlock(c, "circle-alert", locales.PreviewFailedTitle(), msg, 200)
 	default:
 		msg := locales.PreviewEmpty()
-		if p.none == noneLarge {
+		switch p.none {
+		case noneLarge:
 			msg = locales.PreviewTooLarge(humanBytes(p.limit))
+		case noneHuge:
+			msg = locales.PreviewTooManyPixels(fmt.Sprint(maxImagePixels / 1_000_000))
 		}
 		emptyBlock(c, "eye", msg, "", 200)
 	}

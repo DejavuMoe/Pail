@@ -51,12 +51,14 @@ type trayUI struct {
 func (a *app) windowHidden() bool { return a.tray.visible != nil && !a.tray.visible() }
 
 // closeHides reports whether closing the window hides it in the tray rather
-// than quitting: the icon shows and, with quitIdle, a transfer still runs.
+// than quitting: the icon shows and, with quitIdle, a transfer is queued or
+// running. Paused transfers do not keep Pail: they are saved at quit.
 func (a *app) closeHides() bool {
 	if !a.tray.on {
 		return false
 	}
-	return !a.tray.quitIdle || countTasks(a.tasks)[0] > 0
+	_, busy := busyTasks(a.tasks)
+	return !a.tray.quitIdle || busy
 }
 
 // setQuitWhenIdle saves whether closing an idle window quits.
@@ -84,12 +86,26 @@ func (a *app) setTrayShown(on bool) {
 // trayStatus is the transfers' state as the icon says it: how many run and,
 // when it is known, how far they are (the taskbar's progress, so the two
 // agree).
-func trayStatus(ts []Task) string {
-	n := countTasks(ts)[0]
+func trayStatus(ts []Task, gs []core.GroupProgress) string {
+	var n int
+	for _, t := range ts {
+		if t.Status == core.StatusQueued || t.Status == core.StatusRunning {
+			if t.Kind == core.KindUpload || t.Kind == core.KindDownload {
+				n++
+			}
+		}
+	}
+	return trayStatusOf(n, taskbarProgress(ts, gs))
+}
+
+// trayStatusOf words n queued or running files (the status bar's up and down
+// counts together; KindOther tasks are no transfers and are not counted) and
+// their progress.
+func trayStatusOf(n int, p mygo.ProgressBar) string {
 	if n == 0 {
 		return locales.TrayIdle()
 	}
-	if p := taskbarProgress(ts); p.State == mygo.ProgressNormal {
+	if p.State == mygo.ProgressNormal {
 		return locales.TrayActive(n, fmt.Sprint(int(math.Floor(p.Value*100))))
 	}
 	return locales.TrayActiveBusy(n)
@@ -103,7 +119,7 @@ func (a *app) syncTray() {
 		return
 	}
 	enabled := a.enabled(a.cmd("upload.files"))
-	if s := trayStatus(a.tasks); s != a.tray.status || enabled != a.tray.uploadEnabled {
+	if s := trayStatusOf(a.tv.up+a.tv.down, a.tv.progress); s != a.tray.status || enabled != a.tray.uploadEnabled {
 		a.tray.status, a.tray.uploadEnabled = s, enabled
 		a.tray.refresh(s)
 	}
@@ -191,7 +207,7 @@ func (t *trayIcon) buildMenu() *mygo.Menu {
 	return mygo.NewMenu([]*mygo.MenuItem{
 		{ID: "tray.open", Label: locales.TrayOpen(), Click: func(*mygo.MenuItem, *mygo.Window) { t.open() }},
 		mygo.Separator(),
-		{ID: "tray.status", Label: trayStatus(a.tasks), Disabled: true},
+		{ID: "tray.status", Label: trayStatusOf(a.tv.up+a.tv.down, a.tv.progress), Disabled: true},
 		{ID: "tray.transfers", Label: locales.TrayShowTransfers(), Click: func(*mygo.MenuItem, *mygo.Window) {
 			a.transfersOpen = true
 			t.open()
@@ -222,7 +238,7 @@ func (t *trayIcon) refresh(status string) {
 	}
 	t.tray.SetToolTip(locales.TrayTooltip(status))
 	if runtime.GOOS == "darwin" {
-		t.tray.SetTitle(trayTitle(taskbarProgress(t.a.tasks)))
+		t.tray.SetTitle(trayTitle(t.a.tv.progress))
 	}
 }
 
