@@ -36,7 +36,7 @@ func (s *Service) bkStreamCopy(ctx context.Context, src, dst *storage.Client, p 
 	if o.VersionID != "" {
 		in.VersionId = aws.String(o.VersionID)
 	}
-	out, err := src.S3().GetObject(ctx, in)
+	out, err := src.S3().GetObject(storage.TransferContext(ctx), in)
 	if err != nil {
 		return err
 	}

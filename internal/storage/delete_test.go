@@ -237,6 +237,7 @@ func TestDeleteObjectsCancellation(t *testing.T) {
 // A chunk the service refused with a 4xx is definitively failed (nothing was
 // deleted); later chunks are still attempted when not cancelled.
 func TestDeleteObjectsChunkErrorContinues(t *testing.T) {
+	var refusals atomic.Int32
 	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
 		var body struct {
 			Objects []xmlItem `xml:"Object"`
@@ -244,6 +245,7 @@ func TestDeleteObjectsChunkErrorContinues(t *testing.T) {
 		_ = xml.NewDecoder(r.Body).Decode(&body)
 		// The first batch is refused, every time it comes (see "during").
 		if len(body.Objects) > 0 && body.Objects[0].VersionID == "v-0000" {
+			refusals.Add(1)
 			w.WriteHeader(403)
 			fmt.Fprint(w, `<Error><Code>AccessDenied</Code><Message>no</Message></Error>`)
 			return
@@ -256,6 +258,15 @@ func TestDeleteObjectsChunkErrorContinues(t *testing.T) {
 		_ = xml.NewEncoder(w).Encode(resp)
 	})
 	res := c.DeleteObjects(context.Background(), "b", ids(1500))
+	if refusals.Load() > 1 {
+		// A broken connection made the SDK resend the batch (see testClient):
+		// the refusal then answers a resend, which proves nothing.
+		assertCounts(t, res, 500, 0, 1000, 0)
+		if res[0].Code != "RequestSentMoreThanOnce" {
+			t.Fatalf("%+v", res[0])
+		}
+		return
+	}
 	assertCounts(t, res, 500, 1000, 0, 0)
 	if res[0].Status != DeleteFailed || res[0].Code != "AccessDenied" || !strings.Contains(res[0].Message, "no") {
 		t.Fatalf("%+v", res[0])
@@ -364,17 +375,23 @@ func TestFxDeleteObjectsWholeRequestRefusal(t *testing.T) {
 		{"503", 503, "SlowDown", DeleteUnknown},
 	} {
 		t.Run(tc.name, func(t *testing.T) {
+			var calls atomic.Int32
 			c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+				calls.Add(1)
 				_, _ = io.Copy(io.Discard, r.Body)
 				w.WriteHeader(tc.status)
 				fmt.Fprintf(w, `<Error><Code>%s</Code><Message>injected</Message></Error>`, tc.code)
 			})
 			res := c.DeleteObjects(context.Background(), "b", ids(3))
+			want := tc.want
+			if want == DeleteFailed && calls.Load() > 1 {
+				want = DeleteUnknown // a broken connection made the SDK resend (see testClient)
+			}
 			for i, r := range res {
-				if r.Status != tc.want {
+				if r.Status != want {
 					t.Fatalf("item %d: %+v, want %s", i, r, tc.want)
 				}
-				if tc.want == DeleteFailed && (r.Code != tc.code || !strings.Contains(r.Message, "injected")) {
+				if want == DeleteFailed && (r.Code != tc.code || !strings.Contains(r.Message, "injected")) {
 					t.Fatalf("item %d lost the service's code/message: %+v", i, r)
 				}
 			}
@@ -388,4 +405,49 @@ func TestFxDeleteObjectsTransportErrorIsUnknown(t *testing.T) {
 	})
 	res := c.DeleteObjects(context.Background(), "b", ids(2))
 	assertCounts(t, res, 0, 0, 2, 0)
+}
+
+// A 4xx proves nothing was deleted only when it answers the first attempt.
+// Here the service executes the first request, the connection breaks before
+// the answer arrives, the SDK resends, and the resend is refused (as with an
+// expired session token): the objects may be gone, so the outcome is unknown.
+func TestDeleteObjectsRefusedResendIsUnknown(t *testing.T) {
+	var calls atomic.Int32
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		_, _ = io.Copy(io.Discard, r.Body)
+		if calls.Add(1) == 1 {
+			panic(http.ErrAbortHandler) // executed, but the answer is lost
+		}
+		w.WriteHeader(403)
+		fmt.Fprint(w, `<Error><Code>ExpiredToken</Code><Message>The provided token has expired.</Message></Error>`)
+	})
+	res := c.DeleteObjects(context.Background(), "b", ids(4))
+	assertCounts(t, res, 0, 0, 4, 0)
+	for i, r := range res {
+		if r.Code != "RequestSentMoreThanOnce" || !strings.Contains(r.Message, "sent 2 times") || !strings.Contains(r.Message, "ExpiredToken") {
+			t.Fatalf("item %d: %+v", i, r)
+		}
+	}
+	if calls.Load() != 2 {
+		t.Fatalf("attempts=%d, want 2", calls.Load())
+	}
+}
+
+// A 4xx answering the only attempt still means nothing was deleted.
+func TestDeleteObjectsSingleRefusalIsFailed(t *testing.T) {
+	var calls atomic.Int32
+	c := testClient(t, func(w http.ResponseWriter, r *http.Request) {
+		calls.Add(1)
+		_, _ = io.Copy(io.Discard, r.Body)
+		w.WriteHeader(403)
+		fmt.Fprint(w, `<Error><Code>AccessDenied</Code><Message>denied</Message></Error>`)
+	})
+	res := c.DeleteObjects(context.Background(), "b", ids(4))
+	if calls.Load() != 1 {
+		t.Skipf("the connection broke and the SDK resent the request (%d attempts)", calls.Load())
+	}
+	assertCounts(t, res, 0, 4, 0, 0)
+	if res[0].Code != "AccessDenied" || res[0].Message != "denied" {
+		t.Fatalf("%+v", res[0])
+	}
 }

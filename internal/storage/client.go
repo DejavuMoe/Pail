@@ -122,7 +122,8 @@ func proxyFunc(proxyURL string) func(*http.Request) (*url.URL, error) {
 
 // NewHTTPClient returns a client with connection-level timeouts but no overall
 // request timeout, so multi-gigabyte transfers are never cut off. proxyURL is
-// Config.ProxyURL. Bodies follow the limits of SetBandwidth.
+// Config.ProxyURL. Object transfers (TransferContext) follow the limits of
+// SetBandwidth and fail an attempt whose body stops moving for a minute.
 func NewHTTPClient(insecureSkipVerify bool, proxyURL string) *http.Client {
 	return &http.Client{Transport: throttledTransport{base: &http.Transport{
 		Proxy:                 proxyFunc(proxyURL),
@@ -250,7 +251,7 @@ func New(ctx context.Context, cfg Config) (*Client, error) {
 		if cfg.Endpoint != "" {
 			o.BaseEndpoint = aws.String(strings.TrimRight(cfg.Endpoint, "/"))
 		}
-		o.APIOptions = append(o.APIOptions, leaveAcceptEncodingUnsigned)
+		o.APIOptions = append(o.APIOptions, leaveAcceptEncodingUnsigned, addTransferMark)
 		if cfg.RequesterPays {
 			o.APIOptions = append(o.APIOptions, smithyhttp.AddHeaderValue("x-amz-request-payer", "requester"))
 		}

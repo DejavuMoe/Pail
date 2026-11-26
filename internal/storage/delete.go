@@ -4,6 +4,8 @@ import (
 	"context"
 	"errors"
 	"fmt"
+	"net/http"
+	"sync/atomic"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
 	awshttp "github.com/aws/aws-sdk-go-v2/aws/transport/http"
@@ -39,8 +41,9 @@ const deleteChunk = 1000
 // idempotent delete is possible; acknowledgements that are missing, repeated or
 // unrequested therefore yield DeleteUnknown, never DeleteSucceeded. After a
 // context cancellation the remaining chunks are DeleteUnprocessed. A chunk the
-// service refused with a 4xx answer is DeleteFailed (nothing was deleted); a
-// transport error, timeout or 5xx leaves it DeleteUnknown. Neither stops later
+// service refused with a 4xx answer to its first and only HTTP attempt is
+// DeleteFailed (nothing was deleted); a 4xx answering a resend, a transport
+// error, timeout or 5xx leaves it DeleteUnknown. Neither stops later
 // chunks unless the context is done.
 func (c *Client) DeleteObjects(ctx context.Context, bucket string, ids []ObjectID) []DeleteResult {
 	res := make([]DeleteResult, len(ids))
@@ -78,13 +81,21 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket string, ids []ObjectI
 		if len(objs) == 0 {
 			continue
 		}
-		out, err := c.sdk.DeleteObjects(ctx, &s3.DeleteObjectsInput{Bucket: aws.String(bucket), Delete: &types.Delete{Objects: objs, Quiet: aws.Bool(false)}})
+		attempts := &attemptCounter{}
+		out, err := c.sdk.DeleteObjects(ctx, &s3.DeleteObjectsInput{Bucket: aws.String(bucket), Delete: &types.Delete{Objects: objs, Quiet: aws.Bool(false)}}, attempts.wrap)
 		if err != nil {
 			status, code, msg := DeleteUnknown, "RequestOutcomeUnknown", err.Error()
 			if refused, rcode, rmsg := definitiveRefusal(err); refused {
-				// The service answered the whole request with a 4xx: it was
-				// not executed, nothing was deleted.
-				status, code, msg = DeleteFailed, rcode, rmsg
+				if n := attempts.n.Load(); n > 1 {
+					// The refusal answers a resend; an earlier attempt may
+					// have been executed before its answer was lost.
+					code = "RequestSentMoreThanOnce"
+					msg = fmt.Sprintf("the request was sent %d times and its outcome is not known: the last attempt was refused (%s: %s), an earlier one may have deleted objects; inspect before retrying", n, rcode, rmsg)
+				} else {
+					// The service answered the only attempt with a 4xx: the
+					// request was not executed, nothing was deleted.
+					status, code, msg = DeleteFailed, rcode, rmsg
+				}
 			}
 			for _, idx := range index {
 				for _, i := range idx {
@@ -100,9 +111,13 @@ func (c *Client) DeleteObjects(ctx context.Context, bucket string, ids []ObjectI
 }
 
 // definitiveRefusal reports whether err is the service's own 4xx answer to a
-// DeleteObjects request (403, 400 MalformedXML, 404 NoSuchBucket, ...), which
-// proves that nothing was deleted. Transport errors, timeouts (408) and 5xx
-// answers are not definitive: the request may have been executed.
+// DeleteObjects request (403, 400 MalformedXML, 404 NoSuchBucket, ...). It
+// proves that nothing was deleted only when it answers the first HTTP attempt
+// of the call: the SDK resends after a lost answer, and a refusal of the resend
+// (an expired token, RequestTimeTooSkewed, 429) says nothing about the earlier
+// attempt; the caller checks the attempt count. Transport errors, timeouts
+// (408) and 5xx answers are never definitive: the request may have been
+// executed.
 func definitiveRefusal(err error) (bool, string, string) {
 	var re *awshttp.ResponseError
 	if !errors.As(err, &re) {
@@ -121,6 +136,24 @@ func definitiveRefusal(err error) (bool, string, string) {
 		code = fmt.Sprintf("HTTP%d", status)
 	}
 	return true, code, msg
+}
+
+// attemptCounter counts the HTTP attempts of one SDK call (a per-call client
+// option, so it sees every attempt the retryer makes).
+type attemptCounter struct{ n atomic.Int32 }
+
+func (a *attemptCounter) wrap(o *s3.Options) {
+	o.HTTPClient = &countingClient{base: o.HTTPClient, n: &a.n}
+}
+
+type countingClient struct {
+	base s3.HTTPClient
+	n    *atomic.Int32
+}
+
+func (c *countingClient) Do(req *http.Request) (*http.Response, error) {
+	c.n.Add(1)
+	return c.base.Do(req)
 }
 
 func setAll(rs []DeleteResult, st DeleteStatus, code, msg string) {

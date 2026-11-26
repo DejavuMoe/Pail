@@ -196,7 +196,7 @@ func syRemoteBodySHA(ctx context.Context, c *storage.Client, bucket, key, etag s
 	if etag == "" {
 		return "", invalid("Checksum", "the object has no ETag to guard the read")
 	}
-	out, err := c.S3().GetObject(ctx, &s3.GetObjectInput{Bucket: aws.String(bucket), Key: aws.String(key), IfMatch: aws.String(etag)})
+	out, err := c.S3().GetObject(storage.TransferContext(ctx), &s3.GetObjectInput{Bucket: aws.String(bucket), Key: aws.String(key), IfMatch: aws.String(etag)})
 	if err != nil {
 		return "", err
 	}
