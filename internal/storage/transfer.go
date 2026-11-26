@@ -6,6 +6,7 @@ import (
 	"errors"
 	"fmt"
 	"io"
+	"sync"
 	"sync/atomic"
 
 	"github.com/aws/aws-sdk-go-v2/aws"
@@ -46,6 +47,9 @@ type counter struct {
 	total, last atomic.Int64
 	size        int64
 	report      func(int64)
+	// mu orders the reports: the value is chosen and handed to report in one
+	// step, so that two parts cannot deliver theirs in the wrong order.
+	mu sync.Mutex
 }
 
 func (c *counter) add(n int64) {
@@ -56,15 +60,14 @@ func (c *counter) add(n int64) {
 	if c.size > 0 && t > c.size {
 		t = c.size
 	}
-	for {
-		prev := c.last.Load()
-		if t <= prev {
-			return
-		}
-		if c.last.CompareAndSwap(prev, t) {
-			c.report(t)
-			return
-		}
+	if t <= c.last.Load() {
+		return
+	}
+	c.mu.Lock()
+	defer c.mu.Unlock()
+	if t > c.last.Load() {
+		c.last.Store(t)
+		c.report(t)
 	}
 }
 
