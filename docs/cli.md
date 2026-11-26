@@ -292,7 +292,7 @@ These commands ask in the same way: `account rm`, `sync job rm`, `multipart abor
 | 1 | Failure: an error, a failed task, every item failed, the confirmation was declined, or the `--timeout` ran out. |
 | 2 | Usage error or invalid input; confirmation required but no terminal and no `--yes`; or the encrypted vault is locked and the password cannot be asked for (no terminal and no `--vault-password-stdin`). |
 | 3 | Partial failure: some items succeeded and others failed, have an unknown outcome (not retried) or were not processed. |
-| 130 | Interrupted with Ctrl+C. Running tasks are cancelled and get up to 10 s to stop. Unfinished downloads are written to temporary files that are removed. |
+| 130 | Interrupted with Ctrl+C. Running tasks are cancelled and get up to 10 s to stop. Unfinished downloads are written to temporary files that are removed. A second Ctrl+C exits at once, without this cleanup and with the exit code of the system. |
 
 Errors name their kind in words: not found, access denied, not supported by this provider, conflict, network error, canceled, invalid input, locked. A wrong vault password is reported as access denied (exit 1).
 

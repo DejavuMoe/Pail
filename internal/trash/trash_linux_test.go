@@ -156,3 +156,76 @@ func TestLinuxTopDirIsAncestorOnSameDevice(t *testing.T) {
 		t.Fatal("top dir on another device")
 	}
 }
+
+func TestLinuxVolumeTrashRejectsUnsafeDirs(t *testing.T) {
+	uid := os.Getuid()
+	name := ".Trash-" + strconv.Itoa(uid)
+
+	t.Run("created 0700", func(t *testing.T) {
+		top := t.TempDir()
+		dir, err := volumeTrash(top)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if st, err := os.Lstat(dir); err != nil || st.Mode().Perm() != 0o700 {
+			t.Fatalf("dir = %v, %v", st, err)
+		}
+	})
+	t.Run("symlink", func(t *testing.T) {
+		top := t.TempDir()
+		victim := t.TempDir()
+		if err := os.Symlink(victim, filepath.Join(top, name)); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := volumeTrash(top); err == nil {
+			t.Fatal("a symlinked trash directory was accepted")
+		}
+		if ents, _ := os.ReadDir(victim); len(ents) != 0 {
+			t.Fatalf("symlink target was written to: %v", ents)
+		}
+	})
+	t.Run("not a directory", func(t *testing.T) {
+		top := t.TempDir()
+		if err := os.WriteFile(filepath.Join(top, name), nil, 0o600); err != nil {
+			t.Fatal(err)
+		}
+		if _, err := volumeTrash(top); err == nil {
+			t.Fatal("a file was accepted as trash directory")
+		}
+	})
+	t.Run("foreign owner", func(t *testing.T) {
+		// Simulated through the uid seam: the directory is ours, the
+		// expected owner is someone else (chown needs root).
+		top := t.TempDir()
+		if err := os.Mkdir(filepath.Join(top, name), 0o700); err != nil {
+			t.Fatal(err)
+		}
+		old := currentUID
+		currentUID = func() int { return uid + 1 }
+		defer func() { currentUID = old }()
+		if _, err := volumeTrash(top); err == nil {
+			t.Fatal("a directory of another owner was accepted")
+		}
+	})
+	t.Run("shared .Trash with symlinked uid directory", func(t *testing.T) {
+		top := t.TempDir()
+		shared := filepath.Join(top, ".Trash")
+		if err := os.Mkdir(shared, 0o777); err != nil {
+			t.Fatal(err)
+		}
+		if err := os.Chmod(shared, 0o777|os.ModeSticky); err != nil {
+			t.Fatal(err)
+		}
+		victim := t.TempDir()
+		if err := os.Symlink(victim, filepath.Join(shared, strconv.Itoa(uid))); err != nil {
+			t.Fatal(err)
+		}
+		dir, err := volumeTrash(top)
+		if err != nil {
+			t.Fatal(err)
+		}
+		if filepath.Base(dir) != name {
+			t.Fatalf("dir = %s, want the per-user .Trash-uid fallback", dir)
+		}
+	})
+}

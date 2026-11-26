@@ -159,8 +159,8 @@ func run(ctx context.Context, args []string, io IO) int {
 	c.enc.SetEscapeHTML(false)
 	err := c.dispatch(ctx, args)
 	if c.svc != nil {
-		sctx, cancel := context.WithTimeout(context.Background(), 10*time.Second)
-		_ = c.svc.Shutdown(sctx)
+		sctx, cancel := context.WithTimeout(context.Background(), shutdownTimeout)
+		c.warnShutdown(c.svc.Shutdown(sctx))
 		cancel()
 	}
 	code := c.report(err)
@@ -171,6 +171,19 @@ func run(ctx context.Context, args []string, io IO) int {
 		}
 	}
 	return code
+}
+
+// shutdownTimeout is how long run waits for running tasks to finish after the
+// command ended or was interrupted.
+var shutdownTimeout = 10 * time.Second
+
+// warnShutdown tells the user when cleanup did not finish: a multipart upload
+// that was still running cannot be aborted by then and stays on the service.
+func (c *cli) warnShutdown(err error) {
+	if err == nil {
+		return
+	}
+	fmt.Fprintf(c.io.Stderr, "pail: warning: cleanup did not finish (%v); unfinished multipart uploads may remain on the service: list them with `pail multipart ls s3://BUCKET` and remove them with `pail multipart abort s3://BUCKET`\n", err)
 }
 
 func (c *cli) report(err error) int {

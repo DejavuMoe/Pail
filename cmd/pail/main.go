@@ -6,6 +6,7 @@ package main
 import (
 	"context"
 	"fmt"
+	"io"
 	"os"
 	"os/signal"
 	"syscall"
@@ -19,8 +20,10 @@ import (
 func main() {
 	// What an update could not remove while the old version ran.
 	selfupdate.CleanLeftovers()
-	ctx, stop := signal.NotifyContext(context.Background(), os.Interrupt, syscall.SIGTERM)
-	defer stop()
+	ctx, cancel := context.WithCancel(context.Background())
+	defer cancel()
+	sigs := make(chan os.Signal, 1)
+	signal.Notify(sigs, os.Interrupt, syscall.SIGTERM)
 	io := IO{
 		Stdin:     os.Stdin,
 		Stdout:    os.Stdout,
@@ -31,9 +34,26 @@ func main() {
 	if term.IsTerminal(int(os.Stdin.Fd())) {
 		io.ReadPassword = readPassword
 	}
+	go onInterrupt(sigs, cancel, func() { signal.Stop(sigs) }, os.Stderr, io.StderrTTY)
 	code := run(ctx, os.Args[1:], io)
-	stop()
+	signal.Stop(sigs)
+	cancel()
 	os.Exit(code)
+}
+
+// onInterrupt handles the first interrupt: it cancels the command, restores
+// the default signal handling (so that a second Ctrl-C ends the process at
+// once) and says so on w. Later signals are not read.
+func onInterrupt(sigs <-chan os.Signal, cancel context.CancelFunc, restore func(), w io.Writer, tty bool) {
+	if _, ok := <-sigs; !ok {
+		return
+	}
+	restore()
+	if tty {
+		fmt.Fprint(w, "\r\x1b[K") // the live progress line
+	}
+	fmt.Fprintln(w, "pail: interrupted; canceling and cleaning up. Press Ctrl-C again to exit at once without cleanup.")
+	cancel()
 }
 
 func isTerminal(f *os.File) bool {

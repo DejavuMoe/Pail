@@ -807,6 +807,9 @@ func TestInterruptCancelsAndLeavesNoPartialFiles(t *testing.T) {
 	if !strings.Contains(r.errOut, "interrupted") {
 		t.Fatalf("stderr: %s", r.errOut)
 	}
+	if strings.Contains(r.errOut, "cleanup did not finish") {
+		t.Fatalf("an orderly cancel warned about cleanup: %s", r.errOut)
+	}
 }
 
 func TestMvAndS3CpUseSettingsConflictDefault(t *testing.T) {

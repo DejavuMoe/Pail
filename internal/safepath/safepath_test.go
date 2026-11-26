@@ -29,6 +29,8 @@ func TestValidKeyTable(t *testing.T) {
 		{`a\b`, true, false}, {`..\x`, true, false}, {"CON", true, false}, {"con", true, false}, {"con.txt", true, false},
 		{"dir/NUL", true, false}, {"dir/nul.tar.gz", true, false}, {"PRN.x", true, false}, {"AUX", true, false},
 		{"COM1", true, false}, {"com9.txt", true, false}, {"LPT1", true, false}, {"lpt9.log", true, false},
+		{"COM¹", true, false}, {"com².txt", true, false}, {"dir/LPT³", true, false}, {"lpt¹.log", true, false},
+		{"COM¹", false, true}, {"COM¹x", true, true},
 		{"CON .txt", true, false}, {"CONIN$", true, false}, {"CONOUT$.x", true, false},
 		{"name.", true, false}, {"name ", true, false}, {"dir /x", true, false}, {"a/b.", true, false},
 		{"a<b", true, false}, {"a>b", true, false}, {"a:b", true, false}, {`a"b`, true, false}, {"a|b", true, false},

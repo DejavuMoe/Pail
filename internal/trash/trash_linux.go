@@ -94,19 +94,45 @@ func topDir(path string, dev uint64) (string, error) {
 // volumeTrash returns the usable trash directory for the file system whose top
 // directory is top, creating it when needed.
 func volumeTrash(top string) (string, error) {
-	uid := fmt.Sprint(os.Getuid())
+	uid := currentUID()
 	shared := filepath.Join(top, ".Trash")
 	if st, err := os.Lstat(shared); err == nil && st.IsDir() && st.Mode()&os.ModeSticky != 0 && st.Mode()&os.ModeSymlink == 0 {
-		dir := filepath.Join(shared, uid)
-		if err := os.MkdirAll(dir, 0o700); err == nil {
+		dir := filepath.Join(shared, fmt.Sprint(uid))
+		if err := ownDir(dir, uid); err == nil {
 			return dir, nil
 		}
 	}
-	dir := filepath.Join(top, ".Trash-"+uid)
-	if err := os.MkdirAll(dir, 0o700); err != nil {
+	dir := filepath.Join(top, ".Trash-"+fmt.Sprint(uid))
+	if err := ownDir(dir, uid); err != nil {
 		return "", fmt.Errorf("no usable trash directory on the file system of %s: %w", top, err)
 	}
 	return dir, nil
+}
+
+// currentUID is a seam for tests: the owner a trash directory must have.
+var currentUID = os.Getuid
+
+// ownDir makes sure dir is a real directory (not a symlink) owned by uid,
+// creating it with mode 0700 when missing. On a shared volume another user
+// may have pre-created it, which would hand them the trashed files.
+func ownDir(dir string, uid int) error {
+	st, err := os.Lstat(dir)
+	if errors.Is(err, os.ErrNotExist) {
+		if err := os.Mkdir(dir, 0o700); err != nil && !errors.Is(err, os.ErrExist) {
+			return err
+		}
+		st, err = os.Lstat(dir) // re-check: it may have been created by someone else meanwhile
+	}
+	if err != nil {
+		return err
+	}
+	if !st.IsDir() || st.Mode()&os.ModeSymlink != 0 {
+		return fmt.Errorf("%s is not a directory", dir)
+	}
+	if sys, ok := st.Sys().(*syscall.Stat_t); !ok || int(sys.Uid) != uid {
+		return fmt.Errorf("%s is not owned by the current user", dir)
+	}
+	return nil
 }
 
 // trashInto moves path into trash (files/ and info/ below it). For a volume

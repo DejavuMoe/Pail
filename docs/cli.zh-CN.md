@@ -292,7 +292,7 @@ $secret | pail account add backup --endpoint https://s3.example.com --region us-
 | 1 | 失败：出错、任务失败、所有项目都失败、确认被拒绝，或超过了 `--timeout` 的时长。 |
 | 2 | 用法错误或输入无效；需要确认但没有终端且没有 `--yes`；或加密保险库已锁定而无法询问密码（没有终端，也没有 `--vault-password-stdin`）。 |
 | 3 | 部分失败：部分项目成功，其余失败、结果未知（不会重试）或未处理。 |
-| 130 | 被 Ctrl+C 中断。运行中的任务被取消，并有最多 10 秒的时间停止。未完成的下载写入临时文件，这些文件会被删除。 |
+| 130 | 被 Ctrl+C 中断。运行中的任务被取消，并有最多 10 秒的时间停止。未完成的下载写入临时文件，这些文件会被删除。再按一次 Ctrl+C 会立即退出，不做这些清理，退出码由系统决定。 |
 
 错误会用文字（英文原文）说明类别：not found、access denied、not supported by this provider、conflict、network error、canceled、invalid input、locked。保险库密码错误会报告为 access denied（退出码 1）。
 

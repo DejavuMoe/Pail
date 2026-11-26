@@ -26,6 +26,11 @@ func init() {
 		windowsReserved[fmt.Sprintf("COM%d", i)] = true
 		windowsReserved[fmt.Sprintf("LPT%d", i)] = true
 	}
+	// Windows also reserves the superscript digits; filepath.IsLocal rejects them.
+	for _, d := range []string{"¹", "²", "³"} {
+		windowsReserved["COM"+d] = true
+		windowsReserved["LPT"+d] = true
+	}
 }
 
 // ValidKey reports why key cannot be mapped to a local path under the current

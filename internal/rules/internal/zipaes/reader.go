@@ -269,6 +269,10 @@ func readDirectoryHeader(f *File, r io.Reader) error {
 					f.headerOffset = int64(eb.uint64())
 				}
 			case winzipAesExtraId:
+				// version, vendor ID, strength and method take 7 bytes
+				if len(eb) < 7 {
+					return ErrFormat
+				}
 				// grab the AE version
 				f.ae = eb.uint16()
 				// skip vendor ID

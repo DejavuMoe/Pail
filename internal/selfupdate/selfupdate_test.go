@@ -226,6 +226,84 @@ func TestHTTPSOnly(t *testing.T) {
 	}
 }
 
+func TestRedirectsKeepSchemeRule(t *testing.T) {
+	noRetries(t)
+	mux := http.NewServeMux()
+	mux.HandleFunc("/ok", func(w http.ResponseWriter, r *http.Request) { w.Write([]byte("body")) })
+	mux.HandleFunc("/good", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/ok", http.StatusFound) })
+	mux.HandleFunc("/plain", func(w http.ResponseWriter, r *http.Request) {
+		http.Redirect(w, r, "http://example.invalid/pail.tar.gz", http.StatusFound)
+	})
+	mux.HandleFunc("/loop", func(w http.ResponseWriter, r *http.Request) { http.Redirect(w, r, "/loop", http.StatusFound) })
+	srv := httptest.NewServer(mux)
+	defer srv.Close()
+	u := &Updater{}
+
+	body, err := u.get(context.Background(), srv.URL+"/good")
+	if err != nil {
+		t.Fatalf("allowed redirect: %v", err)
+	}
+	body.Close()
+	if _, err := u.get(context.Background(), srv.URL+"/plain"); err == nil || !strings.Contains(err.Error(), "need HTTPS") {
+		t.Fatalf("redirect to plain HTTP: %v", err)
+	}
+	if _, err := u.get(context.Background(), srv.URL+"/loop"); err == nil || !strings.Contains(err.Error(), "redirects") {
+		t.Fatalf("redirect loop: %v", err)
+	}
+
+	// HTTPS to HTTPS passes; HTTPS to HTTP on another host does not.
+	mk := func(raw string) *http.Request {
+		r, _ := http.NewRequest(http.MethodGet, raw, nil)
+		return r
+	}
+	if err := checkRedirect(mk("https://objects.example.com/x"), []*http.Request{mk("https://example.com/y")}); err != nil {
+		t.Fatalf("https to https: %v", err)
+	}
+	if err := checkRedirect(mk("http://objects.example.com/x"), []*http.Request{mk("https://example.com/y")}); err == nil {
+		t.Fatal("https to http was followed")
+	}
+}
+
+func TestCleanStaleWork(t *testing.T) {
+	parent := t.TempDir()
+	target := filepath.Join(parent, "Pail")
+	now := time.Now()
+	mk := func(name string, age time.Duration, dir bool) string {
+		p := filepath.Join(parent, name)
+		if dir {
+			if err := os.MkdirAll(filepath.Join(p, "app"), 0o755); err != nil {
+				t.Fatal(err)
+			}
+		} else if err := os.WriteFile(p, nil, 0o644); err != nil {
+			t.Fatal(err)
+		}
+		at := now.Add(-age)
+		if err := os.Chtimes(p, at, at); err != nil {
+			t.Fatal(err)
+		}
+		return p
+	}
+	stale := mk(".Pail.update-123456", 48*time.Hour, true)
+	fresh := mk(".Pail.update-654321", time.Hour, true)
+	other := mk(".Other.update-111", 48*time.Hour, true)
+	broader := mk(".Pail.update-keep", 48*time.Hour, true)
+	plain := mk(".Pail.update-999", 48*time.Hour, false)
+	install := mk("Pail", 48*time.Hour, true)
+
+	cleanStaleWork(target, now)
+
+	for _, p := range []string{stale} {
+		if _, err := os.Stat(p); !os.IsNotExist(err) {
+			t.Errorf("%s was not removed: %v", filepath.Base(p), err)
+		}
+	}
+	for _, p := range []string{fresh, other, broader, plain, install} {
+		if _, err := os.Stat(p); err != nil {
+			t.Errorf("%s was removed: %v", filepath.Base(p), err)
+		}
+	}
+}
+
 func readApp(t *testing.T, dir string) map[string]string {
 	t.Helper()
 	es, err := os.ReadDir(dir)

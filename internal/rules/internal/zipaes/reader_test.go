@@ -531,3 +531,31 @@ func TestIssue11146(t *testing.T) {
 	}
 	r.Close()
 }
+
+// A WinZip AES extra field shorter than its 7 fixed bytes must be an
+// ErrFormat, not an index-out-of-range panic.
+func TestShortAESExtraField(t *testing.T) {
+	orig, err := os.ReadFile(filepath.Join("testdata", "hello-aes.zip"))
+	if err != nil {
+		t.Fatal(err)
+	}
+	pat := []byte{0x01, 0x99, 0x07, 0x00} // tag 0x9901, size 7
+	i := bytes.LastIndex(orig, pat)       // last one is the central directory
+	if i < 0 {
+		t.Fatal("no AES extra field in test archive")
+	}
+	for size := 0; size < 7; size++ {
+		b := append([]byte(nil), orig...)
+		b[i+2] = byte(size)
+		func() {
+			defer func() {
+				if p := recover(); p != nil {
+					t.Fatalf("size %d: panic: %v", size, p)
+				}
+			}()
+			if _, err := NewReader(bytes.NewReader(b), int64(len(b))); err != ErrFormat {
+				t.Errorf("size %d: error=%v, want %v", size, err, ErrFormat)
+			}
+		}()
+	}
+}

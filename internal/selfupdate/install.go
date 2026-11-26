@@ -385,6 +385,32 @@ func CleanLeftovers() {
 	for _, p := range olds {
 		_ = os.RemoveAll(p)
 	}
+	cleanStaleWork(filepath.Dir(exe), time.Now())
+}
+
+// staleWorkAge is how old a work directory must be before it counts as left
+// behind by a killed update; younger ones may belong to a running install.
+const staleWorkAge = 24 * time.Hour
+
+// cleanStaleWork removes the work directories of installUpdate for target
+// (".<name>.update-<digits>" next to it) that are older than staleWorkAge.
+func cleanStaleWork(target string, now time.Time) {
+	prefix := workPattern(target)
+	entries, err := os.ReadDir(filepath.Dir(target))
+	if err != nil {
+		return
+	}
+	for _, e := range entries {
+		name := e.Name()
+		rest, ok := strings.CutPrefix(name, prefix)
+		if !ok || rest == "" || strings.Trim(rest, "0123456789") != "" || !e.IsDir() {
+			continue
+		}
+		if info, err := e.Info(); err != nil || now.Sub(info.ModTime()) < staleWorkAge {
+			continue
+		}
+		_ = os.RemoveAll(filepath.Join(filepath.Dir(target), name))
+	}
 }
 
 // rename renames a file of the app, retrying while Windows reports it in use

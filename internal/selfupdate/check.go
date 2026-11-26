@@ -175,13 +175,36 @@ func (u *Updater) client() (*http.Client, error) {
 		}
 		proxy = http.ProxyURL(pu)
 	}
-	return &http.Client{Transport: &http.Transport{
+	return &http.Client{CheckRedirect: checkRedirect, Transport: &http.Transport{
 		Proxy:                 proxy,
 		DialContext:           (&net.Dialer{Timeout: 15 * time.Second, KeepAlive: 30 * time.Second}).DialContext,
 		TLSHandshakeTimeout:   15 * time.Second,
 		ResponseHeaderTimeout: headerTimeout,
 		ForceAttemptHTTP2:     true,
 	}}, nil
+}
+
+// maxRedirects caps the hops of one download.
+const maxRedirects = 5
+
+// errRedirect marks a redirect that was refused; it is never retried.
+var errRedirect = errors.New("refusing redirect")
+
+// allowedScheme reports whether updates may be fetched from u: HTTPS, or plain
+// HTTP from the loopback interface (tests).
+func allowedScheme(u *url.URL) bool {
+	return u.Scheme == "https" || (u.Scheme == "http" && isLoopback(u.Hostname()))
+}
+
+// checkRedirect applies the scheme rule of the first request to every hop.
+func checkRedirect(req *http.Request, via []*http.Request) error {
+	if len(via) > maxRedirects {
+		return fmt.Errorf("%w: more than %d redirects", errRedirect, maxRedirects)
+	}
+	if !allowedScheme(req.URL) {
+		return fmt.Errorf("%w to %s: updates need HTTPS", errRedirect, req.URL.Redacted())
+	}
+	return nil
 }
 
 // get fetches a URL over HTTPS (plain HTTP only from the loopback interface,
@@ -191,7 +214,7 @@ func (u *Updater) get(ctx context.Context, rawURL string) (io.ReadCloser, error)
 	if err != nil {
 		return nil, err
 	}
-	if pu.Scheme != "https" && !(pu.Scheme == "http" && isLoopback(pu.Hostname())) {
+	if !allowedScheme(pu) {
 		return nil, fmt.Errorf("refusing to download %s: updates need HTTPS", rawURL)
 	}
 	client, err := u.client()
@@ -212,7 +235,7 @@ func (u *Updater) get(ctx context.Context, rawURL string) (io.ReadCloser, error)
 		switch {
 		case err != nil:
 			cancel()
-			if ctx.Err() != nil || try >= len(retries) {
+			if ctx.Err() != nil || try >= len(retries) || errors.Is(err, errRedirect) {
 				return nil, err
 			}
 		case resp.StatusCode == http.StatusOK:
