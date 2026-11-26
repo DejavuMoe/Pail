@@ -16,7 +16,7 @@ Scope: the public landing site at https://pail.download (`site/`, built by `tool
 - Widths from 360px to 1920px with no horizontal page scroll; 16px minimum side gutter.
 - Keyboard, pointer and touch. `prefers-reduced-motion` stops every animation; the pail is drawn once, still. Anything that moves on its own runs only while on screen. What follows the scroll position never takes the scroll over: the page scrolls natively, and the wheel, touch and keys are not intercepted.
 - English at `/`, Simplified Chinese at `/zh/`. Long Chinese and English strings must not clip.
-- No third-party requests at runtime: images are self-hosted, no font files are loaded, and there is no analytics.
+- No third-party requests at runtime: images are self-hosted and no font files are loaded. The landing page loads the self-hosted Plausible CE script from `stats.via.moe` and sends page views to `https://stats.via.moe/api/resource`; the documentation pages load no analytics.
 
 ## Must preserve
 
@@ -24,7 +24,7 @@ Scope: the public landing site at https://pail.download (`site/`, built by `tool
 - Light and dark follow the system by default; one button in the header steps through System, Light and Dark and the choice persists.
 - Selected, current and on states use at least two cues.
 - Download links point to GitHub Releases assets named by `tools/release`. The mirror at https://pail.download/download/, which the site build fills with the files of the latest stable release under the same names, is always offered as a second source.
-- No analytics, trackers, cookies or external embeds.
+- No trackers, cookies or external embeds. The only analytics is the self-hosted Plausible CE on the landing page, which sets no cookies.
 
 ## Explicit non-goals
 

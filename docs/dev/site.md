@@ -80,7 +80,7 @@ Behaviour of the page scripts: theme follows the system with a System / Light / 
 
 Navigating between pages uses cross-document view transitions where the browser has them: the header and the docs navigation stay in place and only the content fades. The header is the same element with the same width (`--wrap`, 1280px) on the landing page and the docs.
 
-The site loads no fonts. Text uses the system UI face (SF Pro and PingFang SC on Apple systems, Segoe UI Variable and Microsoft YaHei on Windows, Roboto or Noto Sans with Noto Sans CJK SC elsewhere), and code uses the system monospace face (`ui-monospace`, SF Mono, Cascadia Code, Menlo, Consolas). There are no third-party requests.
+The site loads no fonts. Text uses the system UI face (SF Pro and PingFang SC on Apple systems, Segoe UI Variable and Microsoft YaHei on Windows, Roboto or Noto Sans with Noto Sans CJK SC elsewhere), and code uses the system monospace face (`ui-monospace`, SF Mono, Cascadia Code, Menlo, Consolas). There are no third-party requests; the landing page's only outside request is the self-hosted Plausible CE analytics at `stats.via.moe` (script plus events to `/api/resource`).
 
 ## Screenshots and social card
 

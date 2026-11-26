@@ -190,7 +190,8 @@ func indexOfLang(l language) int {
 
 // Every internal link and image of every page resolves to a built file (and its
 // fragment to an id on that page); every external link stays on the allowed hosts
-// or is written verbatim in the Markdown sources.
+// or is written verbatim in the Markdown sources. The only external script is the
+// self-hosted Plausible CE analytics on the landing page.
 func TestAllLinksResolve(t *testing.T) {
 	out := buildSite(t, "1.2.3")
 	root := repoRoot(t)
@@ -202,6 +203,7 @@ func TestAllLinksResolve(t *testing.T) {
 		}
 	}
 	allowed := []string{githubURL, "https://dejavu.moe", "https://pail.download/", defaultMirrorURL}
+	analytics := "https://stats.via.moe"
 
 	ids := map[string]map[string]bool{} // site path of file -> ids
 	var files []string
@@ -235,6 +237,11 @@ func TestAllLinksResolve(t *testing.T) {
 		for _, m := range linkAttrRE.FindAllStringSubmatch(page, -1) {
 			attr, raw := m[1], html.UnescapeString(m[2])
 			switch {
+			case raw == analytics || strings.HasPrefix(raw, analytics+"/js/"):
+				if name != "index.html" && name != "zh/index.html" {
+					t.Errorf("%s: %s=%q: analytics belongs only on the landing page", name, attr, raw)
+				}
+				continue
 			case strings.HasPrefix(raw, "https://") || strings.HasPrefix(raw, "http://"):
 				ok := slices.ContainsFunc(allowed, func(p string) bool { return strings.HasPrefix(raw, p) }) || strings.Contains(sources.String(), raw)
 				if attr == "src" || !ok {
