@@ -39,9 +39,9 @@ The Windows archives hold `pail-desktop.exe`, `pail.exe`, `.mygo-files` and the 
 Each release has a `SHA256SUMS` file with one line per archive. Compute the archive's SHA-256 hash and compare it with its line:
 
 ```sh
-sha256sum Pail-v0.7.3-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.7.3-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.7.3-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.7.4-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.7.4-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.7.4-windows-amd64.zip         # Windows PowerShell
 ```
 
 On Linux, with `SHA256SUMS` in the same folder as the archive, `sha256sum` can do the comparison and print `OK`:
@@ -117,7 +117,7 @@ pail-desktop --config-dir ~/pail-test --size 1280x800 --tool settings
 
 ## Update to a new version
 
-Open **Settings › Updates** and click **Check now**. When a new version is available, **Download and install** downloads it, and **Restart** starts it. Pail does not restart while a transfer is running. An update replaces both the desktop app and the `pail` command-line tool; `pail update` does the same from a terminal.
+Open **Settings › Updates** and click **Check now**. When a new version is available, **Download and install** downloads it, and **Restart** starts it. Pail does not restart while a transfer is running or queued. Paused transfers are saved and come back paused. An update replaces both the desktop app and the `pail` command-line tool; `pail update` does the same from a terminal.
 
 **Check for updates** is **Manually** by default. **Daily** or **Weekly** checks the first time Pail starts on a new day or week, and only tells you when a new version is available; nothing is downloaded until you click.
 

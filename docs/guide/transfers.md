@@ -81,17 +81,21 @@ Skipped items are reported as skipped, not as uploaded or downloaded.
 
 The transfers strip appears at the bottom of the window with the first transfer. The upload and download counts in the status bar open the panel, and so does **Toggle transfers**.
 
-The panel has three tabs, newest first:
+The panel has three tabs:
 
 | Tab | Shows |
 | --- | --- |
-| **Active** | Queued, running and paused tasks, with progress, bytes done and speed. |
-| **Completed** | Finished tasks and their size. |
-| **Failed** | Failed and canceled tasks, with the reason. |
+| **Active** | Running, paused and queued transfers, in that order, with progress, bytes done and speed. |
+| **Completed** | Finished tasks and their size, newest first. |
+| **Failed** | Failed and canceled tasks, with the reason, newest first. |
 
 **Clear finished** removes the completed and failed tasks from the list.
 
-An upload or download of many files is one batch. When it ends, a message says how many items succeeded and how many failed, for example "Upload finished with errors: 98 uploaded, 2 failed".
+An upload or download of many files is one batch. **Active** shows it as one row with the files done, the bytes done, the speed and the time left; while Pail is still scanning a folder, the number of files ends in "+". Below the row are the files being transferred and one line that counts the files still queued. When the batch ends, a message says how many items succeeded and how many failed, for example "Upload finished with errors: 98 uploaded, 2 failed".
+
+A running file says what it is doing while no data moves: **Preparing…**, **Compressing…**, **Verifying…**, **Decoding…** or **Finishing…**.
+
+When the connection of a transfer moves no data for 60 seconds, Pail stops that request and sends it again. A transfer that keeps stalling fails and can be retried.
 
 ### Queues and limits
 
@@ -110,18 +114,21 @@ The rest wait in the queue. Lowering a limit does not interrupt a running task.
 
 | Button | Effect |
 | --- | --- |
-| **Pause** | Pauses one upload or download, or a whole batch. |
-| **Resume** | Continues a paused task. |
-| **Pause all** | Pauses every running and queued upload and download. |
+| **Pause** | Pauses one upload or download. When resumed, the file starts again from the beginning. |
+| **Pause this batch** | Pauses every file of a batch, and the scan of its folder. |
+| **Resume** | Continues a paused file. |
+| **Resume this batch** | Continues a paused batch. The scan continues where it stopped. |
+| **Pause all** | Pauses every running and queued upload and download, and the scans of their folders. |
 | **Resume all** | Continues every paused task. |
 | **Cancel** | Stops a task. |
+| **Cancel this batch** | Stops every file of a batch. Files already transferred stay. |
 | **Retry** | Runs a failed or canceled task again. |
 
 Retrying a move or rename whose copy succeeded but whose source could not be deleted finishes the move.
 
 ### After a restart
 
-Transfers that are still queued, running or paused when Pail quits come back paused at the next start, and a message says how many. Choose **Resume** or **Resume all** to continue them. Sync runs are not saved.
+Transfers that are still queued, running or paused when Pail quits come back paused at the next start, and a message says how many. A folder that was still being scanned continues where the scan stopped, so the files it had not reached are transferred too. Choose **Resume** or **Resume all** to continue them. Sync runs are not saved.
 
 > A paused file starts again from the beginning when it resumes, including after a restart.
 
@@ -129,7 +136,7 @@ While the tray icon is shown, closing the window keeps Pail running so that tran
 
 ## Speed limits
 
-**Settings › Transfers** has **Upload speed limit** and **Download speed limit**, in KiB per second. They apply to all accounts together, and 0 means no limit. A running transfer follows a change from its next part.
+**Settings › Transfers** has **Upload speed limit** and **Download speed limit**, in KiB per second. They apply to all accounts together, and 0 means no limit. They limit uploads and downloads of objects, not listings or other requests. A change takes effect at once.
 
 ## Large files and checksums
 

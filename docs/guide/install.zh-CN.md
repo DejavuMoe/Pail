@@ -39,9 +39,9 @@ Windows 的压缩包里是 `pail-desktop.exe`、`pail.exe`、`.mygo-files` 和�
 每个版本都有一个 `SHA256SUMS` 文件，每个压缩包占一行。计算压缩包的 SHA-256，与对应的那一行比较：
 
 ```sh
-sha256sum Pail-v0.7.3-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.7.3-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.7.3-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.7.4-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.7.4-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.7.4-windows-amd64.zip         # Windows PowerShell
 ```
 
 在 Linux 上，把 `SHA256SUMS` 和压缩包放在同一个文件夹里，`sha256sum` 可以直接比较，一致时输出 `OK`：
@@ -117,7 +117,7 @@ pail-desktop --config-dir ~/pail-test --size 1280x800 --tool settings
 
 ## 更新到新版本
 
-打开 **设置 › 更新**，点击 **立即检查**。有新版本时，**下载并安装** 会下载它，**重启** 后开始使用。有传输在进行时 Pail 不会重启。更新会同时替换桌面应用和命令行工具 `pail`；在终端里运行 `pail update` 效果相同。
+打开 **设置 › 更新**，点击 **立即检查**。有新版本时，**下载并安装** 会下载它，**重启** 后开始使用。有传输在运行或排队时 Pail 不会重启。已暂停的传输会被保存，重启后仍是暂停状态。更新会同时替换桌面应用和命令行工具 `pail`；在终端里运行 `pail update` 效果相同。
 
 **检查更新** 默认是 **手动**。选 **每天** 或 **每周** 时，Pail 在当天或当周第一次启动时检查，有新版本只提示，点击之前不会下载。
 

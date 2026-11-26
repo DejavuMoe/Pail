@@ -61,9 +61,9 @@ Each archive unpacks into a folder named `Pail` with the desktop app `pail-deskt
 Compare the archive's SHA-256 hash with its line in `SHA256SUMS` from the same release:
 
 ```sh
-sha256sum Pail-v0.7.3-linux-amd64.tar.gz           # Linux
-shasum -a 256 Pail-v0.7.3-darwin-arm64.zip         # macOS
-Get-FileHash Pail-v0.7.3-windows-amd64.zip         # Windows PowerShell
+sha256sum Pail-v0.7.4-linux-amd64.tar.gz           # Linux
+shasum -a 256 Pail-v0.7.4-darwin-arm64.zip         # macOS
+Get-FileHash Pail-v0.7.4-windows-amd64.zip         # Windows PowerShell
 ```
 
 ### First launch on macOS

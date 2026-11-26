@@ -4,6 +4,47 @@ English | [简体中文](CHANGELOG.zh-CN.md)
 
 All notable changes to this project are documented in this file. The format follows [Keep a Changelog](https://keepachangelog.com/en/1.1.0/).
 
+## [0.7.4] - 2026-11-27
+
+### Added
+
+- The transfers panel shows an upload or download of several files as one batch row: the files done, the bytes done, the speed and the time left, with **Pause this batch**, **Resume this batch** and **Cancel this batch**. Below it are the files being transferred and one line that counts the queued ones.
+- A running transfer says what it is doing while no data moves: **Preparing…**, **Compressing…**, **Verifying…**, **Decoding…** or **Finishing…**.
+- A sync run ends with a message and an entry in **Recent operations**, and the open folder is refreshed when the run uploaded to its bucket.
+- In `pail`, a second Ctrl+C exits at once. When the cleanup after the first one does not finish in time, a warning names `pail multipart ls` and `pail multipart abort`.
+
+### Changed
+
+- **Active** lists running transfers first, then paused, then queued ones. It used to put the newest task on top, so a folder upload showed its queued files and hid the ones being transferred.
+- The taskbar and tray percentage covers the whole batch. It used to cover only the files running at that moment and fell back each time one finished.
+- Speed limits apply to uploads and downloads of objects only, and a change takes effect at once. Before, listing a folder was slowed down as well, and a running transfer followed a new limit from its next part.
+- **Pause all** and **Pause this batch** also pause the scan of a folder. A scan no longer takes one of the **Concurrent other tasks** slots, so copies and deletes start while folders are being transferred.
+- **Restart** after an update, and quitting when the window closes, no longer wait for paused transfers. They are saved and come back paused.
+- A canceled task is shown in neutral colors, not as an error. The scan of a folder is no longer listed under **Completed**.
+- A batch that is paused shows one line with the number of its paused files.
+- A picture of more than 40 megapixels is not opened in the preview.
+
+### Fixed
+
+- Upload progress stayed at 0% until a whole part (16 MiB by default) or a whole small file had been sent, then jumped. It now follows the bytes as they are sent, in the app and in `pail`.
+- Uploads kept several parts of every file in memory: eight uploads at the default part size took about 900 MB. A file is now read as it is sent.
+- Quitting during a folder upload or download lost the files the scan had not reached: only the queued files came back, and the batch ended as if it were complete. After a restart the scan now continues where it stopped.
+- A transfer whose connection stopped moving data waited without end. After 60 seconds without data the request is stopped and sent again.
+- The speed and time left of a stalled transfer kept their last value. They are now cleared.
+- When `pail` changed the credential store while the app was open, the next settings change in the app wrote the old choice back, and the accounts lost their keys after a restart. The app now refuses to save and asks to be reopened.
+- **Test connection** failed for an account that does not use the global proxy when the proxy password could not be read.
+- With **Keep both (rename)**, an upload failed when the existing object could be listed but not read. The new file now gets a numbered name.
+- A finished download reloaded the open folder and discarded its computed folder sizes.
+- A delete request that was sent a second time after a broken connection and then refused was reported as "nothing was deleted". Its result is now reported as unknown.
+- The window became slow with thousands of tasks in the transfers panel, with a large selection, and while typing in the filter of a large folder. Opening a preview no longer blocks the window while the file is decoded.
+- The message after aborting a multipart upload was lost when you left the tool or hid the window before the abort finished.
+- In **Sync jobs**, the bucket list stayed empty after it failed to load. It now shows the error and **Retry**.
+- A language choice that could not be saved was dropped without a message.
+- A damaged encrypted ZIP ended a download with "internal error". It is now reported as a damaged archive.
+- An update download that is redirected from HTTPS to plain HTTP is refused. Folders left by an interrupted update are removed after a day.
+- On macOS, saving a downloaded file could replace a file that appeared at the destination at the same moment.
+- On Linux, the trash folder of another drive is used only when it is a real folder that belongs to you.
+
 ## [0.7.3] - 2026-11-25
 
 ### Fixed

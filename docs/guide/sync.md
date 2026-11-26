@@ -64,7 +64,7 @@ Symbolic links in the local folder are not followed. They appear in the plan as 
 
 **Run sync** then performs exactly the actions in the preview. A file that changed after the preview is not overwritten. Editing the job clears the preview.
 
-When there is nothing to do, Pail says so. A sync without deletions starts at once. A sync with deletions first asks **Run sync?** and shows the job, the local folder, the remote prefix, the number of uploads, downloads and deletions, and the size.
+When there is nothing to do, Pail says so. A sync without deletions starts at once. A sync with deletions first asks **Run sync?** and shows the job, the local folder, the remote prefix, the number of uploads, downloads and deletions, and the size. When a run ends, a message gives the result, and the run is listed in **Recent operations**.
 
 ### Deletions and the trash
 

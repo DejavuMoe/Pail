@@ -157,7 +157,7 @@ The size counts the current objects under the folder. Older versions, delete mar
 
 The status bar shows the number of items in the folder, or "N items of M" while a filter is on. With one item selected it also says so, with the size of an object.
 
-It also shows how long the last successful operation took: loading the bucket list, opening a folder, an upload, a download or a delete. The upload and download counts open the transfers panel.
+It also shows how long the last successful operation took: loading the bucket list, opening a folder, an upload, a download or a delete. The upload and download counts are the files that are running or queued; click them to open the transfers panel.
 
 Click the time to open **Recent operations**. Each line shows an operation, whether it **Succeeded**, **Failed** or was **Canceled**, how long it took and when it ended. **Clear** empties the list. The list is kept in memory and is empty again after you quit Pail.
 
